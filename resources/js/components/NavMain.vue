@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import {
   Collapsible,
   CollapsibleContent,
@@ -20,12 +21,12 @@ import { ChevronRight, type LucideIcon } from 'lucide-vue-next'
 defineProps<{
   items: {
     title: string
-    url: string
+    href: string
     icon?: LucideIcon
     isActive?: boolean
     items?: {
       title: string
-      url: string
+      href: string
     }[]
   }[]
 }>()
@@ -53,9 +54,9 @@ defineProps<{
                         <SidebarMenuSub>
                             <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
                                 <SidebarMenuSubButton as-child>
-                                    <a :href="subItem.url">
+                                    <Link :href="subItem.href">
                                         <span>{{ subItem.title }}</span>
-                                    </a>
+                                    </Link>
                                 </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                         </SidebarMenuSub>
