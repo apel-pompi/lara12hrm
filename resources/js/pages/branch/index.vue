@@ -65,7 +65,7 @@ export interface Branch {
   address: string
   email: string
   phone: string
-  active: number
+  active: string
 }
 
 
@@ -203,10 +203,10 @@ const columns: ColumnDef<Branch, any>[] = [
           id: 'actions',
           enableHiding: false,
           cell: ({ row }: { row: Row<Branch> }) => {
-          const branch = row.original
+          const dataID = row.original
 
               return h('div', { class: 'relative' }, h(DropdownAction, {
-                  branch,
+                  dataID,
                   onShow,
                   onEdit,
                   onDelete,
@@ -257,7 +257,7 @@ interface FormErrors {
     address?: string;
     email?: string;
     phone?: string;
-    active?: boolean;
+    active?: string;
 }
 
 
@@ -656,17 +656,18 @@ const onDelete = async (id: number) => {
                   <FormGroup label="Email" htmlFor="email">
                     <Input id="email" v-model="form.email" :disabled="!isEditMode" />
                   </FormGroup>
-                  <FormGroup label="Status" htmlFor="active">
-                    <template v-if="isEditMode">
-                      
-                    </template>
-                    <template v-else>
-                      
-                    </template>
-                  </FormGroup>
+                    <FormGroup label="Status" htmlFor="active">
+                        <div class="flex items-center space-x-6">
+                            <label class="inline-flex items-center space-x-2">
+                                <span class="inline-block px-3 py-1 text-sm font-medium rounded-full"
+                                    :class="form.active == '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                {{ form.active == '1' ? 'Active' : 'Inactive' }}
+                                </span>
+                            </label>
+                        </div>
+                    </FormGroup>
                 </div>
               </div>
-
               <DialogFooter class="sm:justify-start">
                   <DialogClose as-child>
                     <Button variant="secondary" @click="showDialogOpen = false">

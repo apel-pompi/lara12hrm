@@ -4,7 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { MoreHorizontal, Eye, Pencil, Trash } from 'lucide-vue-next'
 
 const props = defineProps<{
-  branch: any,
+  dataID: any,
   onShow: (id: number) => void,
   onEdit: (id: number) => void,
   onDelete: (id: number) => void,
@@ -24,7 +24,7 @@ const props = defineProps<{
     <DropdownMenuContent>
       <DropdownMenuLabel>Actions</DropdownMenuLabel>
       <DropdownMenuItem 
-        @click="props.onShow(branch.id)"
+        @click="props.onShow(dataID.id)"
         class="cursor-pointer hover:bg-muted hover:text-primary flex items-center">
         <Eye class="w-4 h-4 mr-2" /> Show
       </DropdownMenuItem>
@@ -32,7 +32,7 @@ const props = defineProps<{
       <DropdownMenuSeparator />
 
       <DropdownMenuItem 
-        @click="props.onEdit(branch.id)"
+        @click="props.onEdit(dataID.id)"
         class="cursor-pointer hover:bg-muted hover:text-primary flex items-center">
         <Pencil class="w-4 h-4 mr-2" /> Edit
       </DropdownMenuItem>
@@ -40,7 +40,7 @@ const props = defineProps<{
       <DropdownMenuSeparator />
 
       <DropdownMenuItem 
-        @click="props.onDelete(branch.id)"
+        @click="props.onDelete(dataID.id)"
         class="cursor-pointer text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center">
         <Trash class="w-4 h-4 mr-2" /> Delete
       </DropdownMenuItem>
