@@ -50,7 +50,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog'
 
-import DropdownAction from './DataTable.vue'
+import DropdownAction from '@/components/DataTable.vue'
 
 import { toast } from 'vue-sonner'
 
@@ -217,7 +217,7 @@ const columns: ColumnDef<Branch, any>[] = [
   ]
 
  // Reactive states
- const sorting = ref([])
+const sorting = ref([])
 const columnFilters = ref([])
 const columnVisibility = ref({})
 const rowSelection = ref({})

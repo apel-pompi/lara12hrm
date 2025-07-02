@@ -18,6 +18,7 @@ import {
 
 import {
   SquareTerminal,
+  Settings,
 } from 'lucide-vue-next'
 
 const props = withDefaults(defineProps<SidebarProps>(), {
@@ -46,7 +47,21 @@ const data = {
         },
       ],
     },
-       
+    {
+      title: 'Setting',
+      url: '#',
+      icon: Settings,
+      items: [
+        {
+          title: 'Role',
+          href: '/roles',
+        },
+        {
+          title: 'User Permission',
+          url: '#',
+        },
+      ],
+    },
     
   ],
   

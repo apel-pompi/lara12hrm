@@ -1,6 +1,10 @@
 <?php
 
-use App\Http\Controllers\BranchController;
+
+use App\Http\Controllers\{
+    BranchController,RoleController
+};
+
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -23,6 +27,19 @@ Route::middleware(['verified', 'auth'])->group(function () {
                     Route::get('/{branch}/edit', 'edit')->name('branch.edit');
                     Route::put('/{branch}', 'update')->name('branch.update');
                 }
+    );
+
+    // Roles routes
+    Route::controller(RoleController::class)
+        ->prefix('/roles')
+        ->group(function () {
+            Route::get('/', 'index')->name('roles.index');
+            Route::post('/store', 'store')->name('roles.store');
+            Route::get('/{roles}', 'show')->name('roles.show');
+            Route::delete('/show/{roles}', 'destroy')->name('roles.destroy');
+            Route::get('/{roles}/edit', 'edit')->name('roles.edit');
+            Route::put('/{roles}', 'update')->name('roles.update');
+        }
     );
 
 });
