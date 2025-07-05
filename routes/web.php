@@ -2,7 +2,7 @@
 
 
 use App\Http\Controllers\{
-    BranchController,RoleController
+    BranchController,RoleController,UserPermissionController
 };
 
 use Illuminate\Support\Facades\Route;
@@ -42,6 +42,17 @@ Route::middleware(['verified', 'auth'])->group(function () {
         }
     );
 
+    //User Permission Route
+    Route::controller(UserPermissionController::class)
+        ->prefix('/userpermission')
+        ->group(function () {
+            Route::get('/', 'index')->name('userpermission.index');
+            Route::post('/store', 'store')->name('userpermission.store');
+            Route::delete('/show/{id}', 'destroy')->name('userpermission.destroy');
+            Route::get('/{id}/edit', 'edit')->name('userpermission.edit');
+            Route::put('/{id}', 'update')->name('userpermission.update');
+        }
+    );
 });
 
 
