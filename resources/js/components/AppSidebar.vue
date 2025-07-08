@@ -39,11 +39,15 @@ const data = {
         },
         {
           title: 'Department',
-          url: '#',
+          href: '/department',
         },
         {
           title: 'Designation',
-          url: '#',
+          href: '/designation',
+        },
+        {
+          title: 'Leave Plan',
+          href: '/leaveplan',
         },
       ],
     },
@@ -64,6 +68,7 @@ const data = {
           title: 'Company',
           href: '/companyinfo',
         },
+        
       ],
     },
     

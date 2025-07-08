@@ -2,7 +2,7 @@
 
 
 use App\Http\Controllers\{
-    BranchController,RoleController,UserPermissionController,CompanyInfoController
+    BranchController, DepartmentController, DesignationController, LeaveplanController, RoleController, UserPermissionController, CompanyInfoController
 };
 
 use Illuminate\Support\Facades\Route;
@@ -17,6 +17,8 @@ Route::get('dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['verified', 'auth'])->group(function () {
+
+    //Branch Route
     Route::controller(BranchController::class)
                 ->prefix('branch')
                 ->group(function(){
@@ -28,7 +30,43 @@ Route::middleware(['verified', 'auth'])->group(function () {
                     Route::put('/{branch}', 'update')->name('branch.update');
                 }
     );
+    //Department Route
+    Route::controller(DepartmentController::class)
+                ->prefix('department')
+                ->group(function(){
+                    Route::get('/', 'index')->name('department.index');
+                    Route::post('/store', 'store')->name('department.store');
+                    Route::get('/{department}', 'show')->name('department.show');
+                    Route::delete('/show/{department}', 'destroy')->name('department.destroy');
+                    Route::get('/{department}/edit', 'edit')->name('department.edit');
+                    Route::put('/{department}', 'update')->name('department.update');
+                }
+    );
 
+    //Designation Route
+    Route::controller(DesignationController::class)
+                ->prefix('designation')
+                ->group(function(){
+                    Route::get('/', 'index')->name('designation.index');
+                    Route::post('/store', 'store')->name('designation.store');
+                    Route::get('/{designation}', 'show')->name('designation.show');
+                    Route::delete('/show/{designation}', 'destroy')->name('designation.destroy');
+                    Route::get('/{designation}/edit', 'edit')->name('designation.edit');
+                    Route::put('/{designation}', 'update')->name('designation.update');
+                }
+    );
+    //Leave Plan Route
+    Route::controller(LeaveplanController::class)
+                ->prefix('leaveplan')
+                ->group(function(){
+                    Route::get('/', 'index')->name('leaveplan.index');
+                    Route::post('/store', 'store')->name('leaveplan.store');
+                    Route::get('/{leaveplan}', 'show')->name('leaveplan.show');
+                    Route::delete('/show/{leaveplan}', 'destroy')->name('leaveplan.destroy');
+                    Route::get('/{leaveplan}/edit', 'edit')->name('leaveplan.edit');
+                    Route::put('/{leaveplan}', 'update')->name('leaveplan.update');
+                }
+    );
     // Roles routes
     Route::controller(RoleController::class)
         ->prefix('/roles')

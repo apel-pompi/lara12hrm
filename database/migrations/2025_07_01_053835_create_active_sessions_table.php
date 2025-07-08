@@ -12,6 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('active_sessions', function (Blueprint $table) {
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('session_id');
