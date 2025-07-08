@@ -15,7 +15,7 @@ class BranchController extends Controller
      */
     public function index()
     {
-        return Inertia::render('branch/index',[
+        return Inertia::render('allpages/branch',[
             'branch' => Branch::orderBy('id', 'desc')->get()
         ]);
     }

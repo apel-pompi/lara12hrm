@@ -2,7 +2,7 @@
 
 
 use App\Http\Controllers\{
-    BranchController,RoleController,UserPermissionController
+    BranchController,RoleController,UserPermissionController,CompanyInfoController
 };
 
 use Illuminate\Support\Facades\Route;
@@ -51,6 +51,15 @@ Route::middleware(['verified', 'auth'])->group(function () {
             Route::delete('/show/{id}', 'destroy')->name('userpermission.destroy');
             Route::get('/{id}/edit', 'edit')->name('userpermission.edit');
             Route::put('/{id}', 'update')->name('userpermission.update');
+        }
+    );
+
+    //Company Inforamation Route
+    Route::controller(CompanyInfoController::class)
+        ->prefix('/companyinfo')
+        ->group(function () {
+            Route::get('/', 'edit')->name('company.index');
+            Route::put('/{companyInfo}', 'update')->name('company.update');
         }
     );
 });

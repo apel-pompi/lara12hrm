@@ -60,6 +60,10 @@ const data = {
           title: 'User Permission',
           href: '/userpermission',
         },
+        {
+          title: 'Company',
+          href: '/companyinfo',
+        },
       ],
     },
     
