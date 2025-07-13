@@ -16,9 +16,11 @@ class AttenSettingController extends Controller
      */
     public function index()
     {
-        return Inertia::render('allpages/attensetting',[
-            'attensetting' => AttenSetting::with('branch')->orderBy('id', 'desc')->get(),
-            'branch' => Branch::all(),
+        return Inertia::render('allpages/attensetting', [
+            'attensetting' => AttenSetting::with(['branch' => function ($query) {
+                $query->where('active', 1);
+            }])->get(),
+            'branch' => Branch::where('active', 1)->get(),
         ]);
     }
 
@@ -36,8 +38,8 @@ class AttenSettingController extends Controller
      */
     public function show(AttenSetting $attensetting)
     {
-         $attensetting->load('branch');
-         return response()->json($attensetting);
+        $attensetting->load('branch');
+        return response()->json($attensetting);
     }
 
     /**
@@ -65,10 +67,9 @@ class AttenSettingController extends Controller
      */
     public function destroy(AttenSetting $attensetting)
     {
-        
+
         try {
             $attensetting->delete();
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete attendance setting.',

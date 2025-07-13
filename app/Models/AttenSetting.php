@@ -26,6 +26,6 @@ class AttenSetting extends Model
      */
     public function branch(): BelongsTo
     {
-        return $this->belongsTo(Branch::class, 'branch_id');
+        return $this->belongsTo(Branch::class, 'branch_id')->where('active', 1);
     }
 }
