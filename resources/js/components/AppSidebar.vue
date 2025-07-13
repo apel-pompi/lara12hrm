@@ -49,6 +49,10 @@ const data = {
           title: 'Leave Plan',
           href: '/leaveplan',
         },
+        {
+          title: 'Attendance Setting',
+          href: '/attensetting',
+        },
       ],
     },
     {

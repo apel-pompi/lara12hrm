@@ -2,7 +2,7 @@
 
 
 use App\Http\Controllers\{
-    BranchController, DepartmentController, DesignationController, LeaveplanController, RoleController, UserPermissionController, CompanyInfoController
+    BranchController, DepartmentController, DesignationController, LeaveplanController, AttenSettingController, RoleController, UserPermissionController, CompanyInfoController
 };
 
 use Illuminate\Support\Facades\Route;
@@ -65,6 +65,18 @@ Route::middleware(['verified', 'auth'])->group(function () {
                     Route::delete('/show/{leaveplan}', 'destroy')->name('leaveplan.destroy');
                     Route::get('/{leaveplan}/edit', 'edit')->name('leaveplan.edit');
                     Route::put('/{leaveplan}', 'update')->name('leaveplan.update');
+                }
+    );
+    //Attendance Setting Route
+    Route::controller(AttenSettingController::class)
+                ->prefix('attensetting')
+                ->group(function(){
+                    Route::get('/', 'index')->name('attensetting.index');
+                    Route::post('/store', 'store')->name('attensetting.store');
+                    Route::get('/{attensetting}', 'show')->name('attensetting.show');
+                    Route::delete('/show/{attensetting}', 'destroy')->name('attensetting.destroy');
+                    Route::get('/{attensetting}/edit', 'edit')->name('attensetting.edit');
+                    Route::put('/{attensetting}', 'update')->name('attensetting.update');
                 }
     );
     // Roles routes
