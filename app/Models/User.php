@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\CompanyInfo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -49,11 +51,20 @@ class User extends Authenticatable
         ];
     }
 
-    public static function getpermissions($group_name){
-        $rolegroup = DB::table('permissions','a')
-        ->select('a.name','a.id')
-        ->where('a.group_name',$group_name)
-        ->get();
+   
+    public static function company()
+    {
+        $companyInfo = DB::table('company_infos', 'a')
+                        ->select('a.companyname', 'a.companylogo')->get();
+        return $companyInfo;
+    }
+
+    public static function getpermissions($group_name)
+    {
+        $rolegroup = DB::table('permissions', 'a')
+            ->select('a.name', 'a.id')
+            ->where('a.group_name', $group_name)
+            ->get();
         return $rolegroup;
     }
 }

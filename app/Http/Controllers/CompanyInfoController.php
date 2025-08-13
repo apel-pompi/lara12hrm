@@ -14,7 +14,6 @@ class CompanyInfoController extends Controller
 
     public function edit()
     {
-        //$company = CompanyInfo::firstOrNew();
         return Inertia::render('allpages/company',[
             'company' => CompanyInfo::firstOrNew()
         ]);

@@ -2,7 +2,7 @@
 
 
 use App\Http\Controllers\{
-    BranchController, DepartmentController, DesignationController, LeaveplanController, AttenSettingController, RoleController, UserPermissionController, CompanyInfoController
+    BranchController, DepartmentController, DesignationController, LeaveplanController, AttenSettingController, HolidayHdController, HolidayDtController, RoleController, UserPermissionController, CompanyInfoController
 };
 
 use Illuminate\Support\Facades\Route;
@@ -30,6 +30,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
                     Route::put('/{branch}', 'update')->name('branch.update');
                 }
     );
+
     //Department Route
     Route::controller(DepartmentController::class)
                 ->prefix('department')
@@ -55,6 +56,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
                     Route::put('/{designation}', 'update')->name('designation.update');
                 }
     );
+
     //Leave Plan Route
     Route::controller(LeaveplanController::class)
                 ->prefix('leaveplan')
@@ -67,6 +69,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
                     Route::put('/{leaveplan}', 'update')->name('leaveplan.update');
                 }
     );
+
     //Attendance Setting Route
     Route::controller(AttenSettingController::class)
                 ->prefix('attensetting')
@@ -78,6 +81,32 @@ Route::middleware(['verified', 'auth'])->group(function () {
                     Route::get('/{attensetting}/edit', 'edit')->name('attensetting.edit');
                     Route::put('/{attensetting}', 'update')->name('attensetting.update');
                 }
+    );
+
+    //Holiday Header Route
+    Route::controller(HolidayHdController::class)
+                ->prefix('holidayHd')
+                ->group(function(){
+                    Route::get('/', 'index')->name('holidayHd.index');
+                    Route::post('/store', 'store')->name('holidayHd.store');
+                    Route::put('/{holidayhd}/status', 'updateStatus')->name('holidayhd.updateStatus');
+                    Route::get('/{holidayHd}', 'show')->name('holidayHd.show');
+                    Route::delete('/show/{holidayHd}', 'destroy')->name('holidayHd.destroy');
+                    Route::get('/{holidayHd}/edit', 'edit')->name('holidayHd.edit');
+                    Route::put('/{holidayHd}', 'update')->name('holidayHd.update');
+                }
+    );
+
+    //Holiday Details
+    Route::controller(HolidayDtController::class)
+        ->prefix('/holidaydt')
+        ->group(function () {
+            Route::get('/{id}/create', 'create')->name('holidaydt.create');
+            Route::post('/create', 'store')->name('holidaydt.store');
+            Route::get('/{holidayDt}/edit', 'edit')->name('holidaydt.edit');
+            Route::put('/{holidayDt}/edit', 'update')->name('holidaydt.update');
+            Route::delete('/destroy/{holidayDt}', 'destroy')->name('holidaydt.destroy');
+        }
     );
     // Roles routes
     Route::controller(RoleController::class)
