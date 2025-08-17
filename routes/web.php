@@ -2,7 +2,7 @@
 
 
 use App\Http\Controllers\{
-    BranchController, DepartmentController, DesignationController, LeaveplanController, AttenSettingController, HolidayHdController, HolidayDtController, RoleController, UserPermissionController, CompanyInfoController
+    BranchController, DepartmentController, DesignationController, LeaveplanController, AttenSettingController, HolidayHdController, HolidayDtController, PersonalInfoController, RoleController, UserPermissionController, CompanyInfoController
 };
 
 use Illuminate\Support\Facades\Route;
@@ -108,6 +108,20 @@ Route::middleware(['verified', 'auth'])->group(function () {
             Route::delete('/destroy/{holidayDt}', 'destroy')->name('holidaydt.destroy');
         }
     );
+
+    //Personal Information Route
+    Route::controller(PersonalInfoController::class)
+                ->prefix('personalinfo')
+                ->group(function(){
+                    Route::get('/', 'index')->name('personalinfo.index');
+                    Route::post('/store', 'store')->name('personalinfo.store');
+                    Route::get('/{PersonalInfo}', 'show')->name('personalinfo.show');
+                    Route::delete('/show/{PersonalInfo}', 'destroy')->name('personalinfo.destroy');
+                    Route::get('/{PersonalInfo}/edit', 'edit')->name('personalinfo.edit');
+                    Route::put('/{PersonalInfo}', 'update')->name('personalinfo.update');
+                }
+    );
+
     // Roles routes
     Route::controller(RoleController::class)
         ->prefix('/roles')

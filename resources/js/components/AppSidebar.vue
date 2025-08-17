@@ -18,7 +18,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-import { CalendarX2, Settings, SquareTerminal } from 'lucide-vue-next';
+import { CalendarX2, Settings, SquareTerminal, User } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
     collapsible: 'icon',
@@ -75,11 +75,19 @@ const data = {
     ],
 };
 
-const menuitems = [
+const menuholiday = [
     {
         title: 'Holiday',
         icon: CalendarX2,
     },
+    
+];
+
+const menupersonal = [
+    {
+        title:'Personal Info',
+        icon:User
+    }
 ];
 </script>
 
@@ -104,9 +112,19 @@ const menuitems = [
                         <NavMain :items="data.navMain" />
                     </SidebarContent>
                     <SidebarMenu>
-                        <SidebarMenuItem v-for="item in menuitems" :key="item.title">
+                        <SidebarMenuItem v-for="item in menuholiday" :key="item.title">
                             <SidebarMenuButton asChild>
                                 <Link :href="route('holidayHd.index')" class="ps-4">
+                                    <component :is="item.icon" />
+                                    <span>{{ item.title }}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                    <SidebarMenu>
+                        <SidebarMenuItem v-for="item in menupersonal" :key="item.title">
+                            <SidebarMenuButton asChild>
+                                <Link :href="route('personalinfo.index')" class="ps-4">
                                     <component :is="item.icon" />
                                     <span>{{ item.title }}</span>
                                 </Link>

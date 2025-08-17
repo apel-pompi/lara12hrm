@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ActiveSession extends Model
@@ -16,9 +17,15 @@ class ActiveSession extends Model
         'ip_address'
     ];
 
-    public function user()
+    /**
+     * Get the user that owns the ActiveSession
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
+    
     
 }

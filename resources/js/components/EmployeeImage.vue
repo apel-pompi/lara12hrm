@@ -21,7 +21,7 @@ const props = defineProps({
 const emit = defineEmits(['image']);
 
 // Reactive state
-const currentImage = props.Image ? `/storage/company/${props.Image}` : null;
+const currentImage = props.Image ? `/storage/employee/${props.Image}` : null;
 const preview = ref<string | null>(currentImage);
 const oversizedImage = ref(false);
 const showRevertBtn = ref(false);
@@ -30,7 +30,7 @@ const showRevertBtn = ref(false);
 watch(
   () => props.Image,
   (newVal) => {
-    preview.value = newVal ? `/storage/company/${newVal}` : null;
+    preview.value = newVal ? `/storage/employee/${newVal}` : null;
     showRevertBtn.value = false;
   }
 );
@@ -48,7 +48,7 @@ const imageSelected = (e: Event) => {
 
 // Revert back to original image
 const revertImageChange = () => {
-  preview.value = props.Image ? `/storage/company/${props.Image}` : null;
+  preview.value = props.Image ? `/storage/employee/${props.Image}` : null;
   oversizedImage.value = false;
   showRevertBtn.value = false;
   emit('image', null); // clear selected image
@@ -70,7 +70,7 @@ const revertImageChange = () => {
       :class="{ '!border-red-500': oversizedImage }"
     >
       <img
-        :src="preview || '/storage/company/default.png'"
+        :src="preview || '/storage/employee/default.png'"
         class="h-full w-full object-cover object-center"
         alt="Preview"
       />
