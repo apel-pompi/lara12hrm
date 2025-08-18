@@ -325,12 +325,7 @@ const goToHolidayHd = () => {
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
             <div class="flex items-center gap-2 py-4">
                 <Button variant="outline" size="sm" @click="goToHolidayHd"><CornerDownLeft></CornerDownLeft> Manage Holiday </Button>
-                <Input
-                    class="max-w-sm"
-                    placeholder="Filter HolidayHd"
-                    :model-value="table.getColumn('holidate')?.getFilterValue() as string"
-                    @update:model-value="table.getColumn('holidate')?.setFilterValue($event)"
-                />
+                
                 <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Holiday </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>

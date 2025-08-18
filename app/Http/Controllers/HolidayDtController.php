@@ -96,6 +96,18 @@ class HolidayDtController extends Controller
      */
     public function update(UpdateHolidayDtRequest $request, HolidayDt $holidayDt)
     {
+      
+        $exists = HolidayDt::where('holihd_id', $request->holihd_id)
+            ->where('holidate', $request->holidate)
+            ->exists();
+
+        if ($exists) {
+            $message = 'Date already exists.';
+            return $request->inertia()
+                ? back()->withErrors(['holidate' => $message])
+                : redirect()->route('holidaydt.create', $request->holihd_id)->with('error', $message);
+        }
+
         $holidayDt->update($request->validated());
         return redirect()->route('holidaydt.create', $request->holihd_id)->with('success', 'Holiday Details Update successfully.');
     }

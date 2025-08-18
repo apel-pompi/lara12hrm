@@ -7,20 +7,23 @@ use App\Http\Requests\Holidayhd\StoreHolidayHdRequest;
 use App\Http\Requests\Holidayhd\UpdateHolidayHdRequest;
 use App\Models\Branch;
 use App\Models\HolidayDt;
+use App\Services\HolydayHdService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+
 
 class HolidayHdController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request, HolydayHdService $holydayHdService)
     {
+
         return Inertia::render('allpages/holidayHd', [
-            'holidayHd' => HolidayHd::with(['branch' => function ($query) {
-                $query->where('active', 1);
-            }])->get(),
+            
+            'filters'   => $holydayHdService->get($request->query()),
+            'holidayHd'   => $holydayHdService->get($request->query()),
             'branch' => Branch::where('active', 1)->get(),
             'year' => $this->createYear(),
             'month' => $this->createMonth(),
@@ -101,7 +104,7 @@ class HolidayHdController extends Controller
             ->whereMonth('holidate', $month)
             ->exists();
 
-        
+
         if (! $exists) {
             $message = 'Invalid year and month. Check holiday details.';
             return $request->inertia()

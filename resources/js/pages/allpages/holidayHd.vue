@@ -3,32 +3,17 @@ import FormGroup from '@/components/FormGroup.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { h, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn, valueUpdater } from '@/lib/utils';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import {
-    Column,
-    ColumnDef,
-    FlexRender,
-    getCoreRowModel,
-    getExpandedRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    Row,
-    useVueTable,
-} from '@tanstack/vue-table';
-import { ArrowUpDown, ChevronDown, Plus } from 'lucide-vue-next';
+
+import { Eye, Link, Plus, RefreshCcw, Search, SquarePen, Trash } from 'lucide-vue-next';
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-
-import DropdownAction from '@/components/DataTable.vue';
 
 import Select from '@/components/ui/select/Select.vue';
 import SelectContent from '@/components/ui/select/SelectContent.vue';
@@ -55,253 +40,28 @@ export interface HolidayHd {
     branch?: Branch;
 }
 
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    per_page: number;
+    to: number | null;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Holiday', href: '/holidayHd' }];
 
 const props = defineProps<{
-    holidayHd: HolidayHd[];
+    holidayHd: Paginated<HolidayHd>;
     branch: Branch[];
-    year: string;
-    month: string;
+    year: string[];
+    month: Record<string, string>;
+    filters: { branch_id?: string; holiyear?: string; holimonth?: string };
 }>();
 
 const data = props.holidayHd;
-
-const columns: ColumnDef<HolidayHd, any>[] = [
-    {
-        id: 'sl',
-        header: () => 'SL',
-        cell: ({ row }: { row: Row<HolidayHd> }) => {
-            // Calculate SL number based on pagination
-            const pageIndex = table.getState().pagination.pageIndex;
-            const pageSize = table.getState().pagination.pageSize;
-            const rowIndex = row.index;
-            return h('div', rowIndex + 1 + pageIndex * pageSize);
-        },
-        enableSorting: false,
-        enableHiding: false,
-    },
-    {
-        accessorKey: 'branch_id',
-        header: ({ column }: { column: Column<HolidayHd, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Branch Name', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<HolidayHd> }) => h('div', { class: 'capitalize' }, row.original.branch?.branchname ?? '—'),
-    },
-    {
-        accessorKey: 'holiyear',
-        header: ({ column }: { column: Column<HolidayHd, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Holi Year', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<HolidayHd> }) => h('div', { class: 'capitalize' }, row.getValue('holiyear')),
-    },
-    {
-        accessorKey: 'holimonth',
-        header: ({ column }: { column: Column<HolidayHd, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Holi Month', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<HolidayHd> }) => {
-            const value = row.getValue<number>('holimonth');
-            const monthNames = [
-                '',
-                'January',
-                'February',
-                'March',
-                'April',
-                'May',
-                'June',
-                'July',
-                'August',
-                'September',
-                'October',
-                'November',
-                'December',
-            ];
-            return h('div', { class: 'capitalize' }, monthNames[value] || '');
-        },
-    },
-    {
-        accessorKey: 'holidays',
-        header: ({ column }: { column: Column<HolidayHd, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Holi Days', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<HolidayHd> }) => {
-            const id = row.original.id;
-            const holidays = row.getValue<number>('holidays');
-            return h(
-                'a',
-                {
-                    href: `/holidaydt/${id}/create/`,
-                    class: 'text-blue-600 underline hover:text-blue-800',
-                },
-                holidays?.toString() ?? '',
-            );
-        },
-    },
-    {
-        accessorKey: 'holiworking',
-        header: ({ column }: { column: Column<HolidayHd, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Working Days', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<HolidayHd> }) => h('div', { class: 'capitalize' }, row.getValue('holiworking')),
-    },
-    {
-        accessorKey: 'active',
-        header: ({ column }: { column: Column<HolidayHd, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Status', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<HolidayHd> }) => {
-            // Use a local ref for the switch status, initialized from row data
-            const status = ref(!!row.getValue('active'));
-            const isLoading = ref(false);
-            // Define an async handler function to update status on server
-            const onUpdate = async (newValue: number) => {
-                isLoading.value = true;
-                status.value = newValue;
-                try {
-                    await router.put(
-                        route('holidayhd.updateStatus', { holidayhd: row.original.id }),
-                        { active: newValue ? 1 : 0 }, // send boolean value, not ref
-                        {
-                            preserveScroll: true,
-                            onSuccess: () => {
-                                row.original.active = newValue ? 1 : 0; 
-                                toast.success('Status updated successfully');
-                                setTimeout(() => {
-                                router.visit(route('holidayHd.index'), {
-                                    only: ['holiday_hds'],
-                                    preserveScroll: true,
-                                    preserveState: false,
-                                });
-                            }, 200);
-                            },
-                            onError: () => {
-                                toast.error('Failed to update status');
-                                // revert UI on failure
-                                status.value = !newValue;
-                            },
-                        },
-                    );
-                } catch (error) {
-                    toast.error('Network error occurred: ' + error);
-                    // revert UI on failure
-                    status.value = !newValue;
-                } finally {
-                    isLoading.value = false;
-                }
-            };
-
-            // Return the Switch component with v-model style binding and async update handler
-            return h(Switch as any, {
-                modelValue: status.value,
-                disabled: isLoading.value,
-                'onUpdate:modelValue': onUpdate,
-            });
-        },
-    },
-    {
-        id: 'actions',
-        enableHiding: false,
-        cell: ({ row }: { row: Row<HolidayHd> }) => {
-            const dataID = row.original;
-
-            return h(
-                'div',
-                { class: 'relative' },
-                h(DropdownAction, {
-                    dataID,
-                    onShow,
-                    onEdit,
-                    onDelete,
-                    onExpand: row.toggleExpanded,
-                }),
-            );
-        },
-    },
-];
-
-// Reactive states
-const sorting = ref([]);
-const columnFilters = ref([]);
-const columnVisibility = ref({});
-const rowSelection = ref({});
-const expanded = ref({});
-
-const table = useVueTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
-    onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
-    onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
-    onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
-    onRowSelectionChange: (updaterOrValue) => valueUpdater(updaterOrValue, rowSelection),
-    onExpandedChange: (updaterOrValue) => valueUpdater(updaterOrValue, expanded),
-    state: {
-        get sorting() {
-            return sorting.value;
-        },
-        get columnFilters() {
-            return columnFilters.value;
-        },
-        get columnVisibility() {
-            return columnVisibility.value;
-        },
-        get rowSelection() {
-            return rowSelection.value;
-        },
-        get expanded() {
-            return expanded.value;
-        },
-        columnPinning: {
-            left: ['status'],
-        },
-    },
-});
 
 interface FormErrors {
     branch_id?: string;
@@ -309,7 +69,7 @@ interface FormErrors {
     holimonth?: string;
     holidays?: string;
     holiworking?: string;
-    active?: string;
+    active?: number;
 }
 
 const showDialog = ref(false);
@@ -324,7 +84,7 @@ const form = useForm({
     holimonth: null as number | null,
     holidays: null as number | null,
     holiworking: null as number | null,
-    active: '',
+    active: '0',
     branch: undefined,
 });
 
@@ -364,9 +124,7 @@ const onEdit = async (id: number) => {
             toast.error('Server error while fetching holidayHd details.');
             return;
         }
-
         const data = await res.json();
-
         Object.assign(form, data.data);
         form.id = data.data.id;
         isEditMode.value = true;
@@ -434,6 +192,49 @@ watch(
         }
     },
 );
+
+// Switch toggle handler
+const toggleStatus = (holidayhd: HolidayHd) => {
+  const newStatus = !Boolean(holidayhd.active); // boolean
+  router.put(
+    route('holidayhd.updateStatus', holidayhd.id),
+    { active: newStatus ? 1 : 0 }, // server expects number
+    {
+      preserveState: true,
+      onSuccess: () => {
+        holidayhd.active = newStatus ? 1 : 0 // local update (number)
+      }
+    }
+  )
+}
+
+const searchForm = ref({
+    branch_id: props.filters.branch_id || '',
+    holiyear: props.filters.holiyear || '',
+    holimonth: props.filters.holimonth || '',
+});
+
+const search = () => {
+    const params: Record<string, any> = {};
+    if (searchForm.value.branch_id) params.branch_id = searchForm.value.branch_id;
+    if (searchForm.value.holiyear) params.holiyear = searchForm.value.holiyear;
+    if (searchForm.value.holimonth) params.holimonth = searchForm.value.holimonth;
+
+    router.get(route('holidayHd.index'), params, {
+        preserveState: false,
+        preserveScroll: true,
+    });
+};
+
+const refresh = () => {
+    router.get(route('holidayHd.index'), {}, { replace: true });
+};
+
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: true, replace: true });
+    }
+};
 </script>
 
 <template>
@@ -441,93 +242,106 @@ watch(
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
             <div class="flex items-center gap-2 py-4">
-                <Input
-                    class="max-w-sm"
-                    placeholder="Filter HolidayHd"
-                    :model-value="table.getColumn('holiyear')?.getFilterValue() as string"
-                    @update:model-value="table.getColumn('holiyear')?.setFilterValue($event)"
-                />
                 <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Holiday </Button>
-                <DropdownMenu>
-                    <DropdownMenuTrigger as-child>
-                        <Button variant="outline" class="ml-auto"> Columns <ChevronDown class="ml-2 h-4 w-4" /> </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuCheckboxItem
-                            v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
-                            :key="column.id"
-                            class="capitalize"
-                            :model-value="column.getIsVisible()"
-                            @update:model-value="
-                                (value) => {
-                                    column.toggleVisibility(!!value);
-                                }
-                            "
-                        >
-                            {{ column.id }}
-                        </DropdownMenuCheckboxItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <!-- Search start -->
+                <div class="grid gap-2">
+                    <Select v-model="searchForm.branch_id">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select Branch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem v-for="branches in branch" :key="branches.id" :value="branches.id">
+                                    {{ branches.branchname }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="grid gap-2">
+                    <Select v-model="searchForm.holiyear">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select Year" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem v-for="years in year" :key="years" :value="years">
+                                    {{ years }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="grid gap-2">
+                    <Select v-model="searchForm.holimonth">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select Month" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem v-for="(label, key) in month" :key="key" :value="key">
+                                    {{ label }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="grid gap-2">
+                    <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
+                </div>
+                <div class="grid gap-2">
+                    <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+                </div>
+                <!-- Search start -->
             </div>
             <div class="rounded-md border">
                 <Table>
                     <TableHeader>
-                        <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                            <TableHead
-                                v-for="header in headerGroup.headers"
-                                :key="header.id"
-                                :data-pinned="header.column.getIsPinned()"
-                                :class="
-                                    cn(
-                                        { 'bg-background/95 sticky': header.column.getIsPinned() },
-                                        header.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                    )
-                                "
-                            >
-                                <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
-                            </TableHead>
+                        <TableRow>
+                            <TableHead>Branch Name</TableHead>
+                            <TableHead>Holi Year</TableHead>
+                            <TableHead>Holi Month</TableHead>
+                            <TableHead>Holi Days</TableHead>
+                            <TableHead>Working Days</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead class="text-center">Action</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <template v-if="table.getRowModel().rows?.length">
-                            <template v-for="row in table.getRowModel().rows" :key="row.id">
-                                <TableRow :data-state="row.getIsSelected() && 'selected'">
-                                    <TableCell
-                                        v-for="cell in row.getVisibleCells()"
-                                        :key="cell.id"
-                                        :data-pinned="cell.column.getIsPinned()"
-                                        :class="
-                                            cn(
-                                                { 'bg-background/95 sticky': cell.column.getIsPinned() },
-                                                cell.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                            )
-                                        "
-                                    >
-                                        <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow v-if="row.getIsExpanded()">
-                                    <TableCell :colspan="row.getAllCells().length">
-                                        {{ row.original }}
-                                    </TableCell>
-                                </TableRow>
-                            </template>
-                        </template>
-
-                        <TableRow v-else>
-                            <TableCell :colspan="columns.length" class="h-24 text-center"> No results. </TableCell>
+                        <TableRow v-for="(holidayhd, index) in data.data" :key="holidayhd.id ?? index">
+                            <TableCell>{{ holidayhd.branch?.branchname }}</TableCell>
+                            <TableCell>{{ holidayhd.holiyear }}</TableCell>
+                            <TableCell>{{ holidayhd.holimonth }}</TableCell>
+                            <TableCell><a :href="`/holidaydt/${holidayhd.id}/create/`" class="text-blue-600 hover:text-blue-800 underline font-medium">{{ holidayhd.holidays }}</a></TableCell>
+                            <TableCell>{{ holidayhd.holiworking }}</TableCell>
+                            <TableCell>
+                                <Switch v-model="holidayhd.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(holidayhd)">
+                                </Switch>
+                            </TableCell>
+                            <TableCell class="text-right">
+                                <Button class="m-[2px]" size="sm" variant="outline" @click="onShow(holidayhd.id)"><Eye></Eye></Button>
+                                <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(holidayhd.id)"><SquarePen></SquarePen></Button>
+                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(holidayhd.id)"><Trash></Trash></Button>
+                            </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
             </div>
 
             <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">
-                    {{ table.getFilteredSelectedRowModel().rows.length }} of {{ table.getFilteredRowModel().rows.length }} row(s) selected.
-                </div>
+                <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
                 <div class="space-x-2">
-                    <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()"> Previous </Button>
-                    <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()"> Next </Button>
+                    <Button
+                        v-for="(link, index) in data.links"
+                        :key="index"
+                        :disabled="!link.url"
+                        variant="outline"
+                        size="sm"
+                        :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                        @click="goToPage(link.url)"
+                    >
+                        <span v-html="link.label"></span>
+                    </Button>
                 </div>
             </div>
         </div>
