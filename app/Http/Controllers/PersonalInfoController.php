@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\Designation;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
+use App\Services\PersonalInfoService;
 use Inertia\Inertia;
 
 class PersonalInfoController extends Controller
@@ -16,22 +17,12 @@ class PersonalInfoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request, PersonalInfoService $personalInfoService)
     {
 
         return Inertia::render('allpages/personalinfo', [
-            'personalinfo' => PersonalInfo::with([
-                'branch' => function ($query) {
-                    $query->where('active', 1);
-                },
-                'department' => function ($query) {
-                    $query->where('active', 1);
-                },
-                'designation' => function ($query) {
-                    $query->where('active', 1);
-                },
-            ])->get(),
-
+            'personalinfo' => $personalInfoService->get($request->query()),
+            'filters'   => $personalInfoService->get($request->query()),
             'branch' => Branch::where('active', 1)->get(),
             'department' => Department::where('active', 1)->get(),
             'designation' => Designation::where('active', 1)->get(),
@@ -44,12 +35,19 @@ class PersonalInfoController extends Controller
      */
     public function store(StorePersonalInfoRequest $request)
     {
+        
         $validated = $request->validated();
-
+        
+        $validated['active'] = $request->input('active', 0);
+        
         if ($request->hasFile('photo')) {
             $filePath = public_path('storage/employee');
+            // create folder if not exists
+            if (!File::exists($filePath)) {
+                File::makeDirectory($filePath, 0777, true, true);
+            }
             $file = $request->file('photo');
-            $file_name = time() . $file->getClientOriginalName();
+            $file_name = time() . '_' .$file->getClientOriginalName();
             $file->move($filePath, $file_name);
             $validated['photo'] = $file_name;
         }
@@ -59,6 +57,21 @@ class PersonalInfoController extends Controller
         return redirect()
             ->route('personalinfo.index')
             ->with('success', 'Personal Information created successfully.');
+    }
+
+    public function updateStatus(Request $request, $PersonalInfo)
+    {
+        $validated = $request->validate([
+            'active' => 'required|boolean' // or 'integer|in:0,1'
+        ]);
+        $personalinfo = PersonalInfo::findOrFail($PersonalInfo);
+        $updated = $personalinfo->update(['active' =>  $validated['active']]);
+        if ($updated) {
+            return $request->inertia()
+                ? back()->with('success', 'Status updated successfully')
+                : redirect()->route('personalinfo.index')->with('success', 'Status updated');
+        }
+        return back()->with('error', 'Failed to update status');
     }
 
     /**
@@ -116,8 +129,8 @@ class PersonalInfoController extends Controller
             'email'         => 'required|email',
             'blood'         => 'required',
             'nidpass'       => 'required',
-            'photo'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'active'        => 'required',
+            'photo'         => '',
+            'active'        => '',
         ]);
 
         $personalInfo = PersonalInfo::findOrFail($id);
@@ -129,7 +142,7 @@ class PersonalInfoController extends Controller
                 File::makeDirectory($filePath, 0777, true, true);
             }
             $file = $request->file('photo');
-            $fileName = time() . $file->getClientOriginalName();
+            $fileName = time() . '_' .$file->getClientOriginalName();
             $file->move($filePath, $fileName);
             // delete old photo if exists
             if (!empty($personalInfo->photo)) {

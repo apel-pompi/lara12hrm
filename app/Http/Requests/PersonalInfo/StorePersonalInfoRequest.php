@@ -37,8 +37,8 @@ class StorePersonalInfoRequest extends FormRequest
             'email' => 'required|unique:personal_infos,email',
             'blood' => 'required',
             'nidpass' => 'required',
-            'photo' => 'required',
-            'active' => 'required',
+            'photo' => 'required|image',
+            'active' => 'nullable|boolean',
         ];
     }
 
@@ -61,7 +61,7 @@ class StorePersonalInfoRequest extends FormRequest
             'blood.required' => 'Blood Group is not empty',
             'nidpass.required' => 'NID or Passport no is not empty',
             'photo.required' => 'Photo is not empty',
-            'active.required' => 'Status is not empty',
+            'active' => 'Status is not empty',
         ];
     }
 

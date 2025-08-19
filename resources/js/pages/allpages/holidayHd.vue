@@ -203,6 +203,7 @@ const toggleStatus = (holidayhd: HolidayHd) => {
       preserveState: true,
       onSuccess: () => {
         holidayhd.active = newStatus ? 1 : 0 // local update (number)
+        toast.success('Holiday status update');
       }
     }
   )

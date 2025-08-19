@@ -31,7 +31,7 @@ return new class extends Migration
             $table->string('blood',50);
             $table->string('nidpass');
             $table->string('photo');
-            $table->integer('active');
+            $table->integer('active')->nullable();
             $table->timestamps();
 
             $table->foreign('branch_id')->references('id')->on('branches')->onUpdate('cascade')->onDelete('cascade');

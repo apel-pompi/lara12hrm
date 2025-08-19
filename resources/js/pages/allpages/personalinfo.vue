@@ -1,39 +1,27 @@
 <script setup lang="ts">
 import FormGroup from '@/components/FormGroup.vue';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { h, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn, valueUpdater } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import {
-    Column,
-    ColumnDef,
-    FlexRender,
-    getCoreRowModel,
-    getExpandedRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    Row,
-    useVueTable,
-} from '@tanstack/vue-table';
-import { ArrowUpDown, Calendar as CalendarIcon, ChevronDown, Plus } from 'lucide-vue-next';
+
+import { Calendar as CalendarIcon, Eye, Plus, RefreshCcw, Search, SquarePen, Trash } from 'lucide-vue-next';
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-import DropdownAction from '@/components/DataTable.vue';
 import ImageUpload from '@/components/EmployeeImage.vue';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Switch from '@/components/ui/switch/Switch.vue';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
 import { toast } from 'vue-sonner';
 
@@ -76,218 +64,30 @@ export interface PersonalInfo {
     designation?: Designation;
 }
 
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    per_page: number;
+    to: number | null;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Personal Information', href: '/personalinfo' }];
 
 const props = defineProps<{
-    personalinfo: PersonalInfo[];
+    personalinfo: Paginated<PersonalInfo>;
     branch: Branch[];
     department: Department[];
     designation: Designation[];
+    filters: { empid?: string; empname?: string; branch_id?: string; dept_id?: string; des_id?: string; blood?: string };
 }>();
 
 const data = props.personalinfo;
-const personalInfo = (props.personalinfo as PersonalInfo[])[0];
-const currentImage = personalInfo?.photo ? `/storage/employee/${personalInfo?.photo}` : null;
 
-
-const columns: ColumnDef<PersonalInfo, any>[] = [
-    {
-        id: 'sl',
-        header: () => 'SL',
-        cell: ({ row }: { row: Row<PersonalInfo> }) => {
-            // Calculate SL number based on pagination
-            const pageIndex = table.getState().pagination.pageIndex;
-            const pageSize = table.getState().pagination.pageSize;
-            const rowIndex = row.index;
-            return h('div', rowIndex + 1 + pageIndex * pageSize);
-        },
-        enableSorting: false,
-        enableHiding: false,
-    },
-    {
-        accessorKey: 'empid',
-        header: ({ column }: { column: Column<PersonalInfo, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Employee ID', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<PersonalInfo> }) => h('div', { class: 'capitalize' }, row.getValue('empid')),
-    },
-
-    {
-        accessorKey: 'empname',
-        header: ({ column }: { column: Column<PersonalInfo, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Employee Name', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<PersonalInfo> }) => h('div', { class: 'capitalize' }, row.getValue('empname')),
-    },
-
-    {
-        accessorKey: 'branch_id',
-        header: ({ column }: { column: Column<PersonalInfo, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Branch Name', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<PersonalInfo> }) => h('div', { class: 'capitalize' }, row.original.branch?.branchname ?? '—'),
-    },
-
-    {
-        accessorKey: 'dept_id',
-        header: ({ column }: { column: Column<PersonalInfo, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Department', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<PersonalInfo> }) => h('div', { class: 'capitalize' }, row.original.department?.deptname ?? '—'),
-    },
-    {
-        accessorKey: 'des_id',
-        header: ({ column }: { column: Column<PersonalInfo, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Designation', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<PersonalInfo> }) => h('div', { class: 'capitalize' }, row.original.designation?.desname ?? '—'),
-    },
-    {
-        accessorKey: 'phoneoffice',
-        header: ({ column }: { column: Column<PersonalInfo, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Phone No', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<PersonalInfo> }) => h('div', { class: 'lowercase' }, row.getValue('phoneoffice')),
-    },
-    {
-        accessorKey: 'blood',
-        header: ({ column }: { column: Column<PersonalInfo, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Blood Group', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<PersonalInfo> }) => h('div', { class: 'upercase' }, row.getValue('blood')),
-    },
-    {
-        accessorKey: 'active',
-        header: ({ column }: { column: Column<PersonalInfo, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Status', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<PersonalInfo> }) => {
-            const status = row.getValue('active');
-            if (status) {
-                return h('div', h(Badge, 'Active'));
-            } else {
-                return h('div', h(Badge, { variant: 'outline' }, 'Inactive'));
-            }
-        },
-    },
-    {
-        id: 'actions',
-        enableHiding: false,
-        cell: ({ row }: { row: Row<PersonalInfo> }) => {
-            const dataID = row.original;
-
-            return h(
-                'div',
-                { class: 'relative' },
-                h(DropdownAction, {
-                    dataID,
-                    onShow,
-                    onEdit,
-                    onDelete,
-                    onExpand: row.toggleExpanded,
-                }),
-            );
-        },
-    },
-];
-
-// Reactive states
-const sorting = ref([]);
-const columnFilters = ref([]);
-const columnVisibility = ref({});
-const rowSelection = ref({});
-const expanded = ref({});
-
-const table = useVueTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
-    onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
-    onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
-    onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
-    onRowSelectionChange: (updaterOrValue) => valueUpdater(updaterOrValue, rowSelection),
-    onExpandedChange: (updaterOrValue) => valueUpdater(updaterOrValue, expanded),
-    state: {
-        get sorting() {
-            return sorting.value;
-        },
-        get columnFilters() {
-            return columnFilters.value;
-        },
-        get columnVisibility() {
-            return columnVisibility.value;
-        },
-        get rowSelection() {
-            return rowSelection.value;
-        },
-        get expanded() {
-            return expanded.value;
-        },
-        columnPinning: {
-            left: ['status'],
-        },
-    },
-});
+const currentImage = ref<string | null>(null);
 
 const value = ref<CalendarDate>();
 const birthvalue = ref<CalendarDate>();
@@ -372,6 +172,9 @@ const onShow = async (id: number) => {
         const data = await res.json();
         Object.assign(form, data);
         form.id = data.id;
+        currentImage.value = data.photo 
+            ? `/storage/employee/${data.photo}` 
+            : '/storage/employee/default.png';
         isEditMode.value = false;
         showDialog.value = false;
         showDialogOpen.value = true;
@@ -391,9 +194,14 @@ const onEdit = async (id: number) => {
         }
 
         const data = await res.json();
+        
         Object.assign(form, data.data);
 
         form.id = data.data.id;
+        currentImage.value = data.data.photo 
+            ? `${data.data.photo}` 
+            : '/storage/employee/default.png';
+        
         isEditMode.value = true;
         showDialog.value = true;
     } catch (error) {
@@ -445,7 +253,7 @@ const submit = () => {
         form.post(route('personalinfo.store'), {
             onSuccess: () => {
                 toast('Success', {
-                    description: 'Personal information updated successfully',
+                    description: 'Personal information store successfully',
                 });
 
                 setTimeout(() => {
@@ -485,6 +293,56 @@ const onDelete = async (id: number) => {
         preserveState: false,
     });
 };
+
+// Switch toggle handler
+const toggleStatus = (personalinfos: PersonalInfo) => {
+    const newStatus = !Boolean(personalinfos.active); // boolean
+    router.put(
+        route('personalinfo.updateStatus', personalinfos.id),
+        { active: newStatus ? 1 : 0 }, // server expects number
+        {
+            preserveState: true,
+            onSuccess: () => {
+                personalinfos.active = newStatus ? 1 : 0; // local update (number)
+                toast.success('Personal Info status update');
+            },
+        },
+    );
+};
+
+const searchForm = ref({
+    empid: props.filters.empid || '',
+    empname: props.filters.empname || '',
+    branch_id: props.filters.branch_id || '',
+    des_id: props.filters.des_id || '',
+    dept_id: props.filters.dept_id || '',
+    blood: props.filters.blood || '',
+});
+
+const search = () => {
+    const params: Record<string, any> = {};
+    if (searchForm.value.empid) params.empid = searchForm.value.empid;
+    if (searchForm.value.empname) params.empname = searchForm.value.empname;
+    if (searchForm.value.branch_id) params.branch_id = searchForm.value.branch_id;
+    if (searchForm.value.des_id) params.des_id = searchForm.value.des_id;
+    if (searchForm.value.dept_id) params.dept_id = searchForm.value.dept_id;
+    if (searchForm.value.blood) params.blood = searchForm.value.blood;
+
+    router.get(route('personalinfo.index'), params, {
+        preserveState: false,
+        preserveScroll: true,
+    });
+};
+
+const refresh = () => {
+    router.get(route('personalinfo.index'), {}, { replace: true });
+};
+
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: true, replace: true });
+    }
+};
 </script>
 
 <template>
@@ -492,93 +350,150 @@ const onDelete = async (id: number) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
             <div class="flex items-center gap-2 py-4">
-                <Input
-                    class="max-w-sm"
-                    placeholder="Filter Branch Name..."
-                    :model-value="table.getColumn('empid')?.getFilterValue() as string"
-                    @update:model-value="table.getColumn('empid')?.setFilterValue($event)"
-                />
                 <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Personal Info </Button>
-                <DropdownMenu>
-                    <DropdownMenuTrigger as-child>
-                        <Button variant="outline" class="ml-auto"> Columns <ChevronDown class="ml-2 h-4 w-4" /> </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuCheckboxItem
-                            v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
-                            :key="column.id"
-                            class="capitalize"
-                            :model-value="column.getIsVisible()"
-                            @update:model-value="
-                                (value) => {
-                                    column.toggleVisibility(!!value);
-                                }
-                            "
-                        >
-                            {{ column.id }}
-                        </DropdownMenuCheckboxItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <!-- Search start -->
+                <div class="grid gap-2">
+                    <Select v-model="searchForm.empid">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select ID" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem v-for="personalinfos in data.data" :key="personalinfos.id" :value="personalinfos.empid">
+                                    {{ personalinfos.empid }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="grid gap-2">
+                    <Select v-model="searchForm.empname">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select Name" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem v-for="personalinfos in data.data" :key="personalinfos.id" :value="personalinfos.empname">
+                                    {{ personalinfos.empname }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="grid gap-2">
+                    <Select v-model="searchForm.branch_id">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select Branch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem v-for="branches in branch" :key="branches.id" :value="branches.id">
+                                    {{ branches.branchname }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="grid gap-2">
+                    <Select v-model="searchForm.dept_id">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select Department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem v-for="departments in department" :key="departments.id" :value="departments.id">
+                                    {{ departments.deptname }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="grid gap-2">
+                    <Select v-model="searchForm.des_id">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select Designation" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem v-for="designations in designation" :key="designations.id" :value="designations.id">
+                                    {{ designations.desname }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="grid gap-2">
+                    <Select v-model="searchForm.blood">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select Blood" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem v-for="personalinfos in data.data" :key="personalinfos.id" :value="personalinfos.blood">
+                                    {{ personalinfos.blood }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="grid gap-2">
+                    <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
+                </div>
+                <div class="grid gap-2">
+                    <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+                </div>
+                <!-- Search end -->
             </div>
             <div class="rounded-md border">
                 <Table>
                     <TableHeader>
-                        <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                            <TableHead
-                                v-for="header in headerGroup.headers"
-                                :key="header.id"
-                                :data-pinned="header.column.getIsPinned()"
-                                :class="
-                                    cn(
-                                        { 'bg-background/95 sticky': header.column.getIsPinned() },
-                                        header.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                    )
-                                "
-                            >
-                                <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
-                            </TableHead>
+                        <TableRow>
+                            <TableHead>Employee ID</TableHead>
+                            <TableHead>Employee Name</TableHead>
+                            <TableHead>Branch</TableHead>
+                            <TableHead>Department </TableHead>
+                            <TableHead>Designation</TableHead>
+                            <TableHead>Phone</TableHead>
+                            <TableHead>Blood</TableHead>
+                            <TableHead class="text-center">Action</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <template v-if="table.getRowModel().rows?.length">
-                            <template v-for="row in table.getRowModel().rows" :key="row.id">
-                                <TableRow :data-state="row.getIsSelected() && 'selected'">
-                                    <TableCell
-                                        v-for="cell in row.getVisibleCells()"
-                                        :key="cell.id"
-                                        :data-pinned="cell.column.getIsPinned()"
-                                        :class="
-                                            cn(
-                                                { 'bg-background/95 sticky': cell.column.getIsPinned() },
-                                                cell.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                            )
-                                        "
-                                    >
-                                        <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow v-if="row.getIsExpanded()">
-                                    <TableCell :colspan="row.getAllCells().length">
-                                        {{ row.original }}
-                                    </TableCell>
-                                </TableRow>
-                            </template>
-                        </template>
-
-                        <TableRow v-else>
-                            <TableCell :colspan="columns.length" class="h-24 text-center"> No results. </TableCell>
+                        <TableRow v-for="(personal, index) in data.data" :key="personal.id">
+                            <TableCell>{{ personal.empid }}</TableCell>
+                            <TableCell>{{ personal.empname }}</TableCell>
+                            <TableCell>{{ personal.branch?.branchname }}</TableCell>
+                            <TableCell>{{ personal.department?.deptname }}</TableCell>
+                            <TableCell>{{ personal.designation?.desname }}</TableCell>
+                            <TableCell>{{ personal.phonepersonal }}</TableCell>
+                            <TableCell>{{ personal.blood }}</TableCell>
+                            <TableCell>
+                                <Switch v-model="personal.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(personal)"> </Switch>
+                            </TableCell>
+                            <TableCell class="text-right">
+                                <Button class="m-[2px]" size="sm" variant="outline" @click="onShow(personal.id)"><Eye></Eye></Button>
+                                <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(personal.id)"><SquarePen></SquarePen></Button>
+                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(personal.id)"><Trash></Trash></Button>
+                            </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
             </div>
 
             <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">
-                    {{ table.getFilteredSelectedRowModel().rows.length }} of {{ table.getFilteredRowModel().rows.length }} row(s) selected.
-                </div>
+                <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
                 <div class="space-x-2">
-                    <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()"> Previous </Button>
-                    <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()"> Next </Button>
+                    <Button
+                        v-for="(link, index) in data.links"
+                        :key="index"
+                        :disabled="!link.url"
+                        variant="outline"
+                        size="sm"
+                        :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                        @click="goToPage(link.url)"
+                    >
+                        <span v-html="link.label"></span>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -716,7 +631,7 @@ const onDelete = async (id: number) => {
                             </Label>
                             <div class="flex items-center gap-4">
                                 <div class="relative">
-                                    <ImageUpload @image="(file) => (form.photo = file)" :Image="personalInfo?.photo" :disabled="form.processing" />
+                                    <ImageUpload @image="(file) => (form.photo = file)" :Image="currentImage" :disabled="form.processing" />
                                 </div>
                                 <div>
                                     <p class="text-xs text-gray-500">Recommended size: 256x256px</p>
@@ -787,21 +702,8 @@ const onDelete = async (id: number) => {
                             </Select>
                             <span v-if="errors?.gender" class="text-sm text-red-600">{{ errors.gender }}</span>
                         </div>
-                        <div class="space-y-2">
-                            <Label for="active">Status</Label>
-                            <div class="flex items-center space-x-6">
-                                <label class="inline-flex items-center space-x-2">
-                                    <input type="radio" value="1" v-model="form.active" class="form-radio text-primary-600" />
-                                    <span>Active</span>
-                                </label>
+                        <input type="hidden" v-model="form.active" class="form-radio text-primary-600" />
 
-                                <label class="inline-flex items-center space-x-2">
-                                    <input type="radio" value="0" v-model="form.active" class="form-radio text-primary-600" />
-                                    <span>Inactive</span>
-                                </label>
-                            </div>
-                            <span v-if="errors?.active" class="text-sm text-red-600">{{ errors.active }}</span>
-                        </div>
                         <div class="pt-4">
                             <Button :disabled="form.processing" @click="submit" class="w-full">
                                 <template v-if="form.processing">Saving...</template>
@@ -887,11 +789,11 @@ const onDelete = async (id: number) => {
                                 <Input id="email" v-model="form.email" :disabled="!isEditMode" />
                             </FormGroup>
                         </div>
-                        <div class="rounded-lg bg-gray-50 p-4">
+                        <div class="rounded-lg bg-gray-50 p-2">
                             <h3 class="mb-3 text-sm font-medium text-gray-800">Employee Photo</h3>
-                            <div class="flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-6">
-                                <div class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gray-200">
-                                    <img :src="currentImage || '/storage/employee/default.png'" alt="preview" class="object-cover object-center" />
+                            <div class="flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-2">
+                                <div class="flex items-center justify-center overflow-hidden rounded-full bg-gray-200">
+                                    <img :src="currentImage || '/storage/employee/default.png'" alt="preview" class="h-35 w-35 object-cover object-center" />
                                 </div>
                             </div>
                         </div>

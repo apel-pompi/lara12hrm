@@ -38,7 +38,7 @@ class UpdatePersonalInfoRequest extends FormRequest
             'blood' => 'required',
             'nidpass' => 'required',
             'photo' => '',
-            'active' => 'required',
+            'active' => '',
         ];
     }
 

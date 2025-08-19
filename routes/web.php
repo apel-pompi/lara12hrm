@@ -115,6 +115,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
                 ->group(function(){
                     Route::get('/', 'index')->name('personalinfo.index');
                     Route::post('/store', 'store')->name('personalinfo.store');
+                    Route::put('/{PersonalInfo}/status', 'updateStatus')->name('personalinfo.updateStatus');
                     Route::get('/{PersonalInfo}', 'show')->name('personalinfo.show');
                     Route::delete('/show/{PersonalInfo}', 'destroy')->name('personalinfo.destroy');
                     Route::get('/{PersonalInfo}/edit', 'edit')->name('personalinfo.edit');
