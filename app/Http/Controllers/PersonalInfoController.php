@@ -35,7 +35,7 @@ class PersonalInfoController extends Controller
      */
     public function store(StorePersonalInfoRequest $request)
     {
-        
+       
         $validated = $request->validated();
         
         $validated['active'] = $request->input('active', 0);

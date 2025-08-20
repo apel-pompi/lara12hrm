@@ -9,20 +9,20 @@ import { Button } from '@/components/ui/button';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-import { Calendar as CalendarIcon, Eye, Plus, RefreshCcw, Search, SquarePen, Trash } from 'lucide-vue-next';
+import { Eye, Plus, RefreshCcw, Search, SquarePen, Trash } from 'lucide-vue-next';
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 import ImageUpload from '@/components/EmployeeImage.vue';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Switch from '@/components/ui/switch/Switch.vue';
-import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
+import { getLocalTimeZone, today } from '@internationalized/date';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 import { toast } from 'vue-sonner';
 
 export interface Branch {
@@ -89,10 +89,9 @@ const data = props.personalinfo;
 
 const currentImage = ref<string | null>(null);
 
-const value = ref<CalendarDate>();
-const birthvalue = ref<CalendarDate>();
+const jdate = ref<string | null>(null);
+const bdate = ref<string | null>(null);
 const maxDate = today(getLocalTimeZone());
-const df = new DateFormatter('en-CA', { dateStyle: 'short' });
 
 interface FormErrors {
     empid: string;
@@ -147,19 +146,17 @@ const showDailogCreate = () => {
     showDialog.value = true;
 };
 
-// Format to YYYY-MM-DD
-function formatDate(date: CalendarDate | undefined) {
-    if (!date) return '';
-    return `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
-}
-
-// Watch calendar selection → update form
-watch(value, (newVal) => {
-    form.joindate = formatDate(newVal);
+watch(jdate, (newDate) => {
+    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
+        form.joindate = newDate.toISOString().split('T')[0];
+    }
 });
 
-watch(birthvalue, (newVal) => {
-    form.dateofbirth = formatDate(newVal);
+watch(bdate, (newDate) => {
+    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
+        form.dateofbirth = newDate.toISOString().split('T')[0];
+    }
+    
 });
 
 const onShow = async (id: number) => {
@@ -172,9 +169,7 @@ const onShow = async (id: number) => {
         const data = await res.json();
         Object.assign(form, data);
         form.id = data.id;
-        currentImage.value = data.photo 
-            ? `/storage/employee/${data.photo}` 
-            : '/storage/employee/default.png';
+        currentImage.value = data.photo ? `/storage/employee/${data.photo}` : '/storage/employee/default.png';
         isEditMode.value = false;
         showDialog.value = false;
         showDialogOpen.value = true;
@@ -194,14 +189,12 @@ const onEdit = async (id: number) => {
         }
 
         const data = await res.json();
-        
+
         Object.assign(form, data.data);
 
         form.id = data.data.id;
-        currentImage.value = data.data.photo 
-            ? `${data.data.photo}` 
-            : '/storage/employee/default.png';
-        
+        currentImage.value = data.data.photo ? `${data.data.photo}` : '/storage/employee/default.png';
+
         isEditMode.value = true;
         showDialog.value = true;
     } catch (error) {
@@ -523,39 +516,27 @@ const goToPage = (url: string | null) => {
 
                         <div class="space-y-2">
                             <Label for="joindate">Joining Date</Label>
-                            <Popover>
-                                <PopoverTrigger as-child>
-                                    <Button
-                                        variant="outline"
-                                        :class="cn('w-full justify-start text-left font-normal', !value && 'text-muted-foreground')"
-                                    >
-                                        <CalendarIcon class="mr-2 h-4 w-4" />
-                                        {{ value ? df.format(value.toDate(getLocalTimeZone())) : 'Pick a joining date' }}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent class="w-auto p-0">
-                                    <Calendar v-model="value" :maxValue="maxDate" autofocus />
-                                </PopoverContent>
-                            </Popover>
+                            <VueDatePicker
+                                v-model="jdate"
+                                :max-date="maxDate"
+                                :format="'yyyy-MM-dd'"
+                                :enable-time-picker="false"
+                                placeholder="Joning date"
+                                auto-apply
+                            />
                             <span v-if="errors?.joindate" class="text-sm text-red-600">{{ errors.joindate }}</span>
                         </div>
 
                         <div class="space-y-2">
                             <Label for="dateofbirth">Date of Birth</Label>
-                            <Popover>
-                                <PopoverTrigger as-child>
-                                    <Button
-                                        variant="outline"
-                                        :class="cn('w-full justify-start text-left font-normal', !birthvalue && 'text-muted-foreground')"
-                                    >
-                                        <CalendarIcon class="mr-2 h-4 w-4" />
-                                        {{ birthvalue ? df.format(birthvalue.toDate(getLocalTimeZone())) : 'Pick a date of birth' }}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent class="w-auto p-0">
-                                    <Calendar v-model="birthvalue" :maxValue="maxDate" autofocus />
-                                </PopoverContent>
-                            </Popover>
+                            <VueDatePicker
+                                v-model="bdate"
+                                :max-date="maxDate"
+                                :format="'yyyy-MM-dd'"
+                                :enable-time-picker="false"
+                                placeholder="Date of birth"
+                                auto-apply
+                            />
                             <span v-if="errors?.dateofbirth" class="text-sm text-red-600">{{ errors.dateofbirth }}</span>
                         </div>
 
@@ -793,7 +774,11 @@ const goToPage = (url: string | null) => {
                             <h3 class="mb-3 text-sm font-medium text-gray-800">Employee Photo</h3>
                             <div class="flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-2">
                                 <div class="flex items-center justify-center overflow-hidden rounded-full bg-gray-200">
-                                    <img :src="currentImage || '/storage/employee/default.png'" alt="preview" class="h-35 w-35 object-cover object-center" />
+                                    <img
+                                        :src="currentImage || '/storage/employee/default.png'"
+                                        alt="preview"
+                                        class="h-35 w-35 object-cover object-center"
+                                    />
                                 </div>
                             </div>
                         </div>
