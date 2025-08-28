@@ -2,7 +2,7 @@
 
 
 use App\Http\Controllers\{
-    BranchController, DepartmentController, DesignationController, LeaveplanController, AttenSettingController, HolidayHdController, HolidayDtController, PersonalInfoController, RoleController, UserPermissionController, CompanyInfoController
+    BranchController, DepartmentController, DesignationController, LeaveplanController, AttenSettingController, HolidayHdController, HolidayDtController, PersonalInfoController, LeaveController, WorkflowController, RoleController, UserPermissionController, CompanyInfoController
 };
 
 use Illuminate\Support\Facades\Route;
@@ -120,6 +120,34 @@ Route::middleware(['verified', 'auth'])->group(function () {
                     Route::delete('/show/{PersonalInfo}', 'destroy')->name('personalinfo.destroy');
                     Route::get('/{PersonalInfo}/edit', 'edit')->name('personalinfo.edit');
                     Route::put('/{PersonalInfo}', 'update')->name('personalinfo.update');
+                }
+    );
+
+    //Leave Route
+    Route::controller(LeaveController::class)
+                ->prefix('leave')
+                ->group(function(){
+                    Route::get('/', 'index')->name('leave.index');
+                    Route::post('/store', 'store')->name('leave.store');
+                    Route::get('/{leave}', 'show')->name('leave.show');
+                    Route::get('/{leave}', 'exportPdf')->name('leave.exportPdf');
+                    Route::delete('/show/{leave}', 'destroy')->name('leave.destroy');
+                    Route::get('/{leave}/edit', 'edit')->name('leave.edit');
+                    Route::put('/{leave}', 'update')->name('leave.update');
+                }
+    );
+
+    //Workflows Route
+    Route::controller(WorkflowController::class)
+                ->prefix('workflow')
+                ->group(function(){
+                    Route::get('/', 'index')->name('workflow.index');
+                    Route::post('/store', 'store')->name('workflow.store');
+                    Route::put('/{workflow}/status', 'updateStatus')->name('workflow.updateStatus');
+                    Route::get('/{workflow}', 'show')->name('workflow.show');
+                    Route::delete('/show/{workflow}', 'destroy')->name('workflow.destroy');
+                    Route::get('/{workflow}/edit', 'edit')->name('workflow.edit');
+                    Route::put('/{workflow}', 'update')->name('workflow.update');
                 }
     );
 

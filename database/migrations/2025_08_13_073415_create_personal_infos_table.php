@@ -15,7 +15,7 @@ return new class extends Migration
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
             $table->id();
-            $table->unsignedBigInteger('empid');
+            $table->unsignedBigInteger('empid')->unique();
             $table->string('empname');
             $table->date('joindate');
             $table->unsignedBigInteger('branch_id');

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class PersonalInfo extends Model
@@ -59,5 +60,15 @@ class PersonalInfo extends Model
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'dept_id');
+    }
+
+    /**
+     * Get all of the leaves for the PersonalInfo
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function leaves(): HasMany
+    {
+        return $this->hasMany(Leave::class, 'empid', 'empid');
     }
 }
