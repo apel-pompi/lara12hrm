@@ -2,23 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Workflow extends Model
+class ProductTypeSetup extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'producttypename',
+        'mastercaterory_id',
         'user_id',
         'active'
     ];
 
     /**
-     * Get the user that owns the Workflow
+     * Get the user that owns the MasterCategory
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -28,12 +28,12 @@ class Workflow extends Model
     }
 
     /**
-     * Get all of the stages for the Workflow
+     * Get the mastercategory that owns the PartnerTypeSetup
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function stages(): HasMany
+    public function mastercategory(): BelongsTo
     {
-        return $this->hasMany(WorkflowStage::class);
+        return $this->belongsTo(MasterCategory::class, 'mastercaterory_id');
     }
 }

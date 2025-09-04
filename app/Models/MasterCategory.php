@@ -2,23 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Workflow extends Model
+class MasterCategory extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'catname',
+        'catadddate',
         'user_id',
         'active'
     ];
 
     /**
-     * Get the user that owns the Workflow
+     * Get the user that owns the MasterCategory
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -27,13 +28,15 @@ class Workflow extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+   
+
     /**
-     * Get all of the stages for the Workflow
+     * Get all of the comments for the MasterCategory
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function stages(): HasMany
+    public function parnerTypes(): HasMany
     {
-        return $this->hasMany(WorkflowStage::class);
+        return $this->hasMany(PartnerTypeSetup::class, 'mastercaterory_id');
     }
 }

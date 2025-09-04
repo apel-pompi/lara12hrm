@@ -102,7 +102,13 @@ const menupersonal = [
 ];
 const menuleave = [
     {
+        route:'leave.index',
         title:'Leave Request',
+        icon:MonitorX
+    },
+    {
+        route:'partner.index',
+        title: 'Partners',
         icon:MonitorX
     }
 ];
@@ -115,17 +121,24 @@ const AgencyMaster = {
             icon: SquareTerminal,
             items: [
                 {
+                    title: 'General Setup',
+                    href: '/general',
+                },
+                {
                     title: 'Workflows',
                     href: '/workflow',
                 },
                 {
-                    title: 'Department',
-                    href: '/department',
-                },
+                    title:'Partner Branch',
+                    href:'/partnerbranch'
+                }
             ],
         },
     ],
 };
+
+
+
 </script>
 
 <template>
@@ -170,7 +183,7 @@ const AgencyMaster = {
                     <SidebarMenu>
                         <SidebarMenuItem v-for="item in menuleave" :key="item.title">
                             <SidebarMenuButton asChild>
-                                <Link :href="route('leave.index')" class="ps-4">
+                                <Link :href="route(item.route)" class="ps-4">
                                     <component :is="item.icon" />
                                     <span>{{ item.title }}</span>
                                 </Link>

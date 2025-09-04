@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { Plus, SquarePen } from 'lucide-vue-next';
+import { HousePlus, PenBox, Plus, PlusCircle, SquarePen } from 'lucide-vue-next';
 import draggable from 'vuedraggable';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -28,7 +28,7 @@ const props = defineProps<{
 }>();
 
 const data = props.workflow;
-console.log(data)
+
 const items = ref<{ id: number; name: string }[]>([]);
 
 const newItem = ref('');
@@ -72,7 +72,7 @@ const showDailogCreate = () => {
 
 const onEdit = async (id: number) => {
     try {
-        const res = await fetch(`/department/${id}/edit`);
+        const res = await fetch(`/workflow/${id}/edit`);
 
         if (!res.ok) {
             toast.error('Server error while fetching department details.');
@@ -80,9 +80,14 @@ const onEdit = async (id: number) => {
         }
 
         const data = await res.json();
-
         Object.assign(form, data.data);
         form.id = data.data.id;
+        const stageNames = data.data.stagename.split(',');
+        const stageIds = data.data.stage.split(',');
+        items.value = stageNames.map((name: string, index: number) => ({
+            id: Number(stageIds[index]) || index + 1,
+            name: name,
+        }));
         isEditMode.value = true;
         showDialog.value = true;
     } catch (error) {
@@ -141,14 +146,27 @@ const toggleStatus = (workflow: Workflow) => {
     );
 };
 
+const goToDocumentList = (id: number) => {
+  router.visit(route('documentlist.index', {id}));
+};
+
+const goToDocumentType = () => {
+    router.visit('/documenttype');
+};
+
 </script>
 
 <template>
     <Head title="Workflows" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-            <div class="flex items-center gap-2 py-4">
-                <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Workflows </Button>
+            <div class="flex items-center justify-end space-x-2 py-4">
+                <div class="flex-1 text-sm">
+                    <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Workflows </Button>
+                </div>
+                <div class="space-x-2">
+                    <Button variant="outline" size="sm" @click="goToDocumentType"><HousePlus></HousePlus> Document Type </Button>
+                </div>
             </div>
             <div class="rounded-md border">
                 <Table>
@@ -170,8 +188,8 @@ const toggleStatus = (workflow: Workflow) => {
                                 <Switch v-model="workflow.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(workflow)"> </Switch>
                             </TableCell>
                             <TableCell class="text-right">
-                                
                                 <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(workflow.id)"><SquarePen></SquarePen></Button>
+                                <Button class="m-[2px]" size="sm" variant="outline" @click="goToDocumentList(workflow.id)"><PlusCircle></PlusCircle></Button>
                             </TableCell>
                         </TableRow>
                     </TableBody>
@@ -215,8 +233,6 @@ const toggleStatus = (workflow: Workflow) => {
                                     <Button @click="addItem" variant="outline">Add</Button>
                                 </div>
                             </div>
-
-                            <span v-if="errors?.stagename" class="text-sm text-red-600">{{ errors.stagename }}</span>
                         </div>
                         <div class="grid gap-2">
                             <Button :disabled="form.processing" @click="submit">

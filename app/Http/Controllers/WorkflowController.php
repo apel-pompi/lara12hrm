@@ -15,7 +15,7 @@ class WorkflowController extends Controller
      */
     public function index()
     {
-        return Inertia::render('allpages/Agency/workflow',[
+        return Inertia::render('allpages/Agency/Setting/workflow', [
             'workflow' => Workflow::with(['user'])->orderBy('id', 'desc')->get()
         ]);
     }
@@ -47,7 +47,7 @@ class WorkflowController extends Controller
         $stageNames = explode(',', $validated['stagename']);
         $stages = explode(',', $validated['stage']);
 
-        foreach($stageNames as $index => $stageName) {
+        foreach ($stageNames as $index => $stageName) {
             WorkflowStage::create([
                 'workflow_id' => $workflow->id,
                 'stagename' => $stageName,
@@ -68,17 +68,48 @@ class WorkflowController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Workflow $workflow)
+    public function edit($workflow)
     {
-        //
+        $workflow = Workflow::with('stages')->findOrFail($workflow);
+        return response()->json([
+            'data' => [
+                'id'        => $workflow->id,
+                'name'      => $workflow->name,
+                'stagename' => $workflow->stages->pluck('stagename')->implode(','), // "one,two,three"
+                'stage'     => $workflow->stages->pluck('stage')->implode(','),     // "1,2,3"
+                'active'    => $workflow->active,
+            ],
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Workflow $workflow)
+    public function update(Request $request, $id)
     {
-        //
+        $workflow = Workflow::findOrFail($id);
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'stagename' => 'required|string', // comma-separated
+            'stage' => 'required|string',     // comma-separated
+            'active' => 'required|boolean',
+        ]);
+        $workflow->update([
+            'name'   => $validated['name'],
+            'active' => $validated['active'],
+        ]);
+        $workflow->stages()->delete();
+        $stageNames = explode(',', $validated['stagename']);
+        $stages = explode(',', $validated['stage']);
+
+        foreach ($stageNames as $index => $stageName) {
+            WorkflowStage::create([
+                'workflow_id' => $workflow->id,
+                'stagename'   => $stageName,
+                'stage'       => $stages[$index] ?? null,
+            ]);
+        }
+        return redirect()->route('workflow.index')->with('success', 'Workflow updated successfully.');
     }
 
     /**

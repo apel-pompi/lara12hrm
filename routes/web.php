@@ -2,7 +2,7 @@
 
 
 use App\Http\Controllers\{
-    BranchController, DepartmentController, DesignationController, LeaveplanController, AttenSettingController, HolidayHdController, HolidayDtController, PersonalInfoController, LeaveController, WorkflowController, RoleController, UserPermissionController, CompanyInfoController
+    BranchController, DepartmentController, DesignationController, LeaveplanController, AttenSettingController, HolidayHdController, HolidayDtController, PersonalInfoController, LeaveController, GeneralController, WorkflowController, WDocumentCheckController, WDocumentTypeController, PartnerController, PartnerBranchController, CountryController, StateController, RoleController, UserPermissionController, CompanyInfoController
 };
 
 use Illuminate\Support\Facades\Route;
@@ -137,6 +137,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
                 }
     );
 
+    
     //Workflows Route
     Route::controller(WorkflowController::class)
                 ->prefix('workflow')
@@ -148,6 +149,83 @@ Route::middleware(['verified', 'auth'])->group(function () {
                     Route::delete('/show/{workflow}', 'destroy')->name('workflow.destroy');
                     Route::get('/{workflow}/edit', 'edit')->name('workflow.edit');
                     Route::put('/{workflow}', 'update')->name('workflow.update');
+                }
+    );
+
+    //Workflows document list
+    Route::controller(WDocumentCheckController::class)
+                ->prefix('documentlist')
+                ->group(function(){
+                    Route::get('/{id}', 'index')->name('documentlist.index');
+                    Route::post('/store', 'store')->name('documentlist.store');
+                    Route::get('/{id}/adddoctype', 'adddoctype')->name('documenttype.adddoctype');
+                }
+    );
+    //Workflows document type
+    Route::controller(WDocumentTypeController::class)
+                ->prefix('documenttype')
+                ->group(function(){
+                    Route::get('/', 'index')->name('documenttype.index');
+                    Route::post('/store', 'store')->name('documenttype.store');
+                    Route::put('/{id}/status', 'updateStatus')->name('documenttype.updateStatus');
+                    Route::get('/{id}/edit', 'edit')->name('documenttype.edit');
+                    Route::put('/{id}', 'update')->name('documenttype.update');
+                }
+    );
+    //General Master
+    Route::controller(GeneralController::class)
+                ->prefix('general')
+                ->group(function(){
+                    // master category
+                    Route::get('/', 'index')->name('general.index');
+                    Route::get('/patnersetup', 'patnersetup')->name('general.patnersetup');
+                    Route::get('/productsetup', 'productsetup')->name('general.productsetup');
+                    Route::post('/store', 'store')->name('general.store');
+                    Route::get('/{general}/edit', 'edit')->name('general.edit');
+                    Route::put('/{general}', 'update')->name('general.update');
+                    Route::put('/{general}/status', 'updateStatus')->name('general.updateStatus');
+                    Route::get('/{general}', 'show')->name('general.show');
+                    Route::delete('/show/{general}', 'destroy')->name('general.destroy');
+                    // partner type setup
+                    
+                    Route::post('/patnersetup', 'patnersetupstore')->name('general.patnersetupstore');
+                    Route::put('/{patnersetup}/patnersetupstatus', 'patnersetupUpdateStatus')->name('general.patnersetupUpdateStatus');
+                    Route::delete('patnersetup/show/{patnersetup}', 'patnersetupdestroy')->name('patnersetup.patnersetupdestroy');
+                    // product type setup
+                    Route::post('/productsetup', 'productsetuppstore')->name('general.productsetuppstore');
+                    Route::put('/{productsetup}/producttypeupstatus', 'producttypeUpdateStatus')->name('general.producttypeUpdateStatus');
+                    Route::delete('productsetup/show/{productsetup}', 'productsetupdestroy')->name('productsetup.productsetupdestroy');
+                }
+    );
+    //partner Branch Setting
+    Route::controller(PartnerBranchController::class)
+                ->prefix('partnerbranch')
+                ->group(function(){
+                    Route::get('/', 'index')->name('partnerbranch.index');
+                    Route::get('/create', 'create')->name('partnerbranch.create');
+                    Route::post('/store', 'store')->name('partnerbranch.store');
+                    Route::post('/PartnerBranch', 'PartnerBranch')->name('partnerbranch.partnerBranch');
+                    Route::put('/{PartnerBranch}/status', 'updateStatus')->name('partnerbranch.updateStatus');
+                    Route::get('/{PartnerBranch}/edit', 'edit')->name('partnerbranch.edit');
+                    Route::put('/{PartnerBranch}', 'update')->name('partner.partnerbranch');
+                    Route::delete('/show/{PartnerBranch}', 'destroy')->name('partnerbranch.destroy');
+                }
+    );
+
+    Route::get('/countries/{country}/states', [CountryController::class, 'states']);
+    Route::get('/states/{state}/cities', [StateController::class, 'cities']);
+
+    //Partner
+    Route::controller(PartnerController::class)
+                ->prefix('partner')
+                ->group(function(){
+                    Route::get('/', 'index')->name('partner.index');
+                    Route::get('/create', 'create')->name('partner.create');
+                    Route::post('/store', 'store')->name('partner.store');
+                    Route::put('/{partner}/status', 'updateStatus')->name('partner.updateStatus');
+                    Route::get('/{partner}/edit', 'edit')->name('partner.edit');
+                    Route::put('/{partner}', 'update')->name('partner.update');
+                    Route::delete('/show/{partner}', 'destroy')->name('partner.destroy');
                 }
     );
 

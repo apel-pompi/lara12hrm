@@ -41,7 +41,7 @@ withDefaults(defineProps<{
 
 <template>
     <header
-        class="grid grid-cols-3 h-16 shrink-0 items-center border-b border-sidebar-border/70 
+        class="grid grid-cols-3 h-16 shrink-0 items-center border-b border-gray-800 
            px-4 md:px-6 transition-[width,height] ease-linear 
            group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
     >

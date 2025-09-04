@@ -2,38 +2,40 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Workflow extends Model
+class State extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'name',
-        'user_id',
-        'active'
+        'country_id',
+        'latitude',
+        'longitude',
+        'status',
     ];
 
     /**
-     * Get the user that owns the Workflow
+     * Get the country that owns the State
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function user(): BelongsTo
+    public function country(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Country::class);
     }
 
     /**
-     * Get all of the stages for the Workflow
+     * Get all of the cities for the State
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function stages(): HasMany
+    public function cities(): HasMany
     {
-        return $this->hasMany(WorkflowStage::class);
+        return $this->hasMany(City::class);
     }
 }

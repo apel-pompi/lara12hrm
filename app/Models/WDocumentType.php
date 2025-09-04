@@ -5,14 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Workflow extends Model
+class WDocumentType extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'docname',
+        'adddate',
+        'totaluse',
         'user_id',
         'active'
     ];
@@ -27,13 +28,4 @@ class Workflow extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * Get all of the stages for the Workflow
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function stages(): HasMany
-    {
-        return $this->hasMany(WorkflowStage::class);
-    }
 }
