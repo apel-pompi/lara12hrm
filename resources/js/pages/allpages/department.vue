@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import HrmLayout from '@/layouts/settings/hrmLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head,router,useForm } from '@inertiajs/vue3';
 import { h, ref } from 'vue'
@@ -286,9 +287,10 @@ const onDelete = async (id: number) => {
 </script>
 
 <template>
-    <Head title="Department" />
+    
     <AppLayout :breadcrumbs="breadcrumbs">
-      
+        <Head title="Department" />
+      <HrmLayout>
         <div class="relative min-h-[100vh] flex-1 border border-sidebar-border/70 dark:border-sidebar-border md:min-h-min px-4">
             <div class="flex gap-2 items-center py-4">
               <Input
@@ -496,5 +498,6 @@ const onDelete = async (id: number) => {
               </DialogFooter>
           </DialogContent>
       </Dialog>
+      </HrmLayout>
     </AppLayout>
 </template>

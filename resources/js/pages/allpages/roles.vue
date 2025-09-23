@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import UserLayout from '@/layouts/settings/userLayout.vue';
 import { cn, valueUpdater } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -366,8 +367,10 @@ const checkPermissionByGroup = (className: string | number, checkThis: Event) =>
 </script>
 
 <template>
-    <Head title="Roles" />
+    
     <AppLayout :breadcrumbs="breadcrumbs">
+        <Head title="Roles" />
+        <UserLayout>
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
             <div class="flex items-center gap-2 py-4">
                 <Input
@@ -551,6 +554,6 @@ const checkPermissionByGroup = (className: string | number, checkThis: Event) =>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-        
+        </UserLayout>
     </AppLayout>
 </template>

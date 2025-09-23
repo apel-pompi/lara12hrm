@@ -18,6 +18,10 @@ const sidebarNavItems: NavItem[] = [
         title: 'Appearance',
         href: '/settings/appearance',
     },
+    {
+        title: 'Company',
+        href: '/companyinfo',
+    },
 ];
 
 const page = usePage();
@@ -48,7 +52,7 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
 
             <Separator class="my-6 md:hidden" />
 
-            <section class="dark:bg-gray-9002 flex-1 rounded-xl bg-white p-4 shadow">
+            <section class="flex-1 dark:bg-gray-9002 rounded-xl bg-white p-4 shadow">
                 <slot />
             </section>
         </div>

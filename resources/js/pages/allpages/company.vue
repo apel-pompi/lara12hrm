@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
-import SettingsLayout from '@/layouts/settings/Layout.vue';
+import UserLayout from '@/layouts/settings/userLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 
@@ -84,7 +84,7 @@ const submit = () => {
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Company Information" />
-        <SettingsLayout>
+        <UserLayout>
             <div class="flex h-full flex-1 flex-col gap-6 rounded-xl bg-gray-50 p-6">
                 <div class="grid auto-rows-min gap-6 md:grid-cols-2">
                     <!-- Company Information Card -->
@@ -285,6 +285,6 @@ const submit = () => {
                     </Card>
                 </div>
             </div>
-        </SettingsLayout>
+        </UserLayout>
     </AppLayout>
 </template>

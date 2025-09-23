@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import AgencyLayout from '@/layouts/settings/agencyLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,9 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Switch from '@/components/ui/switch/Switch.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, RefreshCcw, Search, Trash } from 'lucide-vue-next';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
+import { Plus, RefreshCcw, Search, Trash } from 'lucide-vue-next';
 
 import { toast } from 'vue-sonner';
 
@@ -36,16 +37,16 @@ export interface Paginated<T> {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Transaction Number', href: '/transaction' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Transaction Name', href: '/transaction' }];
 
 const props = defineProps<{
     tranactionname: Paginated<TransactionName>;
-    tranactionFilter:{name:string;};
-    filters: { name: string;};
+    tranactionFilter: { name: string };
+    filters: { name: string };
 }>();
 
 const data = props.tranactionname;
-console.log(data)
+console.log(data);
 interface FormErrors {
     name?: string;
 }
@@ -53,7 +54,6 @@ interface FormErrors {
 const showDialog = ref(false);
 const isEditMode = ref(false);
 const errors = ref<FormErrors>();
-
 
 const form = useForm({
     id: null as number | null,
@@ -67,7 +67,6 @@ const showDailogCreate = () => {
     isEditMode.value = false;
     showDialog.value = true;
 };
-
 
 const submit = () => {
     const action = isEditMode.value && form.id ? route('transactionName.update', form.id) : route('transactionName.store');
@@ -132,21 +131,16 @@ const onDelete = async (id: number) => {
 };
 
 // Combobox states
-const selecteName= ref(null); // name
-const queryName = ref("");
+const selecteName = ref(null); // name
+const queryName = ref('');
 
 // Filtered lists
-const filteredName = computed(() =>
-  queryName.value === ""
-    ? props.tranactionFilter
-    : props.tranactionFilter.filter((n) =>
-        n.name)
-);
+const filteredName = computed(() => (queryName.value === '' ? props.tranactionFilter : props.tranactionFilter.filter((n) => n.name)));
 const search = () => {
     const params: Record<string, any> = {};
-    
+
     if (selecteName.value) params.name = selecteName.value.name;
-    
+
     router.get(route('transactionName.index'), params, {
         preserveState: false,
         preserveScroll: true,
@@ -157,7 +151,6 @@ const refresh = () => {
     router.get(route('transactionName.index'), {}, { replace: true });
 };
 
-
 const goToPage = (url: string | null) => {
     if (url) {
         router.get(url, {}, { preserveState: false, replace: true });
@@ -166,148 +159,155 @@ const goToPage = (url: string | null) => {
 </script>
 
 <template>
-    <Head title="Student Source" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-            <div class="flex items-center gap-2 py-4">
-                <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create </Button>
-            
-            <!-- Search start -->
-             <div class="grid gap-2">
-                    <Combobox v-model="selecteName">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select name..."
-                                    :display-value="(n) => n?.name"
-                                    @input="queryName = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
+        <Head title="Student Source" />
+        <AgencyLayout>
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+                <div class="flex items-center gap-2 py-4">
+                    <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create </Button>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div v-if="filteredName.length === 0 && queryName !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
+                    <!-- Search start -->
+                    <div class="grid gap-2">
+                        <Combobox v-model="selecteName">
+                            <div class="relative w-48">
+                                <!-- Input -->
+                                <div class="relative w-full">
+                                    <ComboboxInput
+                                        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                        placeholder="Select name..."
+                                        :display-value="(n) => n?.name"
+                                        @input="queryName = $event.target.value"
+                                    />
+                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                    </ComboboxButton>
                                 </div>
 
-                                <ComboboxOption
-                                    v-for="n in filteredName"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
+                                <!-- Options -->
+                                <ComboboxOptions
+                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
                                 >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ n.name }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    <div
+                                        v-if="filteredName.length === 0 && queryName !== ''"
+                                        class="cursor-default px-4 py-2 text-gray-500 select-none"
                                     >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                </div>
-                <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
-                </div>
-            </div>
-            <div class="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Transaction Name</TableHead>
-                            <TableHead>Added Date</TableHead>
-                            <TableHead>Added By</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead class="text-center">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(trn, index) in data.data" :key="trn.id ?? index">
-                            <TableCell>{{ trn.name }}</TableCell>
-                            <TableCell>{{ trn.adddate}}</TableCell>
-                            <TableCell>{{ trn.user.name }}</TableCell>
-                            <TableCell>
-                                <Switch v-model="trn.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(trn)"> </Switch>
-                            </TableCell>
+                                        Nothing found.
+                                    </div>
 
-                            <TableCell class="text-right">
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(trn.id)"><Trash></Trash></Button>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </div>
-
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">
-                    Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results
-                </div>
-                <div class="space-x-2">
-                    <Button
-                        v-for="(link, index) in data.links"
-                        :key="index"
-                        :disabled="!link.url"
-                        variant="outline"
-                        size="sm"
-                        :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
-                        @click="goToPage(link.url)"
-                    >
-                        <span v-html="link.label"></span>
-                    </Button>
-                </div>
-            </div>
-        </div>
-        <!-- Dialog -->
-        <Dialog v-model:open="showDialog">
-            <DialogContent class="max-w-lg rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl">
-                <!-- Header -->
-                <DialogHeader class="border-b pb-3">
-                    <DialogTitle class="text-lg font-semibold">
-                        {{ isEditMode ? 'Edit transaction number' : 'Create transaction number' }}
-                    </DialogTitle>
-                    <DialogDescription class="text-sm text-gray-500">
-                        {{ isEditMode ? 'Update the transaction number details and click save.' : 'Fill in the details below to create a new transaction number.' }}
-                    </DialogDescription>
-                </DialogHeader>
-
-                <!-- Body -->
-                <div class="grid gap-6 py-4">
-                    <!-- Transaction Type -->
+                                    <ComboboxOption
+                                        v-for="n in filteredName"
+                                        :key="n.id"
+                                        :value="n"
+                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                        v-slot="{ selected }"
+                                    >
+                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                            {{ n.name }}
+                                        </span>
+                                        <span
+                                            v-if="selected"
+                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                        >
+                                            <CheckIcon class="h-5 w-5" />
+                                        </span>
+                                    </ComboboxOption>
+                                </ComboboxOptions>
+                            </div>
+                        </Combobox>
+                    </div>
                     <div class="grid gap-2">
-                        <Label for="name" class="font-medium">Transaction Name</Label>
-                        <Input id="name" placeholder="Enter Transaction name" v-model="form.name" autofocus class="max-w-sm" />
-                        <p v-if="form.errors.name" class="text-sm text-red-600">
-                            {{ form.errors.name }}
-                        </p>
+                        <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
+                    </div>
+                    <div class="grid gap-2">
+                        <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
                     </div>
                 </div>
+                <div class="rounded-md border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Transaction Name</TableHead>
+                                <TableHead>Added Date</TableHead>
+                                <TableHead>Added By</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead class="text-center">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow v-for="(trn, index) in data.data" :key="trn.id ?? index">
+                                <TableCell>{{ trn.name }}</TableCell>
+                                <TableCell>{{ trn.adddate }}</TableCell>
+                                <TableCell>{{ trn.user.name }}</TableCell>
+                                <TableCell>
+                                    <Switch v-model="trn.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(trn)"> </Switch>
+                                </TableCell>
 
-                <!-- Footer -->
-                <DialogFooter class="flex justify-end space-x-2 border-t pt-4">
-                    <DialogClose as-child>
-                        <Button type="button" variant="secondary">Cancel</Button>
-                    </DialogClose>
-                    <Button :disabled="form.processing" @click="submit">
-                        <template v-if="form.processing">Saving...</template>
-                        <template v-else>{{ isEditMode ? 'Update' : 'Save' }}</template>
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                                <TableCell class="text-right">
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(trn.id)"><Trash></Trash></Button>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <div class="flex items-center justify-end space-x-2 py-4">
+                    <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
+                    <div class="space-x-2">
+                        <Button
+                            v-for="(link, index) in data.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            variant="outline"
+                            size="sm"
+                            :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                            @click="goToPage(link.url)"
+                        >
+                            <span v-html="link.label"></span>
+                        </Button>
+                    </div>
+                </div>
+            </div>
+            <!-- Dialog -->
+            <Dialog v-model:open="showDialog">
+                <DialogContent class="max-w-lg rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl">
+                    <!-- Header -->
+                    <DialogHeader class="border-b pb-3">
+                        <DialogTitle class="text-lg font-semibold">
+                            {{ isEditMode ? 'Edit transaction number' : 'Create transaction number' }}
+                        </DialogTitle>
+                        <DialogDescription class="text-sm text-gray-500">
+                            {{
+                                isEditMode
+                                    ? 'Update the transaction number details and click save.'
+                                    : 'Fill in the details below to create a new transaction number.'
+                            }}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <!-- Body -->
+                    <div class="grid gap-6 py-4">
+                        <!-- Transaction Type -->
+                        <div class="grid gap-2">
+                            <Label for="name" class="font-medium">Transaction Name</Label>
+                            <Input id="name" placeholder="Enter Transaction name" v-model="form.name" autofocus class="max-w-sm" />
+                            <p v-if="form.errors.name" class="text-sm text-red-600">
+                                {{ form.errors.name }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <DialogFooter class="flex justify-end space-x-2 border-t pt-4">
+                        <DialogClose as-child>
+                            <Button type="button" variant="secondary">Cancel</Button>
+                        </DialogClose>
+                        <Button :disabled="form.processing" @click="submit">
+                            <template v-if="form.processing">Saving...</template>
+                            <template v-else>{{ isEditMode ? 'Update' : 'Save' }}</template>
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </AgencyLayout>
     </AppLayout>
 </template>

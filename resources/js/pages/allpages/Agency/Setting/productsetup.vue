@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import AgencyLayout from '@/layouts/settings/agencyLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -130,91 +131,93 @@ const goToMasterCategory = () => {
 </script>
 
 <template>
-    <Head title="Product Type Setup" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-            <div class="flex items-center gap-2 py-4">
-                <Button variant="outline" size="sm" @click="goToMasterCategory"><CornerDownLeft></CornerDownLeft>Back Master Category </Button>
-                <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Product Type </Button>
-            </div>
-            <div class="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Product Type Name</TableHead>
-                            <TableHead>Master Category</TableHead>
-                            <TableHead>Added By</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead class="text-center">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(productsetup, index) in data" :key="productsetup.id ?? index">
-                            <TableCell>{{ productsetup.producttypename }}</TableCell>
-                            <TableCell>{{ productsetup.mastercategory.catname }}</TableCell>
-                            <TableCell>{{ productsetup.user.name }}</TableCell>
-                            <TableCell>
-                                <Switch v-model="productsetup.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(productsetup)">
-                                </Switch>
-                            </TableCell>
-                            <TableCell class="text-right">
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(productsetup.id)"><Trash></Trash></Button>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </div>
+        <Head title="Product Type Setup" />
+        <AgencyLayout>
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+                <div class="flex items-center gap-2 py-4">
+                    <Button variant="outline" size="sm" @click="goToMasterCategory"><CornerDownLeft></CornerDownLeft>Back Master Category </Button>
+                    <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Product Type </Button>
+                </div>
+                <div class="rounded-md border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Product Type Name</TableHead>
+                                <TableHead>Master Category</TableHead>
+                                <TableHead>Added By</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead class="text-center">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow v-for="(productsetup, index) in data" :key="productsetup.id ?? index">
+                                <TableCell>{{ productsetup.producttypename }}</TableCell>
+                                <TableCell>{{ productsetup.mastercategory.catname }}</TableCell>
+                                <TableCell>{{ productsetup.user.name }}</TableCell>
+                                <TableCell>
+                                    <Switch v-model="productsetup.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(productsetup)">
+                                    </Switch>
+                                </TableCell>
+                                <TableCell class="text-right">
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(productsetup.id)"><Trash></Trash></Button>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm"></div>
-                <div class="space-x-2"></div>
+                <div class="flex items-center justify-end space-x-2 py-4">
+                    <div class="text-muted-foreground flex-1 text-sm"></div>
+                    <div class="space-x-2"></div>
+                </div>
             </div>
-        </div>
-        <!-- Dialog -->
-        <Dialog v-model:open="showDialog">
-            <DialogContent class="max-w-[825px]">
-                <DialogHeader>
-                    <DialogTitle>{{ isEditMode ? 'Edit Product Type' : 'Create Product Type' }}</DialogTitle>
-                    <DialogDescription> Make changes to your partner type here. Click save when you're done. </DialogDescription>
-                </DialogHeader>
-                <div class="grid gap-5">
-                    <div class="grid gap-y-3">
-                        <div class="grid gap-2">
-                            <Label for="producttypename">Master Category</Label>
-                            <Select v-model="form.mastercaterory_id">
-                                <SelectTrigger class="w-full">
-                                    <SelectValue placeholder="Select Master Category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem v-for="master in props.mastersetup" :key="master.id" :value="master.id">
-                                            {{ master.catname }}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <span v-if="errors?.mastercaterory_id" class="text-sm text-red-600">{{ errors.mastercaterory_id }}</span>
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="producttypename">Product Type Name</Label>
-                            <Input class="max-w-sm" placeholder="Enter Product Type Name" id="catname" v-model="form.producttypename" autofocus />
-                            <span v-if="errors?.producttypename" class="text-sm text-red-600">{{ errors.producttypename }}</span>
-                        </div>
+            <!-- Dialog -->
+            <Dialog v-model:open="showDialog">
+                <DialogContent class="max-w-[825px]">
+                    <DialogHeader>
+                        <DialogTitle>{{ isEditMode ? 'Edit Product Type' : 'Create Product Type' }}</DialogTitle>
+                        <DialogDescription> Make changes to your partner type here. Click save when you're done. </DialogDescription>
+                    </DialogHeader>
+                    <div class="grid gap-5">
+                        <div class="grid gap-y-3">
+                            <div class="grid gap-2">
+                                <Label for="producttypename">Master Category</Label>
+                                <Select v-model="form.mastercaterory_id">
+                                    <SelectTrigger class="w-full">
+                                        <SelectValue placeholder="Select Master Category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem v-for="master in props.mastersetup" :key="master.id" :value="master.id">
+                                                {{ master.catname }}
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                <span v-if="errors?.mastercaterory_id" class="text-sm text-red-600">{{ errors.mastercaterory_id }}</span>
+                            </div>
+                            <div class="grid gap-2">
+                                <Label for="producttypename">Product Type Name</Label>
+                                <Input class="max-w-sm" placeholder="Enter Product Type Name" id="catname" v-model="form.producttypename" autofocus />
+                                <span v-if="errors?.producttypename" class="text-sm text-red-600">{{ errors.producttypename }}</span>
+                            </div>
 
-                        <div class="grid gap-2">
-                            <Button :disabled="form.processing" @click="submit">
-                                <template v-if="form.processing">Saving...</template>
-                                <template v-else>{{ isEditMode ? 'Update' : 'Submit' }}</template>
-                            </Button>
+                            <div class="grid gap-2">
+                                <Button :disabled="form.processing" @click="submit">
+                                    <template v-if="form.processing">Saving...</template>
+                                    <template v-else>{{ isEditMode ? 'Update' : 'Submit' }}</template>
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <DialogFooter class="sm:justify-start">
-                    <DialogClose as-child>
-                        <Button type="button" variant="secondary"> Close </Button>
-                    </DialogClose>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                    <DialogFooter class="sm:justify-start">
+                        <DialogClose as-child>
+                            <Button type="button" variant="secondary"> Close </Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </AgencyLayout>
     </AppLayout>
 </template>

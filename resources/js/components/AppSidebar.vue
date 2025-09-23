@@ -43,50 +43,29 @@ const data = {
             icon: SquareTerminal,
             items: [
                 {
-                    title: 'Branch Master',
-                    href: '/branch',
-                },
-                {
-                    title: 'Department',
-                    href: '/department',
-                },
-                {
-                    title: 'Designation',
-                    href: '/designation',
-                },
-                {
-                    title: 'Leave Plan',
-                    href: '/leaveplan',
-                },
-                {
-                    title: 'Attendance Setting',
-                    href: '/attensetting',
-                },
-            ],
-        },
-        {
-            title: 'Setting',
-            url: '#',
-            icon: Settings,
-            items: [
-                {
-                    title: 'General',
+                    title: 'General Setting',
                     href: '/settings/profile',
                 },
                 {
-                    title: 'Role',
+                    title: 'Agency Setting',
+                    href: '/general',
+                },
+                {
+                    title: 'HRM Setting',
+                    href: '/branch',
+                },
+                {
+                    title: 'Accounts Setting',
+                    href: '/settings/profile',
+                },
+                {
+                    title: 'Users Setting',
                     href: '/roles',
                 },
-                {
-                    title: 'User Permission',
-                    href: '/userpermission',
-                },
-                {
-                    title: 'Company',
-                    href: '/companyinfo',
-                },
+                
             ],
         },
+        
     ],
 };
 
@@ -126,56 +105,6 @@ const menuleave = [
         icon:MonitorX
     }
 ];
-
-const AgencyMaster = {
-    masterMain: [
-        {
-            title: 'Agency Master',
-            url: '#',
-            icon: SquareTerminal,
-            items: [
-                {
-                    title: 'General Setup',
-                    href: '/general',
-                },
-                {
-                    title:'Tranaction Name',
-                    href:'/transactionName'
-                },
-                {
-                    title:'Tranaction No',
-                    href:'/transaction'
-                },
-                {
-                    title: 'Workflows',
-                    href: '/workflow',
-                },
-                {
-                    title:'Partner Branch',
-                    href:'/partnerbranch'
-                },
-                {
-                    title:'Student Stage',
-                    href:'/studentStage'
-                },
-                {
-                    title:'Student Source',
-                    href:'/studentSource'
-                },
-                {
-                    title:'Fees',
-                    href:'/fees'
-                },
-                {
-                    title:'Installment',
-                    href:'/installment'
-                }
-            ],
-        },
-    ],
-};
-
-
 
 </script>
 
@@ -228,9 +157,6 @@ const AgencyMaster = {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
-                    <SidebarContent>
-                        <NavMain :items="AgencyMaster.masterMain" />
-                    </SidebarContent>
                 </SidebarGroupContent>
             </SidebarGroup>
         </SidebarContent>
