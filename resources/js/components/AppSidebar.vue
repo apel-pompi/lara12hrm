@@ -70,6 +70,10 @@ const data = {
             icon: Settings,
             items: [
                 {
+                    title: 'General',
+                    href: '/settings/profile',
+                },
+                {
                     title: 'Role',
                     href: '/roles',
                 },
@@ -107,8 +111,18 @@ const menuleave = [
         icon:MonitorX
     },
     {
+        route:'student.index',
+        title: 'Student',
+        icon:MonitorX
+    },
+    {
         route:'partner.index',
         title: 'Partners',
+        icon:MonitorX
+    },
+    {
+        route:'product.index',
+        title: 'Product',
         icon:MonitorX
     }
 ];
@@ -125,12 +139,36 @@ const AgencyMaster = {
                     href: '/general',
                 },
                 {
+                    title:'Tranaction Name',
+                    href:'/transactionName'
+                },
+                {
+                    title:'Tranaction No',
+                    href:'/transaction'
+                },
+                {
                     title: 'Workflows',
                     href: '/workflow',
                 },
                 {
                     title:'Partner Branch',
                     href:'/partnerbranch'
+                },
+                {
+                    title:'Student Stage',
+                    href:'/studentStage'
+                },
+                {
+                    title:'Student Source',
+                    href:'/studentSource'
+                },
+                {
+                    title:'Fees',
+                    href:'/fees'
+                },
+                {
+                    title:'Installment',
+                    href:'/installment'
                 }
             ],
         },

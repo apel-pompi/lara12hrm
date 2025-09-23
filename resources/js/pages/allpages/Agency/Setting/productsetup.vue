@@ -9,17 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CornerDownLeft, Plus, Trash } from 'lucide-vue-next';
-import { toast } from 'vue-sonner';
-import TableCell from '@/components/ui/table/TableCell.vue';
-import Switch from '@/components/ui/switch/Switch.vue';
 import Select from '@/components/ui/select/Select.vue';
 import SelectContent from '@/components/ui/select/SelectContent.vue';
 import SelectGroup from '@/components/ui/select/SelectGroup.vue';
 import SelectItem from '@/components/ui/select/SelectItem.vue';
 import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
 import SelectValue from '@/components/ui/select/SelectValue.vue';
+import Switch from '@/components/ui/switch/Switch.vue';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import TableCell from '@/components/ui/table/TableCell.vue';
+import { CornerDownLeft, Plus, Trash } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 
 export interface ProductType {
     id: number;
@@ -33,7 +33,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Product Type Setup', href: '/pa
 
 const props = defineProps<{
     productsetup: ProductType[];
-    mastersetup: {id:number,catname:string}[]
+    mastersetup: { id: number; catname: string }[];
 }>();
 
 const data = props.productsetup;
@@ -61,7 +61,6 @@ const showDailogCreate = () => {
     isEditMode.value = false;
     showDialog.value = true;
 };
-
 
 const submit = () => {
     const action = isEditMode.value && form.id ? route('general.productsetup.update', form.id) : route('general.productsetup');
@@ -128,7 +127,6 @@ const onDelete = async (id: number) => {
 const goToMasterCategory = () => {
     router.visit('/general');
 };
-
 </script>
 
 <template>
@@ -156,7 +154,8 @@ const goToMasterCategory = () => {
                             <TableCell>{{ productsetup.mastercategory.catname }}</TableCell>
                             <TableCell>{{ productsetup.user.name }}</TableCell>
                             <TableCell>
-                                <Switch v-model="productsetup.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(productsetup)"> </Switch>
+                                <Switch v-model="productsetup.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(productsetup)">
+                                </Switch>
                             </TableCell>
                             <TableCell class="text-right">
                                 <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(productsetup.id)"><Trash></Trash></Button>

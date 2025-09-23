@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { cn, valueUpdater } from '@/lib/utils';
+import { getLocalTimeZone, today } from '@internationalized/date';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -22,15 +25,12 @@ import {
     Row,
     useVueTable,
 } from '@tanstack/vue-table';
-import { ArrowUpDown, Calendar as CalendarIcon, ChevronDown, CornerDownLeft, Plus } from 'lucide-vue-next';
+import { ArrowUpDown, ChevronDown, CornerDownLeft, Plus } from 'lucide-vue-next';
 
 import DropdownAction from '@/components/DataTable.vue';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Label from '@/components/ui/label/Label.vue';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'vue-sonner';
 
 import Select from '@/components/ui/select/Select.vue';
@@ -51,8 +51,8 @@ export interface HolidayDt {
 export interface HolidayHd {
     id: number;
     branch_id: string;
-    holiyear: string;
-    holimonth: number;
+    yearname: string;
+    monthname: number;
     holidays: string;
     holiworking: string;
     active: string;
@@ -72,7 +72,7 @@ const props = defineProps<{
 const data = props.holidaydt;
 
 const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const monthName = monthNames[props.holidayHd.holimonth];
+const monthName = monthNames[props.holidayHd.monthname];
 
 const columns: ColumnDef<HolidayDt, any>[] = [
     {
@@ -179,15 +179,21 @@ const table = useVueTable({
     },
 });
 
-const value = ref<CalendarDate>();
-const maxDate = today(getLocalTimeZone());
-const df = new DateFormatter('en-CA', { dateStyle: 'short' });
-
 interface FormErrors {
     holihd_id?: string;
     holidate?: string;
     holitypes?: string;
 }
+
+const dtdate = ref<string | null>(null);
+
+const maxDate = today(getLocalTimeZone());
+
+watch(dtdate, (newDate) => {
+    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
+        form.holidate = newDate.toISOString().split('T')[0];
+    }
+});
 
 const showDialog = ref(false);
 const isEditMode = ref(false);
@@ -200,17 +206,6 @@ const form = useForm({
     holidate: '',
     holitypes: '',
     branch: '',
-});
-
-// Format to YYYY-MM-DD
-function formatDate(date: CalendarDate | undefined) {
-    if (!date) return '';
-    return `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
-}
-
-// Watch calendar selection → update form
-watch(value, (newVal) => {
-    form.holidate = formatDate(newVal);
 });
 
 const showDailogCreate = () => {
@@ -252,12 +247,6 @@ const onEdit = async (id: number) => {
         const data = await res.json();
         Object.assign(form, data.data);
         form.id = data.data.id;
-        // Set date picker value
-        if (data.data.holidate) {
-            const [year, month, day] = data.data.holidate.split('-').map(Number);
-            value.value = new CalendarDate(year, month, day);
-        } else {
-        }
 
         isEditMode.value = true;
         showDialog.value = true;
@@ -325,7 +314,7 @@ const goToHolidayHd = () => {
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
             <div class="flex items-center gap-2 py-4">
                 <Button variant="outline" size="sm" @click="goToHolidayHd"><CornerDownLeft></CornerDownLeft> Manage Holiday </Button>
-                
+
                 <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Holiday </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
@@ -420,7 +409,7 @@ const goToHolidayHd = () => {
                 <div class="grid grid-cols-2 gap-5">
                     <div class="grid gap-y-3">
                         <Input hidden id="holihd_id" v-model="form.holihd_id" />
-                        <Label>Year Name: {{ props.holidayHd.holiyear }}</Label>
+                        <Label>Year Name: {{ props.holidayHd.yearname }}</Label>
                         <Label>Branch Name: {{ props.holidayHd.branch.branchname }}</Label>
                     </div>
                     <div class="grid gap-y-3">
@@ -431,17 +420,14 @@ const goToHolidayHd = () => {
                 <div class="mt-4 grid grid-cols-2 gap-5">
                     <div class="grid gap-y-5">
                         <Label for="holidate">Holi Date</Label>
-                        <Popover>
-                            <PopoverTrigger as-child>
-                                <Button variant="outline" :class="cn('justify-start text-left font-normal', !value && 'text-muted-foreground')">
-                                    <CalendarIcon class="mr-2 h-4 w-4" />
-                                    {{ value ? df.format(value.toDate(getLocalTimeZone())) : 'Pick a date' }}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent class="w-auto p-0">
-                                <Calendar v-model="value" :maxValue="maxDate" initial-focus />
-                            </PopoverContent>
-                        </Popover>
+                        <VueDatePicker
+                            v-model="dtdate"
+                            :max-date="maxDate"
+                            :format="'yyyy-MM-dd'"
+                            :enable-time-picker="false"
+                            placeholder="Holi Date"
+                            auto-apply
+                        />
                         <span v-if="errors?.holidate" class="text-sm text-red-600">{{ errors.holidate }}</span>
                     </div>
                     <div class="grid gap-y-5">

@@ -394,7 +394,7 @@ const refresh = () => {
 
 const goToPage = (url: string | null) => {
     if (url) {
-        router.get(url, {}, { preserveState: true, replace: true });
+        router.get(url, {}, { preserveState: false, replace: true });
     }
 };
 

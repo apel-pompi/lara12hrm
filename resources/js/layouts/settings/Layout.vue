@@ -7,6 +7,10 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
+        title: 'Company',
+        href: '/companyinfo',
+    },
+    {
         title: 'Profile',
         href: '/settings/profile',
     },
@@ -29,9 +33,9 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
     <div class="px-4 py-6">
         <Heading title="Settings" description="Manage your profile and account settings" />
 
-        <div class="flex flex-col space-y-8 md:space-y-0 lg:flex-row lg:space-x-12 lg:space-y-0">
+        <div class="flex flex-col space-y-8 md:space-y-0 lg:flex-row lg:space-y-0 lg:space-x-12">
             <aside class="w-full max-w-xl lg:w-48">
-                <nav class="flex flex-col space-x-0 space-y-1">
+                <nav class="flex flex-col space-y-1 space-x-0">
                     <Button
                         v-for="item in sidebarNavItems"
                         :key="item.href"
@@ -48,11 +52,9 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
 
             <Separator class="my-6 md:hidden" />
 
-            <div class="flex-1 md:max-w-2xl">
-                <section class="max-w-xl space-y-12">
-                    <slot />
-                </section>
-            </div>
+            <section class="flex-1 dark:bg-gray-9002 rounded-xl bg-white p-4 shadow">
+                <slot />
+            </section>
         </div>
     </div>
 </template>

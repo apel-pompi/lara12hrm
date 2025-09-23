@@ -39,8 +39,8 @@ class HolidayHdController extends Controller
         $validated = $request->validated();
 
         $exists = HolidayHd::where('branch_id', $validated['branch_id'])
-            ->where('holiyear', $validated['holiyear'])
-            ->where('holimonth', $validated['holimonth'])
+            ->where('yearname', $validated['yearname'])
+            ->where('monthname', $validated['monthname'])
             ->exists();
 
         if ($exists) {
@@ -97,8 +97,8 @@ class HolidayHdController extends Controller
      */
     public function update(UpdateHolidayHdRequest $request, HolidayHd $holidayHd)
     {
-        $year  = (int) ($request->input('holiyear',  $holidayHd->holiyear));
-        $month = (int) ($request->input('holimonth', $holidayHd->holimonth));
+        $year  = (int) ($request->input('yearname',  $holidayHd->yearname));
+        $month = (int) ($request->input('monthname', $holidayHd->monthname));
         $exists = HolidayDt::where('holihd_id', $holidayHd->id)
             ->whereYear('holidate', $year)
             ->whereMonth('holidate', $month)

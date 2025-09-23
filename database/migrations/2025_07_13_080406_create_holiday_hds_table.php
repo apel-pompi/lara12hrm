@@ -16,8 +16,8 @@ return new class extends Migration
             $table->collation = 'utf8_general_ci';
             $table->id();
             $table->unsignedBigInteger('branch_id');
-            $table->integer('holiyear');
-            $table->integer('holimonth');
+            $table->integer('yearname');
+            $table->integer('monthname');
             $table->integer('holidays');
             $table->integer('holiworking');
             $table->integer('active');

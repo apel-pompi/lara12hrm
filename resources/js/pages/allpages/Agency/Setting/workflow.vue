@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { HousePlus, PenBox, Plus, PlusCircle, SquarePen } from 'lucide-vue-next';
+import { HousePlus,  Plus, PlusCircle, SquarePen } from 'lucide-vue-next';
 import draggable from 'vuedraggable';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';

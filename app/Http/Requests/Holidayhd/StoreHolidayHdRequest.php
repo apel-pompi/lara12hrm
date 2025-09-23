@@ -23,8 +23,8 @@ class StoreHolidayHdRequest extends FormRequest
     {
         return [
             'branch_id' =>'required',
-            'holiyear' =>'required',
-            'holimonth' =>'required',
+            'yearname' =>'required',
+            'monthname' =>'required',
             'holidays' =>'required',
             'holiworking' =>'required',
             'active' =>'required',
@@ -35,8 +35,8 @@ class StoreHolidayHdRequest extends FormRequest
     {
         return [
             'branch_id.required' =>'Branch name is not empty',
-            'holiyear.required' =>'Holi Year is not empty',
-            'holimonth.required' =>'Holi Month is not empty',
+            'yearname.required' =>'Holi Year is not empty',
+            'monthname.required' =>'Holi Month is not empty',
             'holidays.required' =>'Holi Days is not empty',
             'holiworking.required' =>'Holi Working Day is not empty',
             'active.required' =>'Status is not empty',
@@ -47,8 +47,8 @@ class StoreHolidayHdRequest extends FormRequest
     {
         return [
             'branch_id' =>'Branch name',
-            'holiyear' =>'Holi Year',
-            'holimonth' =>'Holi Month',
+            'yearname' =>'Holi Year',
+            'monthname' =>'Holi Month',
             'holidays' =>'Holi Days',
             'holiworking' =>'Holi Working Day',
             'active' =>'Status',

@@ -32,8 +32,8 @@ export interface Branch {
 export interface HolidayHd {
     id: number;
     branch_id: string;
-    holiyear: string;
-    holimonth: string;
+    yearname: string;
+    monthname: string;
     holidays: string;
     holiworking: string;
     active: number;
@@ -58,15 +58,15 @@ const props = defineProps<{
     branch: Branch[];
     year: string[];
     month: Record<string, string>;
-    filters: { branch_id?: string; holiyear?: string; holimonth?: string };
+    filters: { branch_id?: string; yearname?: string; monthname?: string };
 }>();
 
 const data = props.holidayHd;
 
 interface FormErrors {
     branch_id?: string;
-    holiyear?: string;
-    holimonth?: string;
+    yearname?: string;
+    monthname?: string;
     holidays?: string;
     holiworking?: string;
     active?: number;
@@ -80,8 +80,8 @@ const errors = ref<FormErrors>();
 const form = useForm({
     id: null as number | null,
     branch_id: '',
-    holiyear: null as number | null,
-    holimonth: null as number | null,
+    yearname: null as number | null,
+    monthname: null as number | null,
     holidays: null as number | null,
     holiworking: null as number | null,
     active: '0',
@@ -98,7 +98,6 @@ const showDailogCreate = () => {
 const onShow = async (id: number) => {
     try {
         const res = await fetch(`/holidayHd/${id}`);
-        console.log(res);
         if (!res.ok) {
             toast.error('Server error while fetching holiday details.');
             return;
@@ -181,7 +180,7 @@ const onDelete = async (id: number) => {
 };
 
 watch(
-    () => [form.holiyear, form.holimonth, form.holidays],
+    () => [form.yearname, form.monthname, form.holidays],
     ([year, month, holidays]) => {
         if (year && month && holidays !== null) {
             const totalDays = new Date(year, month, 0).getDate(); // month is 1-based
@@ -211,15 +210,15 @@ const toggleStatus = (holidayhd: HolidayHd) => {
 
 const searchForm = ref({
     branch_id: props.filters.branch_id || '',
-    holiyear: props.filters.holiyear || '',
-    holimonth: props.filters.holimonth || '',
+    yearname: props.filters.yearname || '',
+    monthname: props.filters.monthname || '',
 });
 
 const search = () => {
     const params: Record<string, any> = {};
     if (searchForm.value.branch_id) params.branch_id = searchForm.value.branch_id;
-    if (searchForm.value.holiyear) params.holiyear = searchForm.value.holiyear;
-    if (searchForm.value.holimonth) params.holimonth = searchForm.value.holimonth;
+    if (searchForm.value.yearname) params.yearname = searchForm.value.yearname;
+    if (searchForm.value.monthname) params.monthname = searchForm.value.monthname;
 
     router.get(route('holidayHd.index'), params, {
         preserveState: false,
@@ -260,7 +259,7 @@ const goToPage = (url: string | null) => {
                     </Select>
                 </div>
                 <div class="grid gap-2">
-                    <Select v-model="searchForm.holiyear">
+                    <Select v-model="searchForm.yearname">
                         <SelectTrigger class="w-full">
                             <SelectValue placeholder="Select Year" />
                         </SelectTrigger>
@@ -274,7 +273,7 @@ const goToPage = (url: string | null) => {
                     </Select>
                 </div>
                 <div class="grid gap-2">
-                    <Select v-model="searchForm.holimonth">
+                    <Select v-model="searchForm.monthname">
                         <SelectTrigger class="w-full">
                             <SelectValue placeholder="Select Month" />
                         </SelectTrigger>
@@ -311,8 +310,8 @@ const goToPage = (url: string | null) => {
                     <TableBody>
                         <TableRow v-for="(holidayhd, index) in data.data" :key="holidayhd.id ?? index">
                             <TableCell>{{ holidayhd.branch?.branchname }}</TableCell>
-                            <TableCell>{{ holidayhd.holiyear }}</TableCell>
-                            <TableCell>{{ holidayhd.holimonth }}</TableCell>
+                            <TableCell>{{ holidayhd.yearname }}</TableCell>
+                            <TableCell>{{ holidayhd.monthname }}</TableCell>
                             <TableCell><a :href="`/holidaydt/${holidayhd.id}/create/`" class="text-blue-600 hover:text-blue-800 underline font-medium">{{ holidayhd.holidays }}</a></TableCell>
                             <TableCell>{{ holidayhd.holiworking }}</TableCell>
                             <TableCell>
@@ -372,8 +371,8 @@ const goToPage = (url: string | null) => {
                             <span v-if="errors?.branch_id" class="text-sm text-red-600">{{ errors.branch_id }}</span>
                         </div>
                         <div class="grid gap-2">
-                            <Label for="holiyear">Holi Year</Label>
-                            <Select v-model="form.holiyear">
+                            <Label for="yearname">Holi Year</Label>
+                            <Select v-model="form.yearname">
                                 <SelectTrigger class="w-full">
                                     <SelectValue placeholder="Select Year" />
                                 </SelectTrigger>
@@ -385,12 +384,12 @@ const goToPage = (url: string | null) => {
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
-                            <span v-if="errors?.holiyear" class="text-sm text-red-600">{{ errors.holiyear }}</span>
+                            <span v-if="errors?.yearname" class="text-sm text-red-600">{{ errors.yearname }}</span>
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="holimonth">Holi Month</Label>
-                            <Select v-model="form.holimonth">
+                            <Label for="monthname">Holi Month</Label>
+                            <Select v-model="form.monthname">
                                 <SelectTrigger class="w-full">
                                     <SelectValue placeholder="Select Month" />
                                 </SelectTrigger>
@@ -402,7 +401,7 @@ const goToPage = (url: string | null) => {
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
-                            <span v-if="errors?.holimonth" class="text-sm text-red-600">{{ errors.holimonth }}</span>
+                            <span v-if="errors?.monthname" class="text-sm text-red-600">{{ errors.monthname }}</span>
                         </div>
                     </div>
                     <div class="grid gap-y-3">
@@ -450,12 +449,12 @@ const goToPage = (url: string | null) => {
                             </div>
                         </FormGroup>
                         <!-- Holi Year -->
-                        <FormGroup label="Holi Year" htmlFor="holiyear">
-                            <Input id="holiyear" v-model="form.holiyear" :disabled="!isEditMode" />
+                        <FormGroup label="Holi Year" htmlFor="yearname">
+                            <Input id="yearname" v-model="form.yearname" :disabled="!isEditMode" />
                         </FormGroup>
                         <!-- Holi Month -->
-                        <FormGroup label="Holi Month" htmlFor="holimonth">
-                            <Input id="holimonth" :modelValue="isEditMode ? form.holimonth : month[form.holimonth]" :disabled="!isEditMode" />
+                        <FormGroup label="Holi Month" htmlFor="monthname">
+                            <Input id="monthname" :modelValue="isEditMode ? form.monthname : month[form.monthname]" :disabled="!isEditMode" />
                         </FormGroup>
                     </div>
                     <!-- Left Column -->

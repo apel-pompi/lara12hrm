@@ -3,10 +3,10 @@ import { Head } from '@inertiajs/vue3';
 
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
-import { type BreadcrumbItem } from '@/types';
-
+import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
+import { type BreadcrumbItem } from '@/types';
 
 const breadcrumbItems: BreadcrumbItem[] = [
     {
@@ -21,9 +21,13 @@ const breadcrumbItems: BreadcrumbItem[] = [
         <Head title="Appearance settings" />
 
         <SettingsLayout>
-            <div class="space-y-6">
+            <div class="flex h-full flex-1 flex-col gap-6 rounded-xl bg-gray-50 p-6">
                 <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
-                <AppearanceTabs />
+                <Card class="border border-gray-200 shadow-sm">
+                    <CardContent class="pt-4">
+                        <AppearanceTabs />
+                    </CardContent>
+                </Card>
             </div>
         </SettingsLayout>
     </AppLayout>

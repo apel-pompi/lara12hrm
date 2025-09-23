@@ -13,7 +13,7 @@ class WDocumentTypeController extends Controller
     public function index()
     {
 
-        return Inertia::render('allpages/Agency/documenttype', [
+        return Inertia::render('allpages/Agency/Setting/documenttype', [
             'documenttype' => WDocumentType::with(['user'])->orderBy('id', 'desc')->get()
         ]);
     }

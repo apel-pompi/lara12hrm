@@ -33,10 +33,11 @@ class HolidayDtController extends Controller
      */
     public function store(StoreHolidayDtRequest $request)
     {
+        
         $holidayHd = HolidayHd::findOrFail($request->holihd_id);
         $holidays = $holidayHd->holidays;
-        $year = $holidayHd->holiyear;
-        $month = $holidayHd->holimonth;
+        $year = $holidayHd->yearname;
+        $month = $holidayHd->monthname;
         $request_year = date("Y", strtotime($request->holidate));
         $request_month = date("m", strtotime($request->holidate));
 

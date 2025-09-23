@@ -12,8 +12,8 @@ class HolidayHd extends Model
 
     protected $fillable = [
         'branch_id',
-        'holiyear',
-        'holimonth',
+        'yearname',
+        'monthname',
         'holidays',
         'holiworking',
         'active',

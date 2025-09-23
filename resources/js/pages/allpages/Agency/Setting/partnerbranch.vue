@@ -26,6 +26,7 @@ export interface PartnerBranch {
 }
 
 const props = defineProps<{
+    partner:{id:number,name:string};
     partnerbranch:{
         id:number;branch_name:string;branch_email:string;active:number
         citys:{
@@ -55,8 +56,9 @@ const props = defineProps<{
         currency_symbol: string;
     }[];
 }>();
-console.log(props.partnerbranch)
+
 interface FormErrors {
+    partner_id?: string;
     branch_name?: string;
     branch_email?: string;
     branch_state_id?: number;
@@ -71,6 +73,7 @@ const errors = ref<FormErrors>();
 
 const form = useForm({
     id: null as number | null,
+    partner_id: '',
     branch_name: '',
     branch_email: '',
     branch_state_id: null,
@@ -88,6 +91,9 @@ const showDailogCreate = () => {
     showDialog.value = true;
 };
 
+// ------------------- Partner-------------------
+const selectedPartner = ref<any>(null);
+const queryPartner = ref('');
 // ------------------- Branch Country & State-------------------
 //selected
 const selectedBranchCountry = ref<any>(null);
@@ -132,6 +138,9 @@ watch(selectedBranchState, async () => {
 });
 
 //filter
+const filteredPartner = computed(() =>
+    queryPartner.value ? props.partner.filter((c) => c.name.toLowerCase().includes(queryPartner.value.toLowerCase())) : props.partner,
+);
 const filteredBranchCountries = computed(() =>
     queryBranchCountry.value ? props.countries.filter((c) => c.name.toLowerCase().includes(queryBranchCountry.value.toLowerCase())) : props.countries,
 );
@@ -175,9 +184,9 @@ const onEdit = async (id: number) => {
 };
 
 const submit = () => {
-
     const action = isEditMode.value && form.id ? route('partnerbranch.update', form.id) : route('partnerbranch.store');
     const method = isEditMode.value ? 'put' : 'post';
+    form.partner_id = selectedPartner.value?.id ?? null;
     form.branch_state_id = selectedBranchState.value?.id ?? null;
     form.branch_city_id = selectedBranchCity.value?.id ?? null;
     form.branch_phonecode = selectedBranchPhone.value?.phonecode ?? null;
@@ -206,7 +215,7 @@ const submit = () => {
 };
 
 const toggleStatus = (partnerbranch: PartnerBranch) => {
-    const newStatus = partnerbranch.active; // boolean
+    const newStatus = !Boolean(partnerbranch.active);
     router.put(
         route('partnerbranch.updateStatus', partnerbranch.id),
         { active: newStatus ? 1 : 0 }, // server expects number
@@ -233,6 +242,7 @@ const toggleStatus = (partnerbranch: PartnerBranch) => {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead>Partner Name</TableHead>
                             <TableHead>Branch Name</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Country Name</TableHead>
@@ -245,20 +255,21 @@ const toggleStatus = (partnerbranch: PartnerBranch) => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow v-for="(partner, index) in props.partnerbranch" :key="partner.id ?? index">
-                            <TableCell>{{ partner.branch_name }}</TableCell>
-                            <TableCell>{{ partner.branch_email }}</TableCell>
-                            <TableCell>{{ partner.states.country.name }}</TableCell>
-                            <TableCell>{{ partner.states.name }}</TableCell>
-                            <TableCell>{{ partner.citys.name }}</TableCell>
+                        <TableRow v-for="(partnerbranch, index) in props.partnerbranch" :key="partnerbranch.id ?? index">
+                            <TableCell>{{ partnerbranch.partner.name }}</TableCell>
+                            <TableCell>{{ partnerbranch.branch_name }}</TableCell>
+                            <TableCell>{{ partnerbranch.branch_email }}</TableCell>
+                            <TableCell>{{ partnerbranch.states?.country.name ?? '-'  }}</TableCell>
+                            <TableCell>{{ partnerbranch.states?.name ?? '-'  }}</TableCell>
+                            <TableCell>{{ partnerbranch.citys?.name ?? '-' }}</TableCell>
                             <TableCell></TableCell>
                             <TableCell>
-                                <Switch v-model="partner.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(partner)"> </Switch>
+                                <Switch v-model="partnerbranch.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(partnerbranch)"> </Switch>
                             </TableCell>
-                            <TableCell>{{ partner.user.name }}</TableCell>
+                            <TableCell>{{ partnerbranch.user.name }}</TableCell>
                             <TableCell class="text-right">
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(partner.id)"><SquarePen></SquarePen></Button>
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(partner.id)"><Trash></Trash></Button>
+                                <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(partnerbranch.id)"><SquarePen></SquarePen></Button>
+                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(partnerbranch.id)"><Trash></Trash></Button>
                             </TableCell>
                         </TableRow>
                     </TableBody>
@@ -280,6 +291,42 @@ const toggleStatus = (partnerbranch: PartnerBranch) => {
 
                 <!-- Form -->
                 <div class="mt-5 grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <!-- Partner -->
+                    <div>
+                        <Label class="block text-sm font-medium text-gray-700 pb-2">Select Partner</Label>
+                        <Combobox v-model="selectedPartner">
+                            <div class="relative">
+                                <ComboboxInput
+                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                    placeholder="Select Partner"
+                                    @input="queryPartner = $event.target.value"
+                                    :display-value="(n) => n?.name"
+                                />
+                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                </ComboboxButton>
+                                <ComboboxOptions
+                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                                >
+                                    <div
+                                        v-if="filteredPartner.length === 0 && queryPartner !== ''"
+                                        class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                    >
+                                        Nothing found.
+                                    </div>
+                                    <ComboboxOption
+                                        v-for="partner in filteredPartner"
+                                        :key="partner.id"
+                                        :value="partner"
+                                        class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
+                                    >
+                                        {{ partner.name }}
+                                    </ComboboxOption>
+                                </ComboboxOptions>
+                            </div>
+                        </Combobox>
+                        <span v-if="form.errors.partner_id" class="text-sm text-red-600">{{ form.errors.partner_id }}</span>
+                    </div>
                     <!-- Branch Name -->
                     <div>
                         <Label class="block text-sm font-medium text-gray-700 pb-2">Branch Name <span class="text-red-500">*</span> </Label>

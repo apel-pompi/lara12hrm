@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasterCategory;
-use App\Models\PartnerTypeSetup;
-use App\Models\ProductTypeSetup;
+use App\Models\Partner\PartnerTypeSetup;
+use App\Models\Product\ProductTypeSetup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;

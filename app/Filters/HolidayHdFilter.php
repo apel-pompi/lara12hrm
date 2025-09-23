@@ -4,8 +4,8 @@ namespace App\Filters;
 
 use App\Filters\BaseFilter;
 use App\Filters\Components\Default\Branch;
-use App\Filters\Components\Holyday\Year;
-use App\Filters\Components\Holyday\Month;
+use App\Filters\Components\Default\Year;
+use App\Filters\Components\Default\Month;
 
 class HolidayHdFilter extends BaseFilter
 {
