@@ -9,6 +9,7 @@ import { Link, router, useForm } from '@inertiajs/vue3';
 import { Eye, Plus, SquarePen, Trash } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
+import { Badge } from '@/components/ui/badge';
 
 const props = defineProps<{
     student: { id: number;status:string };
@@ -226,7 +227,18 @@ const onDelete = async (id: number) => {
                             </TableCell>
                             <TableCell>{{ stud.workflow.name }}</TableCell>
                             <TableCell></TableCell>
-                            <TableCell></TableCell>
+                            <TableCell>
+                                <Badge
+                                    v-if="stud.status"
+                                    size="sm"
+                                    variant="outline"
+                                    :class="
+                                        stud.status === 'In Progress' ? 'text-green-600' : stud.status === 'Archived' ? 'text-red-600' : 'text-blue-600'
+                                    "
+                                >
+                                    {{ stud.status ?? '' }}
+                                </Badge>
+                            </TableCell>
                             <TableCell></TableCell>
                             <TableCell>{{ new Date(stud.created_at).toISOString().split('T')[0] }}</TableCell>
                             <TableCell>{{ new Date(stud.updated_at).toISOString().split('T')[0] }}</TableCell>

@@ -19,6 +19,10 @@ const sidebarNavItems: NavItem[] = [
         href: '/partnerbranch',
     },
     {
+        title: 'Academic',
+        href: '/academics',
+    },
+    {
         title: 'Student Stage',
         href: '/studentStage',
     },

@@ -141,7 +141,7 @@ const submit = () => {
         },
     });
 };
-console.log(props.feesDt)
+
 </script>
 
 <template>

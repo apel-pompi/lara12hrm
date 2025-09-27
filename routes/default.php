@@ -4,7 +4,8 @@ use App\Http\Controllers\Default\{
     TransactionNameController,
     TransactionController,
     FeesController,
-    InstallmentController
+    InstallmentController,
+    AcademicController
 };
 use Illuminate\Support\Facades\Route;
 
@@ -61,6 +62,20 @@ Route::middleware(['verified', 'auth'])->group(function () {
                 Route::delete('/show/{installment}', 'destroy')->name('installment.destroy');
                 Route::get('/{installment}/edit', 'edit')->name('installment.edit');
                 Route::put('/{installment}', 'update')->name('installment.update');
+            }
+        );
+    //Academic route
+    Route::controller(AcademicController::class)
+        ->prefix('academics')
+        ->group(
+            function () {
+                Route::get('/', 'index')->name('academic.index');
+                Route::post('/store', 'store')->name('academic.store');
+                Route::put('/{academic}/status', 'updateStatus')->name('academic.updateStatus');
+                Route::get('/{academic}', 'show')->name('academic.show');
+                Route::delete('/show/{academic}', 'destroy')->name('academic.destroy');
+                Route::get('/{academic}/edit', 'edit')->name('academic.edit');
+                Route::put('/{academic}', 'update')->name('academic.update');
             }
         );
 });

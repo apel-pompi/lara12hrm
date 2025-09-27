@@ -54,10 +54,10 @@ const data = {
                     title: 'HRM Setting',
                     href: '/branch',
                 },
-                {
-                    title: 'Accounts Setting',
-                    href: '/settings/profile',
-                },
+                // {
+                //     title: 'Accounts Setting',
+                //     href: '/settings/profile',
+                // },
                 {
                     title: 'Users Setting',
                     href: '/roles',

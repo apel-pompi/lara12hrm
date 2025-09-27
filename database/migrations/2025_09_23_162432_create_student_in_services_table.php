@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('student_applications', function (Blueprint $table) {
+        Schema::create('student_in_services', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('student_id');
             $table->unsignedBigInteger('workflow_id');
             $table->unsignedBigInteger('partner_branch_id');
             $table->unsignedBigInteger('product_id');
-            $table->string('stage')->nullable();
+            $table->date('startdate')->nullable();
+            $table->date('enddate')->nullable();
             $table->string('status')->nullable();
-            $table->float('saleprice')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->timestamps();
 
@@ -36,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('student_applications');
+        Schema::dropIfExists('student_in_services');
     }
 };

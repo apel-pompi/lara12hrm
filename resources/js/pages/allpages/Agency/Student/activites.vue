@@ -4,7 +4,7 @@ const props = defineProps<{
     student: { id: number;status:string };
     activity:[]
 }>();
-console.log(props.activity)
+
 </script>
 
 <template>

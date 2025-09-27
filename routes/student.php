@@ -6,6 +6,7 @@ use App\Http\Controllers\Student\{
     StudentController,
     StudentActivitiesController,
     StudentApplicationController,
+    StudentInServiceController,
 };
 use Illuminate\Support\Facades\Route;
 
@@ -79,5 +80,18 @@ Route::middleware(['verified', 'auth'])->group(function () {
         Route::get('{studentApplication}/edit', 'editApplication')->name('studentApplication.editApplication');
     });
 
-    
+    // Student Interest Service
+    Route::controller(StudentInServiceController::class)
+    ->prefix('student/activities/{student}/interestedservice')
+    ->group(function () {
+        Route::get('/', 'index')->name('studentInService.index');
+        Route::get('/{partner}/partner', 'partner')->name('studentInService.partner');
+        Route::get('/{product}/{partner}/product', 'product')->name('studentInService.product');
+        Route::post('/store', 'store')->name('studentInService.store');
+        Route::post('/create', 'create')->name('studentInService.create');
+        Route::get('/{studentInService}/edit', 'edit')->name('studentInService.edit');
+        Route::put('/{studentInService}', 'update')->name('studentInService.update');
+        Route::delete('/show/{studentInService}', 'destroy')->name('studentInService.destroy');
+        Route::get('{studentInService}/edit', 'editApplication')->name('studentInService.editApplication');
+    });
 });

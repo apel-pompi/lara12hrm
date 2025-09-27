@@ -18,19 +18,15 @@ export interface Student {
 const props = defineProps<{
     student: { id: number; status: string };
 }>();
-console.log(props.student.status);
+
 const lead = [
     {
         title: 'Activities',
         href: route('studentActivities.index', props.student.id),
     },
     {
-        title: 'Applications',
-        href: route('studentApplication.index', props.student.id),
-    },
-    {
         title: 'Interested Service',
-        href: route('studentApplication.index', props.student.id),
+        href: route('studentInService.index', props.student.id),
     },
     {
         title: 'Documents',
@@ -56,6 +52,10 @@ const lead = [
         title: 'Educations',
         href: route('studentApplication.index', props.student.id),
     },
+    {
+        title: 'Check-in Logs',
+        href: route('studentApplication.index', props.student.id),
+    },
 ];
 
 const prospect = [
@@ -64,8 +64,12 @@ const prospect = [
         href: route('studentActivities.index', props.student.id),
     },
     {
+        title: 'Applications',
+        href: route('studentActivities.index', props.student.id),
+    },
+    {
         title: 'Interested Service',
-        href: route('studentApplication.index', props.student.id),
+        href: route('studentInService.index', props.student.id),
     },
     {
         title: 'Documents',
@@ -99,6 +103,10 @@ const prospect = [
         title: 'Educations',
         href: route('studentApplication.index', props.student.id),
     },
+    {
+        title: 'Check-in Logs',
+        href: route('studentApplication.index', props.student.id),
+    },
 ];
 const client = [
     {
@@ -111,7 +119,7 @@ const client = [
     },
     {
         title: 'Interested Service',
-        href: route('studentApplication.index', props.student.id),
+        href: route('studentInService.index', props.student.id),
     },
     {
         title: 'Documents',
@@ -145,6 +153,10 @@ const client = [
         title: 'Educations',
         href: route('studentApplication.index', props.student.id),
     },
+    {
+        title: 'Check-in Logs',
+        href: route('studentApplication.index', props.student.id),
+    },
 ];
 
 const archive = [
@@ -158,7 +170,7 @@ const archive = [
     },
     {
         title: 'Interested Service',
-        href: route('studentApplication.index', props.student.id),
+        href: route('studentInService.index', props.student.id),
     },
     {
         title: 'Documents',
