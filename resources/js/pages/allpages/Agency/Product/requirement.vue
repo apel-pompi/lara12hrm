@@ -5,16 +5,24 @@ import { Label } from '@/components/ui/label';
 import ProductLayout from '@/pages/allpages/Agency/Product/productlayout.vue';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import { SquarePen } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<{
     product: { id: number; status: string };
     academic: { id: number; name: string };
     requirement: { id: number; scoretype: string; score: string }[];
+    requirementEnglish: Array<{
+        id: number;
+        name: string;
+        listening: number | null;
+        reading: number | null;
+        writing: number | null;
+        speaking: number | null;
+        overall: number | null;
+    }>;
 }>();
 
 const scoreType = ref(''); // percentage, gpa, cgpa
@@ -29,9 +37,9 @@ const scorePlaceholder = computed(() => {
     return 'Select type first';
 });
 
-const showDialog = ref(false);
-const isEditAcademic = ref(false);
+const showDialogAcademic = ref(false);
 const editingId = ref<number | null>(null);
+
 // Combobox states
 const selecteName = ref(null); // name
 const queryName = ref('');
@@ -39,21 +47,13 @@ const queryName = ref('');
 // Filtered lists
 const filteredName = computed(() => (queryName.value === '' ? props.academic : props.academic.filter((n) => n.name)));
 
-const form = useForm({
-    id: null as number | null,
-    product_id: '',
-    degree_id: '',
-    scoretype: '',
-    score: '',
-});
-
 const onCreateAcademic = () => {
     editingId.value = null;
     selecteName.value = null;
     scoreType.value = 'percentage';
     academicScore.value = null;
 
-    showDialog.value = true;
+    showDialogAcademic.value = true;
 };
 
 const onEditAcademic = async (id: number) => {
@@ -68,10 +68,10 @@ const onEditAcademic = async (id: number) => {
     scoreType.value = req.scoretype;
     academicScore.value = req.score;
 
-    showDialog.value = true;
+    showDialogAcademic.value = true;
 };
 
-const submit = () => {
+const submitAcademic = () => {
     const params: Record<string, any> = {};
     if (selecteName.value) params.id = selecteName.value.id;
 
@@ -90,7 +90,7 @@ const submit = () => {
                 description: res.data.message,
             });
 
-            showDialog.value = false;
+            showDialogAcademic.value = false;
             editingId.value = null;
             academicScore.value = null;
             selecteName.value = null;
@@ -114,7 +114,69 @@ const submit = () => {
         });
 };
 
+const requirementEnglish = ref([...props.requirementEnglish]);
+const showDialogEnglish = ref(false);
+const editingIdEng = ref<number | null>(null);
 
+watch(
+    () => props.requirementEnglish,
+    (newVal) => {
+        requirementEnglish.value = [...newVal];
+    },
+    { deep: true },
+);
+
+const testTypes = ref([
+    { name: 'TOEFL', listening: null, reading: null, writing: null, speaking: null, overall: null },
+    { name: 'IELTS', listening: null, reading: null, writing: null, speaking: null, overall: null },
+    { name: 'PTE', listening: null, reading: null, writing: null, speaking: null, overall: null },
+]);
+
+const openEnglishDialog = () => {
+    testTypes.value.forEach((test) => {
+        test.listening = null;
+        test.reading = null;
+        test.writing = null;
+        test.speaking = null;
+        test.overall = null;
+    });
+
+    if (props.requirementEnglish.length > 0) {
+        props.requirementEnglish.forEach((req) => {
+            const match = testTypes.value.find((t) => t.name === req.name);
+            if (match) {
+                match.listening = req.listening;
+                match.reading = req.reading;
+                match.writing = req.writing;
+                match.speaking = req.speaking;
+                match.overall = req.overall;
+            }
+        });
+    }
+
+    showDialogEnglish.value = true;
+};
+
+const submitEnglish = () => {
+    const payload = {
+        product_id: props.product.id,
+        testTypes: testTypes.value,
+    };
+
+    axios
+        .post(`/product/activities/${props.product.id}/requirementEng`, payload)
+        .then((res) => {
+            toast('Success', { description: res.data.message });
+
+            showDialogEnglish.value = false;
+            editingIdEng.value = null;
+
+            requirementEnglish.value = res.data.requirementEnglish;
+        })
+        .catch((err) => {
+            toast('Error', { description: 'Failed to save requirement.' + err.message });
+        });
+};
 </script>
 
 <template>
@@ -149,10 +211,13 @@ const submit = () => {
             <div class="rounded-xl bg-white p-4 shadow sm:p-6">
                 <div class="mb-4 flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-gray-800">English Test Scores</h2>
-                    <button class="rounded-md bg-blue-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-600">Edit</button>
+                    <Button size="sm" variant="default" @click="openEnglishDialog">
+                        <SquarePen /> {{ props.requirementEnglish.length > 0 ? 'Edit' : 'Create' }}
+                    </Button>
                 </div>
                 <!-- Table Header -->
-                <div class="grid grid-cols-5 border-b pb-2 text-xs font-medium text-gray-500">
+                <div class="grid grid-cols-6 border-b pb-2 text-xs font-medium text-gray-500">
+                    <p class="border-b-0 text-center"></p>
                     <p class="text-center">LISTENING</p>
                     <p class="text-center">READING</p>
                     <p class="text-center">WRITING</p>
@@ -161,35 +226,16 @@ const submit = () => {
                 </div>
 
                 <!-- TOEFL Row -->
-                <div class="grid grid-cols-5 items-center border-b py-3 text-sm text-gray-700">
-                    <p class="text-center">-</p>
-                    <p class="text-center">-</p>
-                    <p class="text-center">-</p>
-                    <p class="text-center">-</p>
+                <div v-for="re in requirementEnglish" :key="re.id" class="grid grid-cols-6 items-center py-3 text-sm text-gray-700">
+                    <p class="text-center">{{ re.name ?? '-' }}</p>
+                    <p class="text-center">{{ re.listening ?? '-' }}</p>
+                    <p class="text-center">{{ re.reading ?? '-' }}</p>
+                    <p class="text-center">{{ re.writing ?? '-' }}</p>
+                    <p class="text-center">{{ re.speaking ?? '-' }}</p>
                     <div class="flex justify-center">
-                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-green-400 text-xs text-white">-</span>
-                    </div>
-                </div>
-
-                <!-- IELTS Row -->
-                <div class="grid grid-cols-5 items-center border-b py-3 text-sm text-gray-700">
-                    <p class="text-center">-</p>
-                    <p class="text-center">-</p>
-                    <p class="text-center">-</p>
-                    <p class="text-center">-</p>
-                    <div class="flex justify-center">
-                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-green-400 text-xs text-white">-</span>
-                    </div>
-                </div>
-
-                <!-- PTE Row -->
-                <div class="grid grid-cols-5 items-center py-3 text-sm text-gray-700">
-                    <p class="text-center">-</p>
-                    <p class="text-center">-</p>
-                    <p class="text-center">-</p>
-                    <p class="text-center">-</p>
-                    <div class="flex justify-center">
-                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-green-400 text-xs text-white">-</span>
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-green-400 text-xs text-white">{{
+                            re.overall ?? '-'
+                        }}</span>
                     </div>
                 </div>
             </div>
@@ -221,7 +267,7 @@ const submit = () => {
             </div>
         </div>
         <!-- Academic Dialog -->
-        <Dialog v-model:open="showDialog">
+        <Dialog v-model:open="showDialogAcademic">
             <DialogContent class="max-w-md rounded-lg bg-white shadow-xl">
                 <!-- Header -->
                 <DialogHeader class="border-b border-gray-200 px-6 py-4">
@@ -279,9 +325,6 @@ const submit = () => {
                                 </ComboboxOptions>
                             </div>
                         </Combobox>
-                        <p v-if="form.errors.degree" class="text-xs text-red-600">
-                            {{ form.errors.degree }}
-                        </p>
                     </div>
 
                     <!-- Academic Score -->
@@ -319,7 +362,61 @@ const submit = () => {
                     <DialogClose as-child>
                         <Button type="button" variant="secondary"> Cancel </Button>
                     </DialogClose>
-                    <Button :disabled="!scoreType || academicScore === null" @click="submit" variant="default"> Update </Button>
+                    <Button :disabled="!scoreType || academicScore === null" @click="submitAcademic" variant="default"> Update </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+        <!-- English Test Scores -->
+        <Dialog v-model:open="showDialogEnglish">
+            <DialogContent class="max-w-md rounded-lg bg-white shadow-xl">
+                <!-- Header -->
+                <DialogHeader class="border-b border-gray-200 px-6 py-4">
+                    <DialogTitle class="text-base font-semibold text-gray-800">English Test Scores</DialogTitle>
+                </DialogHeader>
+
+                <!-- Body -->
+                <div class="overflow-x-auto text-sm">
+                    <table class="w-full text-left">
+                        <thead class="text-gray-700">
+                            <tr>
+                                <th class="p-2"></th>
+                                <th class="p-2">Listening</th>
+                                <th class="p-2">Reading</th>
+                                <th class="p-2">Writing</th>
+                                <th class="p-2">Speaking</th>
+                                <th class="p-2 font-semibold text-green-600">Overall Scores</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- TOEFL Row -->
+                            <tr v-for="(test, index) in testTypes" :key="index">
+                                <td class="py-2 pr-6 text-sm font-medium">{{ test.name }}</td>
+                                <td class="p-2">
+                                    <input type="number" v-model="test.listening" class="w-full rounded border px-2 py-1 text-sm" />
+                                </td>
+                                <td class="p-2">
+                                    <input type="number" v-model="test.reading" class="w-full rounded border px-2 py-1 text-sm" />
+                                </td>
+                                <td class="p-2">
+                                    <input type="number" v-model="test.writing" class="w-full rounded border px-2 py-1 text-sm" />
+                                </td>
+                                <td class="p-2">
+                                    <input type="number" v-model="test.speaking" class="w-full rounded border px-2 py-1 text-sm" />
+                                </td>
+                                <td class="p-2">
+                                    <input type="number" v-model="test.overall" class="w-full rounded border px-2 py-1 text-sm" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer -->
+                <DialogFooter class="flex justify-end space-x-3 border-t border-gray-200 px-6 py-4">
+                    <DialogClose as-child>
+                        <Button type="button" variant="secondary">Cancel</Button>
+                    </DialogClose>
+                    <Button @click="submitEnglish" variant="default"> Update </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

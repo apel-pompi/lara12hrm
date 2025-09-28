@@ -8,6 +8,7 @@ use App\Models\Country;
 use App\Models\Default\Academic;
 use App\Models\Default\Fees;
 use App\Models\Default\Installment;
+use App\Models\Product\EnglishTest;
 use App\Models\Product\Product;
 use App\Models\Product\ProductFeesDt;
 use App\Models\Product\ProductFeesHd;
@@ -77,7 +78,8 @@ class ProductActivities extends Controller
         return Inertia::render('allpages/Agency/Product/requirement', [
             'product' => $product,
             'academic' => Academic::where('active', 1)->get(),
-            'requirement' => ProductRequirement::with(['degree'])->where('product_id', $product->id)->get()
+            'requirement' => ProductRequirement::with(['degree'])->where('product_id', $product->id)->get(),
+            'requirementEnglish' => EnglishTest::where('product_id', $product->id)->get()
         ]);
     }
 
@@ -110,15 +112,67 @@ class ProductActivities extends Controller
                 'degree_id' => $validated['degree_id'],
                 'scoretype' => $validated['scoretype'],
                 'score' => $validated['score'],
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
             ]
 
         );
-       $insert->load('degree');
+        $insert->load('degree');
         return response()->json([
             'success' => true,
             'message' => $request->id ? 'Requirement updated' : 'Requirement created',
             'requirement' => $insert,
+        ]);
+    }
+
+    public function editRequirementEng(Product $product, $requirement)
+    {
+        $requirement = EnglishTest::where('product_id', $product->id)
+            ->findOrFail($requirement);
+
+        return response()->json([
+            'requirementEnglish' => $requirement
+        ]);
+    }
+
+    public function storeRequirementEng(Request $request, Product $product)
+    {
+
+        $request->validate([
+            'product_id' => 'required|integer|exists:products,id',
+            'testTypes' => 'required|array|min:3',
+            'testTypes.*.name' => 'required|string|in:TOEFL,IELTS,PTE',
+            'testTypes.*.listening' => 'nullable|numeric',
+            'testTypes.*.reading' => 'nullable|numeric',
+            'testTypes.*.writing' => 'nullable|numeric',
+            'testTypes.*.speaking' => 'nullable|numeric',
+            'testTypes.*.overall' => 'nullable|numeric',
+        ]);
+        $userId = auth()->id();
+
+        foreach ($request->testTypes as $test) {
+            EnglishTest::updateOrCreate(
+                [
+                    'product_id' => $product->id,
+                    'name' => $test['name'],
+                ],
+                [
+                    'listening' => $test['listening'],
+                    'reading' => $test['reading'],
+                    'writing' => $test['writing'],
+                    'speaking' => $test['speaking'],
+                    'overall' => $test['overall'],
+                    'user_id' => $userId,
+                ]
+            );
+        }
+
+        // return full fresh list
+        $requirementEnglish = EnglishTest::where('product_id', $product->id)->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'English test scores updated successfully',
+            'requirementEnglish' => $requirementEnglish,
         ]);
     }
 

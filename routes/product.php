@@ -31,11 +31,17 @@ Route::middleware(['verified', 'auth'])->group(function () {
             function () {
                 Route::get('/aplication', 'aplication')->name('productActivities.application');
                 Route::get('/documents', 'documents')->name('productActivities.documents');
+
                 Route::get('/fees', 'fees')->name('productActivities.fees');
                 Route::post('/fees', 'storefess')->name('productActivities.storefess');
+
                 Route::get('/requirement', 'requirement')->name('productActivities.requirement');
                 Route::get('/requirement/{requirement}/edit', 'editRequirement')->name('productActivities.editRequirement');
                 Route::post('/requirement', 'storeRequirement')->name('productActivities.storeRequirement');
+
+                Route::get('/requirementEng/{requirementEng}/edit', 'editRequirementEng')->name('productActivities.editRequirementEng');
+                Route::post('/requirementEng', 'storeRequirementEng')->name('productActivities.storeRequirementEng');
+                
                 Route::get('/others', 'others')->name('productActivities.others');
                 Route::get('/promotions', 'promotions')->name('productActivities.promotions');
             }
