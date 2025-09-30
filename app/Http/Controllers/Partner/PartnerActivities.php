@@ -26,7 +26,7 @@ class PartnerActivities extends Controller
     public function branch(Partner $partner){
         return Inertia::render('allpages/Agency/Partner/branch', [
             'partner' => $partner,
-            'branch' => PartnerBranch::with(['partner','user','states.country','citys'])->get()
+            'branch' => PartnerBranch::with(['partner','user','states.country','citys'])->where('partner_id',$partner->id)->get()
         ]);
     }
 

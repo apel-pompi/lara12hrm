@@ -36,11 +36,15 @@ Route::middleware(['verified', 'auth'])->group(function () {
                 Route::post('/fees', 'storefess')->name('productActivities.storefess');
 
                 Route::get('/requirement', 'requirement')->name('productActivities.requirement');
+
                 Route::get('/requirement/{requirement}/edit', 'editRequirement')->name('productActivities.editRequirement');
                 Route::post('/requirement', 'storeRequirement')->name('productActivities.storeRequirement');
 
                 Route::get('/requirementEng/{requirementEng}/edit', 'editRequirementEng')->name('productActivities.editRequirementEng');
                 Route::post('/requirementEng', 'storeRequirementEng')->name('productActivities.storeRequirementEng');
+
+                Route::get('/requirementOthers/{requirementOthers}/edit', 'editRequirementOthers')->name('productActivities.editRequirementOthers');
+                Route::post('/requirementOthers', 'storeRequirementOthers')->name('productActivities.storeRequirementOthers');
                 
                 Route::get('/others', 'others')->name('productActivities.others');
                 Route::get('/promotions', 'promotions')->name('productActivities.promotions');

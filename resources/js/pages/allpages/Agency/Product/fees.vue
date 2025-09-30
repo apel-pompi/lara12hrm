@@ -17,7 +17,7 @@ import { router, useForm } from '@inertiajs/vue3';
 import { Plus, SquarePen, Trash } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
-import { Installment } from '../Setting/installment.vue';
+
 
 const props = defineProps<{
     product: { id: number; status: string };

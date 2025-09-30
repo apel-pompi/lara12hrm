@@ -246,7 +246,7 @@ const updateRate = (status: number) => {
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border bg-gray-100 px-4 md:min-h-min">
-            <div class="flex items-center justify-end space-x-2 pt-4 pl-4">
+            <div class="flex items-center justify-end space-x-2 pt-1 pl-4">
                 <div class="flex-1 text-sm">
                     <Heading title="Student Actvities" description="Manage your student activities and account settings" />
                 </div>
@@ -254,9 +254,9 @@ const updateRate = (status: number) => {
                     <Button variant="outline" size="sm" @click="goToStudent"><CornerDownLeft></CornerDownLeft> Back</Button>
                 </div>
             </div>
-            <div class="flex flex-col gap-6 p-4 lg:flex-row">
+            <div class="flex flex-col gap-6 lg:flex-row pb-12">
                 <!-- LEFT SIDEBAR -->
-                <aside class="flex w-full flex-col gap-6 rounded-xl bg-white p-4 shadow lg:w-1/4 dark:bg-gray-900">
+                <aside class="flex w-full flex-col gap-6 bg-white p-4 shadow lg:w-1/5 dark:bg-gray-900">
                     <!-- Profile -->
                     <div class="flex flex-col items-center border-b pb-5 text-center">
                         <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-xl font-bold dark:bg-gray-700">AR</div>
@@ -360,7 +360,7 @@ const updateRate = (status: number) => {
                         </div>
                     </nav>
 
-                    <section class="rounded-xl bg-white p-4 shadow dark:bg-gray-900">
+                    <section class="bg-white p-4 shadow dark:bg-gray-900">
                         <slot />
                     </section>
                 </main>

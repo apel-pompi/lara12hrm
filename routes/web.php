@@ -277,5 +277,6 @@ require __DIR__ . '/partner.php';
 require __DIR__ . '/student.php';
 require __DIR__ . '/product.php';
 require __DIR__ . '/default.php';
+require __DIR__ . '/agencysetting.php';
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

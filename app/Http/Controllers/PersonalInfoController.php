@@ -5,15 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\PersonalInfo;
 use App\Http\Requests\PersonalInfo\StorePersonalInfoRequest;
 use App\Models\Branch;
+use App\Models\Default\gDrive;
 use App\Models\Department;
 use App\Models\Designation;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
+use GuzzleHttp\Client;
 use App\Services\PersonalInfoService;
 use Inertia\Inertia;
 
 class PersonalInfoController extends Controller
 {
+    
+
     /**
      * Display a listing of the resource.
      */
@@ -35,28 +40,64 @@ class PersonalInfoController extends Controller
      */
     public function store(StorePersonalInfoRequest $request)
     {
-       
-        $validated = $request->validated();
-        
-        $validated['active'] = $request->input('active', 0);
-        
-        if ($request->hasFile('photo')) {
-            $filePath = public_path('storage/employee');
-            // create folder if not exists
-            if (!File::exists($filePath)) {
-                File::makeDirectory($filePath, 0777, true, true);
-            }
-            $file = $request->file('photo');
-            $file_name = time() . '_' .$file->getClientOriginalName();
-            $file->move($filePath, $file_name);
-            $validated['photo'] = $file_name;
+
+        //$validated = $request->validated();
+
+        //$validated['active'] = $request->input('active', 0);
+        $client = new Client();
+        $file = $request->file('photo');
+        $name = time() . '_' . $file->getClientOriginalName();
+        $path = $file->getRealPath();
+        $folderId = config('services.google.folder_id');
+
+        $accessToken = gDrive::token();
+        if (!$accessToken) {
+            return response()->json(['error' => 'Google Access Token not found'], 500);
         }
 
-        PersonalInfo::create($validated);
+        $multipart = [
+            [
+                'name'     => 'metadata',
+                'contents' => json_encode([
+                    'name' => $name,
+                    'parents' => [$folderId],
+                ]),
+                'headers'  => ['Content-Type' => 'application/json; charset=UTF-8']
+            ],
+            [
+                'name'     => 'file',
+                'contents' => fopen($path, 'r'),
+                'filename' => $name,
+            ],
+        ];
 
-        return redirect()
-            ->route('personalinfo.index')
-            ->with('success', 'Personal Information created successfully.');
+        $response = $client->request('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', [
+            'headers' => [
+                'Authorization' => "Bearer $accessToken",
+            ],
+            'multipart' => $multipart,
+        ]);
+
+        $result = json_decode($response->getBody(), true);
+        dd($result);
+
+        // if ($request->hasFile('photo')) {
+        //     $filePath = public_path('storage/employee');
+        //     // create folder if not exists
+        //     if (!File::exists($filePath)) {
+        //         File::makeDirectory($filePath, 0777, true, true);
+        //     }
+        //     $file = $request->file('photo');
+        //     $file_name = time() . '_' .$file->getClientOriginalName();
+        //     $file->move($filePath, $file_name);
+        //     $validated['photo'] = $file_name;
+        // }
+
+        //PersonalInfo::create($validated);
+
+        // return redirect()
+        //     ->route('personalinfo.index')
+        //     ->with('success', 'Personal Information created successfully.');
     }
 
     public function updateStatus(Request $request, $PersonalInfo)
@@ -142,7 +183,7 @@ class PersonalInfoController extends Controller
                 File::makeDirectory($filePath, 0777, true, true);
             }
             $file = $request->file('photo');
-            $fileName = time() . '_' .$file->getClientOriginalName();
+            $fileName = time() . '_' . $file->getClientOriginalName();
             $file->move($filePath, $fileName);
             // delete old photo if exists
             if (!empty($personalInfo->photo)) {
@@ -166,7 +207,7 @@ class PersonalInfoController extends Controller
      */
     public function destroy(PersonalInfo $PersonalInfo)
     {
-        
+
         try {
             if (!empty($PersonalInfo->photo)) {
                 $oldImage = public_path('storage/employee/' . $PersonalInfo->photo);

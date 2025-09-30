@@ -23,6 +23,11 @@ const props = defineProps<{
         speaking: number | null;
         overall: number | null;
     }>;
+    requirementOthers:Array<{
+        id:number;
+        name:string;
+        scores:number | null;
+    }>
 }>();
 
 const scoreType = ref(''); // percentage, gpa, cgpa
@@ -177,6 +182,60 @@ const submitEnglish = () => {
             toast('Error', { description: 'Failed to save requirement.' + err.message });
         });
 };
+
+const requirementOthers = ref([...props.requirementOthers]);
+const showDialogOthers = ref(false);
+const editingIdOthers = ref<number | null>(null);
+const othersTypes = ref([
+    { name: 'SAT I', scores: null },
+    { name: 'SAT II', scores: null },
+    { name: 'GRE', scores: null },
+    { name: 'GMAT', scores: null },
+]);
+const openOthersDialog = () => {
+    othersTypes.value.forEach((test) => {
+        test.scores = null;
+    });
+
+    if (props.requirementOthers.length > 0) {
+        props.requirementOthers.forEach((req) => {
+            const match = othersTypes.value.find((t) => t.name === req.name);
+            if (match) {
+                match.scores = req.scores;
+            }
+        });
+    }
+
+    showDialogOthers.value = true;
+};
+const submitOthers = () => {
+    const payload = {
+        product_id: props.product.id,
+        othersTypes: othersTypes.value,
+    };
+
+    axios
+        .post(`/product/activities/${props.product.id}/requirementOthers`, payload)
+        .then((res) => {
+            toast('Success', { description: res.data.message });
+
+            showDialogOthers.value = false;
+            editingIdOthers.value = null;
+
+            requirementOthers.value = res.data.requirementOthers;
+        })
+        .catch((err) => {
+            toast('Error', { description: 'Failed to save requirement.' + err.message });
+        });
+};
+
+watch(
+    () => props.requirementOthers,
+    (newVal) => {
+        requirementOthers.value = [...newVal];
+    },
+    { deep: true },
+);
 </script>
 
 <template>
@@ -225,7 +284,7 @@ const submitEnglish = () => {
                     <p class="text-center">OVERALL</p>
                 </div>
 
-                <!-- TOEFL Row -->
+                <!-- Row -->
                 <div v-for="re in requirementEnglish" :key="re.id" class="grid grid-cols-6 items-center py-3 text-sm text-gray-700">
                     <p class="text-center">{{ re.name ?? '-' }}</p>
                     <p class="text-center">{{ re.listening ?? '-' }}</p>
@@ -244,24 +303,14 @@ const submitEnglish = () => {
             <div class="rounded-xl bg-white p-4 shadow sm:p-6">
                 <div class="mb-4 flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-gray-800">Other Test Scores</h2>
-                    <button class="rounded-md bg-blue-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-600">Edit</button>
+                    <Button size="sm" variant="default" @click="openOthersDialog">
+                        <SquarePen /> {{ props.requirementOthers.length > 0 ? 'Edit' : 'Create' }}
+                    </Button>
                 </div>
                 <div class="grid grid-cols-4 gap-4">
-                    <div class="flex flex-col items-center">
-                        <p class="text-xs font-medium text-gray-600">SAT I</p>
-                        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-green-400 text-sm text-white">-</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <p class="text-xs font-medium text-gray-600">SAT II</p>
-                        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-green-400 text-sm text-white">-</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <p class="text-xs font-medium text-gray-600">GRE</p>
-                        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-green-400 text-sm text-white">-</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <p class="text-xs font-medium text-gray-600">GMAT</p>
-                        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-green-400 text-sm text-white">-</span>
+                    <div v-for="others in requirementOthers" :key="others.id" class="flex flex-col items-center">
+                        <p class="text-xs font-medium text-gray-600">{{ others.name ?? '-' }}</p>
+                        <span class="flex h-10 w-10 items-center justify-center rounded-full bg-green-400 text-sm text-white">{{ others.scores ?? '-' }}</span>
                     </div>
                 </div>
             </div>
@@ -417,6 +466,44 @@ const submitEnglish = () => {
                         <Button type="button" variant="secondary">Cancel</Button>
                     </DialogClose>
                     <Button @click="submitEnglish" variant="default"> Update </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+        <!-- Others Test Scores -->
+        <Dialog v-model:open="showDialogOthers">
+            <DialogContent class="max-w-md rounded-lg bg-white shadow-xl">
+                <!-- Header -->
+                <DialogHeader class="border-b border-gray-200 px-6 py-4">
+                    <DialogTitle class="text-base font-semibold text-gray-800">Others Test Scores</DialogTitle>
+                </DialogHeader>
+
+                <!-- Body -->
+                <div class="overflow-x-auto text-sm">
+                    <table class="w-full text-left">
+                        <thead class="text-gray-700">
+                            <tr>
+                                <th class="p-2"></th>
+                                <th class="p-2">Scores</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- TOEFL Row -->
+                            <tr v-for="(test, index) in othersTypes" :key="index">
+                                <td class="py-2 pr-6 text-sm font-medium">{{ test.name }}</td>
+                                <td class="p-2">
+                                    <input type="number" v-model="test.scores" class="w-full rounded border px-2 py-1 text-sm" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer -->
+                <DialogFooter class="flex justify-end space-x-3 border-t border-gray-200 px-6 py-4">
+                    <DialogClose as-child>
+                        <Button type="button" variant="secondary">Cancel</Button>
+                    </DialogClose>
+                    <Button @click="submitOthers" variant="default"> Update </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

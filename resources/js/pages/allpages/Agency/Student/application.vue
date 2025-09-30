@@ -106,7 +106,7 @@ const filteredProduct = computed(() =>
 );
 
 const onShow = (id: number) => {
-    router.visit(`/student/activities/${props.student.id}/application/${id}/edit`);
+    router.visit(`/student/activities/${props.student.id}/application/${id}/activities`);
 };
 
 const onEdit = async (id: number) => {

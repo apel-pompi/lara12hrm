@@ -9,6 +9,7 @@ use App\Models\Default\Academic;
 use App\Models\Default\Fees;
 use App\Models\Default\Installment;
 use App\Models\Product\EnglishTest;
+use App\Models\Product\OthersTest;
 use App\Models\Product\Product;
 use App\Models\Product\ProductFeesDt;
 use App\Models\Product\ProductFeesHd;
@@ -79,7 +80,8 @@ class ProductActivities extends Controller
             'product' => $product,
             'academic' => Academic::where('active', 1)->get(),
             'requirement' => ProductRequirement::with(['degree'])->where('product_id', $product->id)->get(),
-            'requirementEnglish' => EnglishTest::where('product_id', $product->id)->get()
+            'requirementEnglish' => EnglishTest::where('product_id', $product->id)->get(),
+            'requirementOthers' => OthersTest::where('product_id', $product->id)->get()
         ]);
     }
 
@@ -173,6 +175,50 @@ class ProductActivities extends Controller
             'success' => true,
             'message' => 'English test scores updated successfully',
             'requirementEnglish' => $requirementEnglish,
+        ]);
+    }
+
+    public function editRequirementOthers(Product $product, $requirement)
+    {
+        $requirement = OthersTest::where('product_id', $product->id)
+            ->findOrFail($requirement);
+
+        return response()->json([
+            'requirementOthers' => $requirement
+        ]);
+    }
+
+    public function storeRequirementOthers(Request $request, Product $product)
+    {
+        
+        $request->validate([
+            'product_id' => 'required|integer|exists:products,id',
+            'othersTypes' => 'required|array|min:4',
+            'othersTypes.*.name' => 'required|string|in:SAT I,SAT II,GRE,GMAT',
+            'othersTypes.*.scores' => 'nullable|numeric',
+        ]);
+        $userId = auth()->id();
+
+        foreach ($request->othersTypes as $test) {
+            OthersTest::updateOrCreate(
+                [
+                    'product_id' => $product->id,
+                    'name' => $test['name'],
+                ],
+                [
+                    'scores' => $test['scores'],
+                    'user_id' => $userId,
+                ]
+            );
+        }
+
+        // return full fresh list
+        $requirementOthers = OthersTest::where('product_id', $product->id)->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Others test scores updated successfully',
+            'requirementOthers' => $requirementOthers,
         ]);
     }
 

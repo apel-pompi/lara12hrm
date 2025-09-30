@@ -77,7 +77,11 @@ Route::middleware(['verified', 'auth'])->group(function () {
         Route::get('/{studentApplication}/edit', 'edit')->name('studentApplication.edit');
         Route::put('/{studentApplication}', 'update')->name('studentApplication.update');
         Route::delete('/show/{studentApplication}', 'destroy')->name('studentApplication.destroy');
-        Route::get('{studentApplication}/edit', 'editApplication')->name('studentApplication.editApplication');
+        Route::get('{studentApplication}/activities', 'editApplication')->name('studentApplication.editApplication');
+        Route::get('{studentApplication}/document', 'documentApplication')->name('studentApplication.documentApplication');
+        Route::get('{studentApplication}/notes', 'notesApplication')->name('studentApplication.notesApplication');
+        Route::get('{studentApplication}/tasks', 'tasksApplication')->name('studentApplication.tasksApplication');
+        Route::get('{studentApplication}/payment', 'paymentApplication')->name('studentApplication.paymentApplication');
     });
 
     // Student Interest Service

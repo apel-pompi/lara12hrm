@@ -23,7 +23,7 @@ class StudentInServiceController extends Controller
         return Inertia::render('allpages/Agency/Student/interestedservice', [
             'student' => $student,
             'workflow' => Workflow::where('active', 1)->get(),
-            'studentService' => StudentInService::with(['student', 'workflow', 'partnerBranch.partner', 'product', 'productfees', 'user'])->get()
+            'studentService' => StudentInService::with(['student', 'workflow', 'partnerBranch.partner', 'product', 'productfees', 'user'])->where('student_id',$student->id)->get()
         ]);
     }
 

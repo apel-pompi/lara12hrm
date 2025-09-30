@@ -65,7 +65,7 @@ const props = defineProps<{
 }>();
 
 const data = props.workflow;
-console.log(data);
+
 
 interface FormErrors {
     name?: string;

@@ -7,11 +7,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Student\StudentApplication;
 use App\Http\Requests\StudentApplication\StoreStudentApplicationRequest;
 use App\Http\Requests\StudentApplication\UpdateStudentApplicationRequest;
+use App\Models\Default\gDrive;
 use App\Models\Partner\Partner;
 use App\Models\Product\Product;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Student\Student;
 use App\Models\Student\StudentActivities;
+use App\Models\WDocumentCheck;
+use App\Models\WDocumentType;
 use App\Models\Workflow;
 use Inertia\Inertia;
 use Illuminate\Http\JsonResponse;
@@ -23,7 +26,7 @@ class StudentApplicationController extends Controller
      */
     public function index(Student $student)
     {
-        //dd($student->id);
+
         return Inertia::render('allpages/Agency/Student/application', [
             'student' => $student,
             'workflow' => Workflow::where('active', 1)->get(),
@@ -44,7 +47,7 @@ class StudentApplicationController extends Controller
             ->exists();
 
         if (! $exists) {
-            StudentApplication::create([
+            $application = StudentApplication::create([
                 'student_id'              => $validated['student_id'],
                 'workflow_id'              => $validated['workflow_id'],
                 'partner_branch_id'        => $validated['partner_branch_id'],
@@ -54,14 +57,13 @@ class StudentApplicationController extends Controller
                 'saleprice'                => $validated['saleprice'],
                 'user_id'                  => Auth::id()
             ]);
-
-            StudentActivities::create([
-                'student_id'    => $validated['student_id'],
-                'title'         => 'Application added',
-                'fristactivity' => null,
-                'lastactivity'  => null,
-                'user_id'       => Auth::id(),
-            ]);
+            $studentFolder = gDrive::createFolder("student_{$application->student_id}");
+            if ($studentFolder) {
+                gDrive::createFolder(
+                    $application->product->name,
+                    $studentFolder
+                );
+            }
         }
         return redirect()
             ->route('studentApplication.index', $validated['student_id'])
@@ -157,8 +159,62 @@ class StudentApplicationController extends Controller
 
     public function editApplication(Student $student, StudentApplication $studentApplication)
     {
-        return Inertia::render('allpages/Agency/Student/applicationedit',[
+        $application = StudentApplication::with(['student', 'workflow.stages.documentChecks.documenttype', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
+            ->where('id', $studentApplication->id)
+            ->firstOrFail();
+
+        return Inertia::render('allpages/Agency/Student/applicationedit', [
             'student' => $student,
+            'application' => $application,
+        ]);
+    }
+
+    public function documentApplication(Student $student, StudentApplication $studentApplication)
+    {
+        $application = StudentApplication::with(['student', 'workflow.stages.documentChecks.documenttype', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
+            ->where('id', $studentApplication->id)
+            ->firstOrFail();
+
+        return Inertia::render('allpages/Agency/Student/applicationdocument', [
+            'student' => $student,
+            'application' => $application,
+        ]);
+    }
+
+
+    public function notesApplication(Student $student, StudentApplication $studentApplication)
+    {
+        $application = StudentApplication::with(['student', 'workflow', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
+            ->where('id', $studentApplication->id)
+            ->firstOrFail();
+
+        return Inertia::render('allpages/Agency/Student/applicationnotes', [
+            'student' => $student,
+            'application' => $application
+        ]);
+    }
+
+    public function tasksApplication(Student $student, StudentApplication $studentApplication)
+    {
+        $application = StudentApplication::with(['student', 'workflow', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
+            ->where('id', $studentApplication->id)
+            ->firstOrFail();
+
+        return Inertia::render('allpages/Agency/Student/applicationtasks', [
+            'student' => $student,
+            'application' => $application
+        ]);
+    }
+
+    public function paymentApplication(Student $student, StudentApplication $studentApplication)
+    {
+        $application = StudentApplication::with(['student', 'workflow', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
+            ->where('id', $studentApplication->id)
+            ->firstOrFail();
+
+        return Inertia::render('allpages/Agency/Student/applicationpayment', [
+            'student' => $student,
+            'application' => $application
         ]);
     }
 }
