@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Heading from '@/components/Heading.vue';
+import Badge from '@/components/ui/badge/Badge.vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type NavItem } from '@/types';
@@ -16,9 +17,9 @@ export interface Student {
 }
 
 const props = defineProps<{
-    student: { id: number; status: string };
+    student: { id: number; status: string; fname: string; lname: string };
 }>();
-
+//console.log(props.student);
 const lead = [
     {
         title: 'Activities',
@@ -204,12 +205,24 @@ const archive = [
         title: 'Educations',
         href: route('studentApplication.index', props.student.id),
     },
-]
+];
 
+const getStatusText = (status: number) => {
+    switch (status) {
+        case 1:
+            return { id: '1', text: 'Lead', color: 'bg-green-500 text-white' };
+        case 2:
+            return { id: '2', text: 'Prospect', color: 'bg-yellow-500 text-black' };
+        case 3:
+            return { id: '3', text: 'onBoard', color: 'bg-blue-500 text-white' };
+        default:
+            return { id: '4', text: 'Achieved', color: 'bg-gray-500 text-white' };
+    }
+};
 
 const sidebarNavItems = computed<NavItem[]>(() => {
     if (!props.student) return [];
-    
+
     if (props.student.status === 1) {
         return lead;
     } else if (props.student.status === 2) {
@@ -219,7 +232,6 @@ const sidebarNavItems = computed<NavItem[]>(() => {
     } else {
         return archive;
     }
-    
 });
 
 const goToStudent = () => {
@@ -254,14 +266,24 @@ const updateRate = (status: number) => {
                     <Button variant="outline" size="sm" @click="goToStudent"><CornerDownLeft></CornerDownLeft> Back</Button>
                 </div>
             </div>
-            <div class="flex flex-col gap-6 lg:flex-row pb-12">
+            <div class="flex flex-col gap-6 pb-12 lg:flex-row">
                 <!-- LEFT SIDEBAR -->
                 <aside class="flex w-full flex-col gap-6 bg-white p-4 shadow lg:w-1/5 dark:bg-gray-900">
                     <!-- Profile -->
                     <div class="flex flex-col items-center border-b pb-5 text-center">
-                        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-xl font-bold dark:bg-gray-700">AR</div>
-                        <span class="mt-2 rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800"> Prospect </span>
-                        <h2 class="mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100">Md. Ashrafur Rahman</h2>
+                        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-xl font-bold dark:bg-gray-700">
+                            {{ (props.student.fname?.charAt(0) ?? '').toUpperCase() }}{{ (props.student.lname?.charAt(0) ?? '').toUpperCase() }}
+                        </div>
+
+                        <div class="mt-2 flex items-center space-x-2 px-3 py-1">
+                            <Badge size="sm" :class="getStatusText(props.student.status).color">
+                                {{ getStatusText(props.student.status).text }}
+                            </Badge>
+                        </div>
+
+                        <h2 class="mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            {{ props.student.fname }} {{ props.student.lname }}
+                        </h2>
 
                         <div class="mt-3 flex items-center justify-center gap-3 text-gray-400">
                             <button @click="updateRate(1)" title="Lost" class="cursor-pointer text-[8px] uppercase hover:text-gray-700">

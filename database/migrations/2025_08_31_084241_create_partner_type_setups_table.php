@@ -14,13 +14,14 @@ return new class extends Migration
         Schema::create('partner_type_setups', function (Blueprint $table) {
             $table->id();
             $table->string('partnertypename');
-            $table->unsignedBigInteger('mastercaterory_id');
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('mastercaterory_id')->constrained('master_categories')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->integer('active');
             $table->timestamps();
-
-            $table->foreign('mastercaterory_id')->references('id')->on('master_categories')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

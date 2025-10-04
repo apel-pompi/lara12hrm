@@ -12,14 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('leaveplans', function (Blueprint $table) {
-            $table->charset = 'utf8';
-            $table->collation = 'utf8_general_ci';
             $table->id();
             $table->string('leavename')->unique();
             $table->integer('leaveyear');
             $table->integer('leavedays');
             $table->integer('active');
             $table->timestamps();
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

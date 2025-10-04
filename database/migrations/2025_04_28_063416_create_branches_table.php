@@ -12,20 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('branches', function (Blueprint $table) {
-            $table->charset = 'utf8';
-            $table->collation = 'utf8_general_ci';
-            $table->charset = 'utf8';
-            $table->collation = 'utf8_general_ci';
             $table->id();
             $table->string('branchname')->unique();
             $table->text('description')->nullable();
-            $table->string('person',50)->nullable();
-            $table->string('designation',50)->nullable();
+            $table->string('person', 50)->nullable();
+            $table->string('designation', 50)->nullable();
             $table->string('address')->nullable();
             $table->string('email')->nullable();
-            $table->string('phone',20)->nullable();
+            $table->string('phone', 20)->nullable();
             $table->integer('active')->nullable();
             $table->timestamps();
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

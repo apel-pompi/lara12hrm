@@ -3,7 +3,7 @@
 namespace App\Services\Agency\Setting;
 
 use App\Filters\Agency\Setting\AcademicFilter;
-use App\Models\Default\Academic;
+use App\Models\AgencySetting\Academic;
 
 class AcademicService
 {

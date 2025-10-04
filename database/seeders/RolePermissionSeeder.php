@@ -16,29 +16,21 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
-            //users
-            [
-                'group_name' => 'Users',
-                'permissions' => [
-                    'user.index',
-                    'users.trash',
-                    'user.create',
-                    'user.store',
-                    'user.show',
-                    'user.edit',
-                    'user.update',
-                    'user.destroy',
-                    'users.parmanentDelete',
-                    'users.restore',
-                ],
-            ],
+            
             //profiles
             [
                 'group_name' => 'Profile',
                 'permissions' => [
                     'profile.edit',
                     'profile.update',
-                    'profile.destroy',
+                ],
+            ],
+            //Password
+            [
+                'group_name' => 'User Password',
+                'permissions' => [
+                    'password.edit',
+                    'password.update',
                 ],
             ],
             //Roles
@@ -46,15 +38,212 @@ class RolePermissionSeeder extends Seeder
                 'group_name' => 'Role',
                 'permissions' => [
                     'role.index',
-                    'role.trash',
-                    'role.create',
                     'role.store',
-                    'role.show',
                     'role.edit',
                     'role.update',
                     'role.destroy',
-                    'role.parmanentDelete',
-                    'role.restore',
+                    
+                ],
+            ],
+            //Parmission
+            [
+                'group_name' => 'Parmission',
+                'permissions' => [
+                    'permission.index',
+                    'permission.store',
+                    'permission.edit',
+                    'permission.update',
+                    'permission.destroy',
+                    
+                ],
+            ],
+            //Company
+            [
+                'group_name' => 'Company',
+                'permissions' => [
+                    'company.edit',
+                    'company.update',
+                    
+                ],
+            ],
+            //Agency Genneral (Master Category)
+            [
+                'group_name' => 'MasterCategory',
+                'permissions' => [
+                    'general.index',
+                    'general.store',
+                    'general.show',
+                    'general.edit',
+                    'general.update',
+                    'general.updateStatus',
+                    'general.destroy',
+                    
+                ],
+            ],
+            //Agency Genneral (Partner Setting)
+            [
+                'group_name' => 'Partner Setting',
+                'permissions' => [
+                    'patnerSetting.index',
+                    'patnerSetting.store',
+                    'patnerSetting.updateStatus',
+                    'patnerSetting.destroy',
+                    
+                ],
+            ],
+            //Agency Genneral (Product Type Setting)
+            [
+                'group_name' => 'Product Type Setting',
+                'permissions' => [
+                    'productSetting.index',
+                    'productSetting.store',
+                    'productSetting.updateStatus',
+                    'productSetting.destroy',
+                    
+                ],
+            ],
+            //Agency Genneral (Workflow)
+            [
+                'group_name' => 'Workflow',
+                'permissions' => [
+                    'workflow.index',
+                    'workflow.store',
+                    'workflow.edit',
+                    'workflow.update',
+                    'workflow.updateStatus',
+                    
+                ],
+            ],
+            //Agency Genneral (Workflow Document)
+            [
+                'group_name' => 'Workflow Document',
+                'permissions' => [
+                    'workflowDocument.index',
+                    'workflowDocument.store',
+                    'workflowDocument.edit',
+                    'workflowDocument.update',
+                    'workflowDocument.updateStatus',
+                    
+                ],
+            ],
+            //Agency Genneral (Workflow Document check list)
+            [
+                'group_name' => 'Document Check List',
+                'permissions' => [
+                    'workflowDocumentCheck.index',
+                    'workflowDocument.store',
+                    
+                ],
+            ],
+            //Partner Branch
+            [
+                'group_name' => 'Partner Branch',
+                'permissions' => [
+                    'partnerBranch.index',
+                    'partnerBranch.store',
+                    'partnerBranch.show',
+                    'partnerBranch.edit',
+                    'partnerBranch.update',
+                    'partnerBranch.updateStatus',
+                    'partnerBranch.destroy',
+                    
+                ],
+            ],
+            //Academic Setting
+            [
+                'group_name' => 'Academic',
+                'permissions' => [
+                    'Academic.index',
+                    'Academic.store',
+                    'Academic.show',
+                    'Academic.edit',
+                    'Academic.update',
+                    'Academic.updateStatus',
+                    'Academic.destroy',
+                    
+                ],
+            ],
+            //Student Stage
+            [
+                'group_name' => 'Student Stage',
+                'permissions' => [
+                    'StudentStage.index',
+                    'StudentStage.store',
+                    'StudentStage.show',
+                    'StudentStage.edit',
+                    'StudentStage.update',
+                    'StudentStage.updateStatus',
+                    'StudentStage.destroy',
+                    
+                ],
+            ],
+            //Student Source
+            [
+                'group_name' => 'Student Source',
+                'permissions' => [
+                    'StudentSource.index',
+                    'StudentSource.store',
+                    'StudentSource.show',
+                    'StudentSource.edit',
+                    'StudentSource.update',
+                    'StudentSource.updateStatus',
+                    'StudentSource.destroy',
+                    
+                ],
+            ],
+            //Fees
+            [
+                'group_name' => 'Student Fees',
+                'permissions' => [
+                    'Fees.index',
+                    'Fees.store',
+                    'Fees.show',
+                    'Fees.edit',
+                    'Fees.update',
+                    'Fees.updateStatus',
+                    'Fees.destroy',
+                    
+                ],
+            ],
+            //Installment
+            [
+                'group_name' => 'Installment',
+                'permissions' => [
+                    'Installment.index',
+                    'Installment.store',
+                    'Installment.show',
+                    'Installment.edit',
+                    'Installment.update',
+                    'Installment.updateStatus',
+                    'Installment.destroy',
+                    
+                ],
+            ],
+            //Trancaction
+            [
+                'group_name' => 'Trancaction',
+                'permissions' => [
+                    'Trancaction.index',
+                    'Trancaction.store',
+                    'Trancaction.show',
+                    'Trancaction.edit',
+                    'Trancaction.update',
+                    'Trancaction.updateStatus',
+                    'Trancaction.destroy',
+                    
+                ],
+            ],
+            //Trancaction No
+            [
+                'group_name' => 'TrancactionNo',
+                'permissions' => [
+                    'TrancactionNo.index',
+                    'TrancactionNo.store',
+                    'TrancactionNo.show',
+                    'TrancactionNo.edit',
+                    'TrancactionNo.update',
+                    'TrancactionNo.updateStatus',
+                    'TrancactionNo.destroy',
                     
                 ],
             ],
@@ -63,15 +252,11 @@ class RolePermissionSeeder extends Seeder
                 'group_name' => 'Branch',
                 'permissions' => [
                     'branch.index',
-                    'branch.trash',
-                    'branch.create',
                     'branch.store',
                     'branch.show',
                     'branch.edit',
                     'branch.update',
-                    'branch.destroy',
-                    'branch.parmanentDelete',
-                    'branch.restore',
+                    'branch.destroy'
                     
                 ],
             ],
@@ -80,15 +265,11 @@ class RolePermissionSeeder extends Seeder
                 'group_name' => 'Department',
                 'permissions' => [
                     'department.index',
-                    'department.trash',
-                    'department.create',
                     'department.store',
                     'department.show',
                     'department.edit',
                     'department.update',
                     'department.destroy',
-                    'department.parmanentDelete',
-                    'department.restore',
                     
                 ],
             ],
@@ -97,15 +278,12 @@ class RolePermissionSeeder extends Seeder
                 'group_name' => 'Designation',
                 'permissions' => [
                     'designation.index',
-                    'designation.trash',
                     'designation.create',
                     'designation.store',
                     'designation.show',
                     'designation.edit',
                     'designation.update',
-                    'designation.destroy',
-                    'designation.parmanentDelete',
-                    'designation.restore',
+                    'designation.destroy'
                     
                 ],
             ],
@@ -114,15 +292,25 @@ class RolePermissionSeeder extends Seeder
                 'group_name' => 'LeavePlan',
                 'permissions' => [
                     'leaveplan.index',
-                    'leaveplan.trash',
-                    'leaveplan.create',
                     'leaveplan.store',
                     'leaveplan.show',
                     'leaveplan.edit',
                     'leaveplan.update',
-                    'leaveplan.destroy',
-                    'leaveplan.parmanentDelete',
-                    'leaveplan.restore',
+                    'leaveplan.destroy'
+                    
+                ],
+            ],
+
+            //Attendance Setting         
+            [
+                'group_name' => 'AttendanceSetting',
+                'permissions' => [
+                    'attendanmst.index',
+                    'attendanmst.store',
+                    'attendanmst.show',
+                    'attendanmst.edit',
+                    'attendanmst.update',
+                    'attendanmst.destroy'
                     
                 ],
             ],
@@ -131,16 +319,12 @@ class RolePermissionSeeder extends Seeder
                 'group_name' => 'HolidayHeader',
                 'permissions' => [
                     'holiday.index',
-                    'holiday.approve',
-                    'holiday.trash',
-                    'holiday.create',
                     'holiday.store',
+                    'holiday.updateStatus',
                     'holiday.show',
                     'holiday.edit',
                     'holiday.update',
                     'holiday.destroy',
-                    'holiday.parmanentDelete',
-                    'holiday.restore',
                     
                 ],
             ],
@@ -156,102 +340,130 @@ class RolePermissionSeeder extends Seeder
                     
                 ],
             ],
-            //Attendance Setting         
-            [
-                'group_name' => 'AttendanceSetting',
-                'permissions' => [
-                    'attendanmst.index',
-                    'attendanmst.approve',
-                    'attendanmst.trash',
-                    'attendanmst.create',
-                    'attendanmst.store',
-                    'attendanmst.show',
-                    'attendanmst.edit',
-                    'attendanmst.update',
-                    'attendanmst.destroy',
-                    'attendanmst.parmanentDelete',
-                    'attendanmst.restore',
-                    
-                ],
-            ],
-            //Attendance   
-            [
-                'group_name' => 'All Attendance',
-                'permissions' => [
-                    'attendance.index'
-                    
-                ],
-            ],
-            //All Attendance Status      
-            [
-                'group_name' => 'All Status',
-                'permissions' => [
-                    'attenstatus.index',
-                    'attenstatus.store',
-                    'attenstatus.show',
-                    'attenstatus.edit',
-                    'attenstatus.update',
-                    'attenstatus.destroy'
-                    
-                ],
-            ],
-            //Employee Attendance Status      
-            [
-                'group_name' => 'Employee Status',
-                'permissions' => [
-                    'employeestatus.index',
-                    
-                ],
-            ],
+           
             //Personal Information        
             [
                 'group_name' => 'PersonalInformation',
                 'permissions' => [
                     'personal.index',
-                    'personal.trash',
-                    'personal.create',
                     'personal.store',
-                    'personal.createAttendacne',
                     'personal.show',
                     'personal.edit',
                     'personal.update',
                     'personal.destroy',
-                    'personal.parmanentDelete',
-                    'personal.restore',
+                    'personal.updateStatus',
                     
                 ],
             ],
-            //Device      
+            //Leave Request      
             [
-                'group_name' => 'Device',
+                'group_name' => 'Leave Request',
                 'permissions' => [
-                    'device.index',
-                    'device.trash',
-                    'device.create',
-                    'device.store',
-                    'device.show',
-                    'device.edit',
-                    'device.update',
-                    'device.destroy',
-                    'device.parmanentDelete',
-                    'device.restore',
-                    
+                    'Leave.index',
+                    'Leave.store',
+                    'Leave.show',
+                    'Leave.edit',
+                    'Leave.update',
+                    'Leave.destroy',
+                    'Leave.updateStatus',
+                    'Leave.reports'
                 ],
             ],
             
-            //Reports    
+            //Student 
             [
-                'group_name' => 'Reports',
+                'group_name' => 'Student',
                 'permissions' => [
-                    'reports.PersonalProfile',
-                    'reports.PersonalProfileReports',
-                    'reports.dailyattendance',
-                    'reports.dailyattendancereport',
-                    'reports.employeeattendance',
-                    'reports.employeeattendancereport',
-                    'reports.monthlyattendance',
-                    'reports.monthlyattendancereport'
+                    'Student.index',
+                    'Student.store',
+                    'Student.create'
                     
+                ],
+            ],
+
+            //Student Activities
+            [
+                'group_name' => 'Student Application',
+                'permissions' => [
+                    'Application.index',
+                    'Application.store',
+                    'Application.view',
+                    'Application.edit',
+                    'Application.update',
+                    'Application.destroy',
+                    
+                ],
+            ],
+
+            //Student Activities
+            [
+                'group_name' => 'Student Service',
+                'permissions' => [
+                    'Service.index',
+                    'Service.store',
+                    'Service.create',
+                    'Service.view',
+                    'Service.edit',
+                    'Service.update',
+                    'Service.destroy',
+                    
+                ],
+            ],
+            //Student Document
+            [
+                'group_name' => 'Student Document',
+                'permissions' => [
+                    'Document.index',
+                    'Document.store',
+                    'Document.create',
+                    'Document.view',
+                    'Document.edit',
+                    'Document.update',
+                    'Document.destroy',
+                    
+                ],
+            ],
+            //Partner 
+            [
+                'group_name' => 'Partner',
+                'permissions' => [
+                    'Partner.index',
+                    'Partner.store',
+                    'Partner.create',
+                    'Partner.updateStatus',
+                    'Partner.destroy'
+                    
+                ],
+            ],
+
+            //Product 
+            [
+                'group_name' => 'Product',
+                'permissions' => [
+                    'Product.index',
+                    'Product.store',
+                    'Product.updateStatus',
+                    'Product.edit',
+                    'Product.update',
+                    'Product.destroy',
+                ],
+            ],
+            
+            //Product Activities
+            [
+                'group_name' => 'Product Activities',
+                'permissions' => [
+                    'ProductActivities.aplication',
+                    'ProductActivities.fees',
+                    'ProductActivities.storefess',
+                    'ProductActivities.requirement',
+                    'ProductActivities.editRequirement',
+                    'ProductActivities.storeRequirement',
+                    'ProductActivities.englishTest',
+                    'ProductActivities.StoreenglishTest',
+                    'ProductActivities.OthersTest',
+                    'ProductActivities.StoreOthersTest',
+                    'ProductActivities.Promotions',
                 ],
             ],
         ];

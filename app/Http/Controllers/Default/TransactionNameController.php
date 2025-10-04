@@ -7,17 +7,22 @@ use App\Models\Default\TransactionName;
 use App\Http\Requests\Default\TransactionName\StoreTransactionNameRequest;
 use App\Http\Requests\Default\TransactionName\UpdateTransactionNameRequest;
 use App\Services\Default\TransactionNameService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TransactionNameController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request, TransactionNameService $transaction)
     {
+
+        $this->authorize('TrancactionNo.index');
+
         return Inertia::render('allpages/default/transactionname',[
             'tranactionFilter' => TransactionName::orderBy('id', 'desc')->get(),
             'tranactionname' => $transaction->get($request->query()),
@@ -31,6 +36,8 @@ class TransactionNameController extends Controller
      */
     public function store(StoreTransactionNameRequest $request)
     {
+        $this->authorize('TrancactionNo.store');
+
         $validated = $request->validated();
         TransactionName::create([
             'name'    => $validated['name'],
@@ -46,6 +53,8 @@ class TransactionNameController extends Controller
      */
     public function destroy(TransactionName $transactionName)
     {
+        $this->authorize('TrancactionNo.destroy');
+
         try {
             $transactionName->delete();
 
@@ -60,6 +69,8 @@ class TransactionNameController extends Controller
 
     public function updateStatus(Request $request, $transaction)
     {
+        $this->authorize('TrancactionNo.updateStatus');
+
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
         ]);

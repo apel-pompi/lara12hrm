@@ -7,23 +7,26 @@ use App\Http\Controllers\Controller;
 use App\Models\Student\Student;
 use App\Http\Requests\Student\StoreStudentRequest;
 use App\Http\Requests\Student\UpdateStudentRequest;
-use App\Models\Country;
-
+use App\Models\Default\Country;
 use App\Models\Student\StudentSource;
 use App\Models\Student\StudentStage;
 use App\Models\User;
 use App\Services\Agency\Student as AgencyStudent;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class StudentController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request, AgencyStudent $student)
     {
+        $this->authorize('Student.index');
+
         return Inertia::render('allpages/Agency/Student/student', [
             'student' => $student->get($request->query()),
             'filters'   => $student->get($request->query()),
@@ -35,6 +38,8 @@ class StudentController extends Controller
      */
     public function create()
     {
+        $this->authorize('Student.create');
+
         return Inertia::render('allpages/Agency/Student/studentcreate', [
             'student' => Student::orderBy('id', 'desc')->get(),
             'countries' => Country::where('status', 1)->get(['id', 'name', 'iso3', 'phonecode', 'currency', 'currency_symbol']),
@@ -49,6 +54,8 @@ class StudentController extends Controller
      */
     public function store(StoreStudentRequest $request)
     {
+        $this->authorize('Student.store');
+
         $validated = $request->validated();
 
         $validated['status'] = $request->input('status', 0);
@@ -117,26 +124,7 @@ class StudentController extends Controller
      */
     
     
-    // public function documents(Student $student){
-    //     return Inertia::render('allpages/Agency/Student/documents', [
-    //         'student' => $student
-    //     ]);
-    // }
-    // public function appoinments(Student $student){
-    //     return Inertia::render('allpages/Agency/Student/appoinments', [
-    //         'student' => $student
-    //     ]);
-    // }
-    // public function tasks(Student $student){
-    //     return Inertia::render('allpages/Agency/Student/tasks', [
-    //         'student' => $student
-    //     ]);
-    // }
-    // public function education(Student $student){
-    //     return Inertia::render('allpages/Agency/Student/education', [
-    //         'student' => $student
-    //     ]);
-    // }
+    
     /**
      * Show the form for editing the specified resource.
      */

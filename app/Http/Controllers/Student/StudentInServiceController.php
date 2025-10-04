@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Student\StudentInService;
 use App\Http\Requests\StudentInService\StoreStudentInServiceRequest;
 use App\Http\Requests\StudentInService\UpdateStudentInServiceRequest;
+use App\Models\AgencySetting\Workflow;
 use App\Models\Student\Student;
 use App\Models\Student\StudentApplication;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Workflow;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 

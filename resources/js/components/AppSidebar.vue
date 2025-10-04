@@ -43,6 +43,10 @@ const data = {
             icon: SquareTerminal,
             items: [
                 {
+                    title: 'Users Setting',
+                    href: '/roles',
+                },
+                {
                     title: 'General Setting',
                     href: '/settings/profile',
                 },
@@ -52,16 +56,13 @@ const data = {
                 },
                 {
                     title: 'HRM Setting',
-                    href: '/branch',
+                    href: '/companyinfo',
                 },
                 // {
                 //     title: 'Accounts Setting',
                 //     href: '/settings/profile',
                 // },
-                {
-                    title: 'Users Setting',
-                    href: '/roles',
-                },
+                
                 
             ],
         },

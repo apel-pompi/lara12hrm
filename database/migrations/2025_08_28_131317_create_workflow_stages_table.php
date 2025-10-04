@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('workflow_stages', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('workflow_id');
+            $table->foreignId('workflow_id')->constrained('workflows')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('stagename');
             $table->integer('stage');
             $table->timestamps();
-            $table->foreign('workflow_id')->references('id')->on('workflows')->onUpdate('cascade')->onDelete('cascade');
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

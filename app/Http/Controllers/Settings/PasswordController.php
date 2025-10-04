@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,11 +13,14 @@ use Inertia\Response;
 
 class PasswordController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Show the user's password settings page.
      */
     public function edit(): Response
     {
+        $this->authorize('password.edit');
+
         return Inertia::render('settings/Password');
     }
 
@@ -25,6 +29,8 @@ class PasswordController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
+        $this->authorize('password.update');
+
         $validated = $request->validate([
             'current_password' => ['required', 'current_password'],
             'password' => ['required', Password::defaults(), 'confirmed'],

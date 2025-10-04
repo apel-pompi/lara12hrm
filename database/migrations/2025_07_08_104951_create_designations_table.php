@@ -12,12 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('designations', function (Blueprint $table) {
-            $table->charset = 'utf8';
-            $table->collation = 'utf8_general_ci';
             $table->id();
             $table->string('desname')->unique();
             $table->integer('active');
             $table->timestamps();
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

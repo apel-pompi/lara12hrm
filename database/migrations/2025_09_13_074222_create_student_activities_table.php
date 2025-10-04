@@ -17,9 +17,12 @@ return new class extends Migration
             $table->string('title');
             $table->string('fristactivity')->nullable();
             $table->string('lastactivity')->nullable();
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
-            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

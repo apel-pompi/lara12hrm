@@ -13,17 +13,20 @@ return new class extends Migration
     {
         Schema::create('english_tests', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('product_id');
+            $table->foreignId('product_id')->constrained('products')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('name');
             $table->float('listening')->nullable();
             $table->float('reading')->nullable();
             $table->float('writing')->nullable();
             $table->float('speaking')->nullable();
             $table->float('overall')->nullable();
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
-            $table->foreign('product_id')->references('id')->on('products')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

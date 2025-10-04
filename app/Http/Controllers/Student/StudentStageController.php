@@ -7,17 +7,21 @@ use App\Models\Student\StudentStage;
 use App\Http\Requests\StudentStage\StoreStudentStageRequest;
 use App\Http\Requests\StudentStage\UpdateStudentStageRequest;
 use App\Services\Agency\Setting\StudentStageService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class StudentStageController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request, StudentStageService $studentStageService)
     {
+        $this->authorize('StudentSource.index');
+
         return Inertia::render('allpages/Agency/Setting/studentstage', [
             'searchName' => StudentStage::select('name')->get(),
             'studentStage' => $studentStageService->get($request->query()),
@@ -32,6 +36,8 @@ class StudentStageController extends Controller
      */
     public function store(StoreStudentStageRequest $request)
     {
+        $this->authorize('StudentSource.store');
+
         $validated = $request->validated();
         StudentStage::create([
             'name'              => $validated['name'],
@@ -50,6 +56,8 @@ class StudentStageController extends Controller
      */
     public function show(StudentStage $studentStage)
     {
+        $this->authorize('StudentSource.show');
+
         if (!$studentStage) {
             return response()->json(['message' => 'Student stage not found'], 404);
         }
@@ -61,6 +69,8 @@ class StudentStageController extends Controller
      */
     public function edit(StudentStage $studentStage)
     {
+        $this->authorize('StudentSource.edit');
+
         return response()->json([
             'success' => true,
             'data' => $studentStage,
@@ -72,6 +82,8 @@ class StudentStageController extends Controller
      */
     public function update(UpdateStudentStageRequest $request, StudentStage $studentStage)
     {
+        $this->authorize('StudentSource.update');
+
         $studentStage->update($request->validated());
         return redirect()->route('studentStage.index')->with('success', 'Student stage update successfully.');
     }
@@ -81,6 +93,8 @@ class StudentStageController extends Controller
      */
     public function destroy(StudentStage $studentStage)
     {
+        $this->authorize('StudentSource.destroy');
+
         try {
             $studentStage->delete();
 
@@ -95,6 +109,8 @@ class StudentStageController extends Controller
 
     public function updateStatus(Request $request, $student)
     {
+        $this->authorize('StudentSource.updateStatus');
+
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
         ]);

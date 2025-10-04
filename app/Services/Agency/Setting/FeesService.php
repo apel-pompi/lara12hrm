@@ -3,7 +3,7 @@
 namespace App\Services\Agency\Setting;
 
 use App\Filters\Agency\Setting\FeesFilter;
-use App\Models\Default\Fees;
+use App\Models\AgencySetting\Fees;
 
 class FeesService
 {

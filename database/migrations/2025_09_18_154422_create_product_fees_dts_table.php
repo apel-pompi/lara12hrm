@@ -13,15 +13,18 @@ return new class extends Migration
     {
         Schema::create('product_fees_dts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('fees_hd_id');
-            $table->unsignedBigInteger('fees_id');
+            $table->foreignId('fees_hd_id')->constrained('product_fees_hds')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('fees_id')->constrained('fees')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->decimal('amount',20,3);
             $table->integer('insqty');
             $table->decimal('totalamount',20,3);
             $table->string('notes')->nullable();
             $table->timestamps();
-            $table->foreign('fees_hd_id')->references('id')->on('product_fees_hds')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('fees_id')->references('id')->on('fees')->onUpdate('cascade')->onDelete('cascade');
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

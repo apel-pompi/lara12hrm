@@ -14,21 +14,24 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->unsignedBigInteger('partner_id');
+            $table->foreignId('partner_id')->constrained('partners')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('partner_branch_id')->nullable();
-            $table->unsignedBigInteger('product_type_id');
+            $table->foreignId('product_type_id')->constrained('product_type_setups')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->tinyInteger('revinue_type')->default(0);
             $table->string('duration');
             $table->string('intak_month');
             $table->text('description')->nullable();
             $table->string('note')->nullable();
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->tinyInteger('active')->default(0);
             $table->timestamps();
 
-            $table->foreign('partner_id')->references('id')->on('partners')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('product_type_id')->references('id')->on('product_type_setups')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
+           
         });
     }
 

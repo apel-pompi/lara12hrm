@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
-import UserLayout from '@/layouts/settings/userLayout.vue';
+import Layout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem, type SharedData, type User } from '@/types';
 
 interface Props {
@@ -45,7 +45,7 @@ const submit = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Profile settings" />
 
-        <UserLayout>
+        <Layout>
             <div class="flex h-full flex-1 flex-col gap-6 rounded-xl bg-gray-50 p-6">
                 <HeadingSmall title="Profile information" description="Update your name and email address" />
                 <Card class="border border-gray-200 shadow-sm">
@@ -107,6 +107,6 @@ const submit = () => {
             </div>
 
             <!-- <DeleteUser /> -->
-        </UserLayout>
+        </Layout>
     </AppLayout>
 </template>

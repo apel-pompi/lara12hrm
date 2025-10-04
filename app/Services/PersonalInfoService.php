@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Filters\PersonalInfoFilter;
-use App\Models\PersonalInfo;
+use App\Models\HRM\PersonalInfo;
 
 class PersonalInfoService
 {

@@ -1,24 +1,29 @@
 <?php
 
 namespace App\Http\Controllers\Default;
+
 use App\Http\Controllers\Controller;
 use App\Models\Default\Transaction;
 use App\Http\Requests\Default\Transaction\StoreTransactionRequest;
 use App\Http\Requests\Default\Transaction\UpdateTransactionRequest;
-use App\Models\Branch;
+use App\Models\HRM\Branch;
 use App\Models\Default\TransactionName;
 use App\Services\Default\TransactionNoService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TransactionController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request, TransactionNoService $transaction)
     {
+        $this->authorize('Trancaction.index');
+
         return Inertia::render('allpages/default/transaction',[
             'tranaction' => $transaction->get($request->query()),
             'filters'   => $transaction->get($request->query()),
@@ -40,6 +45,8 @@ class TransactionController extends Controller
      */
     public function store(StoreTransactionRequest $request)
     {
+        $this->authorize('Trancaction.store');
+
         $validated = $request->validated();
         $year = $validated['yearname'];
         $newyear = substr($year, -2);
@@ -65,6 +72,8 @@ class TransactionController extends Controller
      */
     public function destroy(Transaction $transaction)
     {
+        $this->authorize('Trancaction.destroy');
+
         try {
             $transaction->delete();
 
@@ -78,6 +87,8 @@ class TransactionController extends Controller
 
     public function updateStatus(Request $request, $transaction)
     {
+        $this->authorize('Trancaction.updateStatus');
+
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
         ]);

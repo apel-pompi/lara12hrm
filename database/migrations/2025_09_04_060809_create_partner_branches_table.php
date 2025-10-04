@@ -15,17 +15,21 @@ return new class extends Migration
             $table->id();
             $table->string('branch_name');
             $table->string('branch_email');
-            $table->unsignedBigInteger('partner_id');
-            $table->unsignedBigInteger('branch_state_id');
-            $table->unsignedBigInteger('branch_city_id')->nullable();
+            $table->foreignId('partner_id')->constrained('partners')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('branch_state_id')->constrained('states')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('branch_city_id')->constrained('cities')->nullable()
+                ->cascadeOnUpdate()->cascadeOnDelete();
+
             $table->string('branch_phoneno')->nullable();
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->tinyInteger('active')->default(0);
             $table->timestamps();
-            $table->foreign('partner_id')->references('id')->on('partners')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('branch_state_id')->references('id')->on('states')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('branch_city_id')->references('id')->on('cities')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

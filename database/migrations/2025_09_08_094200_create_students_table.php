@@ -21,9 +21,13 @@ return new class extends Migration
             $table->string('email')->nullable(); //Email
             $table->string('phone')->nullable(); //Phone
             $table->string('contactpre')->nullable(); //Contact Preference
-            $table->unsignedBigInteger('preaddcountry')->nullable(); //Permanent Address Country ID
-            $table->unsignedBigInteger('preaddstate')->nullable(); //Permanent Address State ID
-            $table->unsignedBigInteger('preaddcity')->nullable(); //Permanent Address City ID
+            $table->foreignId('preaddcountry')->constrained('countries')->nullable()
+                ->cascadeOnUpdate()->cascadeOnDelete(); //Permanent Address Country ID
+            $table->foreignId('preaddstate')->constrained('states')->nullable()
+                ->cascadeOnUpdate()->cascadeOnDelete(); //Permanent Address State ID
+            $table->foreignId('preaddcity')->constrained('cities')->nullable()
+                ->cascadeOnUpdate()->cascadeOnDelete(); //Permanent Address City ID
+
             $table->string('paddress')->nullable(); //Physical Address 
             $table->date('intakedate')->nullable(); //Preferred Intake
             $table->string('pascountry')->nullable(); //Country of Passport
@@ -31,25 +35,28 @@ return new class extends Migration
             $table->string('visatype')->nullable(); //Visa Type
             $table->date('visaexdate')->nullable(); //Visa Expiry Date 
             $table->string('pvisades')->nullable(); //Previous Visas & Destination 
-            $table->unsignedBigInteger('descountry_id')->nullable(); //preferred destination?
-            $table->unsignedBigInteger('stage_id')->nullable(); //Student Stage ID
+
+            $table->foreignId('descountry_id')->constrained('countries')->nullable()
+                ->cascadeOnUpdate()->cascadeOnDelete(); //preferred destination
+
+            $table->foreignId('stage_id')->constrained('student_stages')->nullable()
+                ->cascadeOnUpdate()->cascadeOnDelete(); //Student Stage ID
+
             $table->string('metting_note')->nullable(); //Metting Note
             $table->string('passportno')->nullable(); //Student Passport No
-            $table->unsignedBigInteger('assain_user'); //User ID
-            $table->unsignedBigInteger('source_id'); //Student Source ID
+            $table->foreignId('assain_user')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('source_id')->constrained('student_sources')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('photo')->nullable(); //Photo
-            $table->unsignedBigInteger('user_id'); //Student Source ID
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->tinyInteger('status')->nullable();
             $table->timestamps();
 
-            $table->foreign('preaddcountry')->references('id')->on('countries')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('preaddstate')->references('id')->on('states')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('preaddcity')->references('id')->on('cities')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('descountry_id')->references('id')->on('countries')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('stage_id')->references('id')->on('student_stages')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('assain_user')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('source_id')->references('id')->on('student_sources')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
+
         });
     }
 

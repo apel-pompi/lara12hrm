@@ -13,15 +13,18 @@ return new class extends Migration
     {
         Schema::create('product_requirements', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('product_id');
-            $table->unsignedBigInteger('degree_id');
+            $table->foreignId('product_id')->constrained('products')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('degree_id')->constrained('academics')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('scoretype',50);
             $table->float('score');
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
-            $table->foreign('product_id')->references('id')->on('products')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('degree_id')->references('id')->on('academics')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

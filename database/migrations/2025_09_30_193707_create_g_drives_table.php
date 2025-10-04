@@ -13,20 +13,23 @@ return new class extends Migration
     {
         Schema::create('g_drives', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('student_id');
-            $table->unsignedBigInteger('applcation_id');
-            $table->unsignedBigInteger('stage_id');
+            $table->foreignId('student_id')->constrained('students')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('applcation_id')->constrained('student_applications')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('stage_id')->constrained('workflow_stages')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('docname')->nullable();
             $table->string('folder_id')->nullable();
             $table->string('file_id')->nullable();
             $table->string('file_url')->nullable();
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
 
-             $table->foreign('student_id')->references('id')->on('students')->onUpdate('cascade')->onDelete('cascade');
-             $table->foreign('applcation_id')->references('id')->on('student_applications')->onUpdate('cascade')->onDelete('cascade');
-             $table->foreign('stage_id')->references('id')->on('workflow_stages')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
+
         });
     }
 

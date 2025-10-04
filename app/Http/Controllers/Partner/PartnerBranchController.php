@@ -6,19 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Models\Partner\PartnerBranch;
 use App\Http\Requests\PartnerBranch\StorePartnerBranchRequest;
 use App\Http\Requests\PartnerBranch\UpdatePartnerBranchRequest;
-use App\Models\Country;
+use App\Models\Default\Country;
 use App\Models\Partner\Partner;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PartnerBranchController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
+        $this->authorize('partnerBranch.index');
+
         return Inertia::render('allpages/Agency/Setting/partnerbranch',[
             'partner' => Partner::where('active',1)->get(['id','name']),
             'partnerbranch' => PartnerBranch::with(['partner','user','states.country','citys'])->orderBy('id','DESC')->get(),
@@ -26,20 +30,14 @@ class PartnerBranchController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
+   
     /**
      * Store a newly created resource in storage.
      */
     public function store(StorePartnerBranchRequest $request)
     {
-        
+        $this->authorize('partnerBranch.store');
+
         $validated = $request->validated();
         $validated['active'] = $request->input('active', 0);
 
@@ -62,7 +60,7 @@ class PartnerBranchController extends Controller
      */
     public function show(PartnerBranch $partnerBranch)
     {
-        //
+        $this->authorize('partnerBranch.show');
     }
 
     /**
@@ -70,7 +68,7 @@ class PartnerBranchController extends Controller
      */
     public function edit(PartnerBranch $partnerBranch)
     {
-        //
+        $this->authorize('partnerBranch.edit');
     }
 
     /**
@@ -78,7 +76,7 @@ class PartnerBranchController extends Controller
      */
     public function update(UpdatePartnerBranchRequest $request, PartnerBranch $partnerBranch)
     {
-        //
+        $this->authorize('partnerBranch.update');
     }
 
     /**
@@ -86,11 +84,13 @@ class PartnerBranchController extends Controller
      */
     public function destroy(PartnerBranch $partnerBranch)
     {
-        //
+        $this->authorize('partnerBranch.destory');
     }
 
     public function updateStatus(Request $request, $PartnerBranch)
     {
+        $this->authorize('partnerBranch.updateStatus');
+
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
         ]);

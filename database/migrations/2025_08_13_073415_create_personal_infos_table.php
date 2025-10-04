@@ -12,15 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('personal_infos', function (Blueprint $table) {
-            $table->charset = 'utf8';
-            $table->collation = 'utf8_general_ci';
             $table->id();
             $table->unsignedBigInteger('empid')->unique();
             $table->string('empname');
             $table->date('joindate');
-            $table->unsignedBigInteger('branch_id');
-            $table->unsignedBigInteger('dept_id');
-            $table->unsignedBigInteger('des_id');
+            $table->foreignId('branch_id')->constrained('branches')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('dept_id')->constrained('departments')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('des_id')->constrained('designations')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->date('dateofbirth');
             $table->integer('gender');
             $table->string('present');
@@ -34,9 +35,8 @@ return new class extends Migration
             $table->integer('active')->nullable();
             $table->timestamps();
 
-            $table->foreign('branch_id')->references('id')->on('branches')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('dept_id')->references('id')->on('departments')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('des_id')->references('id')->on('designations')->onUpdate('cascade')->onDelete('cascade');
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

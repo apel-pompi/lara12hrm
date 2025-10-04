@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Product;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductFeeHd\StoreProductFeesHdRequest;
-use App\Models\Country;
-use App\Models\Default\Academic;
-use App\Models\Default\Fees;
-use App\Models\Default\Installment;
+use App\Models\AgencySetting\Academic;
+use App\Models\AgencySetting\Fees;
+use App\Models\AgencySetting\Installment;
+use App\Models\Default\Country;
 use App\Models\Product\EnglishTest;
 use App\Models\Product\OthersTest;
 use App\Models\Product\Product;

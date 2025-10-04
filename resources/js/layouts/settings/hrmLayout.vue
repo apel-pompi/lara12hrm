@@ -7,6 +7,10 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
+        title: 'Company Info',
+        href: '/companyinfo',
+    },
+    {
         title: 'Branch Setting',
         href: '/branch',
     },
@@ -28,7 +32,11 @@ const sidebarNavItems: NavItem[] = [
     }
 ];
 
-const page = usePage();
+const page = usePage<{
+    ziggy: {
+        location: string;
+    };
+}>();
 
 const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.location).pathname : '';
 </script>

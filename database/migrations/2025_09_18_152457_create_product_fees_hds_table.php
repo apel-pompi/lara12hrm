@@ -14,15 +14,19 @@ return new class extends Migration
         Schema::create('product_fees_hds', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->unsignedBigInteger('product_id');
+            $table->foreignId('product_id')->constrained('products')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('country_id')->nullable();
-            $table->unsignedBigInteger('ins_id');
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('ins_id')->constrained('installments')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->decimal('netamount',20,3);
             $table->timestamps();
-            $table->foreign('product_id')->references('id')->on('products')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('ins_id')->references('id')->on('installments')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
+            
         });
     }
 

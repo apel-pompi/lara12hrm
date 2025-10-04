@@ -12,16 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('atten_settings', function (Blueprint $table) {
-            $table->charset = 'utf8';
-            $table->collation = 'utf8_general_ci';
             $table->id();
-            $table->unsignedBigInteger('branch_id');
+           $table->foreignId('branch_id')->constrained('branches')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('pname');
             $table->string('lname');
             $table->time('ptime')->nullable();
             $table->time('ltime')->nullable();
             $table->integer('active');
             $table->timestamps();
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

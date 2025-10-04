@@ -1,0 +1,168 @@
+<?php
+
+namespace App\Http\Controllers\HRM;
+
+use App\Http\Controllers\Controller;
+use App\Models\HRM\HolidayHd;
+use App\Http\Requests\Holidayhd\StoreHolidayHdRequest;
+use App\Http\Requests\Holidayhd\UpdateHolidayHdRequest;
+use App\Models\HRM\Branch;
+use App\Models\HRM\HolidayDt;
+use App\Services\HolydayHdService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+
+class HolidayHdController extends Controller
+{
+    use AuthorizesRequests;
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request, HolydayHdService $holydayHdService)
+    {
+        $this->authorize('holiday.index');
+
+        return Inertia::render('allpages/holidayHd', [
+            
+            'filters'   => $holydayHdService->get($request->query()),
+            'holidayHd'   => $holydayHdService->get($request->query()),
+            'branch' => Branch::where('active', 1)->get(),
+            'year' => $this->createYear(),
+            'month' => $this->createMonth(),
+        ]);
+    }
+
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StoreHolidayHdRequest $request)
+    {
+        $this->authorize('holiday.store');
+
+        $validated = $request->validated();
+
+        $exists = HolidayHd::where('branch_id', $validated['branch_id'])
+            ->where('yearname', $validated['yearname'])
+            ->where('monthname', $validated['monthname'])
+            ->exists();
+
+        if ($exists) {
+            $message = 'Duplicate entry for this branch, year, and month.';
+            return $request->inertia()
+                ? back()->withErrors(['holidate' => $message])
+                : redirect()->route('holidayHd.index')->with('error', $message);
+        }
+
+        HolidayHd::create($validated);
+
+        return redirect()
+            ->route('holidayHd.index')
+            ->with('success', 'Holiday created successfully.');
+    }
+
+    public function updateStatus(Request $request, $holidayhd)
+    {
+        $this->authorize('holiday.updateStatus');
+
+        $validated = $request->validate([
+            'active' => 'required|boolean' // or 'integer|in:0,1'
+        ]);
+        $holiday = HolidayHd::findOrFail($holidayhd);
+        $updated = $holiday->update(['active' =>  $validated['active']]);
+        if ($updated) {
+            return $request->inertia()
+                ? back()->with('success', 'Status updated successfully')
+                : redirect()->route('holidayHd.index')->with('success', 'Status updated');
+        }
+        return back()->with('error', 'Failed to update status');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(HolidayHd $holidayHd)
+    {
+        $this->authorize('holiday.show');
+
+        $holidayHd->load('branch');
+        return response()->json($holidayHd);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(HolidayHd $holidayHd)
+    {
+        $this->authorize('holiday.edit');
+
+        return response()->json([
+            'success' => true,
+            'data' => $holidayHd,
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UpdateHolidayHdRequest $request, HolidayHd $holidayHd)
+    {
+        $this->authorize('holiday.update');
+
+        $year  = (int) ($request->input('yearname',  $holidayHd->yearname));
+        $month = (int) ($request->input('monthname', $holidayHd->monthname));
+        $exists = HolidayDt::where('holihd_id', $holidayHd->id)
+            ->whereYear('holidate', $year)
+            ->whereMonth('holidate', $month)
+            ->exists();
+
+
+        if (! $exists) {
+            $message = 'Invalid year and month. Check holiday details.';
+            return $request->inertia()
+                ? back()->withErrors(['holidate' => $message])
+                : redirect()->route('holidayHd.index')->with('error', $message);
+        }
+
+        $holidayHd->update($request->validated());
+
+        return redirect()->route('holidayHd.index')->with('success', 'Holiday Update successfully.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(HolidayHd $holidayHd)
+    {
+        $this->authorize('holiday.destroy');
+
+        try {
+            $holidayHd->delete();
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete attendance setting.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function createYear()
+    {
+        $a = array();
+        for ($i = date('Y'); $i >= date('Y') - 5; $i--) {
+            $a[$i] = $i;
+        }
+        return $a;
+    }
+
+    public function createMonth()
+    {
+        $a = array();
+        for ($i = 1; $i <= 12; $i++) {
+            $a[$i] = date("F", mktime(0, 0, 0, $i, $i));
+        }
+        return $a;
+    }
+}

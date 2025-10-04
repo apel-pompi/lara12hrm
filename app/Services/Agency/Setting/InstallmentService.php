@@ -3,7 +3,7 @@
 namespace App\Services\Agency\Setting;
 
 use App\Filters\Agency\Setting\InstallmentFilter;
-use App\Models\Default\Installment;
+use App\Models\AgencySetting\Installment;
 
 class InstallmentService
 {

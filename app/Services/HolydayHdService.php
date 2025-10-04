@@ -3,8 +3,7 @@
 namespace App\Services;
 
 use App\Filters\HolidayHdFilter;
-use App\Models\HolidayHd;
-
+use App\Models\HRM\HolidayHd;
 
 class HolydayHdService
 {

@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
-import UserLayout from '@/layouts/settings/userLayout.vue';
+import Layout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -54,7 +54,7 @@ const updatePassword = () => {
     <AppLayout :breadcrumbs="breadcrumbItems">
         <Head title="Password settings" />
 
-        <UserLayout>
+        <Layout>
             <div class="flex h-full flex-1 flex-col gap-6 rounded-xl bg-gray-50 p-6">
                 <HeadingSmall title="Update password" description="Ensure your account is using a long, random password to stay secure" />
                 <Card class="border border-gray-200 shadow-sm">
@@ -117,6 +117,6 @@ const updatePassword = () => {
                     </CardContent>
                 </Card>
             </div>
-        </UserLayout>
+        </Layout>
     </AppLayout>
 </template>

@@ -12,15 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('holiday_dts', function (Blueprint $table) {
-            $table->charset = 'utf8';
-            $table->collation = 'utf8_general_ci';
             $table->id();
             $table->date('holidate');
             $table->string('holitypes');
-            $table->unsignedBigInteger('holihd_id');
+            $table->foreignId('holihd_id')->constrained('holiday_hds')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
             
-            $table->foreign('holihd_id')->references('id')->on('holiday_hds')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

@@ -7,25 +7,26 @@ use App\Http\Controllers\Controller;
 use App\Models\Student\StudentApplication;
 use App\Http\Requests\StudentApplication\StoreStudentApplicationRequest;
 use App\Http\Requests\StudentApplication\UpdateStudentApplicationRequest;
-use App\Models\Default\gDrive;
+use App\Models\AgencySetting\gDrive;
+use App\Models\AgencySetting\Workflow;
 use App\Models\Partner\Partner;
 use App\Models\Product\Product;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Student\Student;
 use App\Models\Student\StudentActivities;
-use App\Models\WDocumentCheck;
-use App\Models\WDocumentType;
-use App\Models\Workflow;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 use Illuminate\Http\JsonResponse;
 
 class StudentApplicationController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index(Student $student)
     {
+        $this->authorize('Application.index');
 
         return Inertia::render('allpages/Agency/Student/application', [
             'student' => $student,
@@ -39,6 +40,8 @@ class StudentApplicationController extends Controller
      */
     public function store(StoreStudentApplicationRequest $request)
     {
+        $this->authorize('Application.store');
+
         $validated = $request->validated();
         $exists = StudentApplication::where('student_id', $validated['student_id'])
             ->where('workflow_id', $validated['workflow_id'])
@@ -76,6 +79,8 @@ class StudentApplicationController extends Controller
      */
     public function edit(Student $student, StudentApplication $studentApplication): JsonResponse
     {
+        $this->authorize('Application.edit');
+
         return response()->json([
             'success' => true,
             'data' => $studentApplication,
@@ -87,6 +92,8 @@ class StudentApplicationController extends Controller
      */
     public function update(UpdateStudentApplicationRequest $request, Student $student, StudentApplication $studentApplication)
     {
+        $this->authorize('Application.update');
+
         // Ensure that this application belongs to the given student
         if ($studentApplication->student_id !== $student->id) {
             return response()->json([
@@ -117,6 +124,8 @@ class StudentApplicationController extends Controller
      */
     public function destroy(Student $student, StudentApplication $studentApplication)
     {
+        $this->authorize('Application.destroy');
+
         try {
             $studentApplication->delete();
             StudentActivities::create([
@@ -138,6 +147,7 @@ class StudentApplicationController extends Controller
 
     public function partner($student, $partner)
     {
+
         $partners = Partner::whereRaw("FIND_IN_SET(?, workflow_id)", [$partner])
             ->leftJoin('partner_branches', 'partners.id', '=', 'partner_branches.partner_id')
             ->where('partners.active', 1)
@@ -159,6 +169,8 @@ class StudentApplicationController extends Controller
 
     public function editApplication(Student $student, StudentApplication $studentApplication)
     {
+        
+
         $application = StudentApplication::with(['student', 'workflow.stages.documentChecks.documenttype', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
             ->where('id', $studentApplication->id)
             ->firstOrFail();

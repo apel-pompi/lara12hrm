@@ -13,21 +13,24 @@ return new class extends Migration
     {
         Schema::create('student_applications', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('student_id');
-            $table->unsignedBigInteger('workflow_id');
-            $table->unsignedBigInteger('partner_branch_id');
-            $table->unsignedBigInteger('product_id');
+            $table->foreignId('student_id')->constrained('students')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('workflow_id')->constrained('workflows')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('partner_branch_id')->constrained('partner_branches')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained('products')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('stage')->nullable();
             $table->string('status')->nullable();
             $table->float('saleprice')->nullable();
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
 
-             $table->foreign('student_id')->references('id')->on('students')->onUpdate('cascade')->onDelete('cascade');
-             $table->foreign('workflow_id')->references('id')->on('workflows')->onUpdate('cascade')->onDelete('cascade');
-             $table->foreign('partner_branch_id')->references('id')->on('partner_branches')->onUpdate('cascade')->onDelete('cascade');
-             $table->foreign('product_id')->references('id')->on('products')->onUpdate('cascade')->onDelete('cascade');
-             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
+
         });
     }
 

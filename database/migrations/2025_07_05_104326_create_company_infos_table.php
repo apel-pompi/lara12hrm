@@ -12,8 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('company_infos', function (Blueprint $table) {
-            $table->charset = 'utf8';
-            $table->collation = 'utf8_general_ci';
             $table->id();
             $table->string('companyname')->nullable();
             $table->string('address_one')->nullable();
@@ -22,6 +20,9 @@ return new class extends Migration
             $table->string('company_email')->nullable();
             $table->string('companylogo')->nullable();
             $table->timestamps();
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 

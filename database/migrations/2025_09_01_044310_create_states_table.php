@@ -14,12 +14,15 @@ return new class extends Migration
         Schema::create('states', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->unsignedBigInteger('country_id');
+            $table->foreignId('country_id')->constrained('countries')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->decimal('latitude',10,8);
             $table->decimal('longitude',11,8);
             $table->tinyInteger('status')->default(0);
             $table->timestamps();
-            $table->foreign('country_id')->references('id')->on('countries')->onUpdate('cascade')->onDelete('cascade');
+
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 
