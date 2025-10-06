@@ -20,7 +20,7 @@ class BranchController extends Controller
     {
         $this->authorize('branch.index');
 
-        return Inertia::render('allpages/branch',[
+        return Inertia::render('allpages/hrm/branch',[
             'branch' => Branch::orderBy('id', 'desc')->get()
         ]);
     }

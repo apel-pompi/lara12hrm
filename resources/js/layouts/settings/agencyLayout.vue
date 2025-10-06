@@ -15,10 +15,6 @@ const sidebarNavItems: NavItem[] = [
         href: '/workflow',
     },
     {
-        title: 'Partner Branch',
-        href: '/partnerbranch',
-    },
-    {
         title: 'Academic',
         href: '/academics',
     },

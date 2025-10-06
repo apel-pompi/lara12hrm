@@ -77,7 +77,6 @@ class PartnerController extends Controller
             'fax'               => $validated['fax'] ?? null,
             'website'           => $validated['website'] ?? null,
             'photo'             => $validated['photo'] ?? null,
-            'partner_branch_id' => null,
             'user_id'           => Auth::id(),
             'active'            => '0',
         ]);

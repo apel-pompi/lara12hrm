@@ -63,6 +63,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
             function () {
                 Route::get('/', 'index')->name('studentActivities.index');
                 Route::put('/status', 'updateRate')->name('studentActivities.updateRate');
+                Route::post('/assignee', 'updateAssignee')->name('studentActivities.updateAssignee');
             }
     );
 

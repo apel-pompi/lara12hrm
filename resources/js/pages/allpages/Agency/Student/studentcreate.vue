@@ -731,7 +731,7 @@ const goToManageStudent = () => {
                             <span v-if="form.errors.assain_user" class="text-sm text-red-600">{{ form.errors.assain_user }}</span>
                         </div>
                         <div>
-                            <Label class="block text-sm font-medium text-gray-700">Choose a source</Label>
+                            <Label class="block text-sm font-medium text-gray-700">Choose a source <span class="text-red-500">*</span></Label>
                             <Combobox v-model="selectedSource">
                                 <div class="relative">
                                     <ComboboxInput

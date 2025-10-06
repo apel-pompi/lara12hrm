@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/AppLayout.vue';
-import AgencyLayout from '@/layouts/settings/agencyLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
-
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Switch from '@/components/ui/switch/Switch.vue';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import TableCell from '@/components/ui/table/TableCell.vue';
-import { HousePlus, PackageSearch, Plus, SquarePen, Trash } from 'lucide-vue-next';
+import AppLayout from '@/layouts/AppLayout.vue';
+import AgencyLayout from '@/layouts/settings/agencyLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { HousePlus, PackageSearch, Plus, RefreshCcw, Search, SquarePen, Trash } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 export interface Master {
@@ -23,10 +24,23 @@ export interface Master {
     active: number;
 }
 
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    per_page: number;
+    to: number | null;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Master Setup', href: '/general' }];
 
 const props = defineProps<{
-    mastercategory: Master[];
+    mastercategory: Paginated<Master>;
+    masterFillter: { catname: string };
+    filters: { catname: string };
 }>();
 
 const data = props.mastercategory;
@@ -141,6 +155,33 @@ const goToPartnerType = () => {
 const goToProductType = () => {
     router.visit('/general/productsetup');
 };
+
+// Combobox states
+const selecteName = ref(null); // name
+const queryName = ref('');
+
+// Filtered lists
+const filteredName = computed(() => (queryName.value === '' ? props.masterFillter : props.masterFillter.filter((n) => n.catname)));
+const search = () => {
+    const params: Record<string, any> = {};
+
+    if (selecteName.value) params.catname = selecteName.value.catname;
+
+    router.get(route('general.index'), params, {
+        preserveState: false,
+        preserveScroll: true,
+    });
+};
+
+const refresh = () => {
+    router.get(route('general.index'), {}, { replace: true });
+};
+
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
+};
 </script>
 
 <template>
@@ -148,15 +189,82 @@ const goToProductType = () => {
         <Head title="Master Setup" />
         <AgencyLayout>
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center justify-end space-x-2 py-4">
-                    <div class="flex-1 text-sm">
-                        <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Master Category </Button>
+                <div class="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
+                    <!-- Left actions -->
+                    <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+                        <!-- Create Master Category -->
+                        <Button variant="outline" size="sm" @click="showDailogCreate" class="w-full sm:w-auto">
+                            <Plus class="mr-2 h-4 w-4" /> Master Category
+                        </Button>
+
+                        <!-- Search Box -->
+                        <div class="flex w-full items-center gap-2 sm:w-auto">
+                            <Combobox v-model="selecteName" class="w-full sm:w-56">
+                                <div class="relative w-full">
+                                    <!-- Input -->
+                                    <div class="relative">
+                                        <ComboboxInput
+                                            class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                            placeholder="search name..."
+                                            :display-value="(n) => n?.catname"
+                                            @input="queryName = $event.target.value"
+                                        />
+                                        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                        </ComboboxButton>
+                                    </div>
+
+                                    <!-- Options -->
+                                    <ComboboxOptions
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                                    >
+                                        <div
+                                            v-if="filteredName.length === 0 && queryName !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                        >
+                                            Nothing found.
+                                        </div>
+
+                                        <ComboboxOption
+                                            v-for="n in filteredName"
+                                            :key="n.id"
+                                            :value="n"
+                                            class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                            v-slot="{ selected }"
+                                        >
+                                            <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                                {{ n.catname }}
+                                            </span>
+                                            <span
+                                                v-if="selected"
+                                                class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                            >
+                                                <CheckIcon class="h-5 w-5" />
+                                            </span>
+                                        </ComboboxOption>
+                                    </ComboboxOptions>
+                                </div>
+                            </Combobox>
+                        </div>
+
+                        <!-- Search + Refresh -->
+                        <div class="flex gap-2">
+                            <Button variant="outline" size="sm" @click="search" class="w-full sm:w-auto">
+                                <Search class="mr-1 h-4 w-4" /> Search
+                            </Button>
+                            <Button variant="outline" size="sm" @click="refresh" class="w-full sm:w-auto">
+                                <RefreshCcw class="mr-1 h-4 w-4" /> Refresh
+                            </Button>
+                        </div>
                     </div>
-                    <div class="space-x-2">
-                        <Button variant="outline" size="sm" @click="goToPartnerType"><HousePlus></HousePlus> Partner Type </Button>
-                        <Button variant="outline" size="sm" @click="goToProductType"><PackageSearch></PackageSearch> Product Type </Button>
+
+                    <!-- Right actions -->
+                    <div class="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" @click="goToPartnerType"> <HousePlus class="mr-1 h-4 w-4" /> Partner Type </Button>
+                        <Button variant="outline" size="sm" @click="goToProductType"> <PackageSearch class="mr-1 h-4 w-4" /> Product Type </Button>
                     </div>
                 </div>
+
                 <div class="rounded-md border">
                     <Table>
                         <TableHeader>
@@ -170,7 +278,7 @@ const goToProductType = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="(master, index) in data" :key="master.id ?? index">
+                            <TableRow v-for="(master, index) in data.data" :key="master.id ?? index">
                                 <TableCell>{{ master.catname }}</TableCell>
                                 <TableCell>{{ master.catadddate }}</TableCell>
                                 <TableCell></TableCell>
@@ -188,37 +296,56 @@ const goToProductType = () => {
                 </div>
 
                 <div class="flex items-center justify-end space-x-2 py-4">
-                    <div class="text-muted-foreground flex-1 text-sm"></div>
-                    <div class="space-x-2"></div>
+                    <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
+                    <div class="space-x-2">
+                        <Button
+                            v-for="(link, index) in data.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            variant="outline"
+                            size="sm"
+                            :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                            @click="goToPage(link.url)"
+                        >
+                            <span v-html="link.label"></span>
+                        </Button>
+                    </div>
                 </div>
             </div>
             <!-- Dialog -->
             <Dialog v-model:open="showDialog">
-                <DialogContent class="max-w-[825px]">
-                    <DialogHeader>
-                        <DialogTitle>{{ isEditMode ? 'Edit Master Category' : 'Create Master Category' }}</DialogTitle>
-                        <DialogDescription> Make changes to your master category here. Click save when you're done. </DialogDescription>
+                <DialogContent class="w-full max-w-lg rounded-2xl p-6 sm:max-w-xl md:max-w-2xl">
+                    <!-- Header -->
+                    <DialogHeader class="border-b pb-4">
+                        <DialogTitle class="text-xl font-semibold">
+                            {{ isEditMode ? 'Edit Master Category' : 'Create Master Category' }}
+                        </DialogTitle>
+                        <DialogDescription class="text-sm text-gray-500">
+                            Make changes to your master category here. Click save when you're done.
+                        </DialogDescription>
                     </DialogHeader>
-                    <div class="grid gap-5">
-                        <div class="grid gap-y-3">
-                            <div class="grid gap-2">
-                                <Label for="catname">Master Category Name</Label>
-                                <Input class="max-w-sm" placeholder="Enter Master Category Name" id="catname" v-model="form.catname" autofocus />
-                                <span v-if="errors?.catname" class="text-sm text-red-600">{{ errors.catname }}</span>
-                            </div>
 
-                            <div class="grid gap-2">
-                                <Button :disabled="form.processing" @click="submit">
-                                    <template v-if="form.processing">Saving...</template>
-                                    <template v-else>{{ isEditMode ? 'Update' : 'Submit' }}</template>
-                                </Button>
-                            </div>
+                    <!-- Body -->
+                    <div class="mt-6 space-y-5">
+                        <!-- Input -->
+                        <div class="space-y-2">
+                            <Label for="catname" class="font-medium">Master Category Name</Label>
+                            <Input id="catname" v-model="form.catname" placeholder="Enter Master Category Name" class="w-full" autofocus />
+                            <span v-if="errors?.catname" class="text-sm text-red-600">
+                                {{ errors.catname }}
+                            </span>
                         </div>
                     </div>
-                    <DialogFooter class="sm:justify-start">
+
+                    <!-- Footer -->
+                    <DialogFooter class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
                         <DialogClose as-child>
-                            <Button type="button" variant="secondary"> Close </Button>
+                            <Button type="button" variant="secondary" class="w-full sm:w-auto"> Close </Button>
                         </DialogClose>
+                        <Button :disabled="form.processing" @click="submit" class="w-full sm:w-auto">
+                            <template v-if="form.processing">Saving...</template>
+                            <template v-else>{{ isEditMode ? 'Update' : 'Submit' }}</template>
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

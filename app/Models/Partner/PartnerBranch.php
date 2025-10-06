@@ -2,8 +2,8 @@
 
 namespace App\Models\Partner;
 
-use App\Models\City;
-use App\Models\State;
+use App\Models\Default\City;
+use App\Models\Default\State;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +24,7 @@ class PartnerBranch extends Model
         'active',
     ];
 
-    /**
+   /**
      * Get the partner that owns the PartnerBranch
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -33,6 +33,7 @@ class PartnerBranch extends Model
     {
         return $this->belongsTo(Partner::class, 'partner_id');
     }
+    
     /**
      * Get the user that owns the MasterCategory
      *
@@ -42,8 +43,6 @@ class PartnerBranch extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
-
 
     /**
      * Get the states that owns the PartnerBranch

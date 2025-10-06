@@ -2,7 +2,7 @@
 
 namespace App\Models\Product;
 
-use App\Models\Default\Fees;
+use App\Models\AgencySetting\Fees;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;

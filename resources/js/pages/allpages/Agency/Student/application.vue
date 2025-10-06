@@ -199,7 +199,7 @@ const onDelete = async (id: number) => {
             <div class="flex items-center justify-end space-x-2 py-4">
                 <div class="flex-1 text-sm">Student Application</div>
                 <div class="space-x-2">
-                    <Button size="sm" @click="showDailogCreate"><Plus></Plus> Add</Button>
+                    <!-- <Button size="sm" @click="showDailogCreate"><Plus></Plus> Add</Button> -->
                 </div>
             </div>
             <div class="flex items-start gap-3 rounded-xl">

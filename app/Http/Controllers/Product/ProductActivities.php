@@ -74,6 +74,19 @@ class ProductActivities extends Controller
         }
     }
 
+    public function feeDelete(Product $product, ProductFeesHd $productFeesHd)
+    {
+
+        try {
+            $productFeesHd->delete();
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete Partner Branch',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function requirement(Product $product)
     {
         return Inertia::render('allpages/Agency/Product/requirement', [
@@ -190,7 +203,7 @@ class ProductActivities extends Controller
 
     public function storeRequirementOthers(Request $request, Product $product)
     {
-        
+
         $request->validate([
             'product_id' => 'required|integer|exists:products,id',
             'othersTypes' => 'required|array|min:4',

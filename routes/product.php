@@ -34,6 +34,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
 
                 Route::get('/fees', 'fees')->name('productActivities.fees');
                 Route::post('/fees', 'storefess')->name('productActivities.storefess');
+                Route::delete('/fees/show/{productFeesHd}', 'feeDelete')->name('productActivities.feeDelete');
 
                 Route::get('/requirement', 'requirement')->name('productActivities.requirement');
 

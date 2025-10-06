@@ -2,7 +2,7 @@
 
 namespace App\Models\Default;
 
-use App\Models\Branch;
+use App\Models\HRM\Branch;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

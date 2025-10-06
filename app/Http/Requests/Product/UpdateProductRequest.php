@@ -24,7 +24,6 @@ class UpdateProductRequest extends FormRequest
         return [
             'name'              => ['required', 'string', 'max:255'],
             'partner_id'        => ['required', 'integer', 'exists:partners,id'],
-            'partner_branch_id' => ['required', 'string'],
             'product_type_id'   => ['required', 'integer', 'exists:product_type_setups,id'],
             'revinue_type'      => ['required', 'integer', 'in:0,1'],
             'duration'          => ['required', 'string', 'max:255'],
@@ -40,7 +39,6 @@ class UpdateProductRequest extends FormRequest
         return [
             'name.required'              => 'Product Name is required',
             'partner_id.required'        => 'Partner is required',
-            'partner_branch_id.required' => 'Partner Branch is required',
             'product_type_id.required'   => 'Product Type is required',
             'revinue_type.required'      => 'Revenue Type is required',
             'duration'          => 'Duration is required',
@@ -54,7 +52,6 @@ class UpdateProductRequest extends FormRequest
         return [
             'name'              => 'Product Name',
             'partner_id'        => 'Partner',
-            'partner_branch_id' => 'Partner Branch',
             'product_type_id'   => 'Product Type',
             'revinue_type'      => 'Revenue Type',
             'duration'          => 'Duration',

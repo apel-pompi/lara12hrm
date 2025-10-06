@@ -24,7 +24,7 @@ class AttenSettingController extends Controller
         
         $this->authorize('attendanmst.index');
 
-        return Inertia::render('allpages/attensetting', [
+        return Inertia::render('allpages/hrm/attensetting', [
             'attensetting' => AttenSetting::with(['branch' => function ($query) {
                 $query->where('active', 1);
             }])->get(),

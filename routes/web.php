@@ -20,6 +20,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    Route::get('/users/list', [CountryController::class, 'userlist'])->name('users.list');
     Route::get('/countries/{country}/states', [CountryController::class, 'states']);
     Route::get('/states/{state}/cities', [StateController::class, 'cities']);
 

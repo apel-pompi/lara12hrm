@@ -21,7 +21,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('state_id')->constrained('states')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('city_id')->constrained('cities')->nullable()
+            $table->foreignId('city_id')->nullable()->constrained('cities')
                 ->cascadeOnUpdate()->cascadeOnDelete();
 
             $table->string('brn')->nullable();
@@ -31,7 +31,6 @@ return new class extends Migration
             $table->string('fax')->nullable();
             $table->string('website')->nullable();
             $table->string('photo')->nullable();
-            $table->string('partner_branch_id')->nullable();
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->tinyInteger('active')->default(0);

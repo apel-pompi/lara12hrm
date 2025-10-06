@@ -174,47 +174,48 @@ const goToMasterCategory = () => {
             </div>
             <!-- Dialog -->
             <Dialog v-model:open="showDialog">
-                <DialogContent class="max-w-[825px]">
-                    <DialogHeader>
-                        <DialogTitle>{{ isEditMode ? 'Edit Product Type' : 'Create Product Type' }}</DialogTitle>
-                        <DialogDescription> Make changes to your partner type here. Click save when you're done. </DialogDescription>
+                <DialogContent class="w-full max-w-lg rounded-2xl p-6 sm:max-w-xl md:max-w-2xl">
+                    <DialogHeader class="border-b pb-4">
+                        <DialogTitle class="text-xl font-semibold">{{ isEditMode ? 'Edit Product Type' : 'Create Product Type' }}</DialogTitle>
+                        <DialogDescription class="text-sm text-gray-500">
+                            Make changes to your partner type here. Click save when you're done.
+                        </DialogDescription>
                     </DialogHeader>
-                    <div class="grid gap-5">
-                        <div class="grid gap-y-3">
-                            <div class="grid gap-2">
-                                <Label for="producttypename">Master Category</Label>
-                                <Select v-model="form.mastercaterory_id">
-                                    <SelectTrigger class="w-full">
-                                        <SelectValue placeholder="Select Master Category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem v-for="master in props.mastersetup" :key="master.id" :value="master.id">
-                                                {{ master.catname }}
-                                            </SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <span v-if="errors?.mastercaterory_id" class="text-sm text-red-600">{{ errors.mastercaterory_id }}</span>
-                            </div>
-                            <div class="grid gap-2">
-                                <Label for="producttypename">Product Type Name</Label>
-                                <Input class="max-w-sm" placeholder="Enter Product Type Name" id="catname" v-model="form.producttypename" autofocus />
-                                <span v-if="errors?.producttypename" class="text-sm text-red-600">{{ errors.producttypename }}</span>
-                            </div>
-
-                            <div class="grid gap-2">
-                                <Button :disabled="form.processing" @click="submit">
-                                    <template v-if="form.processing">Saving...</template>
-                                    <template v-else>{{ isEditMode ? 'Update' : 'Submit' }}</template>
-                                </Button>
-                            </div>
+                    <!-- body -->
+                    <div class="mt-6 space-y-5">
+                        <!-- Master Category -->
+                        <div class="space-y-2">
+                            <Label for="mastercaterory_id" class="font-medium">Master Category</Label>
+                            <Select v-model="form.mastercaterory_id">
+                                <SelectTrigger class="w-full">
+                                    <SelectValue placeholder="Select Master Category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem v-for="master in props.mastersetup" :key="master.id" :value="master.id">
+                                            {{ master.catname }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <span v-if="errors?.mastercaterory_id" class="text-sm text-red-600">{{ errors.mastercaterory_id }}</span>
+                        </div>
+                        <!-- Partner Type Name -->
+                        <div class="space-y-2">
+                            <Label for="producttypename">Product Type Name</Label>
+                            <Input class="w-full" placeholder="Enter Product Type Name" id="catname" v-model="form.producttypename" autofocus />
+                            <span v-if="errors?.producttypename" class="text-sm text-red-600">{{ errors.producttypename }}</span>
                         </div>
                     </div>
-                    <DialogFooter class="sm:justify-start">
+
+                    <DialogFooter class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
                         <DialogClose as-child>
-                            <Button type="button" variant="secondary"> Close </Button>
+                            <Button type="button" variant="secondary" class="w-full sm:w-auto"> Close </Button>
                         </DialogClose>
+                        <Button :disabled="form.processing" @click="submit" class="w-full sm:w-auto">
+                            <template v-if="form.processing">Saving...</template>
+                            <template v-else>{{ isEditMode ? 'Update' : 'Submit' }}</template>
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

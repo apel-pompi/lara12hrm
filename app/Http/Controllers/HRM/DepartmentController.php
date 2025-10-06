@@ -19,7 +19,7 @@ class DepartmentController extends Controller
     {
         $this->authorize('department.index');
 
-        return Inertia::render('allpages/department',[
+        return Inertia::render('allpages/hrm/department',[
             'department' => Department::orderBy('id', 'desc')->get()
         ]);
     }

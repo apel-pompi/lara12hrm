@@ -19,7 +19,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('branch_state_id')->constrained('states')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('branch_city_id')->constrained('cities')->nullable()
+            $table->foreignId('branch_city_id')->nullable()->constrained('cities')
                 ->cascadeOnUpdate()->cascadeOnDelete();
 
             $table->string('branch_phoneno')->nullable();

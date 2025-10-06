@@ -33,7 +33,7 @@ class UpdatePartnerRequest extends FormRequest
             'currency'           => ['nullable', 'integer'],
             'country_id'         => ['required', 'integer', 'exists:countries,id'],
             'state_id'           => ['required', 'integer', 'exists:states,id'],
-            'city_id'            => ['required', 'integer', 'exists:cities,id'],
+            'city_id'            => ['nullable', 'integer', 'exists:cities,id'],
             'workflow_id'        => ['required', 'array'],
             'workflow_id.*'      => ['integer', 'exists:workflows,id'],
             'photo'              => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:1024'],
@@ -84,10 +84,6 @@ class UpdatePartnerRequest extends FormRequest
             'state_id.required'        => 'State cannot be empty',
             'state_id.integer'         => 'State must be a valid integer',
             'state_id.exists'          => 'Selected State does not exist',
-
-            'city_id.required'         => 'City cannot be empty',
-            'city_id.integer'          => 'City must be a valid integer',
-            'city_id.exists'           => 'Selected City does not exist',
 
             'workflow_id.array'        => 'Workflows must be an array',
             'workflow_id.*.integer'    => 'Each Workflow must be a valid integer',

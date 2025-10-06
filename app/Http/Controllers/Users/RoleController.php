@@ -46,7 +46,7 @@ class RoleController extends Controller
             $permissionsByGroup[$group->group_name] = User::getPermissions($group->group_name);
         }
 
-        return Inertia::render('allpages/roles',[
+        return Inertia::render('allpages/user/roles',[
             'roles' => $rolesWithPermissions,
             'permissionGroups' => $permissionGroups,
             'permissionsByGroup' => $permissionsByGroup

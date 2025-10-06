@@ -66,7 +66,6 @@ const props = defineProps<{
 
 const data = props.workflow;
 
-
 interface FormErrors {
     name?: string;
     active?: string;
@@ -216,40 +215,46 @@ const goToWorkflow = () => {
             <!-- Dialog -->
             <Dialog v-model:open="showDialog">
                 <DialogContent class="max-w-[825px]">
+                    <!-- Header -->
                     <DialogHeader>
-                        <DialogTitle>{{ isEditMode ? 'Edit Document List' : 'New Document Check' }}</DialogTitle>
-                        <DialogDescription> Make changes to your document check list here. Click save when you're done. </DialogDescription>
+                        <DialogTitle>
+                            {{ isEditMode ? 'Edit Document List' : 'New Document Check' }}
+                        </DialogTitle>
+                        <DialogDescription> Manage your document check list here. Click save when you're done. </DialogDescription>
                     </DialogHeader>
-                    <div class="grid gap-5">
-                        <div class="grid gap-y-3">
-                            <div class="grid gap-2">
-                                <Label for="name">Select Document List</Label>
-                                <Select v-model="form.doctype_id">
-                                    <SelectTrigger class="w-full">
-                                        <SelectValue placeholder="Select Document Types" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem v-for="document in props.documenttype" :key="document.id" :value="document.id">
-                                                {{ document.docname }}
-                                            </SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </div>
 
-                            <div class="grid gap-2">
-                                <Button :disabled="form.processing" @click="submit">
-                                    <template v-if="form.processing">Saving...</template>
-                                    <template v-else>{{ isEditMode ? 'Update' : 'Create' }}</template>
-                                </Button>
-                            </div>
+                    <!-- Body -->
+                    <div class="grid gap-6">
+                        <!-- Select Document Type -->
+                        <div class="grid gap-2">
+                            <Label for="doctype">Select Document Type</Label>
+                            <Select v-model="form.doctype_id">
+                                <SelectTrigger class="w-full">
+                                    <SelectValue placeholder="Select Document Type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem v-for="document in props.documenttype" :key="document.id" :value="document.id">
+                                            {{ document.docname }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
-                    <DialogFooter class="sm:justify-start">
+
+                    <!-- Footer -->
+                    <DialogFooter class="mt-6 flex items-center justify-between">
+                        <!-- Close Left -->
                         <DialogClose as-child>
-                            <Button type="button" variant="secondary"> Close </Button>
+                            <Button type="button" variant="secondary">Close</Button>
                         </DialogClose>
+
+                        <!-- Submit Right -->
+                        <Button :disabled="form.processing" @click="submit">
+                            <template v-if="form.processing">Saving...</template>
+                            <template v-else>{{ isEditMode ? 'Update' : 'Create' }}</template>
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

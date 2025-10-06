@@ -33,11 +33,10 @@ class StorePartnerRequest extends FormRequest
             'currency'           => ['nullable', 'integer'],
             'country_id'         => ['required', 'integer', 'exists:countries,id'],
             'state_id'           => ['required', 'integer', 'exists:states,id'],
-            'city_id'            => ['required', 'integer', 'exists:cities,id'],
+            'city_id'            => ['nullable', 'integer', 'exists:cities,id'],
             'workflow_id'        => ['required', 'array'],
             'workflow_id.*'      => ['integer', 'exists:workflows,id'],
             'photo'              => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:1024'],
-            'partner_branch_id'  => ['nullable', 'string', 'max:255'],
             'website'            => ['nullable', 'string', 'max:255'],
             'active'             => ['nullable', 'boolean'],
         ];
@@ -85,16 +84,9 @@ class StorePartnerRequest extends FormRequest
             'state_id.integer'         => 'State must be a valid integer',
             'state_id.exists'          => 'Selected State does not exist',
 
-            'city_id.required'         => 'City cannot be empty',
-            'city_id.integer'          => 'City must be a valid integer',
-            'city_id.exists'           => 'Selected City does not exist',
-
             'workflow_id.array'        => 'Workflows must be an array',
             'workflow_id.*.integer'    => 'Each Workflow must be a valid integer',
             'workflow_id.*.exists'     => 'Selected Workflow does not exist',
-
-            'partner_branch_id.string' => 'Partner Branch must be a string',
-            'partner_branch_id.max'    => 'Partner Branch cannot exceed 255 characters',
 
             'photo.image'              => 'Photo must be an image',
             'photo.mimes'              => 'Photo must be jpg, jpeg, png, gif, or webp',
@@ -124,7 +116,6 @@ class StorePartnerRequest extends FormRequest
             'city_id'            => 'City',
             'workflow_id'        => 'Workflows',
             'photo'              => 'Photo',
-            'partner_branch_id' => 'Partner Branch',
             'website'            => 'Website',
             'active'             => 'Status',
         ];

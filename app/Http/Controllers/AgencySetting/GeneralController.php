@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AgencySetting\MasterCategory;
 use App\Models\Partner\PartnerTypeSetup;
 use App\Models\Product\ProductTypeSetup;
+use App\Services\Agency\Setting\GeneralMaster;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,12 +16,15 @@ class GeneralController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index()
+    public function index(Request $request, GeneralMaster $generalMaster)
     {
         $this->authorize('general.index');
 
         return Inertia::render('allpages/Agency/Setting/generalmaster', [
-            'mastercategory' => MasterCategory::with('user')->orderBy('id', 'desc')->get()
+
+            'masterFillter' => MasterCategory::with('user')->orderBy('id', 'desc')->get(),
+            'mastercategory' => $generalMaster->get($request->query()),
+            'filters'   => $generalMaster->get($request->query()),
         ]);
     }
 
@@ -98,7 +102,7 @@ class GeneralController extends Controller
 
     public function destroy(MasterCategory $general)
     {
-        $this->authorize('general.destory');
+        $this->authorize('general.destroy');
 
         try {
             $general->delete();

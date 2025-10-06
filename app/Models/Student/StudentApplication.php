@@ -2,10 +2,10 @@
 
 namespace App\Models\Student;
 
+use App\Models\AgencySetting\Workflow;
 use App\Models\Partner\PartnerBranch;
 use App\Models\Product\Product;
 use App\Models\User;
-use App\Models\Workflow;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

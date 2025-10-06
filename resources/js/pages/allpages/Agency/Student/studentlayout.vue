@@ -2,11 +2,31 @@
 import Heading from '@/components/Heading.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import Select from '@/components/ui/select/Select.vue';
+import SelectContent from '@/components/ui/select/SelectContent.vue';
+import SelectGroup from '@/components/ui/select/SelectGroup.vue';
+import SelectItem from '@/components/ui/select/SelectItem.vue';
+import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
+import SelectValue from '@/components/ui/select/SelectValue.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type NavItem } from '@/types';
-import { Link, router } from '@inertiajs/vue3';
-import { Archive, Coffee, CornerDownLeft, Flame, Mail, MessageCircleMore, Snowflake, SquarePen, TriangleAlert } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Link, router, useForm } from '@inertiajs/vue3';
+import axios from 'axios';
+import {
+    Archive,
+    Coffee,
+    CornerDownLeft,
+    Flame,
+    Loader2,
+    Mail,
+    MessageCircleMore,
+    Snowflake,
+    SquarePen,
+    TriangleAlert,
+    UserCheck,
+} from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Student Activity', href: '/student' }];
@@ -17,9 +37,9 @@ export interface Student {
 }
 
 const props = defineProps<{
-    student: { id: number; status: string; fname: string; lname: string };
+    student: { id: number; status: number; fname: string; lname: string };
 }>();
-//console.log(props.student);
+
 const lead = [
     {
         title: 'Activities',
@@ -109,7 +129,7 @@ const prospect = [
         href: route('studentApplication.index', props.student.id),
     },
 ];
-const client = [
+const onBoard = [
     {
         title: 'Activities',
         href: route('studentActivities.index', props.student.id),
@@ -228,7 +248,7 @@ const sidebarNavItems = computed<NavItem[]>(() => {
     } else if (props.student.status === 2) {
         return prospect;
     } else if (props.student.status === 3) {
-        return client;
+        return onBoard;
     } else {
         return archive;
     }
@@ -252,6 +272,48 @@ const updateRate = (status: number) => {
             },
         },
     );
+};
+
+const form = useForm({
+    user_id: '',
+});
+
+const showDialog = ref(false);
+const users = ref<{ id: number; name: string }[]>([]);
+const showDailogCreate = async () => {
+    try {
+        const res = await axios.get('/users/list');
+        users.value = res.data;
+    } catch (e) {
+        console.error('Failed to load users', e);
+    }
+
+    showDialog.value = true;
+};
+
+const updateAssignee = () => {
+    form.post(route('studentActivities.updateAssignee', { student: props.student.id }), {
+        onSuccess: () => {
+            toast('Success', {
+                description: `User assignee successfully`,
+            });
+            setTimeout(() => {
+                showDialog.value = false;
+                form.reset();
+                router.visit(route('studentActivities.index'), {
+                    preserveScroll: true,
+                    preserveState: false,
+                });
+            }, 200);
+            showDialog.value = false;
+            form.reset();
+        },
+        onError: () => {
+            toast('Validation Error', {
+                description: 'User assignee error',
+            });
+        },
+    });
 };
 </script>
 
@@ -343,6 +405,20 @@ const updateRate = (status: number) => {
                                     Archive
                                 </span>
                             </div>
+                            <div class="group relative">
+                                <button
+                                    v-if="props.student.status <= 1"
+                                    @click="showDailogCreate"
+                                    class="cursor-pointer text-[8px] uppercase hover:text-gray-700"
+                                >
+                                    <UserCheck />
+                                </button>
+                                <span
+                                    class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100"
+                                >
+                                    Assignee
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -388,5 +464,51 @@ const updateRate = (status: number) => {
                 </main>
             </div>
         </div>
+        <Dialog v-model:open="showDialog">
+            <DialogContent class="max-w-[825px]">
+                <!-- Header -->
+                <DialogHeader>
+                    <DialogTitle> User Assignee </DialogTitle>
+                    <DialogDescription> update user assignee. Click save when you're done. </DialogDescription>
+                </DialogHeader>
+
+                <!-- Body -->
+                <div class="grid gap-6">
+                    <!-- Select Document Type -->
+                    <div class="grid gap-2">
+                        <Label for="doctype">Select Assignee User</Label>
+                        <Select v-model="form.user_id">
+                            <SelectTrigger class="w-full">
+                                <SelectValue placeholder="Select user" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem v-for="user in users" :key="user.id" :value="user.id">
+                                        {{ user.name }}
+                                    </SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <DialogFooter class="mt-6 flex items-center justify-between">
+                    <!-- Close Left -->
+                    <DialogClose as-child>
+                        <Button type="button" variant="secondary">Close</Button>
+                    </DialogClose>
+
+                    <!-- Submit Right -->
+                    <Button :disabled="form.processing" @click="updateAssignee">
+                        <template v-if="form.processing">
+                            Saving...
+                            <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+                        </template>
+                        <template v-else>Save</template>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

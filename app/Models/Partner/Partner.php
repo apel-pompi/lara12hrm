@@ -2,11 +2,11 @@
 
 namespace App\Models\Partner;
 
-use App\Models\City;
+use App\Models\AgencySetting\Workflow;
+use App\Models\Default\City;
+use App\Models\Default\State;
 use App\Models\Partner\PartnerTypeSetup;
-use App\Models\State;
 use App\Models\User;
-use App\Models\Workflow;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,7 +30,6 @@ class Partner extends Model
         'fax',
         'website',
         'photo',
-        'partner_branch_id',
         'user_id',
         'active',
     ];

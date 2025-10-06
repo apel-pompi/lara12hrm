@@ -131,7 +131,7 @@ class RolePermissionSeeder extends Seeder
                 'group_name' => 'Document Check List',
                 'permissions' => [
                     'workflowDocumentCheck.index',
-                    'workflowDocument.store',
+                    'workflowDocumentCheck.store',
                     
                 ],
             ],

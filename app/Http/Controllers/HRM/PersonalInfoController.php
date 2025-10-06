@@ -28,7 +28,7 @@ class PersonalInfoController extends Controller
     {
         $this->authorize('personal.index');
 
-        return Inertia::render('allpages/personalinfo', [
+        return Inertia::render('allpages/hrm/personalinfo', [
             'personalinfo' => $personalInfoService->get($request->query()),
             'filters'   => $personalInfoService->get($request->query()),
             'branch' => Branch::where('active', 1)->get(),

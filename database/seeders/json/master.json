@@ -1,0 +1,114 @@
+[
+    {
+        "data": [
+            {
+                
+                "catname": "Education",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "catname": "VISA and Migration",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "catname": "Accommodation",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "catname": "Short Classes",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "catname": "Skill Assessment",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "catname": "Other Services",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "catname": "Tours & Travel",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "catname": "Tax & Accounting",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "catname": "Professional Year",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "catname": "Legal & Court",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "catname": "RPL Assessment",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "catname": "Nomination",
+                "catadddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            }
+        ]
+    }
+]

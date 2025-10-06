@@ -172,30 +172,44 @@ const goToWorkflow = () => {
             <!-- Dialog -->
             <Dialog v-model:open="showDialog">
                 <DialogContent class="max-w-[825px]">
+                    <!-- Header -->
                     <DialogHeader>
-                        <DialogTitle>{{ isEditMode ? 'Edit Document Type' : 'Create Document Type' }}</DialogTitle>
-                        <DialogDescription> Make changes to your workflows Document Type here. Click save when you're done. </DialogDescription>
+                        <DialogTitle>
+                            {{ isEditMode ? 'Edit Document Type' : 'Create Document Type' }}
+                        </DialogTitle>
+                        <DialogDescription> Manage your workflow document type details here. Click save when you're done. </DialogDescription>
                     </DialogHeader>
-                    <div class="grid gap-5">
-                        <div class="grid gap-y-3">
-                            <div class="grid gap-2">
-                                <Label for="docname">Workflow Document Type</Label>
-                                <Input class="max-w-sm" placeholder="Enter Workflow Document Type" id="docname" v-model="form.docname" autofocus />
-                                <span v-if="errors?.docname" class="text-sm text-red-600">{{ errors.docname }}</span>
-                            </div>
 
-                            <div class="grid gap-2">
-                                <Button :disabled="form.processing" @click="submit">
-                                    <template v-if="form.processing">Saving...</template>
-                                    <template v-else>{{ isEditMode ? 'Update' : 'Submit' }}</template>
-                                </Button>
-                            </div>
+                    <!-- Body -->
+                    <div class="grid gap-6">
+                        <!-- Document Type Name -->
+                        <div class="grid gap-2">
+                            <Label for="docname">Workflow Document Type</Label>
+                            <Input
+                                id="docname"
+                                v-model="form.docname"
+                                placeholder="Enter workflow document type"
+                                class="w-full md:max-w-sm"
+                                autofocus
+                            />
+                            <span v-if="errors?.docname" class="text-sm text-red-600">
+                                {{ errors.docname }}
+                            </span>
                         </div>
                     </div>
-                    <DialogFooter class="sm:justify-start">
+
+                    <!-- Footer -->
+                    <DialogFooter class="flex items-center justify-between">
+                        <!-- Close Left -->
                         <DialogClose as-child>
-                            <Button type="button" variant="secondary"> Close </Button>
+                            <Button type="button" variant="secondary">Close</Button>
                         </DialogClose>
+
+                        <!-- Submit Right -->
+                        <Button :disabled="form.processing" @click="submit">
+                            <template v-if="form.processing">Saving...</template>
+                            <template v-else>{{ isEditMode ? 'Update' : 'Submit' }}</template>
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

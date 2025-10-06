@@ -21,11 +21,11 @@ return new class extends Migration
             $table->string('email')->nullable(); //Email
             $table->string('phone')->nullable(); //Phone
             $table->string('contactpre')->nullable(); //Contact Preference
-            $table->foreignId('preaddcountry')->constrained('countries')->nullable()
+            $table->foreignId('preaddcountry')->nullable()->constrained('countries')->nullable()
                 ->cascadeOnUpdate()->cascadeOnDelete(); //Permanent Address Country ID
-            $table->foreignId('preaddstate')->constrained('states')->nullable()
+            $table->foreignId('preaddstate')->nullable()->constrained('states')->nullable()
                 ->cascadeOnUpdate()->cascadeOnDelete(); //Permanent Address State ID
-            $table->foreignId('preaddcity')->constrained('cities')->nullable()
+            $table->foreignId('preaddcity')->nullable()->constrained('cities')
                 ->cascadeOnUpdate()->cascadeOnDelete(); //Permanent Address City ID
 
             $table->string('paddress')->nullable(); //Physical Address 
@@ -36,10 +36,10 @@ return new class extends Migration
             $table->date('visaexdate')->nullable(); //Visa Expiry Date 
             $table->string('pvisades')->nullable(); //Previous Visas & Destination 
 
-            $table->foreignId('descountry_id')->constrained('countries')->nullable()
+            $table->foreignId('descountry_id')->nullable()->constrained('countries')
                 ->cascadeOnUpdate()->cascadeOnDelete(); //preferred destination
 
-            $table->foreignId('stage_id')->constrained('student_stages')->nullable()
+            $table->foreignId('stage_id')->nullable()->constrained('student_stages')
                 ->cascadeOnUpdate()->cascadeOnDelete(); //Student Stage ID
 
             $table->string('metting_note')->nullable(); //Metting Note

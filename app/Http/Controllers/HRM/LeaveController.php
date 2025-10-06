@@ -27,7 +27,7 @@ class LeaveController extends Controller
                        ->get();
         $leaveplan = Leaveplan::where('active',1)->orderBy('id', 'desc')->get();
         $employee = PersonalInfo::where('active',1)->orderBy('id', 'desc')->get();
-        return Inertia::render('allpages/leave', [
+        return Inertia::render('allpages/hrm/leave', [
             'leaves' => $leaves,
             'leaveplan' => $leaveplan,
             'employee' => $employee

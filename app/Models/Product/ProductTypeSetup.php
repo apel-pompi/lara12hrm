@@ -2,7 +2,7 @@
 
 namespace App\Models\Product;
 
-use App\Models\MasterCategory;
+use App\Models\AgencySetting\MasterCategory;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

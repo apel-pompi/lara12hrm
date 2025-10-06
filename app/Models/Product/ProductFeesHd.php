@@ -2,8 +2,8 @@
 
 namespace App\Models\Product;
 
-use App\Models\Country;
-use App\Models\Default\Installment;
+use App\Models\AgencySetting\Installment;
+use App\Models\Default\Country;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

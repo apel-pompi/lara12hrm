@@ -60,7 +60,9 @@ class StudentApplicationController extends Controller
                 'saleprice'                => $validated['saleprice'],
                 'user_id'                  => Auth::id()
             ]);
-            $studentFolder = gDrive::createFolder("student_{$application->student_id}");
+            $studentID = Student::where('id',$validated['student_id'])->first(['student_id']);
+  
+            $studentFolder = gDrive::createFolder("student_{$studentID->student_id}");
             if ($studentFolder) {
                 gDrive::createFolder(
                     $application->product->name,
@@ -160,7 +162,6 @@ class StudentApplicationController extends Controller
     public function product($student, $product, $partner)
     {
         $product = Product::where('partner_id', $partner)
-            ->whereRaw("FIND_IN_SET(?, partner_branch_id)", [$product])
             ->where('active', 1)
             ->get();
         return response()->json($product);

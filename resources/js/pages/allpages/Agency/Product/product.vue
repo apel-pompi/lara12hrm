@@ -21,7 +21,6 @@ export interface Product {
     id: number;
     name: number;
     partner_id: number;
-    partner_branch_id: number;
     partner_type_id: number;
     revinue_type: number;
     duration: string;
@@ -37,17 +36,15 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Product', href: '/product' }];
 const props = defineProps<{
     product: Product[];
     partner: { id: number; name: string };
-    partnerBrnach: { id: number; branch_name: string }[];
     productType: { id: number; producttypename: string }[];
     months: { id: number; month: string }[];
 }>();
 
 const data = props.product;
-console.log(data);
+
 interface FormErrors {
     name?: string;
     partner_id?: number;
-    partner_branch_id?: number;
     product_type_id?: number;
     revinue_type?: number;
     duration?: string;
@@ -77,27 +74,7 @@ const filteredProduct = computed(() =>
         ? props.productType.filter((c) => c.producttypename.toLowerCase().includes(queryProduct.value.toLowerCase()))
         : props.productType,
 );
-// ------------------- Partner Branch & Intake Month multiselect -------------------
-//Partner
-const selectedPartnerBranch = ref<{ id: number; branch_name: string }[]>([]);
-const queryPartnerBranch = ref('');
 
-const filteredPartnerBranch = computed(() =>
-    queryPartnerBranch.value === ''
-        ? props.partnerBrnach
-        : props.partnerBrnach.filter((p) => p.branch_name.toLowerCase().includes(queryPartnerBranch.value.toLowerCase())),
-);
-
-const isSelectedPartnerBranch = (p: { id: number; branch_name: string }) => selectedPartnerBranch.value.some((pb) => pb.id === p.id);
-
-const togglePartnerBranch = (p: { id: number; branch_name: string }) => {
-    const idx = selectedPartnerBranch.value.findIndex((pb) => pb.id === p.id);
-    if (idx === -1) selectedPartnerBranch.value.push(p);
-    else selectedPartnerBranch.value.splice(idx, 1);
-};
-const removePartnerBranch = (p: { id: number; branch_name: string }) => {
-    selectedPartnerBranch.value = selectedPartnerBranch.value.filter((pb) => pb.id !== p.id);
-};
 
 //Intake Month
 const selectedIntake = ref<{ id: number; month: string }[]>([]);
@@ -122,7 +99,6 @@ const removeIntake = (p: { id: number; month: string }) => {
 const form = useForm({
     name: '',
     partner_id: '',
-    partner_branch_id: [],
     product_type_id: '',
     revinue_type: '',
     duration: '',
@@ -140,7 +116,6 @@ const showDailogCreate = () => {
 
 const submit = () => {
     form.partner_id = selectedPartner.value ? selectedPartner.value.id : '';
-    form.partner_branch_id = selectedPartnerBranch.value.length > 0 ? selectedPartnerBranch.value.map((p) => p.id) : [];
     form.product_type_id = selectedProduct.value ? selectedProduct.value.id : '';
     form.intak_month = selectedIntake.value.map((m) => m.month);
 
@@ -220,7 +195,6 @@ const onDelete = async (id: number) => {
                             <TableHead>Product Name</TableHead>
                             <TableHead>Product Type</TableHead>
                             <TableHead>Associated Partner</TableHead>
-                            <TableHead>Partner Branch</TableHead>
                             <TableHead>Enrolled</TableHead>
                             <TableHead>Intake Month</TableHead>
                             <TableHead>Status</TableHead>
@@ -234,11 +208,7 @@ const onDelete = async (id: number) => {
                             </TableCell>
                             <TableCell>{{ product.productype.producttypename }}</TableCell>
                             <TableCell>{{ product.partner.name }}</TableCell>
-                            <TableCell>
-                                <Badge class="m-0.5 p-1" variant="outline" v-for="(b, idx) in product.branch_name" :key="idx">
-                                    {{ b }}
-                                </Badge>
-                            </TableCell>
+                            
                             <TableCell></TableCell>
                                 <Badge class="m-0.5 p-1" variant="outline" v-for="(b, idx) in product.intak_month.split(',')" :key="idx">
                                 {{ b }}
@@ -311,59 +281,7 @@ const onDelete = async (id: number) => {
                         <p v-if="form.errors.partner_id" class="mt-1 text-sm text-red-600">{{ form.errors.partner_id }}</p>
                     </div>
 
-                    <!-- Partner Branch -->
-                    <div>
-                        <Label class="block pb-2 text-sm font-medium text-gray-700">Partner Branch <span class="text-red-500">*</span></Label>
-                        <div class="relative w-full">
-                            <div
-                                class="flex min-h-[40px] cursor-text flex-wrap items-center gap-1 rounded-lg border px-2 py-1 shadow-sm"
-                                @click="$refs.inputPartnerBranch.focus()"
-                            >
-                                <span
-                                    v-for="p in selectedPartnerBranch"
-                                    :key="p.id"
-                                    class="flex items-center rounded-full bg-indigo-100 px-2 py-1 text-sm text-indigo-800"
-                                >
-                                    {{ p.branch_name }}
-                                    <button type="button" class="ml-1" @click.prevent="removePartnerBranch(p)">×</button>
-                                </span>
-
-                                <input
-                                    ref="inputPartnerBranch"
-                                    type="text"
-                                    v-model="queryPartnerBranch"
-                                    class="flex-1 border-none bg-transparent p-1 text-sm outline-none"
-                                    placeholder="Type to search..."
-                                />
-                            </div>
-
-                            <div
-                                v-if="queryPartnerBranch !== '' && filteredPartnerBranch.length > 0"
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg"
-                            >
-                                <div
-                                    v-for="p in filteredPartnerBranch"
-                                    :key="p.id"
-                                    class="flex cursor-pointer items-center justify-between px-4 py-2 hover:bg-indigo-600 hover:text-white"
-                                    @click.prevent="
-                                        togglePartnerBranch(p);
-                                        queryPartnerBranch = '';
-                                    "
-                                >
-                                    <span>{{ p.branch_name }}</span>
-                                    <CheckIcon v-if="isSelectedPartnerBranch(p)" class="h-5 w-5 text-indigo-600" />
-                                </div>
-                            </div>
-
-                            <div
-                                v-if="queryPartnerBranch !== '' && filteredPartnerBranch.length === 0"
-                                class="absolute z-10 mt-1 w-full rounded-lg border bg-white px-4 py-2 text-sm text-gray-500"
-                            >
-                                Nothing found.
-                            </div>
-                        </div>
-                        <p v-if="form.errors.partner_branch_id" class="mt-1 text-sm text-red-600">{{ form.errors.partner_branch_id }}</p>
-                    </div>
+                   
 
                     <!-- Product Type -->
                     <div>

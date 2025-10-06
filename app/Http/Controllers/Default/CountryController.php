@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Default\Country;
 use App\Http\Requests\Country\StoreCountryRequest;
 use App\Http\Requests\Country\UpdateCountryRequest;
+use App\Models\User;
 
 class CountryController extends Controller
 {
@@ -68,5 +69,12 @@ class CountryController extends Controller
     public function states(Country $country)
     {
         return $country->states()->get(['id','name']);
+    }
+
+    public function userlist()
+    {
+        return response()->json(
+            User::select('id', 'name')->get()
+        );
     }
 }

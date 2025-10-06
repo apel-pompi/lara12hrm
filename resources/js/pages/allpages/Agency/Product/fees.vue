@@ -142,6 +142,25 @@ const submit = () => {
     });
 };
 
+const deleteForm = useForm({});
+
+const onDelete = async (id: number, productId: number) => {
+    if (!confirm('Are you sure you want to delete this product fees?')) return;
+
+    if (deleteForm.processing) return;
+
+    deleteForm.delete(`/product/activities/${productId}/fees/show/${id}`, {
+        onSuccess: () => {
+            toast.success('Product fees deleted successfully');
+        },
+        onError: () => {
+            toast.success('Somethings wrong !');
+        },
+        preserveScroll: true,
+        preserveState: false,
+    });
+};
+
 </script>
 
 <template>
@@ -174,7 +193,7 @@ const submit = () => {
                             <!-- Buttons on the left -->
                             <div class="space-x-2">
                                 <Button variant="outline" size="sm"><SquarePen></SquarePen>Edit</Button>
-                                <Button variant="outline" size="sm"><Trash></Trash>Delete</Button>
+                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(fee.id,props.product.id)"><Trash></Trash></Button>
                             </div>
                             <!-- Total Fees on the right -->
                             <div class="text-lg font-bold text-blue-500">Total Fees $ {{ fee.netamount }}</div>

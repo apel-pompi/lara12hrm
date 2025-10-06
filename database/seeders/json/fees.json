@@ -1,0 +1,313 @@
+[
+    {
+        "data": [
+            {
+                
+                "name": "Accommodation Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Administration Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Airline Ticket",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Airport Transfer Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Application Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Bond",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Exam Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Date Change Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Extension Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Extra Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "FCE Exam Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Health Cover",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "i20 Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Instalment Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Key Deposit Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Late Payment Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Material Deposit Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Medical Exam",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Placement Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": " Medical Exam",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Security Deposit Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Service Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Swipe Card Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Training Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Transaction Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Translation Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Travel Insurance",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Tuition Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Visa Counseling",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "VISA Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Visa Process Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "RMA Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Enrollment Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Registered Migration Agent Fee",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            }
+            
+        ]
+    }
+]

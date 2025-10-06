@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -23,6 +22,13 @@ class DatabaseSeeder extends Seeder
             $user->password = Hash::make('Admin@123');
             $user->save();
         }
+        
+        $this->call(MasterSeeder::class);
+        $this->call(FeesTypeSeeder::class);
+        $this->call(InstallmentTypeSeeder::class);
+        $this->call(CountrySeeder::class);
+        $this->call(StatesSeeder::class);
+        $this->call(CitiesSeeder::class);
         $this->call(RolePermissionSeeder::class);
     }
 }

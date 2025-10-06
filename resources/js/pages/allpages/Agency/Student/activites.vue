@@ -2,9 +2,8 @@
 import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 const props = defineProps<{
     student: { id: number;status:string };
-    activity:[]
 }>();
-
+//console.log(props.user);
 </script>
 
 <template>

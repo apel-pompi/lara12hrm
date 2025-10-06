@@ -24,7 +24,6 @@ class StoreProductRequest extends FormRequest
         return [
             'name'              => ['required', 'string', 'max:255'],
             'partner_id'        => ['required', 'integer', 'exists:partners,id'],
-            'partner_branch_id' => ['required', 'array'],
             'product_type_id'   => ['required', 'integer', 'exists:product_type_setups,id'],
             'revinue_type'      => ['required', 'integer', 'in:0,1'], // example: 0 = revenue form client, 1 = revenue form partner
             'duration'          => ['required', 'string', 'max:255'],
@@ -41,7 +40,6 @@ class StoreProductRequest extends FormRequest
         return [
             'name.required'              => 'Product Name is required',
             'partner_id.required'        => 'Partner is required',
-            'partner_branch_id.array' => 'Partner Branch is required',
             'product_type_id.required'   => 'Product Type is required',
             'revinue_type.required'      => 'Revenue Type is required',
             'duration.required'          => 'Duration is required',
@@ -56,7 +54,6 @@ class StoreProductRequest extends FormRequest
         return [
             'name'              => 'Product Name',
             'partner_id'        => 'Partner',
-            'partner_branch_id' => 'Partner Branch',
             'product_type_id'   => 'Product Type',
             'revinue_type'      => 'Revenue Type',
             'duration'          => 'Duration',

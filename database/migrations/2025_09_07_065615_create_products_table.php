@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('partner_id')->constrained('partners')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->string('partner_branch_id')->nullable();
             $table->foreignId('product_type_id')->constrained('product_type_setups')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->tinyInteger('revinue_type')->default(0);

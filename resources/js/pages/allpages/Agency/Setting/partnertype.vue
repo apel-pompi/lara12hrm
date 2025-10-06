@@ -174,47 +174,64 @@ const goToMasterCategory = () => {
             </div>
             <!-- Dialog -->
             <Dialog v-model:open="showDialog">
-                <DialogContent class="max-w-[825px]">
-                    <DialogHeader>
-                        <DialogTitle>{{ isEditMode ? 'Edit Partner Type' : 'Create Partner Type' }}</DialogTitle>
-                        <DialogDescription> Make changes to your partner type here. Click save when you're done. </DialogDescription>
+                <DialogContent class="w-full max-w-lg rounded-2xl p-6 sm:max-w-xl md:max-w-2xl">
+                    <!-- Header -->
+                    <DialogHeader class="border-b pb-4">
+                        <DialogTitle class="text-xl font-semibold">
+                            {{ isEditMode ? 'Edit Partner Type' : 'Create Partner Type' }}
+                        </DialogTitle>
+                        <DialogDescription class="text-sm text-gray-500">
+                            Make changes to your partner type here. Click save when you're done.
+                        </DialogDescription>
                     </DialogHeader>
-                    <div class="grid gap-5">
-                        <div class="grid gap-y-3">
-                            <div class="grid gap-2">
-                                <Label for="partnertypename">Master Category</Label>
-                                <Select v-model="form.mastercaterory_id">
-                                    <SelectTrigger class="w-full">
-                                        <SelectValue placeholder="Select Master Category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem v-for="master in props.mastersetup" :key="master.id" :value="master.id">
-                                                {{ master.catname }}
-                                            </SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <span v-if="errors?.mastercaterory_id" class="text-sm text-red-600">{{ errors.mastercaterory_id }}</span>
-                            </div>
-                            <div class="grid gap-2">
-                                <Label for="partnertypename">Partner Type Name</Label>
-                                <Input class="max-w-sm" placeholder="Enter Partner Type Name" id="catname" v-model="form.partnertypename" autofocus />
-                                <span v-if="errors?.partnertypename" class="text-sm text-red-600">{{ errors.partnertypename }}</span>
-                            </div>
 
-                            <div class="grid gap-2">
-                                <Button :disabled="form.processing" @click="submit">
-                                    <template v-if="form.processing">Saving...</template>
-                                    <template v-else>{{ isEditMode ? 'Update' : 'Submit' }}</template>
-                                </Button>
-                            </div>
+                    <!-- Body -->
+                    <div class="mt-6 space-y-5">
+                        <!-- Master Category -->
+                        <div class="space-y-2">
+                            <Label for="mastercaterory_id" class="font-medium">Master Category</Label>
+                            <Select v-model="form.mastercaterory_id">
+                                <SelectTrigger class="w-full">
+                                    <SelectValue placeholder="Select Master Category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem v-for="master in props.mastersetup" :key="master.id" :value="master.id">
+                                            {{ master.catname }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <span v-if="errors?.mastercaterory_id" class="text-sm text-red-600">
+                                {{ errors.mastercaterory_id }}
+                            </span>
+                        </div>
+
+                        <!-- Partner Type Name -->
+                        <div class="space-y-2">
+                            <Label for="partnertypename" class="font-medium">Partner Type Name</Label>
+                            <Input
+                                id="partnertypename"
+                                v-model="form.partnertypename"
+                                placeholder="Enter Partner Type Name"
+                                class="w-full"
+                                autofocus
+                            />
+                            <span v-if="errors?.partnertypename" class="text-sm text-red-600">
+                                {{ errors.partnertypename }}
+                            </span>
                         </div>
                     </div>
-                    <DialogFooter class="sm:justify-start">
+
+                    <!-- Footer -->
+                    <DialogFooter class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
                         <DialogClose as-child>
-                            <Button type="button" variant="secondary"> Close </Button>
+                            <Button type="button" variant="secondary" class="w-full sm:w-auto"> Close </Button>
                         </DialogClose>
+                        <Button :disabled="form.processing" @click="submit" class="w-full sm:w-auto">
+                            <template v-if="form.processing">Saving...</template>
+                            <template v-else>{{ isEditMode ? 'Update' : 'Submit' }}</template>
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

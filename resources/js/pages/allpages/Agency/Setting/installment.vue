@@ -186,7 +186,7 @@ const goToPage = (url: string | null) => {
         <AgencyLayout>
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
-                    <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create </Button>
+                    <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Installment </Button>
                     <!-- Search start -->
                     <div class="grid gap-2">
                         <Combobox v-model="selecteName">
@@ -311,7 +311,7 @@ const goToPage = (url: string | null) => {
                         <!-- Name -->
                         <div class="grid gap-2">
                             <Label for="name" class="font-medium">Name</Label>
-                            <Input id="name" placeholder="Enter fees name" v-model="form.name" autofocus class="max-w-sm" />
+                            <Input id="name" placeholder="Enter installment name" v-model="form.name" autofocus class="max-w-sm" />
                             <p v-if="form.errors.name" class="text-sm text-red-600">
                                 {{ form.errors.name }}
                             </p>

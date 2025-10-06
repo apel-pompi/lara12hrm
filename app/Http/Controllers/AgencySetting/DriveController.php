@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\AgencySetting;
 
 use App\Http\Controllers\Controller;
-use App\Models\Default\gDrive;
+use App\Models\AgencySetting\gDrive;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 

@@ -19,7 +19,7 @@ class DesignationController extends Controller
     {
         $this->authorize('designation.index');
 
-        return Inertia::render('allpages/designation',[
+        return Inertia::render('allpages/hrm/designation',[
             'designation' => Designation::orderBy('id', 'desc')->get()
         ]);
     }

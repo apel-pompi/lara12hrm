@@ -24,7 +24,7 @@ class HolidayHdController extends Controller
     {
         $this->authorize('holiday.index');
 
-        return Inertia::render('allpages/holidayHd', [
+        return Inertia::render('allpages/hrm/holidayHd', [
             
             'filters'   => $holydayHdService->get($request->query()),
             'holidayHd'   => $holydayHdService->get($request->query()),

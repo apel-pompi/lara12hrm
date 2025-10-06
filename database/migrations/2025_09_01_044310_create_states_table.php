@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('country_id')->constrained('countries')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->decimal('latitude',10,8);
-            $table->decimal('longitude',11,8);
+            $table->decimal('latitude',10,8)->nullable();
+            $table->decimal('longitude',11,8)->nullable();
             $table->tinyInteger('status')->default(0);
             $table->timestamps();
 

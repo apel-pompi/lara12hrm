@@ -44,7 +44,7 @@ const props = defineProps<{
 }>();
 
 const data = props.fees;
-console.log(props.fees);
+
 const errors = ref<FormErrors>();
 
 interface FormErrors {

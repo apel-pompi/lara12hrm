@@ -48,6 +48,10 @@ Route::middleware(['verified', 'auth'])->group(function () {
                 Route::get('/aplication', 'aplication')->name('PartnerActivities.application');
                 Route::get('/product', 'product')->name('PartnerActivities.product');
                 Route::get('/branch', 'branch')->name('PartnerActivities.branch');
+                
+                Route::post('/branch', 'branchStore')->name('PartnerActivities.branchStore');
+                Route::delete('/branch/show/{partnerBranch}', 'branchDelete')->name('PartnerActivities.branchDelete');
+
                 Route::get('/aggrements', 'aggrements')->name('PartnerActivities.aggrements');
                 Route::get('/contacts', 'contacts')->name('PartnerActivities.contacts');
                 Route::get('/notes', 'notes')->name('PartnerActivities.notes');

@@ -22,7 +22,7 @@ class HolidayDtController extends Controller
     {
         $this->authorize('holidaydt.create');
 
-        return Inertia::render('allpages/holidayDt', [
+        return Inertia::render('allpages/hrm/holidayDt', [
             'holidayHd' => HolidayHd::with(['branch' => function ($query) {
                 $query->where('active', 1);
             }])->findOrFail($id),

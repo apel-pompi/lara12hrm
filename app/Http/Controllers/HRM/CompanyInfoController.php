@@ -19,7 +19,7 @@ class CompanyInfoController extends Controller
     {
         $this->authorize('company.edit');
 
-        return Inertia::render('allpages/company',[
+        return Inertia::render('allpages/hrm/company',[
             'company' => CompanyInfo::firstOrNew()
         ]);
     }

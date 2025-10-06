@@ -19,7 +19,7 @@ class LeaveplanController extends Controller
     {
         $this->authorize('leaveplan.index');
 
-        return Inertia::render('allpages/leaveplan',[
+        return Inertia::render('allpages/hrm/leaveplan',[
             'leaveplan' => Leaveplan::orderBy('id', 'desc')->get()
         ]);
     }

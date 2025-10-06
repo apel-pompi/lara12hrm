@@ -225,7 +225,7 @@ const goToDocumentType = () => {
                                 <draggable v-model="items" item-key="id" class="space-y-2">
                                     <template #item="{ element, index }">
                                         <div class="flex items-center justify-between rounded border bg-gray-50 p-2">
-                                            <span>{{ index + 1 }}. {{ element.name }}</span>
+                                            <span class="text-sm">{{ index + 1 }}. {{ element.name }}</span>
                                             <Button size="sm" variant="destructive" @click="removeItem(element.id)"> Delete </Button>
                                         </div>
                                     </template>
@@ -234,7 +234,7 @@ const goToDocumentType = () => {
                                 <div class="mx-auto mt-6 max-w-md">
                                     <div class="flex gap-2">
                                         <Input v-model="newItem" placeholder="Enter stage name..." />
-                                        <Button @click="addItem" variant="outline">Add</Button>
+                                        <Button size="sm" @click="addItem" variant="outline">Add</Button>
                                     </div>
                                 </div>
                             </div>

@@ -2,7 +2,7 @@
 
 namespace App\Models\Student;
 
-use App\Models\Country;
+use App\Models\Default\Country;
 use App\Models\Student\StudentSource;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
