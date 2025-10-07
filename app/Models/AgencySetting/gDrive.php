@@ -5,6 +5,7 @@ namespace App\Models\AgencySetting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class gDrive extends Model
 {
@@ -44,7 +45,29 @@ class gDrive extends Model
     public static function createFolder($name, $parentId = null)
     {
         $accessToken = self::token();
-        if (!$accessToken) return null;
+        if (!$accessToken) {
+            //Log::error("No Access Token available for Google Drive");
+            return null;
+        }
+
+        //Check if folder already exists (with same name and parent)
+        $query = "mimeType='application/vnd.google-apps.folder' and name='{$name}' and trashed=false";
+        if ($parentId) {
+            $query .= " and '{$parentId}' in parents";
+        }
+
+        $checkResponse = Http::withToken($accessToken)
+            ->get('https://www.googleapis.com/drive/v3/files', [
+                'q' => $query,
+                'fields' => 'files(id, name)',
+            ]);
+
+        if ($checkResponse->ok() && !empty($checkResponse->json('files'))) {
+            // Folder already exists, return its ID
+            $existing = $checkResponse->json('files')[0];
+            //Log::info("Folder already exists: {$existing['name']} ({$existing['id']})");
+            return $checkResponse->json('files')[0]['id'];
+        }
 
         $metadata = [
             'name'     => $name,
@@ -59,11 +82,24 @@ class gDrive extends Model
             ->post('https://www.googleapis.com/drive/v3/files', $metadata);
 
         if ($response->failed()) {
+            // Log::error("Failed to create folder '{$name}'", [
+            //     'parent' => $parentId,
+            //     'error' => $response->json(),
+            // ]);
             return null;
         }
 
-        return $response->json()['id'] ?? null;
+        $folder = $response->json();
+        // Log::info("Folder created: {$name} ({$folder})", [
+        //     'parent' => $parentId,
+        // ]);
+
+        return [
+            'id' => $folder['id'] ?? null,
+            'name' => $name,
+        ];
     }
+
 
     public static function listFolders($parentId = null)
     {

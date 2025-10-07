@@ -1,18 +1,21 @@
 <script setup lang="ts">
+import RecursiveFolder from '@/components/RecursiveFolder.vue';
+import ImageUpload from '@/components/StudentImageUpload.vue';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ApplicationLayout from '@/pages/allpages/Agency/Student/applicationLayout.vue';
-import { ChevronDown, ChevronRight, CloudUpload, Ellipsis, Folder } from 'lucide-vue-next';
-
+import axios from 'axios';
+import { ChevronDown, CloudUpload, Ellipsis } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
-
-import axios from 'axios';
 
 const props = defineProps<{
     student: any;
     application: any;
+    folderNames: string;
 }>();
+
+console.log(props.folderNames);
 
 const openDropdown = ref<number | null>(null);
 
@@ -26,71 +29,42 @@ const toggleAccordion = (index: number) => {
     openIndex.value = openIndex.value === index ? null : index;
 };
 
-interface Folder {
-    id: string;
-    name: string;
-    children?: Folder[];
-    isOpen?: boolean;
-    loaded?: boolean;
-}
-
 const showDialog = ref(false);
-const folders = ref<Folder[]>([]);
-const selectedFolder = ref<string | null>(null);
-const file = ref<File | null>(null);
-
 const selectedCheck = ref<any>(null);
+const selectedFolder = ref<string | null>(null);
+const selectedFile = ref<File | null>(null);
+const fileToUpload = ref<File | null>(null);
 
-const handleFileChange = (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    if (!target.files || target.files.length === 0) return;
-    file.value = target.files[0];
-};
-const openDialog = async (check: any) => {
-    showDialog.value = true;
+const openDialog = (check: any) => {
     selectedCheck.value = check;
-    const res = await axios.get('/gdrive/folders'); // top-level folder, parent_id=null
-    folders.value = res.data.map((f: any) => ({
-        ...f,
-        isOpen: false,
-        loaded: false,
-        children: [],
-    }));
+    showDialog.value = true;
 };
 
-const toggleFolder = async (folder: Folder) => {
-    folder.isOpen = !folder.isOpen;
-
-    if (folder.isOpen && !folder.loaded) {
-        const res = await axios.get('/gdrive/folders', { params: { parent_id: folder.id } });
-        folder.children = res.data.map((f: any) => ({
-            ...f,
-            isOpen: false,
-            loaded: false,
-            children: [],
-        }));
-        folder.loaded = true;
+// file input
+const handleFileChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+        fileToUpload.value = target.files[0];
     }
-};
-
-// Folder select
-const selectFolder = (id: string) => {
-    selectedFolder.value = id;
 };
 
 // File Upload
 const uploadFile = async () => {
-    if (!file.value || !selectedFolder.value) return;
+    if (!selectedFolder.value) {
+        alert('Please select a folder!');
+        return;
+    }
+    if (!selectedFile.value) {
+        alert('Please select a file!');
+        return;
+    }
 
     const formData = new FormData();
-    formData.append('student_id', props.student.id);
-    formData.append('applcation_id', props.application.id);
-    formData.append('check_id', selectedCheck.value.id);
-    formData.append('docname', selectedCheck.value.documenttype.docname);
-    formData.append('photo', file.value);
-    formData.append('folder_id', selectedFolder.value);
+    formData.append('folder', selectedFolder.value);
+    formData.append('file', selectedFile.value);
+
     try {
-        await axios.post('/gdrive/upload', formData, {
+        await axios.post('/api/upload-file', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
 
@@ -98,7 +72,7 @@ const uploadFile = async () => {
             description: `Product fees create successfully`,
         });
         showDialog.value = false;
-        file.value = null;
+        selectedFile.value = null
         selectedCheck.value = null;
     } catch (err) {
         toast('Success', {
@@ -106,7 +80,6 @@ const uploadFile = async () => {
         });
     }
 };
-console.log(props.application.id)
 </script>
 
 <template>
@@ -222,71 +195,46 @@ console.log(props.application.id)
             </div>
         </div>
         <Dialog v-model:open="showDialog">
-            <DialogContent class="max-h-[80vh] w-full overflow-auto sm:max-w-lg">
+            <DialogContent class="max-h-[80vh] w-full max-w-lg overflow-auto rounded-lg p-6 shadow-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
+                <!-- Header -->
                 <DialogHeader>
-                    <DialogTitle>Select Folder & Upload</DialogTitle>
+                    <DialogTitle class="text-lg font-semibold">Select Folder & Upload</DialogTitle>
                 </DialogHeader>
 
-                <div class="mt-4">
-                    <ul class="space-y-1">
-                        <template v-for="folder in folders" :key="folder.id">
-                            <li>
-                                <div
-                                    class="flex cursor-pointer items-center justify-between rounded px-2 py-1 hover:bg-gray-100"
-                                    @click="
-                                        toggleFolder(folder);
-                                        selectFolder(folder.id);
-                                    "
-                                >
-                                    <div class="flex items-center gap-1">
-                                        <Folder class="h-4 w-4 text-gray-500" />
-                                        <span>{{ folder.name }}</span>
-                                    </div>
+                <!-- Body -->
+                <div class="mt-4 flex flex-col gap-4">
+                    <!-- Folder Tree -->
+                    <div class="max-h-[300px] overflow-auto rounded border bg-gray-50 p-3">
+                        <RecursiveFolder :folders="[props.folderNames]" v-model:selectedFolder="selectedFolder" />
+                    </div>
 
-                                    <div class="flex items-center gap-2">
-                                        <span v-if="selectedFolder === folder.id" class="text-xs font-medium text-blue-600">Selected</span>
-                                        <span v-if="!folder.loaded || (folder.children && folder.children.length > 0)">
-                                            <component :is="folder.isOpen ? ChevronDown : ChevronRight" class="h-3 w-3 text-gray-400" />
-                                        </span>
-                                    </div>
-                                </div>
+                    <!-- Selected Folder -->
+                    <div v-if="selectedFolder" class="text-sm font-medium text-gray-700">
+                        Selected Folder: <span class="text-blue-600">{{ selectedFolder }}</span>
+                    </div>
 
-                                <!-- Lazy Loaded Children -->
-                                <ul v-if="folder.isOpen" class="ml-4 space-y-1">
-                                    <template v-for="child in folder.children" :key="child.id">
-                                        <li>
-                                            <div
-                                                class="flex cursor-pointer items-center justify-between rounded px-2 py-1 hover:bg-gray-100"
-                                                @click.stop="
-                                                    toggleFolder(child);
-                                                    selectFolder(child.id);
-                                                "
-                                            >
-                                                <div class="flex items-center gap-1">
-                                                    <Folder class="h-4 w-4 text-gray-400" />
-                                                    <span>{{ child.name }}</span>
-                                                </div>
-                                                <span v-if="selectedFolder === child.id" class="text-xs font-medium text-blue-600">Selected</span>
-                                                <span v-if="!child.loaded || (child.children && child.children.length > 0)">
-                                                    <component :is="child.isOpen ? ChevronDown : ChevronRight" class="h-3 w-3 text-gray-400" />
-                                                </span>
-                                            </div>
-                                        </li>
-                                    </template>
-                                </ul>
-                            </li>
-                        </template>
-                    </ul>
+                    <!-- File Upload Section -->
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                        <div class="flex-shrink-0">
+                            <ImageUpload @image="(file) => (form.photo = file)" :Image="currentImage" />
+                        </div>
+                        <div class="mt-2 text-xs text-gray-500 sm:mt-0">
+                            <p>Recommended size: 256x256px</p>
+                        </div>
+                    </div>
+
+                    <!-- Optional native file input -->
+                    <input type="file" class="mt-2" @change="handleFileChange" />
                 </div>
 
-                <div class="mt-4 flex flex-col gap-2">
-                    <input type="file" @change="handleFileChange" />
-                    <DialogFooter>
-                        <Button class="mt-2 w-full" @click="uploadFile" :disabled="!file || !selectedFolder"> Upload </Button>
-                    </DialogFooter>
-                    <div v-if="file" class="mt-2 text-sm text-gray-700">Selected: {{ file.name }}</div>
-                    <div class="mt-1 text-xs text-gray-500">Doc: {{ selectedCheck?.documenttype.docname }}</div>
-                </div>
+                <!-- Footer -->
+                <DialogFooter class="mt-6 flex flex-col items-center justify-between gap-2 sm:flex-row">
+                    <div v-if="selectedCheck?.documenttype.docname" class="text-xs text-gray-500">
+                        Document Type: {{ selectedCheck.documenttype.docname }}
+                    </div>
+
+                    <Button class="w-full sm:w-auto" @click="uploadFile"> Upload </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     </ApplicationLayout>

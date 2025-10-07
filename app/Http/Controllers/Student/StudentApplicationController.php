@@ -17,6 +17,7 @@ use App\Models\Student\StudentActivities;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\File;
 
 class StudentApplicationController extends Controller
 {
@@ -50,7 +51,7 @@ class StudentApplicationController extends Controller
             ->exists();
 
         if (! $exists) {
-            $application = StudentApplication::create([
+            StudentApplication::create([
                 'student_id'              => $validated['student_id'],
                 'workflow_id'              => $validated['workflow_id'],
                 'partner_branch_id'        => $validated['partner_branch_id'],
@@ -60,15 +61,6 @@ class StudentApplicationController extends Controller
                 'saleprice'                => $validated['saleprice'],
                 'user_id'                  => Auth::id()
             ]);
-            $studentID = Student::where('id',$validated['student_id'])->first(['student_id']);
-  
-            $studentFolder = gDrive::createFolder("student_{$studentID->student_id}");
-            if ($studentFolder) {
-                gDrive::createFolder(
-                    $application->product->name,
-                    $studentFolder
-                );
-            }
         }
         return redirect()
             ->route('studentApplication.index', $validated['student_id'])
@@ -170,7 +162,7 @@ class StudentApplicationController extends Controller
 
     public function editApplication(Student $student, StudentApplication $studentApplication)
     {
-        
+
 
         $application = StudentApplication::with(['student', 'workflow.stages.documentChecks.documenttype', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
             ->where('id', $studentApplication->id)
@@ -188,12 +180,60 @@ class StudentApplicationController extends Controller
             ->where('id', $studentApplication->id)
             ->firstOrFail();
 
+        $studentFolder = public_path('storage/FileFolder/' . $student->student_id);
+
+        if (!File::exists($studentFolder)) {
+            return response()->json(['folders' => []]);
+        }
+        $foldersTree = $this->getFoldersTree($studentFolder);
+        $folders = [
+            'name' => basename($studentFolder), // SIDHA2510000001
+            'children' => $foldersTree
+        ];
+
         return Inertia::render('allpages/Agency/Student/applicationdocument', [
             'student' => $student,
             'application' => $application,
+            'folderNames' => $folders
         ]);
     }
+    // for nested array
+    private function getFoldersTree($path)
+    {
+        $tree = [];
+        $subFolders = File::directories($path);
 
+        foreach ($subFolders as $folder) {
+            $tree[] = [
+                'name' => basename($folder),
+                'children' => $this->getFoldersTree($folder) // recursive call
+            ];
+        }
+
+        return $tree;
+    }
+    //for flat arry
+    private function getAllFolders($path, $basePath = null)
+    {
+        $allFolders = [];
+
+        if (!$basePath) {
+            $basePath = $path;
+        }
+
+        $subFolders = File::directories($path);
+
+        foreach ($subFolders as $folder) {
+            // relative path
+            $relative = str_replace($basePath . DIRECTORY_SEPARATOR, '', $folder);
+            $allFolders[] = $relative;
+
+            // recursive call
+            $allFolders = array_merge($allFolders, $this->getAllFolders($folder, $basePath));
+        }
+
+        return $allFolders;
+    }
 
     public function notesApplication(Student $student, StudentApplication $studentApplication)
     {
