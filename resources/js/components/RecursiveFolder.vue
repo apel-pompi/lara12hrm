@@ -1,60 +1,52 @@
 <script setup lang="ts">
+import { Folder, FolderOpen } from 'lucide-vue-next';
+import { defineEmits, defineProps, ref } from 'vue';
 
-import { Folder, FolderOpen } from 'lucide-vue-next'
-import { ref, defineEmits, defineProps } from 'vue'
+const props = defineProps<{
+    folders: any[];
+    selectedFolder?: string;
+}>();
 
-defineProps<{ folders: { name: string; children: any[] }[] }>()
+const emit = defineEmits<{
+    (e: 'update:selectedFolder', value: string): void;
+}>();
 
-const emit = defineEmits<{ 'update:selected': (folderName: string) => void }>()
+const openFolders = ref<Set<string>>(new Set());
+const selectedFolder = ref(props.selectedFolder || '');
 
-const openFolders = ref(new Set<string>())
-const selectedFolder = ref<string>('')
+// toggle open folder
+const toggleFolder = (folderName: string) => {
+    if (openFolders.value.has(folderName)) openFolders.value.delete(folderName);
+    else openFolders.value.add(folderName);
+};
 
-const toggle = (folderName: string) => {
-  if (openFolders.value.has(folderName)) {
-    openFolders.value.delete(folderName)
-  } else {
-    openFolders.value.add(folderName)
-  }
-}
-
-const select = (folder: { name: string; children: any[] }) => {
-  selectedFolder.value = folder.name
-  emit('update:selected', folder.name)
-  // auto toggle if folder has children
-  if (folder.children.length) toggle(folder.name)
-}
+// select folder
+const selectFolder = (folder: { name: string; children: any[] }) => {
+    selectedFolder.value = folder.name;
+    emit('update:selectedFolder', folder.name);
+    if (folder.children?.length) toggleFolder(folder.name);
+};
 </script>
 
 <template>
-    <div>
-    <!-- Selected folder display -->
-    <div class="mb-2 p-2 border rounded bg-gray-100">
-      Selected: <span class="font-semibold">{{ selectedFolder || 'None' }}</span>
-    </div>
-
-    <!-- Folder tree -->
     <ul class="pl-4">
-      <li v-for="folder in folders" :key="folder.name">
-        <div
-          @click="select(folder)"
-          class="cursor-pointer flex items-center gap-1 select-none hover:bg-gray-100 p-1 rounded"
-        >
-          <!-- Icon -->
-          <component
-            :is="folder.children.length ? (openFolders.has(folder.name) ? FolderOpen : Folder) : Folder"
-            class="w-4 h-4"
-          />
-          {{ folder.name }}
-        </div>
+        <li v-for="folder in folders" :key="folder.name">
+            <div
+                @click.stop="selectFolder(folder)"
+                class="flex cursor-pointer items-center gap-1 rounded px-1 py-0.5 hover:bg-gray-100"
+                :class="{ 'bg-blue-50 font-medium text-blue-700': selectedFolder === folder.name }"
+            >
+                <component :is="folder.children?.length ? (openFolders.has(folder.name) ? FolderOpen : Folder) : Folder" class="h-4 w-4" />
+                {{ folder.name }}
+            </div>
 
-        <!-- Recursive call -->
-        <RecursiveFolder
-          v-if="folder.children.length && openFolders.has(folder.name)"
-          :folders="folder.children"
-          @update:selected="selectedFolder = $event"
-        />
-      </li>
+            <!-- Recursive rendering -->
+            <RecursiveFolder
+                v-if="folder.children?.length && openFolders.has(folder.name)"
+                :folders="folder.children"
+                v-model:selectedFolder="props.selectedFolder"
+                @update:selectedFolder="emit('update:selectedFolder', $event)"
+            />
+        </li>
     </ul>
-  </div>
 </template>

@@ -81,7 +81,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
         Route::get('{studentApplication}/activities', 'editApplication')->name('studentApplication.editApplication');
 
         Route::get('{studentApplication}/document', 'documentApplication')->name('studentApplication.documentApplication');
-        Route::get('{studentApplication}/documentlist', 'docAppListFolder')->name('studentApplication.docAppListFolder');
+        Route::post('{studentApplication}/document', 'docAppStore')->name('studentApplication.docAppStore');
 
         Route::get('{studentApplication}/notes', 'notesApplication')->name('studentApplication.notesApplication');
         Route::get('{studentApplication}/tasks', 'tasksApplication')->name('studentApplication.tasksApplication');

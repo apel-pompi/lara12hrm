@@ -10,7 +10,8 @@ use App\Http\Controllers\HRM\{
     HolidayHdController,
     HolidayDtController,
     PersonalInfoController,
-    LeaveController
+    LeaveController,
+    DeviceController
 
 };
 use Illuminate\Support\Facades\Route;
@@ -151,6 +152,14 @@ Route::middleware(['verified', 'auth'])->group(function () {
                 Route::delete('/show/{leave}', 'destroy')->name('leave.destroy');
                 Route::get('/{leave}/edit', 'edit')->name('leave.edit');
                 Route::put('/{leave}', 'update')->name('leave.update');
+            }
+        );
+    //Device Route
+    Route::controller(DeviceController::class)
+        ->prefix('device')
+        ->group(
+            function () {
+                Route::get('/', 'index')->name('device.index');
             }
         );
 });

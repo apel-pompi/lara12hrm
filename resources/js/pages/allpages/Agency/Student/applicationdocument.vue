@@ -9,13 +9,15 @@ import { ChevronDown, CloudUpload, Ellipsis } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 
+
+
 const props = defineProps<{
     student: any;
     application: any;
     folderNames: string;
+    appDoc:any;
 }>();
 
-console.log(props.folderNames);
 
 const openDropdown = ref<number | null>(null);
 
@@ -31,22 +33,30 @@ const toggleAccordion = (index: number) => {
 
 const showDialog = ref(false);
 const selectedCheck = ref<any>(null);
+const stageID = ref<any>(null);
+const docID = ref<any>(null);
 const selectedFolder = ref<string | null>(null);
-const selectedFile = ref<File | null>(null);
-const fileToUpload = ref<File | null>(null);
+const selectedFile = ref<File | null>(null)
 
-const openDialog = (check: any) => {
+
+const openDialog = (stage:any, check: any) => {
     selectedCheck.value = check;
+    stageID.value = stage.id;
+    docID.value = check.id;
     showDialog.value = true;
 };
 
 // file input
 const handleFileChange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    if (target.files && target.files.length > 0) {
-        fileToUpload.value = target.files[0];
-    }
-};
+  const target = e.target as HTMLInputElement
+  if (target.files && target.files.length > 0) {
+    selectedFile.value = target.files[0]
+    console.log('Selected file:', selectedFile.value)
+  } else {
+    console.warn('No file selected')
+  }
+}
+
 
 // File Upload
 const uploadFile = async () => {
@@ -62,17 +72,19 @@ const uploadFile = async () => {
     const formData = new FormData();
     formData.append('folder', selectedFolder.value);
     formData.append('file', selectedFile.value);
+    formData.append("stage_id", stageID.value);
+    formData.append("doc_id", docID.value);
 
     try {
-        await axios.post('/api/upload-file', formData, {
+        await axios.post(`/student/activities/${props.student.id}/application/${props.application.id}/document`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
 
         toast('Success', {
-            description: `Product fees create successfully`,
+            description: `Document upload successfully`,
         });
         showDialog.value = false;
-        selectedFile.value = null
+        selectedFile.value = null;
         selectedCheck.value = null;
     } catch (err) {
         toast('Success', {
@@ -80,6 +92,10 @@ const uploadFile = async () => {
         });
     }
 };
+
+const toggler = ref(false);
+const sources = ref<string[]>([]);
+
 </script>
 
 <template>
@@ -125,7 +141,7 @@ const uploadFile = async () => {
                             <div v-if="openIndex === index" class="border-t bg-gray-50 px-4 py-3">
                                 <div v-for="check in stage.document_checks || []" :key="check.id" class="flex items-center gap-2 py-1">
                                     <!-- Check Icon -->
-                                    <CloudUpload @click="openDialog(check)" class="h-4 w-4 flex-shrink-0 text-green-500" />
+                                    <CloudUpload @click="openDialog(stage,check)" class="h-4 w-4 flex-shrink-0 text-green-500" />
                                     <!-- Document Name -->
                                     <span class="text-xs text-gray-700">
                                         {{ check.documenttype.docname }}
@@ -146,7 +162,8 @@ const uploadFile = async () => {
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">FILENAME</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">File</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">FileName</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">RELATED STAGE</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">ADDED BY</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">ADDED ON</th>
@@ -154,16 +171,17 @@ const uploadFile = async () => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr class="text-xs hover:bg-gray-50">
+                            <tr v-for="(document,index) in props.appDoc" :key="index" class="text-xs hover:bg-gray-50">
                                 <td class="flex items-center gap-2 px-4 py-2">
-                                    <img src="001.jpg" class="h-8 w-8 rounded border" alt="File" />
+                                    <img :src="`/storage/FileFolder/${document.student_id}/${document.workflow.name}/${document.partner.name}/${document.product.name}/${document.docname}`" class="h-8 w-8 rounded border" alt="File" />
                                 </td>
-                                <td class="px-4 py-2">Document Collections</td>
+                                <td class="px-4 py-2">{{ document.documentid.docname }}</td>
+                                <td class="px-4 py-2">{{ document.stage.stagename }}</td>
                                 <td class="flex items-center gap-2 px-4 py-2">
-                                    <div class="flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white">MR</div>
-                                    M Khalil Rahman
+                                    
+                                    {{ document.user.name }}
                                 </td>
-                                <td class="px-4 py-2">2025-09-29</td>
+                                <td class="px-4 py-2">{{ new Date(document.created_at).toISOString().split('T')[0] }}</td>
                                 <td class="px-4 py-2 text-right">
                                     <div class="relative inline-block text-left">
                                         <!-- Dropdown Toggle Button -->
@@ -188,7 +206,7 @@ const uploadFile = async () => {
                                     </div>
                                 </td>
                             </tr>
-                            <!-- অন্য রো একইভাবে -->
+                           
                         </tbody>
                     </table>
                 </div>
@@ -216,7 +234,7 @@ const uploadFile = async () => {
                     <!-- File Upload Section -->
                     <div class="flex flex-col sm:flex-row sm:items-center sm:gap-4">
                         <div class="flex-shrink-0">
-                            <ImageUpload @image="(file) => (form.photo = file)" :Image="currentImage" />
+                            <ImageUpload @image="(file) => (selectedFile = file)" :Image="currentImage" />
                         </div>
                         <div class="mt-2 text-xs text-gray-500 sm:mt-0">
                             <p>Recommended size: 256x256px</p>

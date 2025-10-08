@@ -11,6 +11,7 @@ use App\Models\AgencySetting\gDrive;
 use App\Models\AgencySetting\Workflow;
 use App\Models\Partner\Partner;
 use App\Models\Product\Product;
+use App\Models\Student\ApplicationDocument;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Student\Student;
 use App\Models\Student\StudentActivities;
@@ -18,6 +19,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\File;
+use Illuminate\Http\Request;
 
 class StudentApplicationController extends Controller
 {
@@ -191,10 +193,13 @@ class StudentApplicationController extends Controller
             'children' => $foldersTree
         ];
 
+        $appDoc = ApplicationDocument::with(['application','workflow','partner','product','stage','documentid','user'])->where('applcation_id',$studentApplication->id)->get();
+
         return Inertia::render('allpages/Agency/Student/applicationdocument', [
             'student' => $student,
             'application' => $application,
-            'folderNames' => $folders
+            'folderNames' => $folders,
+            'appDoc' => $appDoc
         ]);
     }
     // for nested array
@@ -212,27 +217,54 @@ class StudentApplicationController extends Controller
 
         return $tree;
     }
-    //for flat arry
-    private function getAllFolders($path, $basePath = null)
+
+    public function docAppStore(Student $student, StudentApplication $studentApplication, Request $request)
     {
-        $allFolders = [];
+        $application = StudentApplication::with(['student', 'workflow.stages.documentChecks.documenttype', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
+            ->where('id', $studentApplication->id)
+            ->firstOrFail();
+        $studentID = $application->student->student_id;
+        $workflow = $application->workflow->name;
+        $partner = $application->partnerBranch->partner->name;
+        $product = $application->product->name;
+        $request->validate([
+            'folder' => 'required|string',
+            'file' => 'required|file|max:300', // max 300 KB
+            'stage_id' => 'required|exists:workflow_stages,id',
+            'doc_id' => 'required|exists:w_document_types,id',
+        ]);
 
-        if (!$basePath) {
-            $basePath = $path;
+        if ($request->folder == $studentID) {
+            $basePath = "FileFolder/{$studentID}";
+        } elseif ($request->folder == $workflow) {
+            $basePath = "FileFolder/{$studentID}/{$workflow}";
+        } elseif ($request->folder == $partner) {
+            $basePath = "FileFolder/{$studentID}/{$workflow}/{$partner}";
+        } elseif ($request->folder == $product) {
+            $basePath = "FileFolder/{$studentID}/{$workflow}/{$partner}/{$product}";
+        } else {
+            return response()->json(['message' => 'Please select a valid folder'], 422);
         }
 
-        $subFolders = File::directories($path);
 
-        foreach ($subFolders as $folder) {
-            // relative path
-            $relative = str_replace($basePath . DIRECTORY_SEPARATOR, '', $folder);
-            $allFolders[] = $relative;
+        $uploadedFile = $request->file('file');
+        $file_name = time() . '_' . $uploadedFile->getClientOriginalName();
+        $filePath = $uploadedFile->storeAs($basePath, $file_name, 'public');
 
-            // recursive call
-            $allFolders = array_merge($allFolders, $this->getAllFolders($folder, $basePath));
-        }
-
-        return $allFolders;
+        ApplicationDocument::create([
+            'student_id' => $studentID,
+            'applcation_id' => $studentApplication->id,
+            'workflow_id' => $application->workflow->id,
+            'partner_id' => $application->partnerBranch->partner->id,
+            'product_id' => $application->product->id,
+            'stage_id' => $request->stage_id,
+            'doc_id' => $request->doc_id,
+            'docname' => $file_name,
+            'user_id' => Auth::id(),
+        ]);
+        return response()->json([
+            'message' => 'Document uploaded successfully!',
+        ]);
     }
 
     public function notesApplication(Student $student, StudentApplication $studentApplication)
