@@ -19,8 +19,8 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->decimal('amount',20,3);
             $table->integer('insqty');
+            $table->string('pay_type')->nullable();
             $table->decimal('totalamount',20,3);
-            $table->string('notes')->nullable();
             $table->timestamps();
 
             $table->charset = 'utf8';

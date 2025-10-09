@@ -7,10 +7,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Student\StudentApplication;
 use App\Http\Requests\StudentApplication\StoreStudentApplicationRequest;
 use App\Http\Requests\StudentApplication\UpdateStudentApplicationRequest;
-use App\Models\AgencySetting\gDrive;
+use App\Models\AgencySetting\WDocumentCheck;
+use App\Models\AgencySetting\WDocumentType;
+use Illuminate\Support\Facades\Response;
 use App\Models\AgencySetting\Workflow;
 use App\Models\Partner\Partner;
 use App\Models\Product\Product;
+use App\Models\Product\ProductFeesHd;
 use App\Models\Student\ApplicationDocument;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Student\Student;
@@ -20,6 +23,7 @@ use Inertia\Inertia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class StudentApplicationController extends Controller
 {
@@ -165,14 +169,34 @@ class StudentApplicationController extends Controller
     public function editApplication(Student $student, StudentApplication $studentApplication)
     {
 
+        $appdoclist = ApplicationDocument::with(['stage', 'documentid', 'user'])->where('student_id', $student->student_id)->get();
 
-        $application = StudentApplication::with(['student', 'workflow.stages.documentChecks.documenttype', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
+        $application = StudentApplication::with(['workflow', 'product', 'partnerBranch.partner'])->where('student_id', $student->id)
             ->where('id', $studentApplication->id)
             ->firstOrFail();
+        $productFeesHd = ProductFeesHd::with(['details', 'product', 'installment', 'user'])
+            ->where('product_id', $application->product->id)
+            ->get();
+
+
+        // Payable sum
+        $totalPayable = $productFeesHd->flatMap(fn($hd) => $hd->details)
+            ->where('pay_type', 'Payable')
+            ->sum('totalamount');
+
+        // Income sum
+        $totalIncome = $productFeesHd->flatMap(fn($hd) => $hd->details)
+            ->where('pay_type', 'Income')
+            ->sum('totalamount');
 
         return Inertia::render('allpages/Agency/Student/applicationedit', [
             'student' => $student,
             'application' => $application,
+            'appdoclist' => $appdoclist,
+            'productFeesHd' => $productFeesHd,
+            'totalNetAmount' => $productFeesHd->sum('netamount'),
+            'total_payable' => $totalPayable,
+            'total_income' => $totalIncome,
         ]);
     }
 
@@ -193,13 +217,14 @@ class StudentApplicationController extends Controller
             'children' => $foldersTree
         ];
 
-        $appDoc = ApplicationDocument::with(['application','workflow','partner','product','stage','documentid','user'])->where('applcation_id',$studentApplication->id)->get();
-
+        $appDoc = ApplicationDocument::with(['application', 'workflow', 'partner', 'product', 'stage', 'documentid', 'user'])->where('applcation_id', $studentApplication->id)->get();
+        $documenttype = WDocumentType::where('active', 1)->get();
         return Inertia::render('allpages/Agency/Student/applicationdocument', [
             'student' => $student,
             'application' => $application,
             'folderNames' => $folders,
-            'appDoc' => $appDoc
+            'appDoc' => $appDoc,
+            'documenttype' => $documenttype
         ]);
     }
     // for nested array
@@ -229,7 +254,7 @@ class StudentApplicationController extends Controller
         $product = $application->product->name;
         $request->validate([
             'folder' => 'required|string',
-            'file' => 'required|file|max:300', // max 300 KB
+            'file'     => 'required|file|max:300|mimes:jpg,jpeg,png', // max 300 KB, only jpg,jpeg,png
             'stage_id' => 'required|exists:workflow_stages,id',
             'doc_id' => 'required|exists:w_document_types,id',
         ]);
@@ -243,30 +268,97 @@ class StudentApplicationController extends Controller
         } elseif ($request->folder == $product) {
             $basePath = "FileFolder/{$studentID}/{$workflow}/{$partner}/{$product}";
         } else {
-            return response()->json(['message' => 'Please select a valid folder'], 422);
+            return back()->with(['message' => 'Please select a valid folder'], 422);
         }
 
 
-        $uploadedFile = $request->file('file');
-        $file_name = time() . '_' . $uploadedFile->getClientOriginalName();
-        $filePath = $uploadedFile->storeAs($basePath, $file_name, 'public');
+        $exists = ApplicationDocument::where('stage_id', $request->stage_id)->where('doc_id', $request->doc_id)->where('student_id', $studentID)->where('applcation_id', $studentApplication->id)->exists();
 
-        ApplicationDocument::create([
-            'student_id' => $studentID,
-            'applcation_id' => $studentApplication->id,
-            'workflow_id' => $application->workflow->id,
-            'partner_id' => $application->partnerBranch->partner->id,
-            'product_id' => $application->product->id,
-            'stage_id' => $request->stage_id,
-            'doc_id' => $request->doc_id,
-            'docname' => $file_name,
-            'user_id' => Auth::id(),
-        ]);
-        return response()->json([
-            'message' => 'Document uploaded successfully!',
+        if (!$exists) {
+            $uploadedFile = $request->file('file');
+            $file_name = time() . '_' . $uploadedFile->getClientOriginalName();
+            $uploadedFile->storeAs($basePath, $file_name, 'public');
+
+            ApplicationDocument::create([
+                'student_id' => $studentID,
+                'applcation_id' => $studentApplication->id,
+                'workflow_id' => $application->workflow->id,
+                'partner_id' => $application->partnerBranch->partner->id,
+                'product_id' => $application->product->id,
+                'stage_id' => $request->stage_id,
+                'doc_id' => $request->doc_id,
+                'docname' => $file_name,
+                'user_id' => Auth::id(),
+            ]);
+        } else {
+            return back()->with(['message' => 'Document already exists! Please upload another one.',]);
+        }
+        return redirect()
+            ->route('studentApplication.documentApplication', [
+                $student->id,
+                $studentApplication->id
+            ])
+            ->with('success', 'Document uploaded successfully!');
+    }
+
+    public function deleteAppDocument(Student $student, StudentApplication $studentApplication, ApplicationDocument $document)
+    {
+        $filePath = "FileFolder/{$document->student_id}/{$document->workflow->name}/{$document->partner->name}/{$document->product->name}/{$document->docname}";
+
+        if (Storage::disk('public')->exists($filePath)) {
+            Storage::disk('public')->delete($filePath);
+        }
+
+        $document->delete();
+
+        return back()->with('message', 'Document deleted successfully!');
+    }
+
+    public function downloadAppDocument(Student $student, StudentApplication $studentApplication, ApplicationDocument $document)
+    {
+        $filePath = "FileFolder/{$document->student_id}/{$document->workflow->name}/{$document->partner->name}/{$document->product->name}/{$document->docname}";
+
+        if (!Storage::disk('public')->exists($filePath)) {
+            return back()->with('message', 'File not found!');
+        }
+
+        $file = Storage::disk('public')->path($filePath);
+        $filename = basename($filePath);
+
+        return Response::download($file, $filename, [
+            'Content-Type' => Storage::disk('public')->mimeType($filePath),
         ]);
     }
 
+
+    public function updateCheckList(Student $student, StudentApplication $studentApplication, Request $request)
+    {
+
+        $this->authorize('workflowDocumentCheck.store');
+
+        $validated = $request->validate([
+            'workflow_id' => 'required|integer',
+            'doctype_id' => 'required|integer',
+            'workstage_id' => 'required|integer',
+        ]);
+        $documentcheck = WDocumentCheck::create([
+            'workflow_id' => $validated['workflow_id'],
+            'doctype_id' => $validated['doctype_id'],
+            'workstage_id' => $validated['workstage_id'],
+            'user_id' => Auth::id(),
+            'active' => '1',
+        ]);
+        if ($documentcheck) {
+            return redirect()
+                ->route('studentApplication.documentApplication', [
+                    $student->id,
+                    $studentApplication->id
+                ])
+                ->with('success', 'Document uploaded successfully!');
+        } else {
+            return back()->with('message', 'Document check not updated');
+        }
+    }
     public function notesApplication(Student $student, StudentApplication $studentApplication)
     {
         $application = StudentApplication::with(['student', 'workflow', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)

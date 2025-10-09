@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 const props = defineProps<{
-    student: { id: number;status:string };
+    student: { id: number; status: number; fname: string; lname: string; };
 }>();
 //console.log(props.user);
 </script>

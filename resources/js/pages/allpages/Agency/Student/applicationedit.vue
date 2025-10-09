@@ -1,23 +1,64 @@
 <script setup lang="ts">
 import ApplicationLayout from '@/pages/allpages/Agency/Student/applicationLayout.vue';
 
-
 const props = defineProps<{ 
-    student: any; 
-    application: any;
+    student: { id: number; status: number; fname: string; lname: string; };
+     application: {
+        id: number;
+        name: string;
+        status: string;
+        stage: string;
+        created_at: string;
+        updated_at: string;
+        workflow: { id: number; name?: string };
+        partner_branch: { id: number; branch_name: string; partner: { id: number; name: string } };
+        product: { id: number; name: string };
+        user: { id: number; name: string };
+    };
+    appdoclist:{id:number;created_at:string;updated_at:string;
+        stage:{stagename:string;}
+        user:{name:string}
+    };
+    productFeesHd:any[];
+    totalNetAmount: number,
+    total_payable: number,
+    total_income: number,
 }>();
 
+
+const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+
+    const day = date.getDate(); // 17
+    const weekday = date.toLocaleDateString('en-US', { weekday: 'short' }); // Wed
+    const month = date.toLocaleDateString('en-US', { month: 'short' }); // Sep
+    const year = date.getFullYear(); // 2025
+
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+
+    return `${day} ${weekday}, ${month} ${year} ${hours}:${minutes} ${ampm}`;
+};
 </script>
 
 <template>
-    <ApplicationLayout :student="props.student" :application="props.application">
+    <ApplicationLayout
+    :student="props.student"
+    :application="props.application"
+    :totalNetAmount="props.totalNetAmount"
+    :total_payable="props.total_payable"
+    :total_income="props.total_income">
         <!-- Activity timeline -->
         <div class="space-y-4 p-4">
             <!-- collapsed accordion style statuses -->
-            <div v-for="stage in props.application.workflow.stages || []" :key="stage.id" class="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div v-for="(doclist,index) in props.appdoclist" :key="index" class="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
                 <div class="flex items-center gap-2 border-b border-gray-200 px-6 py-4">
                     <div class="h-3 w-3 rounded-full bg-blue-500"></div>
-                    <h2 class="text-sm font-semibold text-gray-800">{{ stage.stagename }}</h2>
+                    <h2 class="text-sm font-semibold text-gray-800">{{ doclist.stage.stagename }}</h2>
                 </div>
 
                 <div class="space-y-6 border-b p-6">
@@ -32,11 +73,11 @@ const props = defineProps<{
                         <!-- Content -->
                         <div class="flex-1">
                             <p class="text-sm leading-5">
-                                <span class="font-semibold text-gray-800">M Khalil Rahman</span>
+                                <span class="font-semibold text-gray-800">{{ doclist.user.name }}</span>
                                 <span class="text-gray-600"> updated the application start date :</span>
-                                <span class="font-medium text-gray-900">2025-09-01</span>
+                                <span class="font-medium text-gray-900">{{ new Date(doclist.created_at).toISOString().split('T')[0] }}</span>
                             </p>
-                            <p class="mt-1 text-xs text-gray-400">17 Wed, Sep 2025 12:12 PM</p>
+                            <p class="mt-1 text-xs text-gray-400">{{ formatDate(doclist.created_at) }}</p>
                         </div>
                     </div>
 
@@ -51,11 +92,11 @@ const props = defineProps<{
                         <!-- Content -->
                         <div class="flex-1">
                             <p class="text-sm leading-5">
-                                <span class="font-semibold text-gray-800">M Khalil Rahman</span>
+                                <span class="font-semibold text-gray-800">{{ doclist.user.name }}</span>
                                 <span class="text-gray-600"> updated the application start date :</span>
-                                <span class="font-medium text-gray-900">2025-09-01</span>
+                                <span class="font-medium text-gray-900">{{ new Date(doclist.created_at).toISOString().split('T')[0] }}</span>
                             </p>
-                            <p class="mt-1 text-xs text-gray-400">17 Wed, Sep 2025 12:12 PM</p>
+                            <p class="mt-1 text-xs text-gray-400">{{ formatDate(doclist.updated_at) }}</p>
                         </div>
                     </div>
                 </div>

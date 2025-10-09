@@ -18,18 +18,16 @@ import { Plus, SquarePen, Trash } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
-
 const props = defineProps<{
     product: { id: number; status: string };
     country: { id: number; name: string; currency: string; currency_symbol: string };
     instype: { id: number; name: string };
     feestype: { id: number; name: string };
-    feesDt:[]
+    feesDt: [];
 }>();
 
 const showDialog = ref(false);
 const isEditMode = ref(false);
-const errors = ref<FormErrors>();
 
 // Selected Country
 const selectedCountry = ref<{ id: number; name: string; currency: string; currency_symbol: string }[]>([]);
@@ -72,15 +70,16 @@ interface FeeRow {
     ins_amount: number;
     insqty: number;
     pay_type: string;
+    totalfees?: number;
 }
 
 const form = useForm({
     id: null as number | null,
-    country_id: [],
-    ins_id: null as number | null,
     name: '',
-    netamount: '',
-    rows: [{ fees: null, query: '', ins_amount: 0, insqty: 1, pay_type: '' } as FeeRow],
+    ins_id: null as number | null,
+    country_id: [] as number[],
+    rows: [{ fees: null, query: '', ins_amount: 0, insqty: 1, pay_type: '', totalfees: 0 } as FeeRow],
+    netamount: 0,
 });
 
 const showDailogCreate = () => {
@@ -90,35 +89,34 @@ const showDailogCreate = () => {
     showDialog.value = true;
 };
 
-const rows = ref<FeeRow[]>([{ fees: null, query: '', ins_amount: 0, insqty: 1, pay_type: '' }]);
-
 const addRow = () => {
-    rows.value.push({ fees: null, query: '', ins_amount: 0, insqty: 1, pay_type: '' });
+    form.rows.push({ fees: null, query: '', ins_amount: 0, insqty: 1, pay_type: '', totalfees: 0 });
 };
 
 const removeRow = (index: number) => {
-    rows.value.splice(index, 1);
+    if (form.rows.length > 1) form.rows.splice(index, 1);
+};
+
+const calcNetTotal = () => {
+    return form.rows.reduce((sum, r) => sum + r.ins_amount * r.insqty, 0).toFixed(2);
 };
 
 const submit = () => {
     form.country_id = selectedCountry.value.map((p) => p.id);
     form.ins_id = selectedInsType.value ? selectedInsType.value.id : null;
-    const rowsForSubmit = rows.value.map((r) => ({
+    const rowsForSubmit = form.rows.map((r) => ({
         fees_id: r.fees?.id ?? null,
-        ins_amount: r.ins_amount,
-        insqty: r.insqty,
+        ins_amount: Number(r.ins_amount),
+        insqty: Number(r.insqty),
         pay_type: r.pay_type,
-        totalfees: r.ins_amount * r.insqty,
+        totalfees: Number(r.ins_amount) * Number(r.insqty),
     }));
-
     form.transform((data) => ({
         ...data,
-        country_id: selectedCountry.value.map((p) => p.id),
-        ins_id: selectedInsType.value ? selectedInsType.value.id : null,
         rows: rowsForSubmit,
         netamount: rowsForSubmit.reduce((sum, r) => sum + r.totalfees, 0),
     }));
-
+    console.log(form)
     form.post(route('productActivities.storefess', props.product.id), {
         preserveScroll: true,
         onSuccess: () => {
@@ -160,7 +158,6 @@ const onDelete = async (id: number, productId: number) => {
         preserveState: false,
     });
 };
-
 </script>
 
 <template>
@@ -175,10 +172,12 @@ const onDelete = async (id: number, productId: number) => {
                             <div>
                                 <h2 class="text-lg font-semibold text-blue-500">{{ fee.name }}</h2>
                                 <p class="mt-1 text-sm text-gray-500">
-                                    Valid For <br>
+                                    Valid For <br />
                                     <Badge variant="outline" size="sm" v-for="country in fee.country_names" :key="country">{{ country }}</Badge>
                                 </p>
-                                <p class="mt-1 text-sm text-gray-500">Installment Type <span class="font-medium">{{ fee.installment.name }}</span></p>
+                                <p class="mt-1 text-sm text-gray-500">
+                                    Installment Type <span class="font-medium">{{ fee.installment.name }}</span>
+                                </p>
                             </div>
                             <div class="text-right">
                                 <p class="text-sm text-gray-500">Fee Breakdown</p>
@@ -193,13 +192,14 @@ const onDelete = async (id: number, productId: number) => {
                             <!-- Buttons on the left -->
                             <div class="space-x-2">
                                 <Button variant="outline" size="sm"><SquarePen></SquarePen>Edit</Button>
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(fee.id,props.product.id)"><Trash></Trash></Button>
+                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(fee.id, props.product.id)"
+                                    ><Trash></Trash
+                                ></Button>
                             </div>
                             <!-- Total Fees on the right -->
                             <div class="text-lg font-bold text-blue-500">Total Fees $ {{ fee.netamount }}</div>
                         </div>
                     </div>
-                
                 </div>
             </div>
         </div>
@@ -305,7 +305,7 @@ const onDelete = async (id: number, productId: number) => {
                     </div>
 
                     <!-- Second Row -->
-                    <div v-for="(row, index) in rows" :key="index" class="mb-4 rounded-xl border bg-gray-50 p-4">
+                    <div v-for="(row, index) in form.rows" :key="index" class="mb-4 rounded-xl border bg-gray-50 p-4">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-5">
                             <div>
                                 <Label>Fee Type<span class="text-red-600">*</span></Label>
@@ -349,7 +349,7 @@ const onDelete = async (id: number, productId: number) => {
                             <div>
                                 <Label>Total Fee</Label>
                                 <Input
-                                    v-model.number="form.totalfees"
+                                    v-model.number="row.totalfees"
                                     :value="(row.ins_amount * row.insqty).toFixed(2)"
                                     class="w-full"
                                     type="number"
@@ -357,15 +357,15 @@ const onDelete = async (id: number, productId: number) => {
                                 />
                             </div>
                             <div>
-                                <Label>Income/Payable</Label>
+                                <Label>Income/Payable <span class="text-red-600">*</span></Label>
                                 <Select v-model="row.pay_type">
                                     <SelectTrigger class="w-full">
                                         <SelectValue placeholder="Choose income or payable" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectItem value="income">Income</SelectItem>
-                                            <SelectItem value="payable">Payable</SelectItem>
+                                            <SelectItem value="Income">Income</SelectItem>
+                                            <SelectItem value="Payable">Payable</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
@@ -373,7 +373,7 @@ const onDelete = async (id: number, productId: number) => {
                         </div>
                         <!-- Delete Button -->
                         <div class="mt-2 flex justify-end">
-                            <Button variant="default" size="sm" @click="removeRow(index)" v-if="rows.length > 1"><Trash></Trash></Button>
+                            <Button variant="default" size="sm" @click="removeRow(index)" v-if="form.rows.length > 1"><Trash></Trash></Button>
                         </div>
                     </div>
                     <!-- Add Fee Button & Net Total -->
@@ -381,7 +381,7 @@ const onDelete = async (id: number, productId: number) => {
                         <Button variant="outline" @click="addRow"><Plus></Plus> Fee</Button>
                         <span class="text-lg font-semibold">
                             Net Total:
-                            <span class="text-blue-600">{{ rows.reduce((sum, r) => sum + r.ins_amount * r.insqty, 0).toFixed(2) }}</span>
+                            <span class="text-blue-600">{{ calcNetTotal() }}</span>
                         </span>
                     </div>
                 </div>

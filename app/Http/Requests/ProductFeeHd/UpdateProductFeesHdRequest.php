@@ -26,6 +26,7 @@ class UpdateProductFeesHdRequest extends FormRequest
             'product_id' => 'nullable',
             'country_id' => 'nullable|array',
             'ins_id' => 'required|exists:installments,id',
+            'pay_type' => 'required|string|max:255',
             'netamount' => 'required'
         ];
     }
@@ -48,6 +49,7 @@ class UpdateProductFeesHdRequest extends FormRequest
             'name.max' => ':attribute cannot exceed :max characters.',
             'ins_id.required' => 'Please select an :attribute.',
             'ins_id.exists' => 'The selected :attribute is invalid.',
+            'pay_type' => 'Payment Type',
             'netamount.required' => 'The selected :attribute is invalid.',
         ];
     }

@@ -6,7 +6,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { BookPlus, Calendar, CloudUpload, Mail, MoveLeft, MoveRight, NotepadText, Plus, SquarePen, Users, X } from 'lucide-vue-next';
 
 const props = defineProps<{
-    student: { id: number; status: string };
+    student: { id: number; status: number; fname: string; lname: string; };
     application: {
         id: number;
         name: string;
@@ -19,7 +19,12 @@ const props = defineProps<{
         product: { id: number; name: string };
         user: { id: number; name: string };
     };
+    totalNetAmount: number,
+    total_payable: number,
+    total_income: number,
 }>();
+
+
 const appdata = props.application;
 const date = new Date(props.application.created_at);
 const month = date.toLocaleDateString('en-US', { month: 'short' }); // Month Name
@@ -71,6 +76,7 @@ const page = usePage<{
 }>();
 
 const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.location).pathname : '';
+
 </script>
 
 <template>
@@ -225,7 +231,7 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
 
                             <!-- Activity timeline -->
                             <div class="space-y-4 p-4">
-                                <slot />
+                                <slot></slot>
                             </div>
                         </div>
                     </div>
@@ -279,10 +285,10 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
                                 <Button variant="outline" size="sm"><SquarePen /></Button>
                             </div>
                             <div class="mt-3 space-y-2 text-sm text-slate-600">
-                                <div class="flex justify-between"><span>Total Fee</span><span class="font-medium">16,457.88</span></div>
+                                <div class="flex justify-between"><span>Total Fee</span><span class="font-medium">{{ props.totalNetAmount }}</span></div>
                                 <div class="flex justify-between"><span>Discount</span><span class="text-red-500">0.00</span></div>
                                 <div class="flex justify-between">
-                                    <span class="font-semibold">Net Fee</span><span class="font-semibold">16,457.88</span>
+                                    <span class="font-semibold">Net Fee</span><span class="font-semibold">{{ props.totalNetAmount }}</span>
                                 </div>
                             </div>
                         </div>
@@ -291,9 +297,9 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
                         <div class="bg-white p-4 shadow-sm">
                             <h5 class="text-sm font-semibold">Sales Forecast <span class="ml-2 text-xs text-green-600">EUR</span></h5>
                             <div class="mt-3 space-y-2 text-sm text-slate-600">
-                                <div class="flex justify-between"><span>Partner Revenue</span><span>0.00</span></div>
-                                <div class="flex justify-between"><span>Client Revenue</span><span>0.00</span></div>
-                                <div class="flex justify-between"><span>Net Revenue</span><span>0.00</span></div>
+                                <div class="flex justify-between"><span>Partner Revenue</span><span>{{ props.total_payable }}</span></div>
+                                <div class="flex justify-between"><span>Company Revenue</span><span>{{ props.total_income }}</span></div>
+                                <div class="flex justify-between"><span>Net Revenue</span><span>{{ props.totalNetAmount }}</span></div>
                             </div>
                         </div>
 

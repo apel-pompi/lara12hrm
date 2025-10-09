@@ -16,8 +16,8 @@ class ProductFeesDt extends Model
         'fees_id',
         'amount',
         'insqty',
+        'pay_type',
         'totalamount',
-        'notes',
     ];
 
     /**

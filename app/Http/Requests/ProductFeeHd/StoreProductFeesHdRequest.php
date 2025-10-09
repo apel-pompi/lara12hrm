@@ -26,7 +26,13 @@ class StoreProductFeesHdRequest extends FormRequest
             'product_id' => 'nullable',
             'country_id' => 'nullable|array',
             'ins_id' => 'required|exists:installments,id',
-            'netamount' => 'required'
+            'netamount' => 'required',
+
+            'rows' => 'required|array|min:1',
+            'rows.*.fees_id' => 'nullable|integer',
+            'rows.*.ins_amount' => 'required|numeric|min:0',
+            'rows.*.insqty' => 'required|integer|min:1',
+            'rows.*.pay_type' => 'required|string|max:255',
         ];
     }
 
@@ -37,6 +43,7 @@ class StoreProductFeesHdRequest extends FormRequest
             'product_id' => 'Product Name',
             'country_id' => 'Country of Residency',
             'ins_id' => 'Installment Type',
+            'rows.*.pay_type' => 'Payment Type',
             'netamount' => 'Net Amount',
         ];
     }
@@ -48,6 +55,9 @@ class StoreProductFeesHdRequest extends FormRequest
             'name.max' => ':attribute cannot exceed :max characters.',
             'ins_id.required' => 'Please select an :attribute.',
             'ins_id.exists' => 'The selected :attribute is invalid.',
+            'rows.*.pay_type.required' => ':attribute is required.',
+            'rows.*.fees_id.required' => 'Please select a Fee Type.',
+            'rows.*.ins_amount.required' => 'Amount is required.',
             'netamount.required' => 'The selected :attribute is invalid.',
         ];
     }

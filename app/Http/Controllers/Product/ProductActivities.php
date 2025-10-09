@@ -48,6 +48,7 @@ class ProductActivities extends Controller
 
     public function storefess(StoreProductFeesHdRequest $request, Product $product)
     {
+        
         $validated = $request->validated();
         $countryString = is_array($validated['country_id'])
             ? implode(',', $validated['country_id'])
@@ -62,15 +63,17 @@ class ProductActivities extends Controller
             'user_id'    => Auth::id(),
         ]);
 
-        foreach ($request->rows as $row) {
-            ProductFeesDt::create([
-                'fees_hd_id' => $feesHd->id,
-                'fees_id'    => $row['fees_id'],
-                'amount' => $row['ins_amount'],
-                'insqty'     => $row['insqty'],
-                'pay_type'   => $row['pay_type'],
-                'totalamount'  => $row['totalfees'],
-            ]);
+        if (!empty($validated['rows']) && is_array($validated['rows'])) {
+            foreach ($validated['rows'] as $row) {
+                ProductFeesDt::create([
+                    'fees_hd_id'  => $feesHd->id,
+                    'fees_id'     => $row['fees_id'],
+                    'amount'      => $row['ins_amount'],
+                    'insqty'      => $row['insqty'],
+                    'pay_type'    => $row['pay_type'],
+                    'totalamount' => ($row['totalfees'] ?? ($row['ins_amount'] ?? 0) * ($row['insqty'] ?? 1)),
+                ]);
+            }
         }
     }
 

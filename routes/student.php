@@ -81,7 +81,12 @@ Route::middleware(['verified', 'auth'])->group(function () {
         Route::get('{studentApplication}/activities', 'editApplication')->name('studentApplication.editApplication');
 
         Route::get('{studentApplication}/document', 'documentApplication')->name('studentApplication.documentApplication');
+        Route::get('{studentApplication}/document/{document}/download', 'downloadAppDocument')->name('studentApplication.docAppDownload');
+        Route::post('{studentApplication}/document', 'updateCheckList')->name('studentApplication.updateCheckList');
         Route::post('{studentApplication}/document', 'docAppStore')->name('studentApplication.docAppStore');
+        Route::delete('{studentApplication}/document/{document}', 'deleteAppDocument')->name('studentApplication.docAppDelete');
+        
+        
 
         Route::get('{studentApplication}/notes', 'notesApplication')->name('studentApplication.notesApplication');
         Route::get('{studentApplication}/tasks', 'tasksApplication')->name('studentApplication.tasksApplication');
