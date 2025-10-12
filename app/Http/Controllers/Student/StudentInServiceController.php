@@ -8,6 +8,7 @@ use App\Http\Requests\StudentInService\StoreStudentInServiceRequest;
 use App\Http\Requests\StudentInService\UpdateStudentInServiceRequest;
 use App\Models\AgencySetting\gDrive;
 use App\Models\AgencySetting\Workflow;
+use App\Models\AgencySetting\WorkflowStage;
 use App\Models\Partner\PartnerBranch;
 use App\Models\Product\Product;
 use App\Models\Student\Student;
@@ -25,6 +26,7 @@ class StudentInServiceController extends Controller
      */
     public function index(Student $student)
     {
+        $student->load('assainuser');
         return Inertia::render('allpages/Agency/Student/interestedservice', [
             'student' => $student,
             'workflow' => Workflow::where('active', 1)->get(),
@@ -37,26 +39,37 @@ class StudentInServiceController extends Controller
      */
     public function create(Request $request, Student $student)
     {
+
+        $checkID = Student::find($student->id);
+        if (!$checkID || !$checkID->student_id) {
+            return back()->with([
+                'success' => false,
+                'message' => 'Student ID not created. Please create student ID first.'
+            ]);
+        }
+
         $data = StudentInService::findOrFail($request->studentInService);
-        if ($data) {
+        $stage = WorkflowStage::where('workflow_id', $data->workflow_id)
+            ->where('stage', 1)
+            ->first();
+
+        if ($data && $stage) {
             StudentApplication::create([
-                'student_id'              => $data['student_id'],
-                'workflow_id'              => $data['workflow_id'],
-                'partner_branch_id'        => $data['partner_branch_id'],
-                'product_id'               => $data['product_id'],
-                'stage'                    => null,
-                'status'                   => 'In Progress',
-                'saleprice'                => null,
-                'user_id'                  => Auth::id()
+                'student_id'        => $student->id,
+                'workflow_id'       => $data->workflow_id,
+                'partner_branch_id' => $data->partner_branch_id,
+                'product_id'        => $data->product_id,
+                'stage_id'          => $stage->id,
+                'status'            => 'In Progress',
+                'saleprice'         => null,
+                'user_id'           => Auth::id(),
             ]);
 
-            $data->update([
-                'status' => 'converted',
-            ]);
+            $data->update(['status' => 'converted']);
         }
         return redirect()
             ->route('studentApplication.index', $student->id)
-            ->with('success', 'Student application created.');
+            ->with('success', 'Student application created successfully.');
     }
 
     /**
@@ -90,10 +103,14 @@ class StudentInServiceController extends Controller
             'user_id'           => Auth::id()
         ]);
 
-        
-        $student = Student::where('id', $validated['student_id'])->first(['student_id']);
 
-        if ($student) {
+        $student = Student::where('id', $validated['student_id'])->first(['student_id']);
+        if (!$student) {
+            return redirect()
+                ->route('studentInService.index', $validated['student_id'])
+                ->with('success', 'Student Interested Service created successfully, but no folders were created because the student was not found.');
+        }
+        if ($student && $student->student_id) {
             $basePath = public_path('storage/FileFolder');
 
             // Base folder
@@ -139,38 +156,11 @@ class StudentInServiceController extends Controller
                     }
                 }
             }
+        } else {
+            return redirect()
+                ->route('studentInService.index', $validated['student_id'])
+                ->with('success', 'Student Interested Service created successfully.');
         }
-        //for google drive
-
-        // $student = Student::where('student_id', $validated['student_id'])->exists();
-        // if ($student) {
-        //     $studentFolderId = gDrive::createFolder($student->student_id);
-        //     if ($studentFolderId) {
-        //         $workflow = Workflow::find($validated['workflow_id'], ['name']);
-        //         if ($workflow) {
-        //             $workflowFolderId = gDrive::createFolder($workflow->name, $studentFolderId);
-        //             if ($workflowFolderId) {
-        //                 $partnerBranch = PartnerBranch::join('partners', 'partners.id', '=', 'partner_branches.partner_id')
-        //                     ->where('partner_branches.id', $validated['partner_branch_id'])
-        //                     ->where('partner_branches.active', 1)
-        //                     ->where('partners.active', 1)
-        //                     ->select('partner_branches.id', 'partner_branches.branch_name', 'partners.name as partner_name')
-        //                     ->first();
-
-        //                 if ($partnerBranch) {
-        //                     $partnerName = $partnerBranch->partner_name;
-        //                     $partnerFloder = gDrive::createFolder($partnerName, $workflowFolderId);
-        //                     if ($partnerFloder) {
-        //                         $product = Product::find($validated['product_id'], ['name']);
-        //                         if ($product) {
-        //                             gDrive::createFolder($product->name, $partnerFloder);
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
 
 
         return redirect()

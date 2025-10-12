@@ -31,6 +31,7 @@ const props = defineProps<{
     totalNetAmount: number;
     total_payable: number;
     total_income: number;
+    studentService: Array<{ id: number; startdate: string; enddate: string; status: string }>;
 }>();
 
 const openDropdown = ref<number | null>(null);
@@ -231,13 +232,14 @@ const downloadFile = (documentId: number) => {
         :totalNetAmount="props.totalNetAmount"
         :total_payable="props.total_payable"
         :total_income="props.total_income"
+        :studentService="studentService"
     >
         <!-- Activity timeline -->
         <div class="space-y-4">
             <div class="flex flex-col gap-4 lg:flex-row">
                 <!-- Left Sidebar -->
                 <div class="w-full rounded-lg bg-white p-4 shadow lg:w-1/3">
-                    <h2 class="mb-2 font-semibold">Document Checklist (1/1)</h2>
+                    <h2 class="mb-2 font-semibold">Document Checklist</h2>
                     <p class="mb-4 text-sm text-gray-400">
                         The changes & addition of the checklist will only be affected to current application only.
                     </p>
@@ -251,7 +253,7 @@ const downloadFile = (documentId: number) => {
                             <!-- Accordion Header -->
                             <div
                                 class="flex cursor-pointer items-center justify-between px-4 py-3 transition-colors duration-200 hover:bg-gray-50"
-                                @click="toggleAccordion(index)"
+                                @click="stage.stagename === props.application.stage.stagename && toggleAccordion(index)"
                             >
                                 <span class="text-sm font-semibold text-gray-800">
                                     {{ stage.stagename }}

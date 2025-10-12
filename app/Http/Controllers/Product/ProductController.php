@@ -73,8 +73,7 @@ class ProductController extends Controller
             'active'            => $validated['active'] ?? 0,
         ]);
 
-        return redirect()
-            ->route('product.index')
+        return back()
             ->with('success', 'Product created successfully.');
     }
 

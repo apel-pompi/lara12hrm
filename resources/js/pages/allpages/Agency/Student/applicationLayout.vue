@@ -2,39 +2,44 @@
 import { Button } from '@/components/ui/button';
 import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 import { type NavItem } from '@/types';
-import { Link, usePage } from '@inertiajs/vue3';
-import { BookPlus, Calendar, CloudUpload, Mail, MoveLeft, MoveRight, NotepadText, Plus, SquarePen, Users, X } from 'lucide-vue-next';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+
+import { BookPlus, CloudUpload, Mail, MoveLeft, MoveRight, NotepadText, Users, X } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
+import ApplicationSidebar from './ApplicationSidebar.vue';
+import { nextTick } from 'vue';
 
 const props = defineProps<{
-    student: { id: number; status: number; fname: string; lname: string; };
+    student: { id: number; status: number; fname: string; lname: string };
     application: {
         id: number;
         name: string;
         status: string;
-        stage: string;
         created_at: string;
         updated_at: string;
         workflow: { id: number; name?: string };
         partner_branch: { id: number; branch_name: string; partner: { id: number; name: string } };
         product: { id: number; name: string };
+        stage: { id: number; stagename: string };
         user: { id: number; name: string };
     };
-    totalNetAmount: number,
-    total_payable: number,
-    total_income: number,
+    totalNetAmount: number;
+    total_payable: number;
+    total_income: number;
+    studentService: Array<{ id: number; startdate: string; enddate: string; status: string }>;
 }>();
 
-
 const appdata = props.application;
-const date = new Date(props.application.created_at);
-const month = date.toLocaleDateString('en-US', { month: 'short' }); // Month Name
-const day = date.toLocaleDateString('en-US', { day: '2-digit' }); // Day
-const year = date.toLocaleDateString('en-US', { year: 'numeric' }); // YEar
+
+const created_date = new Date(props.application.created_at);
+const created_month = created_date.toLocaleDateString('en-US', { month: 'short' }); // Month Name
+const created_day = created_date.toLocaleDateString('en-US', { day: '2-digit' }); // Day
+const created_year = created_date.toLocaleDateString('en-US', { year: 'numeric' }); // YEar
 
 const sidebarNavItems: NavItem[] = [
     {
         title: 'Activities',
-        href: route('studentApplication.editApplication', {
+        href: route('studentApplication.appActivities', {
             student: props.student.id,
             studentApplication: props.application.id,
         }),
@@ -77,10 +82,80 @@ const page = usePage<{
 
 const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.location).pathname : '';
 
+const form = useForm({
+    id: null as number | null,
+    data: '',
+});
+
+const nextStep = () => {
+    form.post(
+        route('studentApplication.documentNextStep', [props.student.id, appdata.id]),
+        {
+            preserveScroll: true,
+            onSuccess: async () => {
+                await router.reload({ only: ['flash'] });
+                await nextTick();
+
+                const message = usePage().props.flash?.message;
+                if (message) {
+                    toast('Success', { description: message });
+                }
+                setTimeout(() => {
+                    form.reset();
+                    router.visit(
+                        route('studentApplication.documentApplication', [props.student.id, appdata.id]),
+                        {
+                            only: ['student_applications'],
+                            preserveScroll: true,
+                            preserveState: false,
+                        }
+                    );
+                }, 300);
+            },
+            onError: (errors) => {
+                const firstError = Object.values(errors)[0];
+                toast('Validation Error', { description: firstError });
+            },
+        }
+    );
+};
+
+const backStep = () => {
+    form.post(
+        route('studentApplication.documentBackStep', [props.student.id, appdata.id]),
+        {
+            preserveScroll: true,
+            onSuccess: async () => {
+                await router.reload({ only: ['flash'] });
+                await nextTick();
+
+                const message = usePage().props.flash?.message;
+                if (message) {
+                    toast('Success', { description: message });
+                }
+                setTimeout(() => {
+                    form.reset();
+                    router.visit(
+                        route('studentApplication.documentApplication', [props.student.id, appdata.id]),
+                        {
+                            only: ['student_applications'],
+                            preserveScroll: true,
+                            preserveState: false,
+                        }
+                    );
+                }, 300);
+            },
+            onError: (errors) => {
+                const firstError = Object.values(errors)[0];
+                toast('Validation Error', { description: firstError });
+            },
+        }
+    );
+};
 </script>
 
 <template>
-    <StudentLayout :student="props.student">
+    <StudentLayout :student="props.student" :studentService="studentService">
         <div class="space-y-4">
             <div class="min-h-screen bg-gray-50 p-6 text-gray-800">
                 <div class="border bg-white shadow-sm">
@@ -96,10 +171,13 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
 
                         <!-- Action Buttons -->
                         <div class="flex flex-wrap gap-2">
-                            <Button variant="outline" size="sm"> <SquarePen class="mr-1 h-4 w-4" /> Edit Partner & Product </Button>
+                            <!-- <Button variant="outline" size="sm"> <SquarePen class="mr-1 h-4 w-4" /> Edit Partner & Product </Button> -->
+
+                            <Button variant="outline" size="sm" @click="backStep"> <MoveLeft class="mr-1 h-4 w-4" /> Back to Previous Stage </Button>
+                            <Button variant="secondary" size="sm" @click="nextStep">
+                                Proceed to Next Stage <MoveRight class="ml-1 h-4 w-4" />
+                            </Button>
                             <Button variant="destructive" size="sm"> <X class="mr-1 h-4 w-4" /> Discontinue </Button>
-                            <Button variant="outline" size="sm"> <MoveLeft class="mr-1 h-4 w-4" /> Back to Previous Stage </Button>
-                            <Button variant="secondary" size="sm"> Proceed to Next Stage <MoveRight class="ml-1 h-4 w-4" /> </Button>
                         </div>
                     </div>
 
@@ -114,12 +192,12 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
                             <p class="font-medium">{{ appdata.partner_branch.partner.name }}</p>
                         </div>
                         <div>
-                            <p class="text-gray-500">Application Id:</p>
-                            <p class="font-medium">{{ appdata.id }}</p>
+                            <p class="text-gray-500">Partner's Client Id:</p>
+                            <p class="font-medium">{{ appdata.partner_branch.partner.name }}</p>
                         </div>
                         <div>
-                            <p class="text-gray-500">Partner's Client Id:</p>
-                            <p class="font-medium">{{ appdata.partner_branch.partner.id }}</p>
+                            <p class="text-gray-500">Application Id:</p>
+                            <p class="font-medium">{{ appdata.id }}</p>
                         </div>
                         <div>
                             <p class="text-gray-500">Branch:</p>
@@ -147,7 +225,7 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
                     <div class="flex flex-col items-start justify-between gap-3 border-t px-4 py-3 md:flex-row md:items-center">
                         <div class="text-sm">
                             <span class="text-gray-500">Current Stage:</span>
-                            <span class="ml-1 font-medium text-green-600">Document Collections</span>
+                            <span class="ml-1 font-medium text-green-600">{{ appdata.stage.stagename }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-xs text-gray-500">Overall Progress:</span>
@@ -237,77 +315,15 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
                     </div>
 
                     <!-- Right column (sidebar) -->
-                    <aside class="space-y-4">
-                        <!-- Applied Intake card -->
-                        <div class="border bg-white p-4 shadow-sm">
-                            <div class="flex flex-wrap items-center justify-between gap-2">
-                                <div>
-                                    <div class="text-xs text-slate-400">Applied Intake</div>
-                                    <div class="text-sm">Select date</div>
-                                </div>
-                                <Button variant="outline" size="sm"><Calendar /></Button>
-                            </div>
-
-                            <!-- Date boxes -->
-                            <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <!-- Start Date Card -->
-                                <div class="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm transition hover:shadow-md">
-                                    <div class="text-xs font-medium tracking-wide text-slate-500">START</div>
-                                    <div class="mt-1 text-lg font-semibold text-slate-800">
-                                        {{ month }}
-                                        <span class="block text-3xl leading-none text-blue-600">{{ day }}</span>
-                                        {{ year }}
-                                    </div>
-                                </div>
-
-                                <!-- End Date Card -->
-                                <div
-                                    class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-center transition hover:bg-slate-100"
-                                >
-                                    <div class="text-xs font-medium tracking-wide text-slate-500">END</div>
-                                    <div class="mt-1 cursor-pointer text-lg font-semibold text-blue-500">+ ADD</div>
-                                </div>
-                            </div>
-
-                            <!-- Action Button -->
-                            <div class="mt-5">
-                                <Button variant="default" size="lg" class="w-full gap-2">
-                                    <Plus class="h-4 w-4" />
-                                    Setup Payment Schedule
-                                </Button>
-                            </div>
-                        </div>
-
-                        <!-- Product Fees card -->
-                        <div class="bg-white p-4 shadow-sm">
-                            <div class="flex flex-wrap items-center justify-between gap-2">
-                                <h5 class="text-sm font-semibold">Product Fees</h5>
-                                <Button variant="outline" size="sm"><SquarePen /></Button>
-                            </div>
-                            <div class="mt-3 space-y-2 text-sm text-slate-600">
-                                <div class="flex justify-between"><span>Total Fee</span><span class="font-medium">{{ props.totalNetAmount }}</span></div>
-                                <div class="flex justify-between"><span>Discount</span><span class="text-red-500">0.00</span></div>
-                                <div class="flex justify-between">
-                                    <span class="font-semibold">Net Fee</span><span class="font-semibold">{{ props.totalNetAmount }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sales Forecast -->
-                        <div class="bg-white p-4 shadow-sm">
-                            <h5 class="text-sm font-semibold">Sales Forecast <span class="ml-2 text-xs text-green-600">EUR</span></h5>
-                            <div class="mt-3 space-y-2 text-sm text-slate-600">
-                                <div class="flex justify-between"><span>Partner Revenue</span><span>{{ props.total_payable }}</span></div>
-                                <div class="flex justify-between"><span>Company Revenue</span><span>{{ props.total_income }}</span></div>
-                                <div class="flex justify-between"><span>Net Revenue</span><span>{{ props.totalNetAmount }}</span></div>
-                            </div>
-                        </div>
-
-                        <!-- CTA -->
-                        <div class="rounded-lg border bg-white p-4 text-center shadow-sm">
-                            <Button variant="default" size="lg" class="w-full gap-2">View Application Work Ratio</Button>
-                        </div>
-                    </aside>
+                    <ApplicationSidebar
+                        :totalNetAmount="props.totalNetAmount"
+                        :total_payable="props.total_payable"
+                        :total_income="props.total_income"
+                        :created_month="created_month"
+                        :created_day="created_day"
+                        :created_year="created_year"
+                        :studentService="studentService"
+                    />
                 </div>
             </div>
         </div>

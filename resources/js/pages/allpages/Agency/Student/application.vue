@@ -15,6 +15,7 @@ const props = defineProps<{
     student: { id: number;status:string };
     workflow: { id: number; name: string };
     studentApplication: { id: number }[];
+    studentService: Array<{ id: number; startdate: string; enddate: string; status: string }>;
 }>();
 
 const showDialog = ref(false);
@@ -121,7 +122,7 @@ const onEdit = async (id: number) => {
             return;
         }
         const data = await res.json();
-        console.log(data);
+ 
         Object.assign(form, data.data);
         form.id = data.data.id;
         isEditMode.value = true;
@@ -194,7 +195,7 @@ const onDelete = async (id: number) => {
 </script>
 
 <template>
-    <StudentLayout :student="props.student">
+    <StudentLayout :student="props.student" :studentService="studentService">
         <div class="space-y-4">
             <div class="flex items-center justify-end space-x-2 py-4">
                 <div class="flex-1 text-sm">Student Application</div>
@@ -220,7 +221,7 @@ const onDelete = async (id: number) => {
                     <TableBody>
                         <TableRow v-for="(stud, index) in props.studentApplication" :key="stud.id ?? index">
                             <TableCell>
-                                <Link :href="route('studentApplication.editApplication', [props.student.id, stud.id])" class="flex items-center space-x-2">
+                                <Link :href="route('studentApplication.appActivities', [props.student.id, stud.id])" class="flex items-center space-x-2">
                                     {{ stud.product.name }}<br />
                                     {{ stud.partner_branch.partner.name }} ({{ stud.partner_branch.branch_name }})
                                 </Link>

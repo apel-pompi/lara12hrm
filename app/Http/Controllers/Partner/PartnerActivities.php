@@ -8,6 +8,7 @@ use App\Http\Requests\PartnerBranch\StorePartnerBranchRequest;
 use App\Models\Partner\Partner;
 use App\Models\Partner\PartnerBranch;
 use App\Models\Product\Product;
+use App\Models\Product\ProductTypeSetup;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -27,7 +28,13 @@ class PartnerActivities extends Controller
     {
         return Inertia::render('allpages/Agency/Partner/product', [
             'partner' => $partner,
-            'product' => Product::with(['productype', 'partner'])->where('partner_id', $partner->id)->get()
+            'product' => Product::with(['productype', 'partner'])->where('partner_id', $partner->id)->get(),
+            'partnerBrnach' => PartnerBranch::where('active', 1)->get(),
+            'productType' => ProductTypeSetup::where('active', 1)->get(),
+            'months' => collect($this->createMonth())
+                ->map(fn($name, $id) => ['id' => $id, 'month' => $name])
+                ->values()
+                ->toArray(),
         ]);
     }
 
@@ -136,5 +143,15 @@ class PartnerActivities extends Controller
         return Inertia::render('allpages/Agency/Partner/promotions', [
             'partner' => $partner
         ]);
+    }
+
+
+    public function createMonth()
+    {
+        $a = array();
+        for ($i = 1; $i <= 12; $i++) {
+            $a[$i] = date("F", mktime(0, 0, 0, $i, $i));
+        }
+        return $a;
     }
 }

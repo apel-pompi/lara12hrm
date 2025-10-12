@@ -8,6 +8,7 @@ use App\Http\Requests\StudentActivities\StoreStudentActivitiesRequest;
 use App\Http\Requests\StudentActivities\UpdateStudentActivitiesRequest;
 use App\Models\Default\Transaction;
 use App\Models\Student\Student;
+use App\Models\Student\StudentInService;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,9 +18,26 @@ class StudentActivitiesController extends Controller
 {
     public function index(Student $student)
     {
+        $student->load('assainuser');
         return Inertia::render('allpages/Agency/Student/activites', [
             'student' => $student,
+            'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get()
         ]);
+    }
+
+    public function updateArchive(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'status' => 'required|in:1,4',
+        ]);
+
+        Student::where('id', $request->student_id)
+            ->update(['status' => $request->status]);
+
+        return back()->with('message', $request->status == 4
+            ? 'Student archived successfully.'
+            : 'Student restored successfully.');
     }
 
     public function updateRate(Request $request)

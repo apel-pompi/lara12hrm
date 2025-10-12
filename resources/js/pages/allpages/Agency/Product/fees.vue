@@ -116,7 +116,7 @@ const submit = () => {
         rows: rowsForSubmit,
         netamount: rowsForSubmit.reduce((sum, r) => sum + r.totalfees, 0),
     }));
-    console.log(form)
+
     form.post(route('productActivities.storefess', props.product.id), {
         preserveScroll: true,
         onSuccess: () => {

@@ -21,7 +21,8 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('product_id')->constrained('products')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->string('stage')->nullable();
+            $table->foreignId('stage_id')->constrained('workflow_stages')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('status')->nullable();
             $table->float('saleprice')->nullable();
             $table->foreignId('user_id')->constrained('users')
@@ -30,7 +31,6 @@ return new class extends Migration
 
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
-
         });
     }
 

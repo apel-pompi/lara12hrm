@@ -11,6 +11,7 @@ use App\Models\AgencySetting\WDocumentCheck;
 use App\Models\AgencySetting\WDocumentType;
 use Illuminate\Support\Facades\Response;
 use App\Models\AgencySetting\Workflow;
+use App\Models\AgencySetting\WorkflowStage;
 use App\Models\Partner\Partner;
 use App\Models\Product\Product;
 use App\Models\Product\ProductFeesHd;
@@ -18,6 +19,7 @@ use App\Models\Student\ApplicationDocument;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Student\Student;
 use App\Models\Student\StudentActivities;
+use App\Models\Student\StudentInService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 use Illuminate\Http\JsonResponse;
@@ -35,10 +37,12 @@ class StudentApplicationController extends Controller
     {
         $this->authorize('Application.index');
 
+        $student->load('assainuser');
         return Inertia::render('allpages/Agency/Student/application', [
             'student' => $student,
             'workflow' => Workflow::where('active', 1)->get(),
-            'studentApplication' => StudentApplication::with(['student', 'workflow', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)->get()
+            'studentApplication' => StudentApplication::with(['student', 'workflow', 'partnerBranch.partner', 'product', 'stage', 'user'])->where('student_id', $student->id)->get(),
+            'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get()
         ]);
     }
 
@@ -166,12 +170,13 @@ class StudentApplicationController extends Controller
     }
 
 
-    public function editApplication(Student $student, StudentApplication $studentApplication)
+    public function appActivities(Student $student, StudentApplication $studentApplication)
     {
+        $student->load('assainuser');
 
         $appdoclist = ApplicationDocument::with(['stage', 'documentid', 'user'])->where('student_id', $student->student_id)->get();
 
-        $application = StudentApplication::with(['workflow', 'product', 'partnerBranch.partner'])->where('student_id', $student->id)
+        $application = StudentApplication::with(['workflow', 'product', 'partnerBranch.partner', 'stage'])->where('student_id', $student->id)
             ->where('id', $studentApplication->id)
             ->firstOrFail();
         $productFeesHd = ProductFeesHd::with(['details', 'product', 'installment', 'user'])
@@ -189,7 +194,7 @@ class StudentApplicationController extends Controller
             ->where('pay_type', 'Income')
             ->sum('totalamount');
 
-        return Inertia::render('allpages/Agency/Student/applicationedit', [
+        return Inertia::render('allpages/Agency/Student/applicationActivities', [
             'student' => $student,
             'application' => $application,
             'appdoclist' => $appdoclist,
@@ -197,12 +202,14 @@ class StudentApplicationController extends Controller
             'totalNetAmount' => $productFeesHd->sum('netamount'),
             'total_payable' => $totalPayable,
             'total_income' => $totalIncome,
+            'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get()
         ]);
     }
 
     public function documentApplication(Student $student, StudentApplication $studentApplication)
     {
-        $application = StudentApplication::with(['student', 'workflow.stages.documentChecks.documenttype', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
+        $student->load('assainuser');
+        $application = StudentApplication::with(['student', 'workflow.stages.documentChecks.documenttype', 'partnerBranch.partner', 'product', 'stage'])->where('student_id', $student->id)
             ->where('id', $studentApplication->id)
             ->firstOrFail();
 
@@ -219,13 +226,84 @@ class StudentApplicationController extends Controller
 
         $appDoc = ApplicationDocument::with(['application', 'workflow', 'partner', 'product', 'stage', 'documentid', 'user'])->where('applcation_id', $studentApplication->id)->get();
         $documenttype = WDocumentType::where('active', 1)->get();
+
+        $productFeesHd = ProductFeesHd::with(['details', 'product', 'installment', 'user'])
+            ->where('product_id', $application->product->id)
+            ->get();
+
+
+        // Payable sum
+        $totalPayable = $productFeesHd->flatMap(fn($hd) => $hd->details)
+            ->where('pay_type', 'Payable')
+            ->sum('totalamount');
+
+        // Income sum
+        $totalIncome = $productFeesHd->flatMap(fn($hd) => $hd->details)
+            ->where('pay_type', 'Income')
+            ->sum('totalamount');
+
         return Inertia::render('allpages/Agency/Student/applicationdocument', [
             'student' => $student,
             'application' => $application,
             'folderNames' => $folders,
             'appDoc' => $appDoc,
-            'documenttype' => $documenttype
+            'documenttype' => $documenttype,
+            'productFeesHd' => $productFeesHd,
+            'totalNetAmount' => $productFeesHd->sum('netamount'),
+            'total_payable' => $totalPayable,
+            'total_income' => $totalIncome,
+            'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get()
         ]);
+    }
+
+    public function documentNextStep(Student $student, StudentApplication $studentApplication)
+    {
+        $step = StudentApplication::with('stage')
+            ->where('id', $studentApplication->id)
+            ->where('student_id', $student->id)
+            ->firstOrFail();
+        $currentStageNumber = $step->stage->stage;
+        $nextStage = WorkflowStage::where('workflow_id', $step->workflow_id)
+            ->where('stage', $currentStageNumber + 1)
+            ->first();
+        if ($nextStage) {
+            $step->update([
+                'stage_id' => $nextStage->id,
+            ]);
+            return back()->with([
+                'success' => true,
+                'message' => 'Stage updated successfully. Proceeded to next step.'
+            ]);
+        }
+        return back()->with([
+            'success' => false,
+            'message' => 'No next stage found.'
+        ], 422);
+    }
+
+    public function documentBackStep(Student $student, StudentApplication $studentApplication)
+    {
+        $step = StudentApplication::with('stage')
+            ->where('id', $studentApplication->id)
+            ->where('student_id', $student->id)
+            ->firstOrFail();
+        $currentStageNumber = $step->stage->stage;
+        $nextStage = WorkflowStage::where('workflow_id', $step->workflow_id)
+            ->where('stage', $currentStageNumber - 1)
+            ->first();
+        if ($nextStage) {
+            $step->update([
+                'stage_id' => $nextStage->id,
+            ]);
+            return back()->with([
+                'success' => true,
+                'message' => 'Stage updated successfully. Proceeded to next step.'
+            ]);
+        }
+        return back()->with([
+            'success' => false,
+            'message' => 'No back stage found.'
+        ], 422);
     }
     // for nested array
     private function getFoldersTree($path)
@@ -361,37 +439,97 @@ class StudentApplicationController extends Controller
     }
     public function notesApplication(Student $student, StudentApplication $studentApplication)
     {
-        $application = StudentApplication::with(['student', 'workflow', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
+        $student->load('assainuser');
+        $application = StudentApplication::with(['workflow', 'product', 'partnerBranch.partner', 'stage'])->where('student_id', $student->id)
             ->where('id', $studentApplication->id)
             ->firstOrFail();
 
+        $productFeesHd = ProductFeesHd::with(['details', 'product', 'installment', 'user'])
+            ->where('product_id', $application->product->id)
+            ->get();
+
+
+        // Payable sum
+        $totalPayable = $productFeesHd->flatMap(fn($hd) => $hd->details)
+            ->where('pay_type', 'Payable')
+            ->sum('totalamount');
+
+        // Income sum
+        $totalIncome = $productFeesHd->flatMap(fn($hd) => $hd->details)
+            ->where('pay_type', 'Income')
+            ->sum('totalamount');
         return Inertia::render('allpages/Agency/Student/applicationnotes', [
             'student' => $student,
-            'application' => $application
+            'application' => $application,
+            'productFeesHd' => $productFeesHd,
+            'totalNetAmount' => $productFeesHd->sum('netamount'),
+            'total_payable' => $totalPayable,
+            'total_income' => $totalIncome,
+            'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get()
         ]);
     }
 
     public function tasksApplication(Student $student, StudentApplication $studentApplication)
     {
-        $application = StudentApplication::with(['student', 'workflow', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
+        $student->load('assainuser');
+        $application = StudentApplication::with(['workflow', 'product', 'partnerBranch.partner', 'stage'])->where('student_id', $student->id)
             ->where('id', $studentApplication->id)
             ->firstOrFail();
 
+        $productFeesHd = ProductFeesHd::with(['details', 'product', 'installment', 'user'])
+            ->where('product_id', $application->product->id)
+            ->get();
+
+
+        // Payable sum
+        $totalPayable = $productFeesHd->flatMap(fn($hd) => $hd->details)
+            ->where('pay_type', 'Payable')
+            ->sum('totalamount');
+
+        // Income sum
+        $totalIncome = $productFeesHd->flatMap(fn($hd) => $hd->details)
+            ->where('pay_type', 'Income')
+            ->sum('totalamount');
         return Inertia::render('allpages/Agency/Student/applicationtasks', [
             'student' => $student,
-            'application' => $application
+            'application' => $application,
+            'productFeesHd' => $productFeesHd,
+            'totalNetAmount' => $productFeesHd->sum('netamount'),
+            'total_payable' => $totalPayable,
+            'total_income' => $totalIncome,
+            'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get()
         ]);
     }
 
     public function paymentApplication(Student $student, StudentApplication $studentApplication)
     {
-        $application = StudentApplication::with(['student', 'workflow', 'partnerBranch.partner', 'product', 'user'])->where('student_id', $student->id)
+        $student->load('assainuser');
+        $application = StudentApplication::with(['workflow', 'product', 'partnerBranch.partner', 'stage'])->where('student_id', $student->id)
             ->where('id', $studentApplication->id)
             ->firstOrFail();
 
+        $productFeesHd = ProductFeesHd::with(['details', 'product', 'installment', 'user'])
+            ->where('product_id', $application->product->id)
+            ->get();
+
+
+        // Payable sum
+        $totalPayable = $productFeesHd->flatMap(fn($hd) => $hd->details)
+            ->where('pay_type', 'Payable')
+            ->sum('totalamount');
+
+        // Income sum
+        $totalIncome = $productFeesHd->flatMap(fn($hd) => $hd->details)
+            ->where('pay_type', 'Income')
+            ->sum('totalamount');
         return Inertia::render('allpages/Agency/Student/applicationpayment', [
             'student' => $student,
-            'application' => $application
+            'application' => $application,
+            'productFeesHd' => $productFeesHd,
+            'totalNetAmount' => $productFeesHd->sum('netamount'),
+            'total_payable' => $totalPayable,
+            'total_income' => $totalIncome,
+            'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get()
         ]);
     }
 }

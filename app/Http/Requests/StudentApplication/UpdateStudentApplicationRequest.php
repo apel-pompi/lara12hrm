@@ -26,7 +26,7 @@ class UpdateStudentApplicationRequest extends FormRequest
             'workflow_id'        => ['required', 'exists:workflows,id'],
             'partner_branch_id'  => ['required', 'exists:partner_branches,id'],
             'product_id'         => ['required', 'exists:products,id'],
-            'stage'              => ['nullable', 'string', 'max:255'],
+            'stage_id'           => ['required', 'exists:workflow_stages,id'],
             'status'             => ['nullable', 'string', 'max:255'],
             'saleprice'          => ['nullable', 'numeric', 'min:0'],
             'user_id'            => ['nullable', 'exists:users,id'],
@@ -48,7 +48,9 @@ class UpdateStudentApplicationRequest extends FormRequest
             'product_id.required'        => 'Please select a product.',
             'product_id.exists'          => 'The selected product is invalid.',
 
-            'stage.nullable'             => 'Stage',
+            'stage_id.required'        => 'Please select a Stage.',
+            'stage_id.exists'          => 'The selected Stage is invalid.',
+            
             'status.nullable'            => 'Status',
             'saleprice.nullable'         => 'Sale price is required.',
             'saleprice.numeric'          => 'Sale price must be a number.',

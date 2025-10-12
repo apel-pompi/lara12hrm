@@ -3,6 +3,7 @@
 namespace App\Models\Student;
 
 use App\Models\AgencySetting\Workflow;
+use App\Models\AgencySetting\WorkflowStage;
 use App\Models\Partner\PartnerBranch;
 use App\Models\Product\Product;
 use App\Models\User;
@@ -19,7 +20,7 @@ class StudentApplication extends Model
         'workflow_id',
         'partner_branch_id',
         'product_id',
-        'stage',
+        'stage_id',
         'status',
         'saleprice',
         'user_id'
@@ -64,6 +65,16 @@ class StudentApplication extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    /**
+     * Get the stage that owns the StudentApplication
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function stage(): BelongsTo
+    {
+        return $this->belongsTo(WorkflowStage::class, 'stage_id');
     }
 
     /**

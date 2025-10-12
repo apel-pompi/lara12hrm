@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             $user->save();
         }
         
+        $this->call(CompanySeeder::class);
         $this->call(MasterSeeder::class);
         $this->call(FeesTypeSeeder::class);
         $this->call(InstallmentTypeSeeder::class);

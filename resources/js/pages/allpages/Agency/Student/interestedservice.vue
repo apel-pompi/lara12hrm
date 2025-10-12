@@ -6,20 +6,21 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import axios from 'axios';
 import { CircleDot, MoreVertical, Plus } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
+import { nextTick } from 'vue';
 
 const props = defineProps<{
     student: { id: number; status: string };
     workflow: Array<{ id: number; name: string }>;
     studentService: Array<{ id: number; startdate: string; enddate: string; status: string }>;
 }>();
-console.log(props.studentService);
+
 const showDialog = ref(false);
 const isEditMode = ref(false);
 const errors = ref<FormErrors>();
@@ -153,27 +154,46 @@ const submit = () => {
     });
 };
 
-const createdForm = useForm({});
+const createdForm = useForm({
+    studentInService: null
+});
 
 const handleCreateApplication = async (itemId: number) => {
     if (!confirm('Are you sure you want to create this Student Application?')) return;
+    createdForm.studentInService = itemId;
+    createdForm.post(
+        route('studentInService.create', [props.student.id, itemId]),
+        {
+            preserveScroll: true,
+            onSuccess: async () => {
+                await router.reload({ only: ['flash'] });
+                await nextTick();
 
-    const url = route('studentInService.create', {
-        student: props.student.id,
-        studentInService: itemId,
-    });
-
-    createdForm.post(url, {
-        onSuccess: () => {
-            toast.success('Student Application created successfully');
-        },
-        onError: () => {
-            toast.error('Something went wrong while deleting!');
-        },
-        preserveScroll: true,
-        preserveState: false,
-    });
+                const message = usePage().props.flash?.message;
+                if (message) {
+                    toast('Success', { description: message });
+                }
+                setTimeout(() => {
+                    form.reset();
+                    router.visit(
+                        route('studentApplication.index', [props.student.id]),
+                        {
+                            only: ['student_applications'],
+                            preserveScroll: true,
+                            preserveState: false,
+                        }
+                    );
+                }, 300);
+            },
+            onError: (errors) => {
+                const firstError = Object.values(errors)[0];
+                toast('Validation Error', { description: firstError });
+            },
+        }
+    );
 };
+
+
 
 const handleDelete = async (itemId: number) => {
     if (!confirm('Are you sure you want to delete this Student Interested Service?')) return;
@@ -198,7 +218,7 @@ const handleDelete = async (itemId: number) => {
 </script>
 
 <template>
-    <StudentLayout :student="props.student">
+    <StudentLayout :student="props.student" :studentService="studentService">
         <div class="space-y-4">
             <div class="flex items-center justify-between py-4">
                 <h2 class="text-sm font-medium">Student Interested Service</h2>
@@ -240,7 +260,10 @@ const handleDelete = async (itemId: number) => {
                             </div>
                             <div>
                                 <p class="text-gray-500">Sales Forecast</p>
-                                <p class="font-semibold text-blue-600">$ 0.000</p>
+                                <p class="font-semibold text-blue-600" v-if="inservice.productfees?.netamount">
+                                    ${{ inservice.productfees.netamount }}
+                                </p>
+                                <p class="text-gray-500 italic" v-else>Forecast not assigned</p>
                             </div>
                         </div>
 

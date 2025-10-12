@@ -1,0 +1,17 @@
+[
+    {
+        "data": [
+            {
+                
+                "companyname": "Test Company",
+                "address_one": "KA-61/6",
+                "address_two": "Baridhara, Dhaka 1212",
+                "company_phone": "09638 500 600",
+                "company_email": "info@test.com",
+                "companylogo": "1755409349logo_256_256.png",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            }
+        ]
+    }
+]
