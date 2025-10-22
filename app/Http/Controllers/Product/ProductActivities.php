@@ -22,11 +22,13 @@ class ProductActivities extends Controller
 {
     public function aplication(Product $product)
     {
+        $productwithuser = Product::with(['partner','user'])->where('id',$product->id)->first();
         return Inertia::render('allpages/Agency/Product/productlayout', [
-            'product' => $product
+            'product' => $productwithuser
         ]);
     }
 
+    
     public function documents(Product $product)
     {
         return Inertia::render('allpages/Agency/Product/documents', [
@@ -36,9 +38,10 @@ class ProductActivities extends Controller
     }
 
     public function fees(Product $product)
-    {
+    {   
+        $productwithuser = Product::with(['partner','user'])->where('id',$product->id)->first();
         return Inertia::render('allpages/Agency/Product/fees', [
-            'product' => $product,
+            'product' => $productwithuser,
             'country' => Country::where('status', 1)->get(),
             'instype' => Installment::where('active', 1)->get(),
             'feestype' => Fees::where('active', 1)->get(),
@@ -91,9 +94,10 @@ class ProductActivities extends Controller
     }
 
     public function requirement(Product $product)
-    {
+    {   
+        $productwithuser = Product::with(['partner','user'])->where('id',$product->id)->first();
         return Inertia::render('allpages/Agency/Product/requirement', [
-            'product' => $product,
+            'product' => $productwithuser,
             'academic' => Academic::where('active', 1)->get(),
             'requirement' => ProductRequirement::with(['degree'])->where('product_id', $product->id)->get(),
             'requirementEnglish' => EnglishTest::where('product_id', $product->id)->get(),
@@ -240,14 +244,16 @@ class ProductActivities extends Controller
 
     public function others(Product $product)
     {
+        $productwithuser = Product::with(['partner','user'])->where('id',$product->id)->first();
         return Inertia::render('allpages/Agency/Product/others', [
-            'product' => $product
+            'product' => $productwithuser
         ]);
     }
     public function promotions(Product $product)
     {
+        $productwithuser = Product::with(['partner','user'])->where('id',$product->id)->first();
         return Inertia::render('allpages/Agency/Product/promotions', [
-            'product' => $product
+            'product' => $productwithuser
         ]);
     }
 }

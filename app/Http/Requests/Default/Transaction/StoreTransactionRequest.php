@@ -22,14 +22,12 @@ class StoreTransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'trnname_id'    => ['required', 'integer'],
+            'name' => ['required', 'string', 'max:255', 'unique:transactions,name'],
             'trncode'    => ['required', 'string', 'max:255', 'unique:transactions,trncode'],
-            'branch_id'  => ['required', 'exists:branches,id'],
-            'yearname'    => ['required', 'integer', 'digits:4'],
-            'monthname'   => ['required', 'integer', 'between:1,12'],
             'lastnumber' => ['required', 'integer', 'min:0'],
             'increment'  => ['required', 'integer', 'min:0'],
             'user_id' => ['nullable', 'integer'],
+            'adddate' => ['nullable','date'],
             'active'     => ['nullable', 'boolean'],
         ];
     }
@@ -37,14 +35,12 @@ class StoreTransactionRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'trnname_id'    => 'transaction name',
+            'name'    => 'transaction name',
             'trncode'    => 'transaction code',
-            'branch_id'  => 'branch',
-            'yearname'    => 'transaction year',
-            'monthname'   => 'transaction month',
             'lastnumber' => 'last number',
             'increment'  => 'increment value',
             'user_id' => 'User Name',
+            'adddate' => 'Add transaction Date',
             'active'     => 'status',
         ];
     }

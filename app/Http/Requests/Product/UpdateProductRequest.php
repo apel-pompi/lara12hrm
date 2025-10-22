@@ -25,7 +25,7 @@ class UpdateProductRequest extends FormRequest
             'name'              => ['required', 'string', 'max:255'],
             'partner_id'        => ['required', 'integer', 'exists:partners,id'],
             'product_type_id'   => ['required', 'integer', 'exists:product_type_setups,id'],
-            'revinue_type'      => ['required', 'integer', 'in:0,1'],
+            'revinue_type'      => ['required', 'integer', 'in:0,1,2'],
             'duration'          => ['required', 'string', 'max:255'],
             'intak_month'       => ['required', 'string', 'max:50'],
             'description'       => ['nullable', 'string'],

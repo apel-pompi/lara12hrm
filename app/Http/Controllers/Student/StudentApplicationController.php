@@ -128,6 +128,7 @@ class StudentApplicationController extends Controller
      */
     public function destroy(Student $student, StudentApplication $studentApplication)
     {
+
         $this->authorize('Application.destroy');
 
         try {
@@ -139,6 +140,9 @@ class StudentApplicationController extends Controller
                 'lastactivity'  => null,
                 'user_id'       => Auth::id(),
             ]);
+            $data = StudentInService::where('workflow_id',$studentApplication->workflow_id)->where('student_id',$studentApplication->student_id);
+            $data->update(['status' => 'Draft']);
+
             return redirect()
                 ->route('studentApplication.index', $student->id)
                 ->with('success', 'Student Application deleted successfully.');

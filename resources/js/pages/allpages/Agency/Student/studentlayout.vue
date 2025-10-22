@@ -40,6 +40,10 @@ const lead = [
         href: route('studentInService.index', props.student.id),
     },
     {
+        title: 'Quotations',
+        href: route('studentQuotations.index', props.student.id),
+    },
+    {
         title: 'Documents',
         href: route('studentDocument.index', props.student.id),
     },
@@ -83,6 +87,10 @@ const prospect = [
         href: route('studentInService.index', props.student.id),
     },
     {
+        title: 'Quotations',
+        href: route('studentQuotations.index', props.student.id),
+    },
+    {
         title: 'Documents',
         href: route('studentDocument.index', props.student.id),
     },
@@ -94,10 +102,7 @@ const prospect = [
         title: 'Notes & Terms',
         href: route('studentNotes.index', props.student.id),
     },
-    {
-        title: 'Quotations',
-        href: route('studentQuotations.index', props.student.id),
-    },
+    
     {
         title: 'Accounts',
         href: route('studentAccounts.index', props.student.id),
@@ -133,6 +138,10 @@ const onBoard = [
         href: route('studentInService.index', props.student.id),
     },
     {
+        title: 'Quoations',
+        href: route('studentQuotations.index', props.student.id),
+    },
+    {
         title: 'Documents',
         href: route('studentDocument.index', props.student.id),
     },
@@ -144,10 +153,7 @@ const onBoard = [
         title: 'Notes & Terms',
         href: route('studentNotes.index', props.student.id),
     },
-    {
-        title: 'Quoations',
-        href: route('studentQuotations.index', props.student.id),
-    },
+    
     {
         title: 'Accounts',
         href: route('studentAccounts.index', props.student.id),

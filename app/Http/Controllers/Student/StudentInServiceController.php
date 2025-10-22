@@ -12,7 +12,10 @@ use App\Models\AgencySetting\WorkflowStage;
 use App\Models\Partner\PartnerBranch;
 use App\Models\Product\Product;
 use App\Models\Student\Student;
+use App\Models\Student\StudentActivities;
 use App\Models\Student\StudentApplication;
+use App\Models\Student\StudentQuotation;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -21,11 +24,14 @@ use Illuminate\Support\Facades\Log;
 
 class StudentInServiceController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index(Student $student)
     {
+        $this->authorize('Service.index');
+
         $student->load('assainuser');
         return Inertia::render('allpages/Agency/Student/interestedservice', [
             'student' => $student,
@@ -39,6 +45,7 @@ class StudentInServiceController extends Controller
      */
     public function create(Request $request, Student $student)
     {
+        $this->authorize('Service.create');
 
         $checkID = Student::find($student->id);
         if (!$checkID || !$checkID->student_id) {
@@ -54,18 +61,81 @@ class StudentInServiceController extends Controller
             ->first();
 
         if ($data && $stage) {
-            StudentApplication::create([
-                'student_id'        => $student->id,
-                'workflow_id'       => $data->workflow_id,
-                'partner_branch_id' => $data->partner_branch_id,
-                'product_id'        => $data->product_id,
-                'stage_id'          => $stage->id,
-                'status'            => 'In Progress',
-                'saleprice'         => null,
-                'user_id'           => Auth::id(),
-            ]);
+            $student = Student::where('id', $student->id)->first();
+            if ($student && $student->student_id) {
+                $basePath = public_path('storage/FileFolder');
 
-            $data->update(['status' => 'converted']);
+                // Base folder
+                if (!File::exists($basePath)) {
+                    File::makeDirectory($basePath, 0755, true);
+                }
+
+                // Student folder
+                $studentFolder = $basePath . '/' . $student->student_id;
+                if (!File::exists($studentFolder)) {
+                    File::makeDirectory($studentFolder, 0755, true);
+                }
+
+                // Workflow folder
+                $workflow = Workflow::find($data->workflow_id, ['name']);
+                if ($workflow) {
+                    $workflowFolder = $studentFolder . '/' . $workflow->name;
+                    if (!File::exists($workflowFolder)) {
+                        File::makeDirectory($workflowFolder, 0755, true);
+                    }
+
+                    // Partner folder
+                    $partnerBranch = PartnerBranch::join('partners', 'partners.id', '=', 'partner_branches.partner_id')
+                        ->where('partner_branches.id', $data->partner_branch_id)
+                        ->where('partner_branches.active', 1)
+                        ->where('partners.active', 1)
+                        ->select('partner_branches.id', 'partner_branches.branch_name', 'partners.name as partner_name')
+                        ->first();
+
+                    if ($partnerBranch) {
+                        $partnerFolder = $workflowFolder . '/' . $partnerBranch->partner_name;
+                        if (!File::exists($partnerFolder)) {
+                            File::makeDirectory($partnerFolder, 0755, true);
+                        }
+
+                        // Product folder
+                        $product = Product::find($data->product_id, ['name']);
+                        if ($product) {
+                            $productFolder = $partnerFolder . '/' . $product->name;
+                            if (!File::exists($productFolder)) {
+                                File::makeDirectory($productFolder, 0755, true);
+                            }
+                        }
+                    }
+                }
+            }
+            $exists = StudentApplication::where('student_id', $student->id)
+                ->where('workflow_id', $data->workflow_id)
+                ->where('partner_branch_id', $data->partner_branch_id)
+                ->where('product_id', $data->product_id)
+                ->exists();
+            if (! $exists) {
+                StudentApplication::create([
+                    'student_id'        => $student->id,
+                    'workflow_id'       => $data->workflow_id,
+                    'partner_branch_id' => $data->partner_branch_id,
+                    'product_id'        => $data->product_id,
+                    'stage_id'          => $stage->id,
+                    'status'            => 'In Progress',
+                    'saleprice'         => null,
+                    'user_id'           => Auth::id(),
+                ]);
+
+                $data->update(['status' => 'converted']);
+            }
+
+            StudentActivities::create([
+                'student_id' => $student->id,
+                'title' => "has created student application's",
+                'fristactivity' => null,
+                'lastactivity' => null,
+                'user_id' => Auth::id()
+            ]);
         }
         return redirect()
             ->route('studentApplication.index', $student->id)
@@ -77,6 +147,7 @@ class StudentInServiceController extends Controller
      */
     public function store(StoreStudentInServiceRequest $request)
     {
+        $this->authorize('Service.store');
 
         $validated = $request->validated();
 
@@ -103,65 +174,13 @@ class StudentInServiceController extends Controller
             'user_id'           => Auth::id()
         ]);
 
-
-        $student = Student::where('id', $validated['student_id'])->first(['student_id']);
-        if (!$student) {
-            return redirect()
-                ->route('studentInService.index', $validated['student_id'])
-                ->with('success', 'Student Interested Service created successfully, but no folders were created because the student was not found.');
-        }
-        if ($student && $student->student_id) {
-            $basePath = public_path('storage/FileFolder');
-
-            // Base folder
-            if (!File::exists($basePath)) {
-                File::makeDirectory($basePath, 0755, true);
-            }
-
-            // Student folder
-            $studentFolder = $basePath . '/' . $student->student_id;
-            if (!File::exists($studentFolder)) {
-                File::makeDirectory($studentFolder, 0755, true);
-            }
-
-            // Workflow folder
-            $workflow = Workflow::find($validated['workflow_id'], ['name']);
-            if ($workflow) {
-                $workflowFolder = $studentFolder . '/' . $workflow->name;
-                if (!File::exists($workflowFolder)) {
-                    File::makeDirectory($workflowFolder, 0755, true);
-                }
-
-                // Partner folder
-                $partnerBranch = PartnerBranch::join('partners', 'partners.id', '=', 'partner_branches.partner_id')
-                    ->where('partner_branches.id', $validated['partner_branch_id'])
-                    ->where('partner_branches.active', 1)
-                    ->where('partners.active', 1)
-                    ->select('partner_branches.id', 'partner_branches.branch_name', 'partners.name as partner_name')
-                    ->first();
-
-                if ($partnerBranch) {
-                    $partnerFolder = $workflowFolder . '/' . $partnerBranch->partner_name;
-                    if (!File::exists($partnerFolder)) {
-                        File::makeDirectory($partnerFolder, 0755, true);
-                    }
-
-                    // Product folder
-                    $product = Product::find($validated['product_id'], ['name']);
-                    if ($product) {
-                        $productFolder = $partnerFolder . '/' . $product->name;
-                        if (!File::exists($productFolder)) {
-                            File::makeDirectory($productFolder, 0755, true);
-                        }
-                    }
-                }
-            }
-        } else {
-            return redirect()
-                ->route('studentInService.index', $validated['student_id'])
-                ->with('success', 'Student Interested Service created successfully.');
-        }
-
+        StudentActivities::create([
+            'student_id' => $validated['student_id'],
+            'title' => "has created student service's",
+            'fristactivity' => null,
+            'lastactivity' => null,
+            'user_id' => Auth::id()
+        ]);
 
         return redirect()
             ->route('studentInService.index', $validated['student_id'])
@@ -174,7 +193,7 @@ class StudentInServiceController extends Controller
      */
     public function show(StudentInService $studentInService)
     {
-        //
+        $this->authorize('Service.show');
     }
 
     /**
@@ -182,7 +201,7 @@ class StudentInServiceController extends Controller
      */
     public function edit(StudentInService $studentInService)
     {
-        //
+        $this->authorize('Service.edit');
     }
 
     /**
@@ -190,7 +209,7 @@ class StudentInServiceController extends Controller
      */
     public function update(UpdateStudentInServiceRequest $request, StudentInService $studentInService)
     {
-        //
+        $this->authorize('Service.update');
     }
 
     /**
@@ -198,6 +217,7 @@ class StudentInServiceController extends Controller
      */
     public function destroy(Student $student, StudentInService $studentInService)
     {
+        $this->authorize('Service.destroy');
 
         try {
 
@@ -213,6 +233,24 @@ class StudentInServiceController extends Controller
                     'message' => 'Data already exists in student application. Deletion not allowed.',
                 ], 422);
             }
+
+            $exist = StudentQuotation::where([
+                'service_id'       => $studentInService->id
+            ])->exists();
+
+            if ($exist) {
+                return response()->json([
+                    'message' => 'Student Quotation already exists. Deletion not allowed.',
+                ], 422);
+            }
+
+            StudentActivities::create([
+                'student_id' => $student->id,
+                'title' => "has deleted student service's",
+                'fristactivity' => null,
+                'lastactivity' => null,
+                'user_id' => Auth::id()
+            ]);
 
             $studentInService->delete();
 

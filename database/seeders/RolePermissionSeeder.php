@@ -135,6 +135,17 @@ class RolePermissionSeeder extends Seeder
                     
                 ],
             ],
+            //Agency Genneral (Quoatations)
+            [
+                'group_name' => 'Quoatations',
+                'permissions' => [
+                    'quoatations.index',
+                    'quoatations.store',
+                    'quoatations.updateStatus',
+                    'quoatations.destroy',
+                    
+                ],
+            ],
             //Partner Branch
             [
                 'group_name' => 'Partner Branch',
@@ -381,7 +392,7 @@ class RolePermissionSeeder extends Seeder
                 ],
             ],
 
-            //Student Activities
+            //Student Application
             [
                 'group_name' => 'Student Application',
                 'permissions' => [
@@ -395,7 +406,7 @@ class RolePermissionSeeder extends Seeder
                 ],
             ],
 
-            //Student Activities
+            //Student Service
             [
                 'group_name' => 'Student Service',
                 'permissions' => [
@@ -423,6 +434,19 @@ class RolePermissionSeeder extends Seeder
                     
                 ],
             ],
+            //Student Quoatations
+            [
+                'group_name' => 'Student Quoatations',
+                'permissions' => [
+                    'StudQuoat.index',
+                    'StudQuoat.store',
+                    'StudQuoat.confirm',
+                    'StudQuoat.approval',
+                    'StudQuoat.destroy',
+                    'StudQuoat.report',
+                    
+                ],
+            ],
             //Partner 
             [
                 'group_name' => 'Partner',
@@ -430,6 +454,8 @@ class RolePermissionSeeder extends Seeder
                     'Partner.index',
                     'Partner.store',
                     'Partner.create',
+                    'Partner.edit',
+                    'Partner.update',
                     'Partner.updateStatus',
                     'Partner.destroy'
                     
@@ -464,6 +490,17 @@ class RolePermissionSeeder extends Seeder
                     'ProductActivities.OthersTest',
                     'ProductActivities.StoreOthersTest',
                     'ProductActivities.Promotions',
+                ],
+            ],
+            //Account Money Receipt
+            [
+                'group_name' => 'Money Receipt',
+                'permissions' => [
+                    'Accounts.MRIndex',
+                    'Accounts.CreateMR',
+                    'Accounts.storeMR',
+                    'Accounts.ConfirmMR',
+                    'Accounts.ReportMR',
                 ],
             ],
         ];

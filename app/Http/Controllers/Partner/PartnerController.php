@@ -10,17 +10,21 @@ use App\Http\Requests\Partner\UpdatePartnerRequest;
 use App\Models\AgencySetting\MasterCategory;
 use App\Models\AgencySetting\Workflow;
 use App\Models\Default\Country;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class PartnerController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
+         $this->authorize('Partner.index');
+
         return Inertia::render('allpages/Agency/Partner/partners',[
             'pertners' => Partner::with(['partnertype','state.country','city'])->get()
         ]);
@@ -31,6 +35,8 @@ class PartnerController extends Controller
      */
     public function create()
     {
+        $this->authorize('Partner.create');
+
         return Inertia::render('allpages/Agency/Partner/partnerscreate', [
             'master' => MasterCategory::with(['parnerTypes'])->where('active', 1)->get(),
             'workflow' => Workflow::where('active', 1)->get(),
@@ -43,6 +49,7 @@ class PartnerController extends Controller
      */
     public function store(StorePartnerRequest $request)
     {
+        $this->authorize('Partner.store');
 
         $validated = $request->validated();
 
@@ -86,13 +93,7 @@ class PartnerController extends Controller
             ->with('success', 'Partner created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Partner $partner)
-    {
-        //
-    }
+   
 
     /**
      * Show the form for editing the specified resource.
@@ -107,7 +108,7 @@ class PartnerController extends Controller
      */
     public function update(UpdatePartnerRequest $request, Partner $partner)
     {
-        //
+        $this->authorize('Partner.update');
     }
 
     /**
@@ -115,12 +116,15 @@ class PartnerController extends Controller
      */
     public function destroy(Partner $partner)
     {
-        //
+         $this->authorize('Partner.destroy');
     }
 
 
     public function updateStatus(Request $request, $partner)
     {
+
+        $this->authorize('Partner.updateStatus');
+
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
         ]);

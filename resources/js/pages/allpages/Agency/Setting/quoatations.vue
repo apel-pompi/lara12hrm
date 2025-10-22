@@ -18,7 +18,7 @@ import { Plus, RefreshCcw, Search, Trash } from 'lucide-vue-next';
 
 import { toast } from 'vue-sonner';
 
-export interface TransactionName {
+export interface Quoatations {
     id: number;
     name: string;
     adddate: string;
@@ -37,16 +37,16 @@ export interface Paginated<T> {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Transaction Name', href: '/transaction' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Quoatations Name', href: '/quoatations' }];
 
 const props = defineProps<{
-    tranactionname: Paginated<TransactionName>;
-    tranactionFilter: { name: string };
+    quoatations: Paginated<Quoatations>;
+    quoatationsFilter: { name: string };
     filters: { name: string };
 }>();
 
-const data = props.tranactionname;
-console.log(data);
+const data = props.quoatations;
+
 interface FormErrors {
     name?: string;
 }
@@ -69,18 +69,18 @@ const showDailogCreate = () => {
 };
 
 const submit = () => {
-    const action = isEditMode.value && form.id ? route('transactionName.update', form.id) : route('transactionName.store');
+    const action = isEditMode.value && form.id ? route('quoatations.update', form.id) : route('quoatations.store');
     const method = isEditMode.value ? 'put' : 'post';
 
     form[method](action, {
         onSuccess: () => {
             toast('Success', {
-                description: `Transaction name ${isEditMode.value ? 'updated' : 'created'} successfully`,
+                description: `Quoatations purpose ${isEditMode.value ? 'updated' : 'created'} successfully`,
             });
             setTimeout(() => {
                 showDialog.value = false;
                 form.reset();
-                router.visit(route('transactionName.index'), {
+                router.visit(route('quoatations.index'), {
                     only: ['transaction_names'],
                     preserveScroll: true,
                     preserveState: false,
@@ -96,16 +96,16 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (transaction: TransactionName) => {
-    const newStatus = !Boolean(transaction.active); // boolean
+const toggleStatus = (quoatations: Quoatations) => {
+    const newStatus = !Boolean(quoatations.active); // boolean
     router.put(
-        route('transactionName.updateStatus', transaction.id),
+        route('quoatations.updateStatus', quoatations.id),
         { active: newStatus ? 1 : 0 }, // server expects number
         {
             preserveState: true,
             onSuccess: () => {
-                transaction.active = newStatus ? 1 : 0; // local update (number)
-                toast.success('Student source status update');
+                quoatations.active = newStatus ? 1 : 0; // local update (number)
+                toast.success('Quoatations status update');
             },
         },
     );
@@ -114,13 +114,13 @@ const toggleStatus = (transaction: TransactionName) => {
 const deleteForm = useForm({});
 
 const onDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this transaction name?')) return;
+    if (!confirm('Are you sure you want to delete this quoatations name?')) return;
 
     if (deleteForm.processing) return;
 
-    deleteForm.delete(`/transactionName/show/${id}`, {
+    deleteForm.delete(`/quoatations/show/${id}`, {
         onSuccess: () => {
-            toast.success('Transaction name deleted successfully');
+            toast.success('Quoatations name deleted successfully');
         },
         onError: () => {
             toast.success('Somethings wrong !');
@@ -135,20 +135,20 @@ const selecteName = ref(null); // name
 const queryName = ref('');
 
 // Filtered lists
-const filteredName = computed(() => (queryName.value === '' ? props.tranactionFilter : props.tranactionFilter.filter((n) => n.name)));
+const filteredName = computed(() => (queryName.value === '' ? props.quoatationsFilter : props.quoatationsFilter.filter((n) => n.name)));
 const search = () => {
     const params: Record<string, any> = {};
 
     if (selecteName.value) params.name = selecteName.value.name;
 
-    router.get(route('transactionName.index'), params, {
+    router.get(route('quoatations.index'), params, {
         preserveState: false,
         preserveScroll: true,
     });
 };
 
 const refresh = () => {
-    router.get(route('transactionName.index'), {}, { replace: true });
+    router.get(route('quoatations.index'), {}, { replace: true });
 };
 
 const goToPage = (url: string | null) => {
@@ -160,7 +160,7 @@ const goToPage = (url: string | null) => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Student Source" />
+        <Head title="Quoatations Name" />
         <AgencyLayout>
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
@@ -226,7 +226,7 @@ const goToPage = (url: string | null) => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Transaction Name</TableHead>
+                                <TableHead>Quoatations Name</TableHead>
                                 <TableHead>Added Date</TableHead>
                                 <TableHead>Added By</TableHead>
                                 <TableHead>Status</TableHead>
@@ -273,13 +273,13 @@ const goToPage = (url: string | null) => {
                     <!-- Header -->
                     <DialogHeader class="border-b pb-3">
                         <DialogTitle class="text-lg font-semibold">
-                            {{ isEditMode ? 'Edit transaction number' : 'Create transaction number' }}
+                            {{ isEditMode ? 'Edit quoatations name' : 'Create quoatations name' }}
                         </DialogTitle>
                         <DialogDescription class="text-sm text-gray-500">
                             {{
                                 isEditMode
-                                    ? 'Update the transaction number details and click save.'
-                                    : 'Fill in the details below to create a new transaction number.'
+                                    ? 'Update the quoatations name details and click save.'
+                                    : 'Fill in the details below to create a new quoatations name.'
                             }}
                         </DialogDescription>
                     </DialogHeader>
@@ -288,8 +288,8 @@ const goToPage = (url: string | null) => {
                     <div class="grid gap-6 py-4">
                         <!-- Transaction Type -->
                         <div class="grid gap-2">
-                            <Label for="name" class="font-medium">Transaction Name</Label>
-                            <Input id="name" placeholder="Enter Transaction name" v-model="form.name" autofocus class="max-w-sm" />
+                            <Label for="name" class="font-medium">Quoatations Name</Label>
+                            <Input id="name" placeholder="Enter Quoatations purpose" v-model="form.name" autofocus class="max-w-sm" />
                             <p v-if="form.errors.name" class="text-sm text-red-600">
                                 {{ form.errors.name }}
                             </p>

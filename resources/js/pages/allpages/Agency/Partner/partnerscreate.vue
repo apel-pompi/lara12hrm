@@ -638,13 +638,17 @@ const submit = () => {
 
                 <section class="border-t pt-6">
                     <div class="flex justify-end">
-                        <Button
+                        <Button :disabled="form.processing" @click="submit">
+                                    <template v-if="form.processing">Saving...</template>
+                                    <template v-else><Save class="h-5 w-5" />{{ 'Submit' }}</template>
+                                </Button>
+                        <!-- <Button
                             class="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-white shadow-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-400"
                             @click="submit"
                         >
                             <Save class="h-5 w-5" />
                             Save
-                        </Button>
+                        </Button> -->
                     </div>
                 </section>
             </div>

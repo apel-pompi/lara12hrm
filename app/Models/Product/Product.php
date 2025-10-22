@@ -3,6 +3,7 @@
 namespace App\Models\Product;
 
 use App\Models\Partner\Partner;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,5 +45,13 @@ class Product extends Model
         return $this->belongsTo(ProductTypeSetup::class, 'product_type_id');
     }
 
-    
+    /**
+     * Get the user that owns the Product
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

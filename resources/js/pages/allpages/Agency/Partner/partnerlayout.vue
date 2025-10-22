@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type NavItem } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
-import { Archive, Coffee, CornerDownLeft, Flame, Mail, MessageCircleMore, Snowflake, SquarePen, TriangleAlert } from 'lucide-vue-next';
+import { Archive, Undo2, CornerDownLeft,  Mail, MessageCircleMore,  SquarePen,  } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -16,7 +16,7 @@ export interface Partner {
 }
 
 const props = defineProps<{
-    partner: { id: number };
+    partner: { id: number;name:string; user:{name:string}};
 }>();
 
 const sidebarNavItems = computed<NavItem[]>(() => {
@@ -82,21 +82,21 @@ const goToPartner = () => {
     router.visit('/partner');
 };
 
-const updateRate = (status: number) => {
+const updateStatus = (active: number) => {
     router.put(
-        route('studentActivities.updateRate', props.partner.id),
-        { 
-            partner_id:props.partner.id,
-            status,
-         },
+        route('partner.updateStatus', props.partner.id),
+        {
+            active,
+        },
         {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success('Partner  status update');
+                toast.success('Partner status update');
             },
         },
     );
 };
+
 </script>
 
 <template>
@@ -115,8 +115,8 @@ const updateRate = (status: number) => {
                 <aside class="flex w-full flex-col gap-6 rounded-xl bg-white p-4 shadow lg:w-1/4 dark:bg-gray-900">
                     <!-- Profile -->
                     <div class="flex flex-col items-center border-b pb-5 text-center">
-                        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-xl font-bold dark:bg-gray-700">W</div>
-                        <h2 class="mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100">World University Of Bangladesh</h2>
+                        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-xl font-bold dark:bg-gray-700">{{ (props.partner.name?.charAt(0) ?? '').toUpperCase() }}</div>
+                        <h2 class="mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100">{{ props.partner.name }}</h2>
 
                         
                         <div class="mt-3 flex items-center justify-center gap-3 text-gray-400">
@@ -142,7 +142,7 @@ const updateRate = (status: number) => {
                                 </span>
                             </div>
 
-                            <div class="group relative">
+                            <!-- <div class="group relative">
                                 <button class="cursor-pointer text-[8px] uppercase hover:text-gray-700">
                                     <SquarePen />
                                 </button>
@@ -151,17 +151,39 @@ const updateRate = (status: number) => {
                                 >
                                     Edit
                                 </span>
-                            </div>
+                            </div> -->
 
-                            <div class="group relative">
-                                <button class="cursor-pointer text-[8px] uppercase hover:text-gray-700">
-                                    <Archive />
-                                </button>
-                                <span
-                                    class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100"
-                                >
-                                    Archive
-                                </span>
+                            <div>
+                                <div v-if="props.partner.active == 1">
+                                    <div class="group relative">
+                                        <!-- Archive Button -->
+                                        <button @click="updateStatus(0)" class="cursor-pointer text-[8px] uppercase hover:text-gray-700">
+                                            <Archive />
+                                        </button>
+                                        <span
+                                            class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100"
+                                        >
+                                            Archive
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div v-else>
+                                    <div class="group relative">
+                                    <!-- Restore Button -->
+                                        <button
+                                            @click="updateStatus(1)"
+                                            class="cursor-pointer text-[10px] uppercase hover:text-gray-700"
+                                        >
+                                            <Undo2 />
+                                        </button>
+                                        <span
+                                            class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                                        >
+                                            Restore
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -170,15 +192,10 @@ const updateRate = (status: number) => {
                     <!-- Personal Details -->
                     <div class="border-b pb-5 text-sm">
                         <h4 class="mb-1 font-semibold text-gray-700 dark:text-gray-300">General Information:</h4>
-                        <p>Tag(s): <span class="text-gray-500">-</span></p>
+                        <p>Workflow <span class="text-gray-500">{{ props.partner.workflow_names }}</span></p>
 
-                        <div class="mt-2 flex items-center gap-2">
-                            <Button class="rounded-lg bg-blue-500 px-3 py-1 text-xs text-white shadow hover:bg-blue-600">Activate</Button>
-                            <Button class="rounded-lg bg-gray-300 px-3 py-1 text-xs text-gray-700 shadow hover:bg-gray-400">De-Activate</Button>
-                        </div>
-
-                        <p class="mt-2 text-gray-600">Added From: <span class="font-medium">Testing 1</span></p>
-                        <p class="text-gray-600">Internal Id: <span class="font-medium">12345678-8876</span></p>
+                        <p class="mt-2 text-gray-600">Added From: <span class="font-medium">{{ props.partner?.user?.name }}</span></p>
+                        <p class="text-gray-600">Internal Id: <span class="font-medium">{{ props.partner.id }}</span></p>
                     </div>
                 </aside>
 

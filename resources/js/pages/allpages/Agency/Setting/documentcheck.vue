@@ -152,7 +152,7 @@ const goToWorkflow = () => {
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
                     <Button variant="outline" size="sm" @click="goToWorkflow"><CornerDownLeft></CornerDownLeft>Back Workflows </Button>
-                    <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Document Check List </Button>
+                    <!-- <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Document Check List </Button> -->
                 </div>
                 <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                     <!-- Title -->

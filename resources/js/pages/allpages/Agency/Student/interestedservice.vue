@@ -175,15 +175,8 @@ const handleCreateApplication = async (itemId: number) => {
                 }
                 setTimeout(() => {
                     form.reset();
-                    router.visit(
-                        route('studentApplication.index', [props.student.id]),
-                        {
-                            only: ['student_applications'],
-                            preserveScroll: true,
-                            preserveState: false,
-                        }
-                    );
-                }, 300);
+                    
+                }, 200);
             },
             onError: (errors) => {
                 const firstError = Object.values(errors)[0];
@@ -289,8 +282,6 @@ const handleDelete = async (itemId: number) => {
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <Button variant="outline" size="sm">View</Button>
-
                             <!-- Dropdown Menu -->
                             <DropdownMenu>
                                 <DropdownMenuTrigger as-child>

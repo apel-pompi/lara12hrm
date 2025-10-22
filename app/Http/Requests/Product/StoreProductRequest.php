@@ -25,7 +25,7 @@ class StoreProductRequest extends FormRequest
             'name'              => ['required', 'string', 'max:255'],
             'partner_id'        => ['required', 'integer', 'exists:partners,id'],
             'product_type_id'   => ['required', 'integer', 'exists:product_type_setups,id'],
-            'revinue_type'      => ['required', 'integer', 'in:0,1'], // example: 0 = revenue form client, 1 = revenue form partner
+            'revinue_type'      => ['required', 'integer', 'in:0,1,2'], // example: 0 = revenue form client, 1 = revenue form partner
             'duration'          => ['required', 'string', 'max:255'],
             'intak_month'       => ['required', 'array'],
             'description'       => ['nullable','string'],

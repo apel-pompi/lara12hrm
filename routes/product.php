@@ -30,6 +30,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
         ->group(
             function () {
                 Route::get('/aplication', 'aplication')->name('productActivities.application');
+                
                 Route::get('/documents', 'documents')->name('productActivities.documents');
 
                 Route::get('/fees', 'fees')->name('productActivities.fees');

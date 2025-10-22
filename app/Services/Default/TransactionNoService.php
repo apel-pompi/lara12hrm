@@ -9,7 +9,7 @@ class TransactionNoService
 {
     public function get(array $queryParams = [])
     {
-        $queryBuilder = Transaction::with('branch','user','transactionname')->orderBy('id', 'DESC');
+        $queryBuilder = Transaction::with('user')->orderBy('id', 'DESC');
 
         $student = resolve(TransactionNoFilter::class)->getResults([
             'builder' => $queryBuilder,

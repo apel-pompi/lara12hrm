@@ -260,7 +260,7 @@ const onDelete = async (id: number, partnerId: number) => {
 
                     <!-- Country -->
                     <div>
-                        <Label class="block pb-2 text-sm font-medium text-gray-700">Country</Label>
+                        <Label class="block pb-2 text-sm font-medium text-gray-700">Country <span class="text-red-500">*</span> </Label>
                         <Combobox v-model="selectedBranchCountry">
                             <div class="relative">
                                 <ComboboxInput
@@ -297,7 +297,7 @@ const onDelete = async (id: number, partnerId: number) => {
 
                     <!-- State -->
                     <div>
-                        <Label class="block pb-2 text-sm font-medium text-gray-700">State</Label>
+                        <Label class="block pb-2 text-sm font-medium text-gray-700">State <span class="text-red-500">*</span> </Label>
                         <Combobox v-model="selectedBranchState" :disabled="!selectedBranchCountry">
                             <div class="relative">
                                 <ComboboxInput

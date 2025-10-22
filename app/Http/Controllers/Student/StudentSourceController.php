@@ -7,17 +7,21 @@ use App\Models\Student\StudentSource;
 use App\Http\Requests\StudentSource\StoreStudentSourceRequest;
 use App\Http\Requests\StudentSource\UpdateStudentSourceRequest;
 use App\Services\Agency\Setting\StudentSourceService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class StudentSourceController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request, StudentSourceService $studentSourceService)
     {
+         $this->authorize('StudentSource.index');
+
         return Inertia::render('allpages/Agency/Setting/studentsource', [
             'searchName' => StudentSource::select('name')->get(),
             'studentSource' => $studentSourceService->get($request->query()),
@@ -32,10 +36,12 @@ class StudentSourceController extends Controller
      */
     public function store(StoreStudentSourceRequest $request)
     {
+        $this->authorize('StudentSource.store');
+
         $validated = $request->validated();
         StudentSource::create([
             'name'              => $validated['name'],
-            'adddate'           => $validated['adddate'],
+            'adddate'           => date('y-m-d'),
             'user_id'           => Auth::id(), // logged-in user
             'active'            => $validated['active'] ?? 0,
         ]);
@@ -50,6 +56,8 @@ class StudentSourceController extends Controller
      */
     public function show(StudentSource $studentSource)
     {
+        $this->authorize('StudentSource.show');
+
         if (!$studentSource) {
             return response()->json(['message' => 'Student source not found'], 404);
         }
@@ -61,6 +69,8 @@ class StudentSourceController extends Controller
      */
     public function edit(StudentSource $studentSource)
     {
+        $this->authorize('StudentSource.edit');
+
         return response()->json([
             'success' => true,
             'data' => $studentSource,
@@ -72,6 +82,8 @@ class StudentSourceController extends Controller
      */
     public function update(UpdateStudentSourceRequest $request, StudentSource $studentSource)
     {
+        $this->authorize('StudentSource.update');
+
         $studentSource->update($request->validated());
         return redirect()->route('studentSource.index')->with('success', 'Student stage update successfully.');
     }
@@ -81,6 +93,8 @@ class StudentSourceController extends Controller
      */
     public function destroy(StudentSource $studentSource)
     {
+        $this->authorize('StudentSource.destory');
+
         try {
             $studentSource->delete();
 
@@ -95,6 +109,8 @@ class StudentSourceController extends Controller
 
     public function updateStatus(Request $request, $student)
     {
+        $this->authorize('StudentSource.updateStatus');
+
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
         ]);

@@ -35,10 +35,6 @@ const sidebarNavItems: NavItem[] = [
         href: '/installment',
     },
     {
-        title: 'Transaction Name',
-        href: '/transactionName',
-    },
-    {
         title: 'Transaction Number',
         href: '/transaction',
     },

@@ -246,7 +246,7 @@ const onDelete = async (id: number) => {
                             <TableCell>{{ stud.user.name }}</TableCell>
                             <TableCell>
                                 <Button class="m-[2px]" size="sm" variant="outline" @click="onShow(stud.id)"><Eye></Eye></Button>
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(stud.id)"><SquarePen></SquarePen></Button>
+                                <!-- <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(stud.id)"><SquarePen></SquarePen></Button> -->
                                 <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(stud.id)"><Trash></Trash></Button
                             ></TableCell>
                         </TableRow>

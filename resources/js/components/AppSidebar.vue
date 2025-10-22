@@ -17,7 +17,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-import { CalendarX2, MonitorX, Settings, SquareTerminal, User } from 'lucide-vue-next';
+import { Book, BookCopy, Calculator, CalendarX2, MessageCircleOff, MonitorX, School, Settings, SquareTerminal, User } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
     collapsible: 'icon',
@@ -40,7 +40,7 @@ const data = {
         {
             title: 'Master Setup',
             url: '#',
-            icon: SquareTerminal,
+            icon: Settings,
             items: [
                 {
                     title: 'Users Setting',
@@ -51,17 +51,17 @@ const data = {
                     href: '/settings/profile',
                 },
                 {
-                    title: 'Agency Setting',
+                    title: 'CRM Setting',
                     href: '/general',
                 },
                 {
                     title: 'HRM Setting',
                     href: '/companyinfo',
                 },
-                // {
-                //     title: 'Accounts Setting',
-                //     href: '/settings/profile',
-                // },
+                {
+                    title: 'Accounts Setting',
+                    
+                },
                 
                 
             ],
@@ -88,22 +88,27 @@ const menuleave = [
     {
         route:'leave.index',
         title:'Leave Request',
-        icon:MonitorX
+        icon:MessageCircleOff
     },
     {
         route:'student.index',
         title: 'Student',
-        icon:MonitorX
+        icon:Book
     },
     {
         route:'partner.index',
         title: 'Partners',
-        icon:MonitorX
+        icon:School
     },
+    // {
+    //     route:'product.index',
+    //     title: 'Product',
+    //     icon:BookCopy
+    // },
     {
-        route:'product.index',
-        title: 'Product',
-        icon:MonitorX
+        route:'accounts.index',
+        title: 'Accounts',
+        icon:Calculator
     }
 ];
 

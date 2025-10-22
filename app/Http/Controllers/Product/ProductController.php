@@ -10,17 +10,21 @@ use App\Http\Requests\Product\UpdateProductRequest;
 use App\Models\Partner\Partner;
 use App\Models\Partner\PartnerBranch;
 use App\Models\Product\ProductTypeSetup;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ProductController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
+        $this->authorize('Product.update');
+
         return Inertia::render('allpages/Agency/Product/product', [
             'product' => Product::with(['partner','productype'])->get(),
             'partner' => Partner::where('active', 1)->get(),
@@ -33,20 +37,15 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreProductRequest $request)
     {
-        
+        $this->authorize('Product.store');
+
         $validated = $request->validated();
 
         // Convert partner_branch_id array to comma-separated string
@@ -77,44 +76,52 @@ class ProductController extends Controller
             ->with('success', 'Product created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Product $product)
-    {
-        //
-    }
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Product $product)
     {
-        //
+         $this->authorize('Product.edit');
+
+         return response()->json([
+            'success' => true,
+            'data' => $product,
+            'partner' => Partner::where('active', 1)->get(),
+            'product' => ProductTypeSetup::where('active', 1)->get(),
+            'months' => collect($this->createMonth())
+                ->map(fn($name, $id) => ['id' => $id, 'month' => $name])
+                ->values()
+                ->toArray(),
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateProductRequest $request, Product $product)
+    public function update(Request $request, Product $product)
     {
-        $validated = $request->validated();
+       $this->authorize('Product.update');
+
+        if (isset($request['intake_months']) && is_array($request['intake_months'])) {
+            $request['intake_months'] = implode(',', $request['intake_months']);
+        }
 
         $product->update([
-            'name'              => $validated['name'],
-            'partner_id'        => $validated['partner_id'],
-            'partner_branch_id' => $validated['partner_branch_id'],
-            'partner_type_id'   => $validated['partner_type_id'],
-            'revinue_type'      => $validated['revinue_type'],
-            'duration'          => $validated['duration'],
-            'intak_month'       => $validated['intak_month'],
-            'description'       => $validated['description'],
-            'note'              => $validated['note'] ?? null,
-            'active'            => $validated['active'] ?? $product->active,
+            'name'              => $request['name'],
+            'partner_id'        => $request['partner_id'],
+            'partner_branch_id' => $request['partner_branch_id'] ?? $product->partner_branch_id,
+            'partner_type_id'   => $request['product_type_id'],
+            'revinue_type'      => $request['revinue_type'],
+            'duration'          => $request['duration'],
+            'intak_month'       => $request['intake_months'],
+            'description'       => $request['description'],
+            'note'              => $request['note'] ?? null,
+            'active'            => $request['active'] ?? $product->active,
         ]);
 
         return redirect()
-            ->route('products.index')
+            ->route('productActivities.application',$product->id)
             ->with('success', 'Product updated successfully.');
     }
 
@@ -123,6 +130,8 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        $this->authorize('Product.destroy');
+
         try {
             
             $product->delete();
@@ -137,6 +146,8 @@ class ProductController extends Controller
 
     public function updateStatus(Request $request, $product)
     {
+        $this->authorize('Product.updateStatus');
+
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
         ]);

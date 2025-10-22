@@ -78,6 +78,8 @@ const props = defineProps<{
 interface FormErrors {
     fname?: string;
     lname?: string;
+    dateofbirth:string;
+    gender:number;
     descountry_id?: number;
     stage_id?: number;
     metting_note?: string;
@@ -320,7 +322,7 @@ const goToManageStudent = () => {
                             </div>
 
                             <div>
-                                <Label class="block text-sm font-medium text-gray-700">Date Of Birth</Label>
+                                <Label class="block text-sm font-medium text-gray-700">Date Of Birth <span class="text-red-500">*</span></Label>
                                 <VueDatePicker
                                     v-model="dob"
                                     :max-date="maxDate"
@@ -329,22 +331,24 @@ const goToManageStudent = () => {
                                     placeholder="Date Of Birth"
                                     auto-apply
                                 />
+                                <span v-if="form.errors.dateofbirth" class="text-sm text-red-600">{{ form.errors.dateofbirth }}</span>
                             </div>
 
                             <div>
-                                <Label class="block text-sm font-medium text-gray-700">Gender</Label>
+                                <Label class="block text-sm font-medium text-gray-700">Gender<span class="text-red-500">*</span></Label>
                                 <Select v-model="form.gender">
                                     <SelectTrigger class="w-full">
                                         <SelectValue placeholder="Select Gender" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectItem value="1">Man</SelectItem>
-                                            <SelectItem value="2">Woman</SelectItem>
+                                            <SelectItem value="1">Male</SelectItem>
+                                            <SelectItem value="2">Female</SelectItem>
                                             <SelectItem value="3">Other's</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+                                <span v-if="form.errors.gender" class="text-sm text-red-600">{{ form.errors.gender }}</span>
                             </div>
                         </div>
                     </div>
@@ -769,13 +773,11 @@ const goToManageStudent = () => {
                 </section>
                 <section class="border-t pt-6">
                     <div class="flex justify-end">
-                        <Button
-                            class="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-white shadow-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-400"
-                            @click="submit"
-                        >
-                            <Save class="h-5 w-5" />
-                            Save
-                        </Button>
+                        <Button :disabled="form.processing" @click="submit" class="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-white shadow-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-400">
+                        <template v-if="form.processing">Saving...</template>
+                        <template v-else><Save class="h-5 w-5" />Save</template>
+                    </Button>
+                        
                     </div>
                 </section>
             </div>

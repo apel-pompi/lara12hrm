@@ -30,7 +30,7 @@ class UserPermissionController extends Controller
         });
         $roles = Role::orderBy('id', 'desc')->get();
 
-        return Inertia::render('allpages/userpermission', [
+        return Inertia::render('allpages/user/userpermission', [
             'users' => $users,
             'roles' => $roles,
         ]);

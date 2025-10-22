@@ -2,7 +2,6 @@
 
 namespace App\Models\Default;
 
-use App\Models\HRM\Branch;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,36 +12,14 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'trnname_id',
+        'name',
         'trncode',
-        'branch_id',
-        'yearname',
-        'monthname',
         'lastnumber',
         'increment',
         'user_id',
+        'adddate',
         'active',
     ];
-
-    /**
-     * Get the branch that owns the Transaction
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function branch(): BelongsTo
-    {
-        return $this->belongsTo(Branch::class, 'branch_id');
-    }
-
-    /**
-     * Get the transactionname that owns the Transaction
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function transactionname(): BelongsTo
-    {
-        return $this->belongsTo(TransactionName::class, 'trnname_id');
-    }
 
     /**
      * Get the user that owns the Transaction

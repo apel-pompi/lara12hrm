@@ -11,11 +11,10 @@ import Textarea from '@/components/ui/textarea/Textarea.vue';
 import PartnerLayout from '@/pages/allpages/Agency/Partner/partnerlayout.vue';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { router, useForm } from '@inertiajs/vue3';
+import { Link, router, useForm } from '@inertiajs/vue3';
 import { Plus, Trash } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
-
 
 export interface Product {
     id: number;
@@ -37,7 +36,7 @@ const props = defineProps<{
     productType: { id: number; producttypename: string }[];
     months: { id: number; month: string }[];
 }>();
-console.log(props.partner);
+
 interface FormErrors {
     name?: string;
     partner_id?: number;
@@ -95,7 +94,7 @@ const form = useForm({
     intak_month: [], // multiple selection (from tags)
     description: '',
     note: '',
-    active:'1'
+    active: '1',
 });
 
 const showDailogCreate = () => {
@@ -118,7 +117,7 @@ const submit = () => {
             setTimeout(() => {
                 showDialog.value = false;
                 form.reset();
-                router.visit(route('PartnerActivities.product',props.product.id), {
+                router.visit(route('PartnerActivities.product', props.product.id), {
                     only: ['products'],
                     preserveScroll: true,
                     preserveState: false,
@@ -167,6 +166,24 @@ const onDelete = async (id: number) => {
         preserveState: false,
     });
 };
+
+const colors = [
+    'bg-blue-500',
+    'bg-green-500',
+    'bg-purple-500',
+    'bg-purple-700',
+    'bg-pink-500',
+    'bg-indigo-500',
+    'bg-teal-500',
+    'bg-yellow-400',
+    'bg-yellow-700',
+];
+
+function getAvatarColor(name: string) {
+    if (!name) return colors[0];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+}
 </script>
 
 <template>
@@ -178,6 +195,7 @@ const onDelete = async (id: number) => {
             <Table>
                 <TableHeader>
                     <TableRow>
+                        <TableHead>#</TableHead>
                         <TableHead>Product Name</TableHead>
                         <TableHead>Product Type</TableHead>
                         <TableHead>Associated Partner</TableHead>
@@ -190,7 +208,23 @@ const onDelete = async (id: number) => {
                 </TableHeader>
                 <TableBody>
                     <TableRow v-for="(product, index) in props.product" :key="product.id ?? index">
-                        <TableCell>{{ product.name }}</TableCell>
+                        <TableCell>
+                            <Link :href="route('productActivities.application', product.id)" method="get" class="flex items-center space-x-2">
+                                <span
+                                    :class="[
+                                        'flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold text-white shadow-md',
+                                        getAvatarColor(product.name),
+                                    ]"
+                                >
+                                    {{ (product.name?.charAt(0) ?? '').toUpperCase() }}
+                                </span>
+                            </Link>
+                        </TableCell>
+                        <TableCell>
+                            <Link :href="route('productActivities.application', product.id)" method="get" class="flex items-center space-x-2">
+                                <span class="font-medium text-gray-900">{{ product.name }}</span>
+                            </Link>
+                        </TableCell>
                         <TableCell>{{ product.productype.producttypename }}</TableCell>
                         <TableCell>{{ product.partner.name }}</TableCell>
                         <TableCell>
@@ -215,9 +249,9 @@ const onDelete = async (id: number) => {
         <!-- Dialog -->
         <Dialog v-model:open="showDialog">
             <DialogContent class="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border shadow-xl">
-                <DialogHeader class="sticky top-0 z-10 bg-white border-b px-6 py-4">
+                <DialogHeader class="sticky top-0 z-10 border-b bg-white px-6 py-4">
                     <DialogTitle class="text-2xl font-bold text-gray-900">Add Product</DialogTitle>
-                    <DialogDescription class="text-sm text-gray-500 mt-1">Fill out the form below to add a new product.</DialogDescription>
+                    <DialogDescription class="mt-1 text-sm text-gray-500">Fill out the form below to add a new product.</DialogDescription>
                 </DialogHeader>
 
                 <!-- Form -->
@@ -274,6 +308,10 @@ const onDelete = async (id: number) => {
                             <div class="flex items-center space-x-2">
                                 <RadioGroupItem value="1" id="revenue-partner" />
                                 <Label for="revenue-partner">Commission From Partner</Label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <RadioGroupItem value="2" id="both-partner" />
+                                <Label for="both-partner">Both Commission</Label>
                             </div>
                         </RadioGroup>
                         <p v-if="form.errors.revinue_type" class="mt-1 text-sm text-red-600">{{ form.errors.revinue_type }}</p>

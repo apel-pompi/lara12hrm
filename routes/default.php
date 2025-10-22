@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Default\{
-    TransactionNameController,
     TransactionController
 };
 use Illuminate\Support\Facades\Route;
@@ -22,17 +21,5 @@ Route::middleware(['verified', 'auth'])->group(function () {
             }
         );
     
-    //transaction name Route
-    Route::controller(TransactionNameController::class)
-        ->prefix('transactionName')
-        ->group(
-            function () {
-                Route::get('/', 'index')->name('transactionName.index');
-                Route::post('/store', 'store')->name('transactionName.store');
-                Route::put('/{transactionName}/status', 'updateStatus')->name('transactionName.updateStatus');
-                Route::delete('/show/{transactionName}', 'destroy')->name('transactionName.destroy');
-            }
-        );
-
     
 });

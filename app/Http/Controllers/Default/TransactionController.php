@@ -5,9 +5,6 @@ namespace App\Http\Controllers\Default;
 use App\Http\Controllers\Controller;
 use App\Models\Default\Transaction;
 use App\Http\Requests\Default\Transaction\StoreTransactionRequest;
-use App\Http\Requests\Default\Transaction\UpdateTransactionRequest;
-use App\Models\HRM\Branch;
-use App\Models\Default\TransactionName;
 use App\Services\Default\TransactionNoService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
@@ -27,16 +24,7 @@ class TransactionController extends Controller
         return Inertia::render('allpages/default/transaction',[
             'tranaction' => $transaction->get($request->query()),
             'filters'   => $transaction->get($request->query()),
-            'tranactionName' => TransactionName::where('active',1)->get(['id','name']),
-            'branch' => Branch::where('active',1)->get(['id','branchname']),
-            'months' => collect($this->createMonth())
-                ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
-                ->values()
-                ->toArray(),
-            'years' => collect($this->createYear())
-                ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
-                ->values()
-                ->toArray(),
+            
         ]);
     }
 
@@ -48,16 +36,12 @@ class TransactionController extends Controller
         $this->authorize('Trancaction.store');
 
         $validated = $request->validated();
-        $year = $validated['yearname'];
-        $newyear = substr($year, -2);
         Transaction::create([
-            'trnname_id'              => $validated['trnname_id'],
+            'name'              => $validated['name'],
             'trncode'           => $validated['trncode'],
-            'branch_id'           => $validated['branch_id'],
-            'yearname'           => $newyear,
-            'monthname'           => $validated['monthname'],
             'lastnumber'           => $validated['lastnumber'],
             'increment'           => $validated['increment'],
+            'adddate' => now(),
             'user_id'           => Auth::id(), // logged-in user
             'active'            => $validated['active'] ?? 0,
         ]);

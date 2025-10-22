@@ -316,25 +316,6 @@ const goToPage = (url: string | null) => {
                             </p>
                         </div>
 
-                        <!-- Add Date -->
-                        <div class="grid gap-2">
-                            <Label for="adddate" class="font-medium">Add Date</Label>
-                            <Input id="adddate" type="date" v-model="form.adddate" class="max-w-sm" />
-                            <p v-if="errors?.adddate" class="text-sm text-red-600">
-                                {{ errors.adddate }}
-                            </p>
-                        </div>
-
-                        <!-- Active Toggle -->
-                        <div class="flex items-center space-x-2">
-                            <input
-                                id="active"
-                                type="checkbox"
-                                v-model="form.active"
-                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                            />
-                            <Label for="active">Active</Label>
-                        </div>
                     </div>
 
                     <!-- Footer -->

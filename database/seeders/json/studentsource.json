@@ -1,0 +1,89 @@
+[
+    {
+        "data": [
+            {
+                
+                "name": "Likedin",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "X",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Instagram",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Tiktok",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Fastoon",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Banner",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "News Paper",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "What's App",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            },
+            {
+                
+                "name": "Facebook",
+                "adddate": "2018-07-20",
+                "user_id": "1",
+                "active": "1",
+                "created_at": "2018-07-20 20:11:03",
+                "updated_at": "2021-08-01 14:37:27"
+            }
+            
+            
+        ]
+    }
+]

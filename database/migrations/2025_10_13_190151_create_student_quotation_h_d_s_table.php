@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transaction_names', function (Blueprint $table) {
+        Schema::create('student_quotation_h_d_s', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('quotation_no');
+            $table->foreignId('student_id')->constrained('students')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->decimal('sumamount', 20, 3)->nullable();
+            $table->string('notes')->nullable();
+            $table->tinyInteger('status')->default(0);
             $table->date('adddate');
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->tinyInteger('active')->default(0);
             $table->timestamps();
-
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });
@@ -30,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transaction_names');
+        Schema::dropIfExists('student_quotation_h_d_s');
     }
 };

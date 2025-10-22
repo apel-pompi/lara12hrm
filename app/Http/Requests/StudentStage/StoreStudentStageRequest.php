@@ -23,7 +23,7 @@ class StoreStudentStageRequest extends FormRequest
     {
         return [
             'name'    => ['required', 'string', 'max:255'],
-            'adddate' => ['required', 'date'],
+            'adddate' => ['nullable', 'date'],
             'user_id' => ['exists:users,id'],
             'active'  => ['nullable', 'boolean'],
         ];
@@ -35,7 +35,7 @@ class StoreStudentStageRequest extends FormRequest
             'name.required'    => 'Stage name is required.',
             'name.string'      => 'Stage name must be a string.',
             'name.max'         => 'Stage name may not be greater than 255 characters.',
-            'adddate.required' => 'Add date is required.',
+            'adddate.nullable' => 'Add date is required.',
             'adddate.date'     => 'Add date must be a valid date.',
             'user_id.exists'   => 'Selected user is invalid.',
             'active.boolean'   => 'Active field must be true or false.',

@@ -25,8 +25,8 @@ class StoreStudentRequest extends FormRequest
             'student_id'     => ['nullable', 'string', 'max:50'],
             'fname'          => ['required', 'string', 'max:100'],
             'lname'          => ['required', 'string', 'max:100'],
-            'dateofbirth'    => ['nullable', 'date'],
-            'gender'         => ['nullable', 'integer', 'in:0,1,2'],
+            'dateofbirth'    => ['required', 'date'],
+            'gender'         => ['required', 'integer', 'in:0,1,2'],
             'email'          => ['nullable', 'email', 'max:255'],
             'phone'          => ['nullable', 'string', 'max:20'],
             'contactpre'     => ['nullable', 'string', 'max:50'],
@@ -61,6 +61,8 @@ class StoreStudentRequest extends FormRequest
             'fname.required'        => 'First name is required.',
             'lname.required'        => 'Last name is required.',
             'email.email'           => 'Provide a valid email address.',
+            'dateofbirth.required'           => 'Provide a valid date of birth address.',
+            'gender.required'           => 'Provide gender.',
             'descountry_id.required' => 'Preferred destination country is required.',
             'assain_user.required'  => 'Assign user is required.',
             'source_id.required'    => 'Student source is required.',
@@ -80,7 +82,7 @@ class StoreStudentRequest extends FormRequest
             'descountry_id' => 'Preferred Destination Country',
             'assain_user'   => 'Assign User',
             'source_id'     => 'Student Source',
-            'photo' =>'Student Photo'
+            'photo' => 'Student Photo'
         ];
     }
 }

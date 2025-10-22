@@ -19,15 +19,17 @@ class PartnerActivities extends Controller
 
     public function aplication(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/partnerlayout', [
-            'partner' => $partner
+            'partner' => $part
         ]);
     }
 
     public function product(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/product', [
-            'partner' => $partner,
+            'partner' => $part,
             'product' => Product::with(['productype', 'partner'])->where('partner_id', $partner->id)->get(),
             'partnerBrnach' => PartnerBranch::where('active', 1)->get(),
             'productType' => ProductTypeSetup::where('active', 1)->get(),
@@ -40,8 +42,9 @@ class PartnerActivities extends Controller
 
     public function branch(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/branch', [
-            'partner' => $partner,
+            'partner' => $part,
             'partnerbranch' => PartnerBranch::with(['partner', 'user', 'states.country', 'citys'])->where('partner_id', $partner->id)->orderBy('id', 'DESC')->get(),
             'countries' => Country::where('status', 1)->get(['id', 'name', 'iso3', 'phonecode', 'currency', 'currency_symbol']),
         ]);
@@ -86,62 +89,72 @@ class PartnerActivities extends Controller
 
     public function aggrements(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/aggrements', [
-            'partner' => $partner
+            'partner' => $part
         ]);
     }
     public function contacts(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/contacts', [
-            'partner' => $partner
+            'partner' => $part
         ]);
     }
     public function notes(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/notes', [
-            'partner' => $partner
+            'partner' => $part
         ]);
     }
     public function documents(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/documents', [
-            'partner' => $partner
+            'partner' => $part
         ]);
     }
     public function appoinments(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/appoinments', [
-            'partner' => $partner
+            'partner' => $part
         ]);
     }
     public function accounts(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/accounts', [
-            'partner' => $partner
+            'partner' => $part
         ]);
     }
     public function conversations(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/conversations', [
-            'partner' => $partner
+            'partner' => $part
         ]);
     }
     public function tasks(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/tasks', [
-            'partner' => $partner
+            'partner' => $part
         ]);
     }
     public function others(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/others', [
-            'partner' => $partner
+            'partner' => $part
         ]);
     }
     public function promotions(Partner $partner)
     {
+        $part = Partner::with(['user'])->where('id',$partner->id)->first();
         return Inertia::render('allpages/Agency/Partner/promotions', [
-            'partner' => $partner
+            'partner' => $part
         ]);
     }
 

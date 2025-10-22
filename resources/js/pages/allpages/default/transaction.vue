@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import AgencyLayout from '@/layouts/settings/agencyLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { ref,watch } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,18 +18,13 @@ import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
 import SelectValue from '@/components/ui/select/SelectValue.vue';
 import Switch from '@/components/ui/switch/Switch.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { Plus, RefreshCcw, Search, Trash } from 'lucide-vue-next';
+import { Plus, Trash } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
 export interface Transaction {
     id: number;
-    trnname_id: string;
+    name: string;
     trncode: string;
-    branch_id: number;
-    yearname: number;
-    monthname: number;
     lastnumber: number;
     increment: number;
     active: number;
@@ -51,31 +46,16 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Transaction Number', href: '/tr
 const props = defineProps<{
     tranaction: Paginated<Transaction>;
     filters: { name?: string };
-    tranactionName: { id: number; name: string }[];
-    branch: { id: number; branchname: string }[];
-    months: { id: number; name: string }[];
-    years: { id: number; name: string }[];
 }>();
 
 const data = props.tranaction;
 
 interface FormErrors {
-    trnname_id?: number;
+    name?: string;
     trncode?: string;
-    branch_id?: number;
-    yearname?: number;
-    monthname?: number;
     lastnumber?: number;
     increment?: number;
 }
-
-const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-// Helper function
-const getMonthName = (month: number | string) => {
-    const m = Number(month);
-    return monthNames[m] ?? month;
-};
 
 const showDialog = ref(false);
 const isEditMode = ref(false);
@@ -83,11 +63,8 @@ const errors = ref<FormErrors>();
 
 const form = useForm({
     id: null as number | null,
-    trnname_id: '',
+    name: '',
     trncode: '',
-    branch_id: '',
-    yearname: '',
-    monthname: '',
     lastnumber: '',
     increment: '',
     active: false,
@@ -101,9 +78,6 @@ const showDailogCreate = () => {
 };
 
 const submit = () => {
-    form.trnname_id = selecteName.value ? selecteName.value.id : '';
-    form.branch_id = selecteBranch.value ? selecteBranch.value.id : '';
-
     form.post(route('transaction.store'), {
         preserveScroll: true,
         onSuccess: () => {
@@ -163,51 +137,8 @@ const onDelete = async (id: number) => {
     });
 };
 
-// Combobox states
-const selecteName = ref(null);
-const queryName = ref('');
-const selecteBranch = ref(null);
-const selecteCode = ref(null);
-const queryBranch = ref('');
-const queryCode = ref('');
-// Filtered lists
-const filteredName = computed(() => (queryName.value === '' ? props.tranactionName : props.tranactionName.filter((n) => n.name)));
-const filteredBranch = computed(() => (queryBranch.value === '' ? props.branch : props.branch.filter((n) => n.name)));
-const filteredCode = computed(() => (queryCode.value === '' ? data.data : data.data.filter((n) => n.name)));
-
-//Auto-generate Transaction Code
-const isCodeReady = computed(() => {
-    return selecteName.value && selecteBranch.value && form.yearname && form.monthname;
-});
-
-watch([selecteName, selecteBranch, () => form.yearname, () => form.monthname], ([newName, newBranch, newYear, newMonth]) => {
-    if (newName && newBranch && newYear && newMonth) {
-        // Transaction Name
-        const nameCode = newName.name
-            .split(' ')
-            .map((word) => word[0].toUpperCase())
-            .join('');
-
-        // Branch Name Frist 3 letter
-        const branchCode = newBranch.branchname.slice(0, 3).toUpperCase();
-
-        // Year last 2 digit (2025 → 25)
-        const yearCode = String(newYear).slice(-2);
-
-        // Month 2 digit (1 → 01, 9 → 09)
-        const monthCode = String(newMonth).padStart(2, '0');
-
-        // Code build
-        form.trncode = `${nameCode}${branchCode}${yearCode}${monthCode}`;
-    }
-});
-
 const search = () => {
     const params: Record<string, any> = {};
-
-    if (selecteName.value) params.trnname_id = selecteName.value.id;
-    if (selecteCode.value) params.trncode = selecteCode.value.trncode;
-    if (selecteBranch.value) params.branch_id = selecteBranch.value.id;
 
     router.get(route('transaction.index'), params, {
         preserveState: false,
@@ -215,15 +146,32 @@ const search = () => {
     });
 };
 
-const refresh = () => {
-    router.get(route('transaction.index'), {}, { replace: true });
-};
+// const refresh = () => {
+//     router.get(route('transaction.index'), {}, { replace: true });
+// };
 
 const goToPage = (url: string | null) => {
     if (url) {
         router.get(url, {}, { preserveState: false, replace: true });
     }
 };
+
+watch(
+  () => form.name,
+  (newVal) => {
+    if (newVal === 'Student ID') {
+      form.trncode = 'SUT-';
+    } else if (newVal === 'Money Received') {
+      form.trncode = 'MR--';
+    } else if (newVal === 'Quoatations No') {
+      form.trncode = 'QTN-';
+    } else if (newVal === 'Invoice No') {
+      form.trncode = 'INV-';
+    } else {
+      form.trncode = '';
+    }
+  }
+);
 </script>
 
 <template>
@@ -235,151 +183,20 @@ const goToPage = (url: string | null) => {
                     <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create </Button>
 
                     <!-- Search start -->
-                    <div class="grid gap-2">
-                        <Combobox v-model="selecteName">
-                            <div class="relative w-48">
-                                <!-- Input -->
-                                <div class="relative w-full">
-                                    <ComboboxInput
-                                        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select name..."
-                                        :display-value="(n) => n?.name"
-                                        @input="queryName = $event.target.value"
-                                    />
-                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                    </ComboboxButton>
-                                </div>
 
-                                <!-- Options -->
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                >
-                                    <div
-                                        v-if="filteredName.length === 0 && queryName !== ''"
-                                        class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                    >
-                                        Nothing found.
-                                    </div>
-
-                                    <ComboboxOption
-                                        v-for="n in filteredName"
-                                        :key="n.id"
-                                        :value="n"
-                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                        v-slot="{ selected }"
-                                    >
-                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                            {{ n.name }}
-                                        </span>
-                                        <span
-                                            v-if="selected"
-                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                        >
-                                            <CheckIcon class="h-5 w-5" />
-                                        </span>
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-                    </div>
-                    <div class="grid gap-2">
-                        <Combobox v-model="selecteCode">
-                            <div class="relative w-48">
-                                <!-- Input -->
-                                <div class="relative w-full">
-                                    <ComboboxInput
-                                        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select code..."
-                                        :display-value="(n) => n?.trncode"
-                                        @input="queryCode = $event.target.value"
-                                    />
-                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                    </ComboboxButton>
-                                </div>
-
-                                <!-- Options -->
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                >
-                                    <div
-                                        v-if="filteredCode.length === 0 && queryCode !== ''"
-                                        class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                    >
-                                        Nothing found.
-                                    </div>
-
-                                    <ComboboxOption
-                                        v-for="n in filteredCode"
-                                        :key="n.id"
-                                        :value="n"
-                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                        v-slot="{ selected }"
-                                    >
-                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                            {{ n.trncode }}
-                                        </span>
-                                        <span
-                                            v-if="selected"
-                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                        >
-                                            <CheckIcon class="h-5 w-5" />
-                                        </span>
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-                    </div>
-                    <div class="grid gap-2">
-                        <Combobox v-model="selecteBranch">
-                            <div class="relative">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select Branch"
-                                    @input="queryBranch = $event.target.value"
-                                    :display-value="(c) => (c ? c.branchname : '')"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                >
-                                    <div
-                                        v-if="filteredBranch.length === 0 && queryBranch !== ''"
-                                        class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                    >
-                                        Nothing found.
-                                    </div>
-                                    <ComboboxOption
-                                        v-for="branch in filteredBranch"
-                                        :key="branch.id"
-                                        :value="branch"
-                                        class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                    >
-                                        {{ branch.branchname }}
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-                    </div>
-                    <div class="grid gap-2">
+                    <!-- <div class="grid gap-2">
                         <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
                     </div>
                     <div class="grid gap-2">
                         <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="rounded-md border">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Transaction Type</TableHead>
+                                <TableHead>Transaction Name</TableHead>
                                 <TableHead>Transaction Code</TableHead>
-                                <TableHead>Branch Name</TableHead>
-                                <TableHead>Year</TableHead>
-                                <TableHead>Month</TableHead>
                                 <TableHead>Lastnumber</TableHead>
                                 <TableHead>Increment</TableHead>
                                 <TableHead>Added By</TableHead>
@@ -389,11 +206,8 @@ const goToPage = (url: string | null) => {
                         </TableHeader>
                         <TableBody>
                             <TableRow v-for="(trn, index) in data.data" :key="trn.id ?? index">
-                                <TableCell>{{ trn.transactionname.name }}</TableCell>
+                                <TableCell>{{ trn.name }}</TableCell>
                                 <TableCell>{{ trn.trncode }}</TableCell>
-                                <TableCell>{{ trn.branch.branchname }}</TableCell>
-                                <TableCell>20{{ trn.yearname }}</TableCell>
-                                <TableCell>{{ getMonthName(trn.monthname) }}</TableCell>
                                 <TableCell>{{ trn.lastnumber }}</TableCell>
                                 <TableCell>{{ trn.increment }}</TableCell>
                                 <TableCell>{{ trn.user.name }}</TableCell>
@@ -447,125 +261,29 @@ const goToPage = (url: string | null) => {
                     <div class="grid grid-cols-1 gap-6 py-4 md:grid-cols-2">
                         <!-- Transaction Name -->
                         <div class="grid gap-2">
-                            <Label for="trntype" class="font-medium">Transaction Name</Label>
-                            <Combobox v-model="selecteName">
-                                <div class="relative">
-                                    <ComboboxInput
-                                        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select Name"
-                                        @input="queryName = $event.target.value"
-                                        :display-value="(c) => (c ? c.name : '')"
-                                    />
-                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                    </ComboboxButton>
-                                    <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                    >
-                                        <div
-                                            v-if="filteredName.length === 0 && queryName !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
-                                            Nothing found.
-                                        </div>
-                                        <ComboboxOption
-                                            v-for="name in filteredName"
-                                            :key="name.id"
-                                            :value="name"
-                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                        >
-                                            {{ name.name }}
-                                        </ComboboxOption>
-                                    </ComboboxOptions>
-                                </div>
-                            </Combobox>
-                            <p v-if="form.errors.trnname_id" class="text-sm text-red-600">
-                                {{ form.errors.trnname_id }}
-                            </p>
-                        </div>
-
-                        <!-- Branch Name -->
-                        <div class="grid gap-2">
-                            <Label for="trncode" class="font-medium">Branch Name</Label>
-                            <Combobox v-model="selecteBranch">
-                                <div class="relative">
-                                    <ComboboxInput
-                                        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select Branch"
-                                        @input="queryBranch = $event.target.value"
-                                        :display-value="(c) => (c ? c.branchname : '')"
-                                    />
-                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                    </ComboboxButton>
-                                    <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                    >
-                                        <div
-                                            v-if="filteredBranch.length === 0 && queryBranch !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
-                                            Nothing found.
-                                        </div>
-                                        <ComboboxOption
-                                            v-for="branch in filteredBranch"
-                                            :key="branch.id"
-                                            :value="branch"
-                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                        >
-                                            {{ branch.branchname }}
-                                        </ComboboxOption>
-                                    </ComboboxOptions>
-                                </div>
-                            </Combobox>
-                            <p v-if="form.errors.branch_id" class="text-sm text-red-600">
-                                {{ form.errors.branch_id }}
-                            </p>
-                        </div>
-
-                        <!-- Transaction Year -->
-                        <div class="grid gap-2">
-                            <Label for="yearname" class="font-medium">Transaction Year</Label>
-                            <Select v-model="form.yearname">
+                            <Label for="name" class="font-medium">Transaction Name</Label>
+                            <Select v-model="form.name">
                                 <SelectTrigger class="w-full">
-                                    <SelectValue placeholder="Select Year" />
+                                    <SelectValue placeholder="Select Name" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="year in props.years" :key="year.id" :value="year.id">
-                                            {{ year.name }}
-                                        </SelectItem>
+                                        <SelectItem value="Student ID">Student ID</SelectItem>
+                                        <SelectItem value="Money Received">Money Received</SelectItem>
+                                        <SelectItem value="Quoatations No">Quoatations No</SelectItem>
+                                        <SelectItem value="Invoice No">Invoice No</SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
-                            <p v-if="form.errors.yearname" class="text-sm text-red-600">
-                                {{ form.errors.yearname }}
+                            <p v-if="form.errors.name" class="text-sm text-red-600">
+                                {{ form.errors.name }}
                             </p>
                         </div>
 
-                        <!-- Transaction Month -->
-                        <div class="grid gap-2">
-                            <Label for="monthname" class="font-medium">Transaction Month</Label>
-                            <Select v-model="form.monthname">
-                                <SelectTrigger class="w-full">
-                                    <SelectValue placeholder="Select Month" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem v-for="month in props.months" :key="month.id" :value="month.id">
-                                            {{ month.name }}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <p v-if="form.errors.monthname" class="text-sm text-red-600">
-                                {{ form.errors.monthname }}
-                            </p>
-                        </div>
                         <!-- Transaction Code -->
                         <div class="grid gap-2">
                             <Label for="trncode" class="font-medium">Transaction Code</Label>
-                            <Input id="trncode" v-model="form.trncode" class="w-full" :disabled="!isCodeReady" autofocus />
+                            <Input id="trncode" v-model="form.trncode" class="w-full" readonly autofocus />
                             <p v-if="form.errors.trncode" class="text-sm text-red-600">
                                 {{ form.errors.trncode }}
                             </p>

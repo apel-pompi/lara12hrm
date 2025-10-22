@@ -151,6 +151,10 @@ Route::middleware(['verified', 'auth'])->group(function () {
         ->group(
             function () {
                 Route::get('/', 'index')->name('studentQuotations.index');
+                Route::post('/general', 'generalStore')->name('studentQuotations.generalStore');
+                Route::put('/{confirm}/generalconfirm', 'confirmGeneral')->name('studentQuotations.confirmGeneral');
+                Route::post('/{confirm}/generalDelete', 'generalDelete')->name('studentQuotations.generalDelete');
+                Route::get('/{quoatation}/exportPdfGeneral', 'exportPdfGeneral')->name('studentQuotations.exportPdfGeneral');
             }
         );
     // Student Accounts
@@ -159,6 +163,11 @@ Route::middleware(['verified', 'auth'])->group(function () {
         ->group(
             function () {
                 Route::get('/', 'index')->name('studentAccounts.index');
+                Route::get('/{accounts}/create', 'create')->name('studentAccounts.create');
+                Route::post('/{accounts}/store', 'store')->name('studentAccounts.store');
+                Route::post('/{confirm}/onDelete', 'onDelete')->name('studentAccounts.onDelete');
+                Route::post('/{confirm}/onConfirm', 'onConfirm')->name('studentAccounts.onConfirm');
+                Route::get('/{confirm}/onReport', 'onReport')->name('studentAccounts.onReport');
             }
         );
     // Student Conversitations
