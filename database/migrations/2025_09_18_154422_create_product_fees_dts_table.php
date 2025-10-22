@@ -17,10 +17,10 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('fees_id')->constrained('fees')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->decimal('amount',20,3);
+            $table->decimal('amount',20,2);
             $table->integer('insqty');
             $table->string('pay_type')->nullable();
-            $table->decimal('totalamount',20,3);
+            $table->decimal('totalamount',20,2);
             $table->timestamps();
 
             $table->charset = 'utf8';

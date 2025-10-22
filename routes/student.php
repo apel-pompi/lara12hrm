@@ -151,10 +151,11 @@ Route::middleware(['verified', 'auth'])->group(function () {
         ->group(
             function () {
                 Route::get('/', 'index')->name('studentQuotations.index');
-                Route::post('/general', 'generalStore')->name('studentQuotations.generalStore');
-                Route::put('/{confirm}/generalconfirm', 'confirmGeneral')->name('studentQuotations.confirmGeneral');
-                Route::post('/{confirm}/generalDelete', 'generalDelete')->name('studentQuotations.generalDelete');
-                Route::get('/{quoatation}/exportPdfGeneral', 'exportPdfGeneral')->name('studentQuotations.exportPdfGeneral');
+                Route::get('/{product}', 'fetchData')->name('studentQuotations.fetchData');
+                Route::post('/general', 'store')->name('studentQuotations.store');
+                Route::put('/{product}/confirm', 'confirm')->name('studentQuotations.confirm');
+                Route::post('/{product}/destory', 'destory')->name('studentQuotations.destory');
+                Route::get('/{product}/{quoatation}/exportPdfGeneral', 'exportPdfGeneral')->name('studentQuotations.exportPdfGeneral');
             }
         );
     // Student Accounts

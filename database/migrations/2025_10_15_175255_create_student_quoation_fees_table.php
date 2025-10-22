@@ -13,13 +13,9 @@ return new class extends Migration
     {
         Schema::create('student_quoation_fees', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained('students')
-                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('quotation_hd_id')->constrained('student_quotation_h_d_s')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('fee_id')->constrained('fees')
-                ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained('products')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->decimal('amount', 20, 3)->nullable();
             $table->foreignId('user_id')->constrained('users')

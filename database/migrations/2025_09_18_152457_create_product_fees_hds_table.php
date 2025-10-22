@@ -21,7 +21,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->decimal('netamount',20,3);
+            $table->decimal('netamount',20,2);
             $table->timestamps();
             
             $table->charset = 'utf8';

@@ -37,7 +37,7 @@ class StudentAccounts extends Controller
     public function create(Student $student, StudentQuotationHD $accounts)
     {
 
-
+        
         $details = StudentQuotationHD::with([
             'student.country',
             'deatils.service.product',
@@ -47,7 +47,7 @@ class StudentAccounts extends Controller
             ->where('id', $accounts->id)
             ->where('student_id', $student->id)
             ->first();
-
+        //dd($details);
         $services = [];
         foreach ($details->deatils as $d) {
             $productId = $d->service->product->id ?? null;
@@ -72,7 +72,7 @@ class StudentAccounts extends Controller
                 'fees' => $fees,
             ];
         }
-
+       
         return response()->json([
             'success' => true,
             'student' => [

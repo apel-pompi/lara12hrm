@@ -16,7 +16,9 @@ return new class extends Migration
             $table->string('quotation_no');
             $table->foreignId('student_id')->constrained('students')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->decimal('sumamount', 20, 3)->nullable();
+            $table->foreignId('product_id')->constrained('products')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->decimal('totalamount', 20, 3)->nullable();
             $table->string('notes')->nullable();
             $table->tinyInteger('status')->default(0);
             $table->date('adddate');

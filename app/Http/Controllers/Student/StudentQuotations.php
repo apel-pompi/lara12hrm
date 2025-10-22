@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Default\Transaction;
 use App\Models\HRM\CompanyInfo;
+use App\Models\Product\Product;
 use App\Models\Student\Student;
 use App\Models\Student\StudentActivities;
 use App\Models\Student\StudentInService;
@@ -30,8 +31,50 @@ class StudentQuotations extends Controller
         $student->load('assainuser');
         return Inertia::render('allpages/Agency/Student/quoatation', [
             'student' => $student,
-            'studentService' => StudentInService::with(['workflow', 'partnerBranch.partner', 'product', 'productfees.details.fees'])->where('student_id', $student->id)->get(),
-            'studentquoatation' => StudentQuotationHD::with(['deatils', 'user'])->where('student_id', $student->id)->get()
+
+            'service' => DB::table('student_in_services as a')
+                ->leftJoin('workflows as b', 'a.workflow_id', '=', 'b.id')
+                ->leftJoin('partner_branches as c', 'a.partner_branch_id', '=', 'c.id')
+                ->leftJoin('partners as d', 'c.partner_id', '=', 'd.id')
+                ->leftJoin('product_fees_hds as e', 'a.product_id', '=', 'e.product_id')
+                ->leftJoin('products as f', 'a.product_id', '=', 'f.id')
+                ->select(
+                    'a.id',
+                    'b.name as workflow',
+                    'd.name as partner',
+                    'c.branch_name as partnerbranch',
+                    'f.name as product',
+                    'a.product_id',
+                    'a.status',
+                    DB::raw('SUM(e.netamount) as amount')
+                )
+                ->where('a.student_id', $student->id)
+                ->groupBy('a.id', 'a.product_id', 'b.name', 'd.name', 'c.branch_name', 'f.name', 'a.status')
+                ->get(),
+            'quoatation' => StudentQuotationHD::where('student_id', $student->id)->get(),
+        ]);
+    }
+
+    public function fetchData($student, $product)
+    {
+        $fees = DB::table('student_in_services as a')
+            ->leftJoin('product_fees_hds as b', 'a.product_id', '=', 'b.product_id')
+            ->leftJoin('product_fees_dts as c', 'b.id', '=', 'c.fees_hd_id')
+            ->leftJoin('fees as d', 'c.fees_id', '=', 'd.id')
+            ->where('a.student_id', $student)
+            ->where('a.product_id', $product)
+            ->select(
+                'd.id as feesid',
+                'd.name as feename',
+                'c.amount',
+                'c.insqty',
+                'c.pay_type',
+                'c.totalamount'
+            )
+            ->get();
+        return response()->json([
+            'success' => true,
+            'fees' => $fees
         ]);
     }
 
@@ -48,27 +91,20 @@ class StudentQuotations extends Controller
         return $invoiceNo;
     }
 
-    public function generalStore(Student $student, Request $request)
+    public function store(Student $student, Request $request)
     {
 
         $this->authorize('StudQuoat.store');
 
         $QuaotNo = $this->GetInvoiceNO();
         if ($QuaotNo) {
-            $validated = $request->validate([
-                'service_ids' => 'required|array',
-                'service_ids.*' => 'exists:student_in_services,id',
-                'fees' => 'required|array',
-                'fees.*.id' => 'required|exists:fees,id',
-                'fees.*.amount' => 'required|numeric|min:0',
-                'fees.*.product_id' => 'required|exists:products,id',
-                'note' => 'nullable|string|max:500',
-            ]);
+
 
             $createHd = StudentQuotationHD::create([
                 'quotation_no' => $QuaotNo,
                 'student_id' => $student->id,
-                'sumamount' => $request->amount,
+                'product_id' => $request->product_id,
+                'totalamount' => $request->grandTotal,
                 'notes' => $request->note,
                 'status' => 0,
                 'adddate' => date('y-m-d'),
@@ -76,19 +112,16 @@ class StudentQuotations extends Controller
                 'active' => 0,
             ]);
             if ($createHd) {
-                foreach ($validated['service_ids'] as $serviceId) {
-                    StudentQuotation::create([
-                        'quotation_hd_id' => $createHd->id,
-                        'service_id' => $serviceId,
-                        'user_id' => auth()->id(),
-                    ]);
-                }
-                foreach ($validated['fees'] as $value) {
+                // StudentQuotation::create([
+                //     'quotation_hd_id' => $createHd->id,
+                //     'service_id' => $request->service_id,
+                //     'user_id' => auth()->id(),
+                // ]);
+                foreach ($request['fees'] as $value) {
                     StudentQuoationFee::create([
                         'student_id' => $student->id,
                         'quotation_hd_id' => $createHd->id,
-                        'fee_id' => $value['id'],
-                        'product_id' => $value['product_id'],
+                        'fee_id' => $value['feesid'],
                         'amount' => $value['amount'],
                         'user_id' => auth()->id()
                     ]);
@@ -116,74 +149,105 @@ class StudentQuotations extends Controller
         }
     }
 
-    public function confirmGeneral(Request $request, $confirm)
+    public function confirm(Student $student, Product $product, Request $request)
     {
-        
-        $this->authorize('StudQuoat.confirm');
-        $quotation = StudentQuotationHD::findOrFail($request->active);
 
-        $fees = StudentQuoationFee::with('productfee')
-            ->where('quotation_hd_id', $quotation->id)
-            ->get();
+        $chkamount = DB::table('student_quotation_h_d_s as a')
+            ->select(
+                'a.totalamount',
+                'a.quotation_no',
+                DB::raw('SUM(b.netamount) as amount')
+            )
+            ->leftJoin('product_fees_hds as b', 'a.product_id', '=', 'b.product_id')
+            ->where('a.student_id', $student->id)
+            ->where('a.product_id', $product->id)
+            ->where('a.id', $request->status)
+            ->groupBy('a.totalamount', 'a.quotation_no')
+            ->first();
+        if (!$chkamount) {
+            return back()->with([
+                'success' => false,
+                'message' => 'Quotation not found.'
+            ]);
+        }
 
-        $totalFeeAmount = $fees->sum('amount');
-        $productNetAmount = 0;
 
-        foreach ($fees as $fee) {
-            if ($fee->productfee) {
-                $productNetAmount = $fee->productfee->netamount;
-                break;
+        $total = $chkamount->totalamount;
+        $totalnet = $chkamount->amount;
+
+
+        if ($total == $totalnet) {
+            if (auth()->user()->can('StudQuoat.confirm')) {
+                // Log activity
+                StudentActivities::create([
+                    'student_id' => $student->id,
+                    'title' => "has approved student quotation's",
+                    'fristactivity' => null,
+                    'lastactivity' => null,
+                    'user_id' => Auth::id()
+                ]);
+
+                // Update quotation
+                DB::table('student_quotation_h_d_s')->where('id', $request->status)
+                    ->update(['active' => 1]);
+
+                return back()->with([
+                    'success' => true,
+                    'message' => 'Quotation confirmed successfully.'
+                ]);
+            } else {
+                abort(403, 'Unauthorized: You cannot confirm this quotation.');
             }
         }
-        StudentActivities::create([
-            'student_id' => $confirm,
-            'title' => "has confirmed student quotation's",
-            'fristactivity' => null,
-            'lastactivity' => null,
-            'user_id' => Auth::id()
-        ]);
+        // Case 2: total != totalnet
+        else {
+            if (auth()->user()->can('StudQuoat.approval')) {
+                // Log activity
+                StudentActivities::create([
+                    'student_id' => $student->id,
+                    'title' => "has approved quotation with amount mismatch",
+                    'fristactivity' => null,
+                    'lastactivity' => null,
+                    'user_id' => Auth::id()
+                ]);
 
-        // Amount check (floating point safe)
-        if ($totalFeeAmount == $productNetAmount) {
-            $this->authorize('StudQuoat.confirm');
-            $quotation->update(['active' => 1]);
-            return back()->with('success', 'Quotation confirmed successfully.');
-        } else {
-            // approval 
-            $this->authorize('StudQuoat.approval');
-            $quotation->update(['active' => 1]);
+                // Update quotation
+                DB::table('student_quotation_h_d_s')->where('id', $request->status)
+                    ->update(['active' => 1]);
 
-            return back()->with('success', 'Amount mismatch. Approval confirmed.');
+                return back()->with([
+                    'success' => true,
+                    'message' => 'Amount mismatch. Approval confirmed.'
+                ]);
+            } else {
+                abort(403, 'Unauthorized: You cannot approve this quotation.');
+            }
         }
     }
 
 
-    public function generalDelete(Request $request, $confirm)
+    public function destory(Student $student, Product $product, Request $request)
     {
         $this->authorize('StudQuoat.destroy');
-
-        $quotation = StudentQuotationHD::findOrFail($request->active);
-        StudentQuotation::where('quotation_hd_id', $quotation->id)->delete();
-
+        DB::table('student_quotation_h_d_s')->where('id', $request->status)
+            ->update(['active' => 2]);
         StudentActivities::create([
-            'student_id' => $confirm,
-            'title' => "has deleted student quotation's",
+            'student_id' => $student->id,
+            'title' => "has cancel student quotation's",
             'fristactivity' => null,
             'lastactivity' => null,
             'user_id' => Auth::id()
         ]);
 
-        $quotation->delete();
-
         return back()->with([
             'success' => true,
-            'message' => 'Quotation deleted successfully.',
+            'message' => 'Quotation cancel successfully.',
         ]);
     }
 
 
     // PDF Export
-    public function exportPdfGeneral(Student $student, StudentQuotationHD $quoatation)
+    public function exportPdfGeneral(Student $student, Product $product, StudentQuotationHD $quoatation)
     {
         $this->authorize('StudQuoat.report');
 
@@ -197,25 +261,46 @@ class StudentQuotations extends Controller
 
         $student->load('country');
         $company = CompanyInfo::firstOrFail();
-        $quatHd = StudentQuotationHD::with(['deatils', 'user'])->where('quotation_no', $quoatation->quotation_no)->get();
-        $feesDetails = StudentQuotationHD::with(['deatils.service.product', 'deatils.service.partnerBranch.partner'])->where('id', $quoatation->id)->where('student_id', $student->id)->get();
-
-        $feename = DB::table('student_quoation_fees', 'a')
-            ->select('fees.name', 'a.amount', 'product_fees_dts.pay_type')
-            ->leftJoin('fees', 'a.fee_id', '=', 'fees.id')
-            ->leftJoin('product_fees_dts', 'a.product_id', '=', 'product_fees_dts.id')
-            ->where('a.quotation_hd_id', $quoatation->id)
+        $service = DB::table('student_in_services as a')
+            ->leftJoin('workflows as b', 'a.workflow_id', '=', 'b.id')
+            ->leftJoin('partner_branches as c', 'a.partner_branch_id', '=', 'c.id')
+            ->leftJoin('partners as d', 'c.partner_id', '=', 'd.id')
+            ->leftJoin('products as f', 'a.product_id', '=', 'f.id')
+            ->select(
+                'b.name as workflow',
+                'd.name as partner',
+                'c.branch_name as partnerbranch',
+                'f.name as product'
+            )
             ->where('a.student_id', $student->id)
+            ->where('a.product_id', $product->id)
+            ->first();
+        $fees = DB::table('student_quotation_h_d_s as a')
+            ->leftJoin('student_quoation_fees as b', 'a.id', '=', 'b.quotation_hd_id')
+            ->leftJoin('fees as c', 'b.fee_id', '=', 'c.id')
+            ->leftJoin('product_fees_hds as d', 'a.product_id', '=', 'd.product_id')
+            ->leftJoin('product_fees_dts as e', 'd.id', '=', 'e.fees_hd_id')
+            ->select(
+                'c.name',
+                'b.amount as quoatamount',
+                'e.totalamount as pamount',
+                'e.pay_type'
+            )
+            ->where('a.id', $quoatation->id)
+            ->where('a.student_id', $student->id)
+            ->where('a.product_id', $product->id)
+            ->where('a.active', 1)
+            ->whereColumn('b.fee_id', '=', 'e.fees_id')
             ->get();
 
         $numberToWords = new NumberToWords();
         $numberTransformer = $numberToWords->getNumberTransformer('en');
         $pdf = Pdf::loadView('exports.studentQuatation', [
-            'quatHd' => $quatHd,
             'student' => $student,
+            'quatHd' => $quoatation,
             'company' => $company,
-            'feesDetails' => $feesDetails,
-            'feename' => $feename,
+            'service' => $service,
+            'fees' => $fees,
             'numberTransformer' => $numberTransformer
         ])
             ->setPaper('a4', 'portrait')

@@ -14,10 +14,8 @@ class StudentQuoationFee extends Model
     use HasFactory;
 
     protected $fillable = [
-        'student_id',
         'quotation_hd_id',
         'fee_id',
-        'product_id',
         'amount',
         'user_id',
     ];

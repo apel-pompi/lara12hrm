@@ -22,7 +22,8 @@ class Student extends Model
         'email',
         'phone',
         'contactpre',
-
+        'ename',
+        'ephone',
         'preaddcountry',
         'preaddstate',
         'preaddcity',

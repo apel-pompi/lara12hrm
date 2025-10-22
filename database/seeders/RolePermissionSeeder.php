@@ -135,17 +135,6 @@ class RolePermissionSeeder extends Seeder
                     
                 ],
             ],
-            //Agency Genneral (Quoatations)
-            [
-                'group_name' => 'Quoatations',
-                'permissions' => [
-                    'quoatations.index',
-                    'quoatations.store',
-                    'quoatations.updateStatus',
-                    'quoatations.destroy',
-                    
-                ],
-            ],
             //Partner Branch
             [
                 'group_name' => 'Partner Branch',

@@ -8,7 +8,7 @@ use App\Models\Default\Transaction;
 use App\Models\Student\Student;
 use App\Models\Student\StudentInService;
 use App\Models\User;
-use App\Services\Agency\Student\StudentActivity;
+use App\Services\Agency\Student\StudentActivityService;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,14 +16,18 @@ use Inertia\Inertia;
 
 class StudentActivitiesController extends Controller
 {
-    public function index(Student $student, Request $request, StudentActivity $service)
+    public function index(Student $student, Request $request, StudentActivityService $service)
     {
         $student->load('assainuser');
         return Inertia::render('allpages/Agency/Student/activites', [
             'student' => $student,
             'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get(),
-            'activity' => $service->get($request->query()),
-            'filters'   => $service->get($request->query()),
+            //'activity' => $service->where('id', $student->id)->get($request->query()),
+            'activity' => $service->get(array_merge(
+                $request->query(),
+                ['id' => $student->id]
+            )),
+            'filters'   => $request->query(),
         ]);
     }
 

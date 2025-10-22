@@ -97,7 +97,8 @@ const showDailog = async (id: number) => {
         showDialogAdd.value = false;
     }else{
         form.quoat_id = id;
-        await fetchData();
+        const test = await fetchData();
+        console.log(test)
         showDialogAdd.value = true;
     }
     

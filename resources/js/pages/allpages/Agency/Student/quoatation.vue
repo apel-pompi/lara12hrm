@@ -1,102 +1,83 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Textarea from '@/components/ui/textarea/Textarea.vue';
 import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
-
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { FileText, Plus, ShieldCheck, Trash } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<{
     student: { id: number; status: string };
-    studentService: Array<{
-        id: number;
-        startdate: string;
-        enddate: string;
-        status: string;
-        workflow: { id: number; name: string } | null;
-        partnerBranch?: { id: number; partner?: { id?: number; name?: string } } | null;
-        product?: { id: number; name: string } | null;
-        productfees?: {
-            id: number;
-            name: string;
-            netamount: number;
-            details?: {
-                id?: number;
-                name?: string;
-                amount: string;
-                insqty: number;
-                pay_type: string;
-                totalamount: number;
-                fees: { id: number; name: string };
-            };
-        } | null;
-    }>;
-    studentquoatation: Array<{
-        id: number;
-        quoat_no: string;
-        amount: number;
-        discount: number;
-        netamount: number;
-        adddate: Date;
-        active: number;
-        student: { id: number; name: string } | null;
-        quoatation: { id: number; name: string };
-        user: { id: number; name: string };
-    }>;
+    service: { id:number;workflow: string; partner: string; partnerbranch: string; product: string; amount: string; status: string; product_id: number };
+    quoatation: { id: number; product_id: number; quotation_no: string; totalamount: string; notes: string; status: number; active: number };
 }>();
-
-console.log(props.studentquoatation)
-const showDialogAdd = ref(false);
 
 const form = useForm({
     student_id: props.student.id,
-    service_ids: [] as number[],
-    amount: '',
+    product_id: '',
+    service_id:'',
+    grandTotal: '',
     note: '',
     fees: [] as { id: number; amount: number }[],
 });
 
-// When opening dialog populate fees from all services
-const initFeesFromServices = () => {
-      form.fees = props.studentService.flatMap((s) =>
-        (s.productfees?.details || []).map((fee) => ({
-          id: fee.fees_id,
-          amount: Number(fee.totalamount ?? 0),
-          product_id: s.product?.id ?? null,
-        }))
-      );
-
-};
-
-
-// compute overall total (from form.fees)
-const totalNetAmount = computed(() => {
-    return form.fees.reduce((s, f) => s + Number(f.amount || 0), 0);
-});
-
-
-
-const showDailog = () => {
-    if (!props.studentService || props.studentService.length === 0) {
-        toast('error', {
-            description: 'Student Service not created. Please create service first.',
+const fees = ref<any[]>([]);
+const fetchData = async (id: number) => {
+    try {
+        const url = route('studentQuotations.fetchData', {
+            student: props.student.id,
+            product: id,
         });
-    } else {
-        initFeesFromServices();
-        showDialogAdd.value = true;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.success) {
+            fees.value = data.fees;
+            form.fee = data.fees.map((f: any) => ({
+                feesid: f.feesid,
+                amount: f.amount ?? 0,
+            }));
+        }
+    } catch (error) {
+        console.error('Error loading data:', error);
     }
 };
 
-const submitGeneral = () => {
-    const action = route('studentQuotations.generalStore', { student: props.student.id });
-    form.service_ids = props.studentService.map((s) => s.id);
+const showDialogAdd = ref(false);
 
-    form.amount = totalNetAmount.value;
+const showDailog = async (sid: number, id: number) => {
+    await fetchData(id);
+    form.product_id = id;
+    form.service_id = sid;
+    showDialogAdd.value = true;
+};
+
+const grandTotal = computed(() => {
+    return fees.value
+        .reduce((sum, f) => {
+            const amt = parseFloat(f.amount) || 0;
+            return sum + amt;
+        }, 0)
+        .toFixed(2);
+});
+
+const submitGeneral = () => {
+    form.fees = fees.value.map((f) => ({
+        feesid: f.feesid,
+        amount: f.amount,
+        insqty: f.insqty,
+        pay_type: f.pay_type,
+        totalamount: f.totalamount,
+    }));
+    form.grandTotal = grandTotal;
+    const action = route('studentQuotations.store', {
+        student: props.student.id,
+    });
+
     form.post(action, {
         onSuccess: () => {
             toast('Success', {
@@ -126,23 +107,24 @@ const submitGeneral = () => {
     });
 };
 
-const onDelete = async (quoatId: number) => {
-    const quoatation = props.studentquoatation.find((q) => q.id === quoatId);
-    if (!quoatation) return;
-
-    const newStatus = !Boolean(quoatation.active);
-
+const onDelete = async (quoatId: number, id:number) => {
     router.post(
-        route('studentQuotations.generalDelete', {
+        route('studentQuotations.destory', {
             student: props.student.id,
-            confirm: quoatation.id,
+            product: quoatId,
         }),
-        { active: quoatId },
+        {
+            status: id
+        },
         {
             preserveState: true,
             onSuccess: () => {
-                quoatation.active = newStatus ? 1 : 0;
-                toast.success('Quotation delete successfully');
+                const flash = usePage().props.flash;
+                if (flash.message) {
+                    toast('Success', {
+                        description: flash.message,
+                    });
+                }
             },
             onError: (errors) => {
                 const firstError = Object.values(errors)[0];
@@ -152,23 +134,24 @@ const onDelete = async (quoatId: number) => {
     );
 };
 
-const onConfirmGeneral = async (quoatId: number) => {
-    const quoatation = props.studentquoatation.find((q) => q.id === quoatId);
-    if (!quoatation) return;
-
-    const newStatus = !Boolean(quoatation.active);
-
+const onConfirm = async (quoatId: number, id:number) => {
     router.put(
-        route('studentQuotations.confirmGeneral', {
+        route('studentQuotations.confirm', {
             student: props.student.id,
-            confirm: quoatation.id,
+            product: quoatId,
         }),
-        { active: quoatId },
+        {
+            status: id
+        },
         {
             preserveState: true,
             onSuccess: () => {
-                quoatation.active = newStatus ? 1 : 0;
-                toast.success('Quotation confirmed successfully');
+                const flash = usePage().props.flash;
+                if (flash.message) {
+                    toast('Success', {
+                        description: flash.message,
+                    });
+                }
             },
             onError: (errors) => {
                 const firstError = Object.values(errors)[0];
@@ -178,16 +161,15 @@ const onConfirmGeneral = async (quoatId: number) => {
     );
 };
 
-const onReportGeneral = async (quoatId: number) => {
+const onReport = async (quoatId: number, id:number) => {
     const url = route('studentQuotations.exportPdfGeneral', {
         student: props.student.id,
-        quoatation: quoatId,
+        product: quoatId,
+        quoatation: id,
     });
 
     window.open(url, '_blank');
 };
-
-
 </script>
 
 <template>
@@ -196,59 +178,126 @@ const onReportGeneral = async (quoatId: number) => {
             <div class="flex items-center justify-end space-x-2 py-4">
                 <div class="flex-1 text-sm">Student Quoatations</div>
                 <div class="space-x-2">
-                    <Button size="sm" @click="showDailog"><Plus></Plus>Add</Button>
+                    
                 </div>
             </div>
-            <div class="flex items-start gap-3 rounded-xl">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Sl</TableHead>
-                            <TableHead>Quoatations No</TableHead>
-                            <TableHead>Net Amount</TableHead>
-                            <TableHead>Notes</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Added By</TableHead>
-                            <TableHead class="text-center">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(quoat, index) in props.studentquoatation" :key="quoat.id ?? index">
-                            <TableCell>{{ index + 1 }}</TableCell>
-                            <TableCell>{{ quoat.quotation_no }}</TableCell>
-                            <TableCell>{{ quoat.sumamount }}</TableCell>
-                            <TableCell>{{ quoat.notes }}</TableCell>
-                            <TableCell>{{ quoat.adddate }}</TableCell>
-                            <TableCell>{{ quoat.user.name }}</TableCell>
-                            <TableCell>
-                                <Button
-                                    v-if="quoat.active == 0"
-                                    class="m-[2px] cursor-pointer"
-                                    size="sm"
-                                    variant="outline"
-                                    @click="onDelete(quoat.id)"
-                                    ><Trash></Trash
-                                ></Button>
-                                <Button
-                                    v-if="quoat.active == 0"
-                                    class="m-[2px] cursor-pointer"
-                                    size="sm"
-                                    variant="outline"
-                                    @click="onConfirmGeneral(quoat.id)"
-                                    ><ShieldCheck></ShieldCheck
-                                ></Button>
-                                <Button
-                                    v-if="quoat.active == 1"
-                                    class="m-[2px] cursor-pointer"
-                                    size="sm"
-                                    variant="outline"
-                                    @click="onReportGeneral(quoat.id)"
-                                    ><FileText class="text-red-500"></FileText
-                                ></Button>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <!-- Services -->
+                <Card class="w-full border-green-300">
+                    <div class="overflow-x-auto text-sm">
+                        <h3 class="mb-2 ml-2 font-semibold">Service's</h3>
+                        <Table class="min-w-full">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Sl</TableHead>
+                                    <TableHead>Workflow</TableHead>
+                                    <TableHead>Partner</TableHead>
+                                    <TableHead>Product</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead class="text-center">Action</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                <TableRow v-for="(ser, index) in props.service" :key="index">
+                                    <TableCell>{{ index + 1 }}</TableCell>
+                                    <TableCell>{{ ser.workflow }}</TableCell>
+                                    <TableCell
+                                        >{{ ser.partner }}<br />
+                                        <span class="font-mono text-sm text-gray-400">{{ ser.partnerbranch }}</span>
+                                    </TableCell>
+                                    <TableCell>{{ ser.product }}</TableCell>
+                                    <TableCell>{{ ser.amount }}</TableCell>
+                                    <TableCell
+                                        ><span class="font-mono text-sm text-gray-400">{{ ser.status }}</span></TableCell
+                                    >
+                                    <TableCell class="text-center">
+                                        <Button class="m-[2px]" variant="outline" size="sm" @click="showDailog(ser.id,ser.product_id)">
+                                            <Plus />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </div>
+                </Card>
+                <!-- Quotations -->
+                <Card class="h-auto w-full border-green-300">
+                    <div class="overflow-x-auto text-sm">
+                        <h3 class="mb-2 ml-2 font-semibold">Quotations</h3>
+                        <Table class="min-w-full">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Sl</TableHead>
+                                    <TableHead>Quoatations No</TableHead>
+                                    <TableHead>Net Amount</TableHead>
+                                    <TableHead>Notes</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead class="text-center">Action</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                <TableRow v-for="(quoat, index) in props.quoatation" :key="index">
+                                    <TableCell>{{ index + 1 }}</TableCell>
+                                    <TableCell>{{ quoat.quotation_no }}</TableCell>
+                                    <TableCell>{{ quoat.totalamount }}</TableCell>
+                                    <TableCell>{{ quoat.notes }}</TableCell>
+                                    <TableCell>
+                                        <span v-if="quoat.active==0">Open</span>
+                                        <span v-if="quoat.active==1">Confirmed</span>
+                                        <span v-if="quoat.active==2">Cancel</span>
+                                    </TableCell>
+                                    <TableCell class="text-center">
+                                        <div v-if="quoat.active==0" class="flex justify-center gap-2">
+                                            <!-- Delete Button -->
+                                            <div class="group relative">
+                                                <Button @click="onDelete(quoat.product_id,quoat.id)" class="m-[2px] cursor-pointer" variant="outline" size="sm">
+                                                    <Trash />
+                                                </Button>
+                                                <span
+                                                    class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                                                >
+                                                    Cancel
+                                                </span>
+                                            </div>
+
+                                            <!-- Shield Button -->
+                                            <div class="group relative">
+                                                <Button
+                                                    @click="onConfirm(quoat.product_id,quoat.id)"
+                                                    class="m-[2px] cursor-pointer"
+                                                    variant="outline"
+                                                    size="sm"
+                                                >
+                                                    <ShieldCheck />
+                                                </Button>
+                                                <span
+                                                    class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                                                >
+                                                    Confirm
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div v-if="quoat.active==1" class="flex justify-center gap-2">
+                                            <!-- File Button -->
+                                            <div class="group relative">
+                                                <Button @click="onReport(quoat.product_id,quoat.id)" class="m-[2px] cursor-pointer" variant="outline" size="sm">
+                                                    <FileText class="text-red-500" />
+                                                </Button>
+                                                <span
+                                                    class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                                                >
+                                                    Report
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div v-else></div>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </div>
+                </Card>
             </div>
 
             <!-- Dialog General-->
@@ -269,31 +318,10 @@ const onReportGeneral = async (quoatId: number) => {
                     <!-- Form Body -->
                     <div class="max-h-80 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
                         <div
-                            v-for="(quoat, index) in props.studentService"
-                            :key="quoat?.id ?? index"
                             class="mb-4 grid grid-cols-1 gap-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-3 dark:border-gray-700 dark:bg-gray-900"
                         >
-                            <div>
-                                <span class="text-sm text-gray-500">Workflow:</span>
-                                <p class="font-medium text-gray-900 dark:text-gray-100">{{ quoat?.workflow?.name ?? '-' }}</p>
-                            </div>
-
-                            <div>
-                                <span class="text-sm text-gray-500 dark:text-gray-100">Partner:</span>
-                                <p class="font-medium text-gray-900 dark:text-gray-100">
-                                    {{ quoat?.partner_branch?.partner.name ?? '-' }}
-                                    <br />
-                                    <span class="text-sm text-gray-500 dark:text-gray-100">{{ quoat?.partner_branch?.branch_name ?? '-' }}</span>
-                                </p>
-                            </div>
-
-                            <div>
-                                <span class="text-sm text-gray-500">Product:</span>
-                                <p class="font-medium text-gray-900 dark:text-gray-100">{{ quoat?.product?.name ?? '-' }}</p>
-                            </div>
-
                             <!-- Product Fees Table -->
-                            <div v-if="quoat?.productfees" class="col-span-1 mt-3 overflow-x-auto md:col-span-3">
+                            <div class="col-span-1 mt-3 overflow-x-auto md:col-span-3">
                                 <div class="min-w-full overflow-x-auto">
                                     <table class="w-full border-collapse border border-gray-200 text-xs sm:text-sm dark:border-gray-700">
                                         <thead class="bg-gray-100 dark:bg-gray-800">
@@ -305,32 +333,26 @@ const onReportGeneral = async (quoatId: number) => {
                                         </thead>
                                         <tbody>
                                             <!-- Fee Details -->
-                                            <tr
-                                                v-for="fee in quoat.productfees.details"
-                                                :key="fee.id"
-                                                class="hover:bg-gray-50 dark:hover:bg-gray-700"
-                                            >
-                                                <td class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">{{ fee.fees?.name ?? '-' }}</td>
+                                            <tr v-for="(fee, index) in fees" :key="index" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                <td class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">{{ fee.feename }}</td>
                                                 <td class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">
                                                     <input
                                                         type="number"
                                                         class="w-full rounded-md border px-2 py-1 focus:ring focus:ring-blue-200"
-                                                        v-model.number="fee.amount"
+                                                        v-model="fee.amount"
                                                     />
                                                 </td>
                                                 <td class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">
                                                     <div class="flex flex-col gap-1">
-                                                        <span>Ins Qty: {{ fee.insqty ?? '-' }}</span>
-                                                        <span>Pay Type: {{ fee.pay_type ?? '-' }}</span>
-                                                        <span>Total: {{ fee.totalamount ?? '-' }}</span>
+                                                        <span>Ins Qty: {{ fee.insqty }}</span>
+                                                        <span>Pay Type: {{ fee.pay_type }}</span>
+                                                        <span>Total: {{ fee.totalamount }}</span>
                                                     </div>
                                                 </td>
                                             </tr>
                                             <tr class="bg-gray-50 font-medium dark:bg-gray-800">
                                                 <td class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">Grand Total</td>
-                                                <td class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">
-                                                    {{ quoat.productfees.netamount }}
-                                                </td>
+                                                <td class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">{{ grandTotal }}</td>
                                                 <td class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">—</td>
                                             </tr>
                                         </tbody>
@@ -348,12 +370,6 @@ const onReportGeneral = async (quoatId: number) => {
                                 class="focus:ring-opacity-50 rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                             />
                         </div>
-                    </div>
-                    <div class="mt-4 flex justify-end border-t border-gray-200 pt-3 dark:border-gray-700">
-                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-200"> Total Net Amount: </span>
-                        <span class="ml-2 text-sm font-bold text-indigo-600 dark:text-indigo-400">
-                            {{ totalNetAmount.toFixed(2) }}
-                        </span>
                     </div>
 
                     <!-- Footer -->

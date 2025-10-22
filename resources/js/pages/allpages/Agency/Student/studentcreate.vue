@@ -27,6 +27,8 @@ export interface Student {
     gender: number;
     email: string;
     phone: string;
+    ename:string;
+    ephone:string;
     contactpre: string;
     preaddcountry: number;
     preaddstate: number;
@@ -185,6 +187,8 @@ const form = useForm({
     gender: '',
     email: '',
     phone: '',
+    ename:'',
+    ephone:'',
     contactpre: '',
     preaddcountry: '',
     preaddstate: '',
@@ -304,7 +308,7 @@ const goToManageStudent = () => {
                                 <Input
                                     v-model="form.fname"
                                     type="text"
-                                    placeholder="enter first name"
+                                    placeholder="Enter first name"
                                     class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                                 />
                                 <span v-if="form.errors.fname" class="text-sm text-red-600">{{ form.errors.fname }}</span>
@@ -314,7 +318,7 @@ const goToManageStudent = () => {
                                 <Label class="block text-sm font-medium text-gray-700">Last Name <span class="text-red-500">*</span></Label>
                                 <Input
                                     v-model="form.lname"
-                                    placeholder="enter last name"
+                                    placeholder="Enter last name"
                                     type="text"
                                     class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                                 />
@@ -363,7 +367,7 @@ const goToManageStudent = () => {
                             <Label class="block text-sm font-medium text-gray-700">Email</Label>
                             <Input
                                 v-model="form.email"
-                                placeholder="enter email address"
+                                placeholder="Enter email address"
                                 type="email"
                                 class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                             />
@@ -374,7 +378,7 @@ const goToManageStudent = () => {
                             <Label class="block text-sm font-medium text-gray-700">Phone</Label>
                             <Input
                                 v-model="form.phone"
-                                placeholder="enter phone number"
+                                placeholder="Enter phone number"
                                 type="text"
                                 class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                             />
@@ -394,6 +398,33 @@ const goToManageStudent = () => {
                                 </div>
                             </RadioGroup>
                         </div>
+                    </div>
+                </section>
+                <section>
+                    <h2 class="text-md mb-4 border-b pb-2 font-semibold text-gray-700">Emergency contact Details</h2>
+                    <div class="flex flex-col gap-4 md:flex-row md:space-x-4">
+                        <!-- Email -->
+                        <div class="w-full md:w-1/3">
+                            <Label class="block text-sm font-medium text-gray-700">Name</Label>
+                            <Input
+                                v-model="form.ename"
+                                placeholder="Enter name"
+                                type="text"
+                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                            />
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="w-full md:w-1/3">
+                            <Label class="block text-sm font-medium text-gray-700">Phone</Label>
+                            <Input
+                                v-model="form.ephone"
+                                placeholder="Enter phone number"
+                                type="text"
+                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                            />
+                        </div>
+                        
                     </div>
                 </section>
                 <section>

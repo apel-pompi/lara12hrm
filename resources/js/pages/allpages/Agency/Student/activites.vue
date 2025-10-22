@@ -71,7 +71,7 @@ const goToPage = (url: string | null) => {
     <StudentLayout :student="props.student" :studentService="studentService">
         <div class="space-y-4">
             <!-- Single Activity -->
-            <div v-for="active in data.data" :key="active" class="flex items-start gap-3 rounded-xl bg-gray-50 p-4 shadow-sm">
+            <!-- <div v-for="active in data.data" :key="active" class="flex items-start gap-3 rounded-xl bg-gray-50 p-4 shadow-sm">
                 <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-500 font-semibold text-white">
                     <span
                         :class="[
@@ -87,10 +87,10 @@ const goToPage = (url: string | null) => {
                     <p class="text-sm">
                         <span class="font-semibold">{{ active.user.name }}</span>
                         <span class="ml-1 text-gray-600">{{ active.title }}</span>
-                    </p>
+                    </p> -->
                     <!-- <p class="mt-2 font-medium text-gray-800">BA/BSc in Economics</p>
                     <p class="text-sm text-gray-500">Acadia University</p> -->
-                </div>
+                <!-- </div>
 
                 <div class="text-xs text-gray-500">{{ formatDate(active.created_at) }}</div>
             </div>
@@ -109,7 +109,7 @@ const goToPage = (url: string | null) => {
                         <span v-html="link.label"></span>
                     </Button>
                 </div>
-            </div>
+            </div> -->
         </div>
     </StudentLayout>
 </template>

@@ -15,12 +15,13 @@ class StudentQuotationHD extends Model
     protected $fillable = [
         'quotation_no',
         'student_id',
-        'sumamount',
+        'product_id',
+        'totalamount',
         'notes',
         'status',
         'adddate',
         'user_id',
-        'active'
+        'active',
     ];
 
     /**

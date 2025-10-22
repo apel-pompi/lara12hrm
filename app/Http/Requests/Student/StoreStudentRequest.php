@@ -30,6 +30,8 @@ class StoreStudentRequest extends FormRequest
             'email'          => ['nullable', 'email', 'max:255'],
             'phone'          => ['nullable', 'string', 'max:20'],
             'contactpre'     => ['nullable', 'string', 'max:50'],
+            'ename'          => ['nullable', 'string', 'max:255'],
+            'ephone'          => ['nullable', 'string', 'max:255'],
 
             'preaddcountry'  => ['nullable', 'exists:countries,id'],
             'preaddstate'    => ['nullable', 'exists:states,id'],

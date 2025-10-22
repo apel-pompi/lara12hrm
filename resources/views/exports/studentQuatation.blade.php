@@ -135,17 +135,17 @@
             <!-- RIGHT -->
             <td style="width: 25%;">
                 <table cellpadding="3" cellspacing="0" width="100%" style="font-size: 12px;">
-                    @foreach ($quatHd as $item)
-                        <tr>
-                            <td><strong>SL:</strong> {{ $item->quotation_no }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Date:</strong> {{ $item->adddate }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>By:</strong> {{ $item->user->name }}</td>
-                        </tr>
-                    @endforeach
+
+                    <tr>
+                        <td><strong>SL:</strong> {{ $quatHd->quotation_no }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Date:</strong> {{ $quatHd->adddate }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>By:</strong> {{ $quatHd->user->name }}</td>
+                    </tr>
+
                 </table>
             </td>
         </tr>
@@ -176,21 +176,20 @@
     </table>
 
     <!-- Quotation Details -->
-    @foreach ($feesDetails as $value)
-        @foreach ($value->deatils as $item)
-            <div class="card">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <strong>Partner:</strong>
-                        {{ $item->service->partnerBranch->partner->name }}<br>
-                        <small>{{ $item->service->partnerBranch->branch_name }}</small>
-                    </div>
-                    <div>
-                        <strong>Product:</strong>
-                        {{ $item->service->product->name }}
-                    </div>
-                </div>
-        @endforeach
+
+    <div class="card">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <strong>Partner:</strong>
+                {{ $service->partner }}<br>
+                <small>{{ $service->partnerbranch }}</small>
+            </div>
+            <div>
+                <strong>Product:</strong>
+                {{ $service->product }}
+            </div>
+        </div>
+
 
         <table class="table mt-2">
             <thead>
@@ -206,15 +205,15 @@
                 @php
                     $totalAmount = 0;
                 @endphp
-                @foreach ($feename as $key)
+                @foreach ($fees as $key)
                     @php
-                        $totalAmount += $key->amount;
+                        $totalAmount += $key->quoatamount;
                     @endphp
                     <tr>
                         <td>{{ $key->name }}</td>
-                        <td>{{ number_format($key->amount, 2) }}</td>
+                        <td>{{ number_format($key->quoatamount, 2) }}</td>
                         <td>
-                            @if ($key->pay_type == 'Payable')
+                            @if ($key->pay_type == 'Income')
                                 Non Refundable
                             @else
                                 Refundable
@@ -232,16 +231,16 @@
             </tbody>
         </table>
 
-        </div>
-    @endforeach
+    </div>
+
     <p>in word: {{ $numberTransformer->toWords($totalAmount ?? 0) }} only</p>
     <!-- Note -->
     <div class="note">
         <strong>Note:</strong>
-        @foreach ($quatHd as $item)
-            {{ $item->notes }}
-        @endforeach
-    </div>
+
+            {{ $quatHd->notes }}
+
+    </div> 
     <!-- ======= Footer Section ======= -->
     <footer
         style="

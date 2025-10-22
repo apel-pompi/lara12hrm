@@ -8,7 +8,6 @@ use App\Http\Controllers\AgencySetting\{
     WorkflowController,
     WDocumentCheckController,
     WDocumentTypeController,
-    QuoatationsController,
 };
 use Illuminate\Support\Facades\Route;
 
@@ -118,21 +117,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
                 Route::put('/{academic}', 'update')->name('academic.update');
             }
         );
-    //quoatations purpose Route
-    
-    Route::controller(QuoatationsController::class)
-        ->prefix('quoatations')
-        ->group(
-            function () {
-                Route::get('/', 'index')->name('quoatations.index');
-                Route::post('/store', 'store')->name('quoatations.store');
-                Route::put('/{quoatations}/status', 'updateStatus')->name('quoatations.updateStatus');
-                Route::get('/{quoatations}', 'show')->name('quoatations.show');
-                Route::delete('/show/{quoatations}', 'destroy')->name('quoatations.destroy');
-                Route::get('/{quoatations}/edit', 'edit')->name('quoatations.edit');
-                Route::put('/{quoatations}', 'update')->name('quoatations.update');
-            }
-        );
+
 });
 
 
