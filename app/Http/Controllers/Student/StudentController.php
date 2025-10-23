@@ -81,6 +81,8 @@ class StudentController extends Controller
             'gender'          => $validated['gender'] ?? null,
             'email'           => $validated['email'] ?? null,
             'phone'           => $validated['phone'] ?? null,
+            'ename'           => $validated['ename'] ?? null,
+            'ephone'           => $validated['ephone'] ?? null,
             'contactpre'      => $validated['contactpre'] ?? null,
 
             // Address Info

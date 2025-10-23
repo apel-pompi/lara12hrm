@@ -3,12 +3,12 @@
         "data": [
             {
                 
-                "companyname": "Test Company",
-                "address_one": "KA-61/6",
-                "address_two": "Baridhara, Dhaka 1212",
-                "company_phone": "09638 500 600",
-                "company_email": "info@test.com",
-                "companylogo": "1755409349logo_256_256.png",
+                "companyname": "Glendon Edu",
+                "address_one": "handiwala Mansion, Level-3, House-32, Road-11",
+                "address_two": "Block-G, Banani, Dhaka 1213",
+                "company_phone": "9658 111 222",
+                "company_email": "info@glendonedu.com",
+                "companylogo": "1761051790glendonlogo.jpg",
                 "created_at": "2018-07-20 20:11:03",
                 "updated_at": "2021-08-01 14:37:27"
             }

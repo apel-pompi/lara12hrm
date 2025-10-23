@@ -112,11 +112,7 @@ class StudentQuotations extends Controller
                 'active' => 0,
             ]);
             if ($createHd) {
-                // StudentQuotation::create([
-                //     'quotation_hd_id' => $createHd->id,
-                //     'service_id' => $request->service_id,
-                //     'user_id' => auth()->id(),
-                // ]);
+               
                 foreach ($request['fees'] as $value) {
                     StudentQuoationFee::create([
                         'student_id' => $student->id,

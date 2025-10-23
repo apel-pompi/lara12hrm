@@ -16,16 +16,18 @@ const props = defineProps<{
         quotation_no: string;
         adddate: string;
         notes: string;
-        sumamount: number;
+        totalamount: number;
         user: { id: number; name: string };
     }[];
-    invoice: { id: number; insdate: string; insnumber: string; totalamt: string; status: string; netamount: string }[];
+    services: { workflow: string; partner: string; branch_name: string; product: string }[];
+    invoice: { id: number;insnumber:string;insdate:string;netamount:number;status:string; };
     application:{id:number;}
+
 }>();
 
 const form = useForm({
-    quoat_id: '',
-    studentId: '',
+    quot_id: '',
+    stuid: '',
     student_fname: '',
     student_lname: '',
     gender: '',
@@ -36,10 +38,15 @@ const form = useForm({
     q_adddate: '',
     q_user: '',
     services: [] as {
+        workflow: string;
         partner: string;
-        branch: string;
+        branch_name: string;
         product: string;
-        fees: { fee_name: string; amount: number }[];
+    }[],
+    fees:[] as {
+        fee_id:number;
+        feename:string;
+        amount:number;
     }[],
 });
 
@@ -48,18 +55,18 @@ const feesForm = useForm({
 });
 const showDialogAdd = ref(false);
 
-const fetchData = async () => {
+const fetchData = async (id:number) => {
     try {
         const url = route('studentAccounts.create', {
             student: props.student.id,
-            accounts: form.quoat_id,
+            quotation: id,
         });
         const res = await fetch(url);
         const data = await res.json();
         const student = data.student ?? {};
         const quotation = data.quotation ?? {};
 
-        form.studentId = student.id ?? '';
+        form.stuid = student.id ?? '';
         form.student_fname = student.fname ?? '';
         form.student_lname = student.lname ?? '';
         form.gender = student.gender ?? '';
@@ -73,16 +80,16 @@ const fetchData = async () => {
 
         form.services =
             data.services?.map((s: any) => ({
+                workflow: s.workflow,
                 partner: s.partner,
-                branch: s.branch,
+                branch_name: s.branch_name,
                 product: s.product,
-                product_id: s.product_id,
-                fees:
-                    s.fees?.map((f: any) => ({
-                        fee_id: f.fee_id,
-                        fee_name: f.fee_name,
-                        amount: Number(f.amount ?? 0),
-                    })) ?? [],
+            })) ?? [];
+        form.fees =
+            data.fees?.map((s: any) => ({
+                fee_id:s.fee_id,
+                feename: s.feename,
+                amount: s.amount,
             })) ?? [];
     } catch (error) {
         console.error('Error loading data:', error);
@@ -90,27 +97,23 @@ const fetchData = async () => {
 };
 
 const showDailog = async (id: number) => {
-    if(props.application==null){
+    if (props.application == null) {
         toast('error', {
             description: 'Application not entry at first entry Application Process',
         });
         showDialogAdd.value = false;
-    }else{
-        form.quoat_id = id;
-        const test = await fetchData();
-        console.log(test)
+    } else {
+        form.quot_id = id;
+        await fetchData(id);
         showDialogAdd.value = true;
     }
-    
 };
 
 // Editable fee state
 const selectedFees = ref<
     Array<{
-        product_id: number;
-        product_name: string;
-        fee_id: number;
-        fee_name: string;
+        fee_id:number;
+        feename: string;
         amount: number;
     }>
 >([]);
@@ -120,20 +123,18 @@ const totalAfterDiscount = computed(() => {
     return total;
 });
 
-function editFee(fee: any, service: any) {
+function editFee(fee: any) {
     if (!fee.amount || Number(fee.amount) <= 0) {
         toast('error', {
             description: 'Invalid fee amount! Amount must be greater than 0.',
         });
         return;
     }
-    const exists = selectedFees.value.find((f) => f.fee_name === fee.fee_name && f.product_id === service.product_id);
+    const exists = selectedFees.value.find((f) => f.feename === fee.feename);
     if (!exists) {
         selectedFees.value.push({
-            product_id: service.product_id,
-            product_name: service.product,
-            fee_id: fee.fee_id,
-            fee_name: fee.fee_name,
+            fee_id:fee.fee_id,
+            feename: fee.feename,
             amount: fee.amount,
         });
     }
@@ -152,10 +153,9 @@ function deleteFeeRow(index: number) {
 }
 
 const submitInvoice = () => {
-    
     const action = route('studentAccounts.store', {
         student: props.student.id,
-        accounts: form.quoat_id,
+        quotation: form.quot_id,
     });
     feesForm.selectedFees = selectedFees.value;
     feesForm.post(action, {
@@ -243,7 +243,6 @@ const onConfirm = async (invId: number) => {
     );
 };
 
-
 const onReport = async (invId: number) => {
     const url = route('studentAccounts.onReport', {
         student: props.student.id,
@@ -272,19 +271,21 @@ const onReport = async (invId: number) => {
                                 <TableRow>
                                     <TableHead>Sl</TableHead>
                                     <TableHead>Quoatations No</TableHead>
-                                    <TableHead>Receivable Amount</TableHead>
+                                    <TableHead>Date</TableHead>
                                     <TableHead>Notes</TableHead>
+                                    <TableHead>By</TableHead>
                                     <TableHead class="text-center">Action</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                <TableRow v-for="(quoat, index) in props.quoatation" :key="quoat.id">
+                                <TableRow v-for="(qut, index) in props.quoatation" :key="qut.id">
                                     <TableCell>{{ index + 1 }}</TableCell>
-                                    <TableCell>{{ quoat.quotation_no }}</TableCell>
-                                    <TableCell>{{ quoat.sumamount }}</TableCell>
-                                    <TableCell>{{ quoat.notes }}</TableCell>
+                                    <TableCell>{{ qut.quotation_no }}</TableCell>
+                                    <TableCell>{{ qut.adddate }}</TableCell>
+                                    <TableCell>{{ qut.notes }}</TableCell>
+                                    <TableCell>{{ qut.user.name }}</TableCell>
                                     <TableCell class="text-center">
-                                        <Button class="m-[2px]" variant="outline" size="sm" @click="showDailog(quoat.id)"> <Plus /> Invoice </Button>
+                                        <Button class="m-[2px]" variant="outline" size="sm" @click="showDailog(qut.id)"> <Plus /> Invoice </Button>
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
@@ -346,7 +347,7 @@ const onReport = async (invId: number) => {
                                                 Approved
                                             </span>
                                         </div>
-                                        
+
                                         <div class="group relative inline-block">
                                             <Button
                                                 v-if="inv.status === 'Confirmed' || inv.status === 'Delivered'"
@@ -386,7 +387,7 @@ const onReport = async (invId: number) => {
                     <!-- Scrollable Content -->
                     <div class="flex-1 space-y-4 overflow-y-auto px-6 py-4">
                         <!-- Student & Quotation Info -->
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <!-- <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div class="space-y-1">
                                 <p><span class="font-medium text-gray-700 dark:text-gray-200">Student ID:</span> {{ form.studentId }}</p>
                                 <p>
@@ -406,22 +407,22 @@ const onReport = async (invId: number) => {
                                 <p><span class="font-medium text-gray-700 dark:text-gray-200">Quotation Date:</span> {{ form.q_adddate }}</p>
                                 <p><span class="font-medium text-gray-700 dark:text-gray-200">By:</span> {{ form.q_user }}</p>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Services List -->
                         <div class="space-y-4">
-                            <div
-                                v-for="(service, index) in form.services"
-                                :key="index"
-                                class="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
-                            >
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                                 <!-- Service Info -->
-                                <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div v-for="(service, index) in form.services" :key="index" class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                    <div>
+                                        <span class="text-sm text-gray-500 dark:text-gray-300">Workflow:</span>
+                                        <p class="font-medium text-gray-900 dark:text-gray-100">{{ service.workflow }}<br /></p>
+                                    </div>
                                     <div>
                                         <span class="text-sm text-gray-500 dark:text-gray-300">Partner:</span>
                                         <p class="font-medium text-gray-900 dark:text-gray-100">
                                             {{ service.partner }}<br />
-                                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ service.branch }}</span>
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ service.branch_name }}</span>
                                         </p>
                                     </div>
                                     <div>
@@ -443,18 +444,18 @@ const onReport = async (invId: number) => {
                                         </thead>
                                         <tbody>
                                             <tr
-                                                v-for="(fee, fIndex) in service.fees"
+                                                v-for="(fee, fIndex) in form.fees"
                                                 :key="fIndex"
                                                 class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-                                                @click="editFee(fee, service)"
+                                                @click="editFee(fee)"
                                             >
-                                                <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">{{ fee.fee_name }}</td>
+                                                <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">{{ fee.feename }}</td>
                                                 <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">{{ fee.amount }}</td>
                                             </tr>
                                             <tr class="bg-gray-200 font-medium dark:bg-gray-700">
                                                 <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">Grand Total</td>
                                                 <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">
-                                                    {{ service.fees.reduce((total, f) => total + Number(f.amount), 0) }}
+                                                    {{ form.fees.reduce((total, f) => total + Number(f.amount || 0), 0).toFixed(2) }}
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -471,16 +472,14 @@ const onReport = async (invId: number) => {
 
                             <div
                                 v-for="(fee, index) in selectedFees"
-                                :key="fee.fee_id + '-' + fee.product_id"
+                                :key="index"
                                 class="mb-3 flex flex-col gap-4 rounded border border-gray-200 bg-white p-3 shadow-sm md:flex-row md:items-center"
                             >
                                 <!-- Fee Details -->
                                 <div class="flex-1">
+                                    
                                     <p class="font-medium text-gray-700">
-                                        Product: <span class="font-normal">{{ fee.product_name }}</span>
-                                    </p>
-                                    <p class="font-medium text-gray-700">
-                                        Fee Name: <span class="font-normal">{{ fee.fee_name }}</span>
+                                        Fee Name: <span class="font-normal">{{ fee.feename }}</span>
                                     </p>
                                     <input
                                         type="number"

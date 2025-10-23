@@ -164,8 +164,8 @@ Route::middleware(['verified', 'auth'])->group(function () {
         ->group(
             function () {
                 Route::get('/', 'index')->name('studentAccounts.index');
-                Route::get('/{accounts}/create', 'create')->name('studentAccounts.create');
-                Route::post('/{accounts}/store', 'store')->name('studentAccounts.store');
+                Route::get('/{quotation}/create', 'create')->name('studentAccounts.create');
+                Route::post('/{quotation}/store', 'store')->name('studentAccounts.store');
                 Route::post('/{confirm}/onDelete', 'onDelete')->name('studentAccounts.onDelete');
                 Route::post('/{confirm}/onConfirm', 'onConfirm')->name('studentAccounts.onConfirm');
                 Route::get('/{confirm}/onReport', 'onReport')->name('studentAccounts.onReport');

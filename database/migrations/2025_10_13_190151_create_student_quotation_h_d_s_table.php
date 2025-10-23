@@ -18,7 +18,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('product_id')->constrained('products')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->decimal('totalamount', 20, 3)->nullable();
+            $table->decimal('totalamount', 20, 2)->nullable();
             $table->string('notes')->nullable();
             $table->tinyInteger('status')->default(0);
             $table->date('adddate');

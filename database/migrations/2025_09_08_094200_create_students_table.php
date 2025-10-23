@@ -20,6 +20,9 @@ return new class extends Migration
             $table->tinyInteger('gender')->nullable(); //0 man 1 woman 2 other's
             $table->string('email')->nullable(); //Email
             $table->string('phone')->nullable(); //Phone
+            $table->string('ename')->nullable(); //Phone
+            $table->string('ephone')->nullable(); //Phone
+
             $table->string('contactpre')->nullable(); //Contact Preference
             $table->foreignId('preaddcountry')->nullable()->constrained('countries')->nullable()
                 ->cascadeOnUpdate()->cascadeOnDelete(); //Permanent Address Country ID

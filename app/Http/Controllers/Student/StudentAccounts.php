@@ -16,6 +16,7 @@ use App\Models\Student\StudentActivities;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use NumberToWords\NumberToWords;
 use Inertia\Inertia;
 
@@ -25,71 +26,70 @@ class StudentAccounts extends Controller
 
     public function index(Student $student)
     {
+        $this->authorize('StudIns.index');
         $student->load('assainuser');
         return Inertia::render('allpages/Agency/Student/accouts', [
             'student' => $student,
             'quoatation' => StudentQuotationHD::with(['user'])->where('student_id', $student->id)->where('active', 1)->get(),
-            'invoice' => StudentInvoiceHD::with(['details'])->where('student_id', $student->id)->whereRaw("LEFT(insnumber, 4) = 'INV-'")->get(),
-            'application' => StudentApplication::where('student_id',$student->id)->first()
+            
+            'invoice' => StudentInvoiceHD::where('student_id', $student->id)->whereRaw("LEFT(insnumber, 4) = 'INV-'")->get(),
+            'application' => StudentApplication::where('student_id', $student->id)->first()
         ]);
     }
 
-    public function create(Student $student, StudentQuotationHD $accounts)
+    public function create(Student $student, StudentQuotationHD $quotation)
     {
+        $this->authorize('StudIns.create');
 
-        
-        $details = StudentQuotationHD::with([
-            'student.country',
-            'deatils.service.product',
-            'deatils.service.partnerBranch.partner',
-            'user'
-        ])
-            ->where('id', $accounts->id)
-            ->where('student_id', $student->id)
-            ->first();
-        //dd($details);
-        $services = [];
-        foreach ($details->deatils as $d) {
-            $productId = $d->service->product->id ?? null;
-            $fees = [];
+        $student->load('country');
+        $quotation->load('user');
+        $services = DB::table('student_applications as a')
+            ->select(
+                'd.name as workflow',
+                'c.name as partner',
+                'b.branch_name',
+                'e.name as product'
+            )
+            ->leftJoin('partner_branches as b', 'a.partner_branch_id', '=', 'b.id')
+            ->leftJoin('partners as c', 'b.partner_id', '=', 'c.id')
+            ->leftJoin('workflows as d', 'a.workflow_id', '=', 'd.id')
+            ->leftJoin('products as e', 'a.product_id', '=', 'e.id')
+            ->where('a.student_id', $student->id)
+            ->where('a.product_id', $quotation->product_id)
+            ->get();
+        $fees = DB::table('student_quotation_h_d_s as a')
+            ->select(
+                'b.fee_id',
+                'c.name as feename',
+                'b.amount'
+            )
+            ->leftJoin('student_quoation_fees as b', 'a.id', '=', 'b.quotation_hd_id')
+            ->leftJoin('fees as c', 'b.fee_id', '=', 'c.id')
+            ->where('a.active', 1)
+            ->where('a.student_id', $student->id)
+            ->where('a.product_id', $quotation->product_id)
+            ->where('a.id', $quotation->id)
+            ->get();
 
-            if ($productId) {
-                $fees = StudentQuotationHD::getFees($accounts->id, $productId)
-                    ->map(function ($item) {
-                        return [
-                            'fee_id' => $item->fee->id ?? '-',
-                            'fee_name' => $item->fee->name ?? '-',
-                            'amount' => $item->amount ?? 0,
-                        ];
-                    });
-            }
-
-            $services[] = [
-                'partner' => $d->service->partnerBranch->partner->name ?? '-',
-                'branch' => $d->service->partnerBranch->branch_name ?? '-',
-                'product' => $d->service->product->name ?? '-',
-                'product_id' => $d->service->product->id ?? '-',
-                'fees' => $fees,
-            ];
-        }
-       
         return response()->json([
             'success' => true,
             'student' => [
-                'id' => $details->student->id,
-                'fname' => $details->student->fname,
-                'lname' => $details->student->lname,
-                'gender' => $details->student->gender,
-                'email' => $details->student->email,
-                'phone' => $details->student->phone,
-                'descountry_id' => $details->student->country->name,
+                'stuid' => $student->id,
+                'fname' => $student->fname,
+                'lname' => $student->lname,
+                'gender' => $student->gender,
+                'email' => $student->email,
+                'phone' => $student->phone,
+                'descountry_id' => $student->country->name,
             ],
             'quotation' => [
-                'quotation_no' => $details->quotation_no,
-                'adddate' => $details->adddate,
-                'user' => $details->user->name ?? '-',
+                'quot_id' => $quotation->id,
+                'quotation_no' => $quotation->quotation_no,
+                'adddate' => $quotation->adddate,
+                'user' => $quotation->user->name ?? '-',
             ],
             'services' => $services,
+            'fees' => $fees,
         ]);
     }
 
@@ -97,7 +97,7 @@ class StudentAccounts extends Controller
     {
         $transaction = Transaction::where('name', 'Invoice No')
             ->where('active', 1)
-            ->first(['trncode','lastnumber']);
+            ->first(['trncode', 'lastnumber']);
         $currentCode = $transaction->lastnumber;
 
         $nextCode = $currentCode + 1;
@@ -107,9 +107,11 @@ class StudentAccounts extends Controller
     }
 
 
-    public function store(Student $student, StudentQuotationHD $accounts, Request $request)
+    public function store(Student $student, StudentQuotationHD $quotation, Request $request)
     {
-       
+
+        $this->authorize('StudIns.store');
+
         if (empty($request->selectedFees)) {
             return back()->with(['success' => false, 'message' => 'No fees selected']);
         }
@@ -132,11 +134,11 @@ class StudentAccounts extends Controller
             'note' => null,
             'totalamt' => array_sum(array_column($request->selectedFees, 'amount')),
             'disc_rate' => null,
-            'disc_amt' => $request->discount ?? 0,
+            'disc_amt' => null,
             'netamount' => $netamt,
             'sign' => '1',
             'status' => 'pending',
-            'refe_code' => $accounts->quotation_no,
+            'refe_code' => $quotation->quotation_no,
             'user_id' => auth()->id(),
         ]);
 
@@ -150,15 +152,12 @@ class StudentAccounts extends Controller
 
             StudentInvoiceDT::create([
                 'invoice_hd_id' => $invoiceHD->id,
-                'product_id' => $fee['product_id'],
                 'fees_id' => $fee['fee_id'],
                 'amount' => $fee['amount']
             ]);
 
-            $chkamount = StudentQuoationFee::where('student_id', $student->id)
-                ->where('quotation_hd_id', $accounts->id)
+            $chkamount = StudentQuoationFee::where('quotation_hd_id', $quotation->id)
                 ->where('fee_id', $fee['fee_id'])
-                ->where('product_id', $fee['product_id'])
                 ->first();
 
             if ($chkamount) {
@@ -181,13 +180,15 @@ class StudentAccounts extends Controller
 
     public function onDelete(Student $student, StudentInvoiceHD $confirm)
     {
+        
+        $this->authorize('StudIns.destroy');
 
         if (!$student || !$confirm) {
             return back()->with(['error' => true, 'message' => 'Invalid request']);
         }
 
-        $invoice = StudentInvoiceHD::find($confirm->id);
-
+        $invoice = StudentInvoiceHD::with(['details'])->find($confirm->id);
+        
         if (!$invoice) {
             return back()->with(['error' => true, 'message' => 'Invoice not found']);
         }
@@ -195,7 +196,8 @@ class StudentAccounts extends Controller
         if ($invoice->status !== 'pending') {
             return back()->with(['error' => true, 'message' => 'Only pending invoices can be cancelled']);
         }
-
+        $quatHD = StudentQuotationHD::where('quotation_no',$invoice->refe_code)->first(['id']);
+ 
         StudentActivities::create([
             'student_id' => $student->id,
             'title' => "has cancel student invoice's",
@@ -203,6 +205,22 @@ class StudentAccounts extends Controller
             'lastactivity' => null,
             'user_id' => Auth::id()
         ]);
+        foreach ($invoice->details as $key) {
+            $invamount = $key->amount;
+            $invoice_id = $key->invoice_hd_id;
+            $fees_id = $key->fees_id;
+
+            $updatequoat = StudentQuoationFee::where('quotation_hd_id', $quatHD->id)
+                ->where('fee_id', $fees_id)
+                ->first();
+            //dd($invamount,$invoice_id,$fees_id,$updatequoat);
+            if ($updatequoat) {
+                $quoat_amount = $updatequoat->amount;
+                $update_amount = $quoat_amount + $invamount;
+
+                $updatequoat->update(['amount' => $update_amount]);
+            }
+        }
 
         $invoice->update(['status' => 'Cancel']);
 
@@ -211,6 +229,8 @@ class StudentAccounts extends Controller
 
     public function onConfirm(Student $student, StudentInvoiceHD $confirm)
     {
+
+        $this->authorize('StudIns.confirm');
 
         if (!$student || !$confirm) {
             return back()->with(['error' => true, 'message' => 'Invalid request']);
@@ -239,12 +259,12 @@ class StudentAccounts extends Controller
         return back()->with(['success' => true, 'message' => 'Student Invoice confirmed successfully']);
     }
 
-    
+
 
     public function onReport(Student $student, StudentInvoiceHD $confirm)
     {
 
-        $this->authorize('StudQuoat.report');
+        $this->authorize('StudIns.report');
 
         StudentActivities::create([
             'student_id' => $student->id,
@@ -256,8 +276,17 @@ class StudentAccounts extends Controller
 
         $student->load('country');
         $company = CompanyInfo::firstOrFail();
-        $invoice = StudentInvoiceHD::with(['details.fee', 'user'])->where('insnumber', $confirm->insnumber)->first();
-        if (!$invoice) {
+        $invoiceHD = DB::table('student_invoice_hd as a')
+            ->select('a.insnumber', 'a.insdate', 'a.netamount', 'a.refe_code', 'name as username', 'a.payterms', 'a.chequeno', 'a.bankname', 'a.bankbranch', 'a.transno')
+            ->leftJoin('users as b', 'a.user_id', '=', 'b.id')
+            ->where('a.id', $confirm->id)
+            ->first();
+        $invoiceDt = DB::table('student_invoices_dt as a')
+            ->select('b.name', 'a.amount')
+            ->leftJoin('fees as b', 'a.fees_id', '=', 'b.id')
+            ->where('a.invoice_hd_id', $confirm->id)
+            ->get();
+        if (!$invoiceHD) {
             abort(404, 'Invoice not found');
         }
 
@@ -267,7 +296,8 @@ class StudentAccounts extends Controller
         $pdf = Pdf::loadView('exports.studentInvoice', [
             'student' => $student,
             'company' => $company,
-            'invoice' => $invoice,
+            'invoiceHD' => $invoiceHD,
+            'invoiceDt' => $invoiceDt,
             'numberTransformer' => $numberTransformer
         ])
             ->setPaper('a4', 'portrait')
@@ -278,6 +308,6 @@ class StudentAccounts extends Controller
                 'margin-left'   => 10,
             ]);;
 
-        return $pdf->stream("Invoice{$invoice->insnumber}.pdf");
+        return $pdf->stream("Invoice{$invoiceHD->insnumber}.pdf");
     }
 }

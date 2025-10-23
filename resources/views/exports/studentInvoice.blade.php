@@ -192,9 +192,9 @@
                         <strong>Student ID: </strong>{{ $student->student_id }}
                 </td>
                 <td style="text-align: right;">
-                    <strong>Invoice #:</strong> {{ $invoice->insnumber }}<br>
-                    <strong>Date:</strong> {{ $invoice->insdate }}<br>
-                    <strong>By:</strong> {{ $invoice->user->name }}
+                    <strong>Invoice #:</strong> {{ $invoiceHD->insnumber }}<br>
+                    <strong>Date:</strong> {{ $invoiceHD->insdate }}<br>
+                    <strong>By:</strong> {{ $invoiceHD->username}}
                 </td>
             </tr>
         </table>
@@ -209,10 +209,10 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($invoice->details ?? [] as $key => $item)
+                @foreach ($invoiceDt ?? [] as $key => $item)
                     <tr>
                         <td style="text-align:center">{{ $key + 1 }}</td>
-                        <td>{{ $item->fee->name ?? 'Service' }}</td>
+                        <td>{{ $item->name ?? 'Service' }}</td>
                         <td style="text-align: right">{{ number_format($item->amount ?? 0, 2) }}</td>
                     </tr>
                 @endforeach
@@ -221,34 +221,33 @@
 
         <!-- ===== TOTALS ===== -->
         <div class="totals">
-            <p><strong>Sub Total:</strong> {{ number_format($invoice->totalamt ?? 0, 2) }}</p>
-            <p><strong>Discount:</strong> {{ number_format($invoice->disc_amt ?? 0, 2) }}</p>
-            <p class="grand-total">Total: {{ number_format($invoice->netamount ?? 0, 2) }}</p>
-            <p>in word: {{ $numberTransformer->toWords($invoice->netamount ?? 0) }} only</p>
+            <p><strong>Sub Total:</strong> {{ number_format($invoiceHD->netamount ?? 0, 2) }}</p>
+            <p class="grand-total">Total: {{ number_format($invoiceHD->netamount ?? 0, 2) }}</p>
+            <p>in word: {{ $numberTransformer->toWords($invoiceHD->netamount ?? 0) }} only</p>
         </div>
         <p><strong>Payment Info:</strong></p>
-        @switch($invoice->payterms)
+        {{-- @switch($invoiceHD->payterms)
             @case('Bank')
                 <p>
-                    Bank Name: {{ $invoice->bankname }}<br>
-                    Branch Name: {{ $invoice->bankbranch }}
+                    Bank Name: {{ $invoiceHD->bankname }}<br>
+                    Branch Name: {{ $invoiceHD->bankbranch }}
                 </p>
             @break
 
             @case('Cheque')
                 <p>
-                    Bank Name: {{ $invoice->bankname }}<br>
-                    Cheque No: {{ $invoice->chequeno }}
+                    Bank Name: {{ $invoiceHD->bankname }}<br>
+                    Cheque No: {{ $invoiceHD->chequeno }}
                 </p>
             @break
 
             @case('Card')
-                <p>Transaction No: {{ $invoice->transactionNo }}</p>
+                <p>Transaction No: {{ $invoiceHD->transactionNo }}</p>
             @break
 
             @default
                 <p>Cash Received</p>
-        @endswitch
+        @endswitch --}}
 
         <!-- ===== FOOTER ===== -->
 

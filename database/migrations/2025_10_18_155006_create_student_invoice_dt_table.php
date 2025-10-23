@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('invoice_hd_id')->constrained('student_invoice_hd')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained('products')
-                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('fees_id')->constrained('fees')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->decimal('amount', 20, 2)->default(0);

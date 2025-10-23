@@ -17,7 +17,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('fee_id')->constrained('fees')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->decimal('amount', 20, 3)->nullable();
+            $table->decimal('amount', 20, 2)->nullable();
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();

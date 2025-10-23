@@ -436,6 +436,20 @@ class RolePermissionSeeder extends Seeder
                     
                 ],
             ],
+            //Student Accounts
+            [
+                'group_name' => 'Student Accounts',
+                'permissions' => [
+                    'StudIns.index',
+                    'StudIns.create',
+                    'StudIns.store',
+                    'StudIns.confirm',
+                    'StudIns.approval',
+                    'StudIns.destroy',
+                    'StudIns.report',
+                    
+                ],
+            ],
             //Partner 
             [
                 'group_name' => 'Partner',
