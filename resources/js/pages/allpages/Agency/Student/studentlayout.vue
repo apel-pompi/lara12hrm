@@ -2,19 +2,21 @@
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import Select from '@/components/ui/select/Select.vue';
-import SelectContent from '@/components/ui/select/SelectContent.vue';
-import SelectGroup from '@/components/ui/select/SelectGroup.vue';
-import SelectItem from '@/components/ui/select/SelectItem.vue';
-import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
-import SelectValue from '@/components/ui/select/SelectValue.vue';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type NavItem } from '@/types';
-import { Link, router, useForm } from '@inertiajs/vue3';
-import axios from 'axios';
 
-import { CornerDownLeft } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { getLocalTimeZone, today } from '@internationalized/date';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+import axios from 'axios';
+import { AlertCircle, CornerDownLeft, Phone, Save, Loader2 } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import StudentSidebar from './StudentSidebar.vue';
 
@@ -44,28 +46,12 @@ const lead = [
         href: route('studentQuotations.index', props.student.id),
     },
     {
-        title: 'Documents',
-        href: route('studentDocument.index', props.student.id),
-    },
-    {
         title: 'Appointements',
         href: route('studentAppointements.index', props.student.id),
     },
     {
-        title: 'Notes & Terms',
-        href: route('studentNotes.index', props.student.id),
-    },
-    {
         title: 'Conversations',
         href: route('studentConversations.index', props.student.id),
-    },
-    {
-        title: 'Tasks',
-        href: route('studentTasks.index', props.student.id),
-    },
-    {
-        title: 'Educations',
-        href: route('studentEducations.index', props.student.id),
     },
     {
         title: 'Check-in Logs',
@@ -91,18 +77,10 @@ const prospect = [
         href: route('studentQuotations.index', props.student.id),
     },
     {
-        title: 'Documents',
-        href: route('studentDocument.index', props.student.id),
-    },
-    {
         title: 'Appointements',
         href: route('studentAppointements.index', props.student.id),
     },
-    {
-        title: 'Notes & Terms',
-        href: route('studentNotes.index', props.student.id),
-    },
-    
+
     {
         title: 'Accounts',
         href: route('studentAccounts.index', props.student.id),
@@ -110,14 +88,6 @@ const prospect = [
     {
         title: 'Conversations',
         href: route('studentConversations.index', props.student.id),
-    },
-    {
-        title: 'Tasks',
-        href: route('studentTasks.index', props.student.id),
-    },
-    {
-        title: 'Educations',
-        href: route('studentEducations.index', props.student.id),
     },
     {
         title: 'Check-in Logs',
@@ -142,18 +112,10 @@ const onBoard = [
         href: route('studentQuotations.index', props.student.id),
     },
     {
-        title: 'Documents',
-        href: route('studentDocument.index', props.student.id),
-    },
-    {
         title: 'Appointements',
         href: route('studentAppointements.index', props.student.id),
     },
-    {
-        title: 'Notes & Terms',
-        href: route('studentNotes.index', props.student.id),
-    },
-    
+
     {
         title: 'Accounts',
         href: route('studentAccounts.index', props.student.id),
@@ -161,14 +123,6 @@ const onBoard = [
     {
         title: 'Conversations',
         href: route('studentConversations.index', props.student.id),
-    },
-    {
-        title: 'Tasks',
-        href: route('studentTasks.index', props.student.id),
-    },
-    {
-        title: 'Educations',
-        href: route('studentEducations.index', props.student.id),
     },
     {
         title: 'Check-in Logs',
@@ -190,16 +144,8 @@ const archive = [
         href: route('studentInService.index', props.student.id),
     },
     {
-        title: 'Documents',
-        href: route('studentDocument.index', props.student.id),
-    },
-    {
         title: 'Appointements',
         href: route('studentAppointements.index', props.student.id),
-    },
-    {
-        title: 'Notes & Terms',
-        href: route('studentNotes.index', props.student.id),
     },
     {
         title: 'Quoations',
@@ -212,10 +158,6 @@ const archive = [
     {
         title: 'Conversations',
         href: route('studentConversations.index', props.student.id),
-    },
-    {
-        title: 'Tasks',
-        href: route('studentTasks.index', props.student.id),
     },
     {
         title: 'Educations',
@@ -271,7 +213,7 @@ const updateRate = (status: number) => {
 };
 
 const updateArchive = (studentId: number, status: number) => {
-    if (!confirm(status === 4 ? 'Archive this student?' : 'Restore this student?')) return
+    if (!confirm(status === 4 ? 'Archive this student?' : 'Restore this student?')) return;
     router.put(
         route('studentActivities.updateArchive', props.student.id),
         {
@@ -286,7 +228,7 @@ const updateArchive = (studentId: number, status: number) => {
         },
     );
 };
-const form = useForm({
+const assaignform = useForm({
     user_id: '',
 });
 
@@ -304,14 +246,14 @@ const showDailogCreate = async () => {
 };
 
 const updateAssignee = () => {
-    form.post(route('studentActivities.updateAssignee', { student: props.student.id }), {
+    assaignform.post(route('studentActivities.updateAssignee', { student: props.student.id }), {
         onSuccess: () => {
             toast('Success', {
                 description: `User assignee successfully`,
             });
             setTimeout(() => {
                 showDialog.value = false;
-                form.reset();
+                assaignform.reset();
                 router.visit(route('studentActivities.index', [props.student.id]), {
                     preserveScroll: true,
                     preserveState: false,
@@ -327,29 +269,136 @@ const updateAssignee = () => {
         },
     });
 };
+
+export interface Student {
+    id: number;
+    student_id: string;
+    fname: string;
+    lname: string;
+    dateofbirth: string;
+    gender: number;
+    email: string;
+    phone: string;
+    ename: string;
+    ephone: string;
+}
+interface FormErrors {
+    fname?: string;
+    lname?: string;
+    dateofbirth: string;
+    gender: number;
+}
+const form = useForm({
+    student_id: '',
+    fname: '',
+    lname: '',
+    dateofbirth: '',
+    gender: '',
+    email: '',
+    phone: '',
+    ename: '',
+    ephone: '',
+    contactpre: '',
+});
+
+const dob = ref<string | null>(null);
+const maxDate = today(getLocalTimeZone());
+
+watch(dob, (newDate) => {
+    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
+        form.dateofbirth = newDate.toISOString().split('T')[0];
+    }
+});
+
+const errors = ref<FormErrors>();
+const editDialog = ref(false);
+
+const editDialogCreate = async () => {
+    await fetchStudent();
+    editDialog.value = true;
+};
+
+const fetchStudent = async () => {
+    try {
+        const url = route('student.edit', {
+            student: props.student.id,
+        });
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.success) {
+            form.fname = data.student.fname;
+            form.lname = data.student.lname;
+            form.gender = String(data.student.gender);
+            form.email = data.student.email;
+            form.phone = data.student.phone;
+            form.ename = data.student.ename;
+            form.ephone = data.student.ephone;
+            form.contactpre = data.student.contactpre;
+            if (data.student.dateofbirth) {
+                dob.value = new Date(data.student.dateofbirth);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading data:', error);
+    }
+};
+
+const updateStudent = () => {
+    form.put(
+        route('student.update', {
+            student: props.student.id,
+        }),
+        
+        {
+            preserveState: true,
+            onSuccess: () => {
+                const flash = usePage().props.flash;
+                if (flash.message) {
+                    toast('Success', {
+                        description: flash.message,
+                    });
+                }
+                editDialog.value = false;
+            },
+            onError: (errors) => {
+                const firstError = Object.values(errors)[0];
+                toast.error(firstError as string);
+            },
+        },
+    );
+};
+
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border bg-gray-100 px-4 md:min-h-min">
             <div class="flex items-center justify-end space-x-2 pt-1 pl-4">
-                <div class="flex-1 text-sm">
-                    <Heading title="Student Actvities" description="Manage your student activities and account settings" />
+                <div class="flex-1 text-sm dark:text-black">
+                    <Heading class="dark:text-black" title="Student Actvities" description="Manage your student activities and account settings" />
                 </div>
                 <div class="space-x-2">
-                    <Button variant="outline" size="sm" @click="goToStudent"><CornerDownLeft></CornerDownLeft> Back</Button>
+                    <Button class="dark:text-black" variant="outline" size="sm" @click="goToStudent"><CornerDownLeft></CornerDownLeft> Back</Button>
                 </div>
             </div>
             <div class="flex flex-col gap-6 pb-12 lg:flex-row">
                 <!-- LEFT SIDEBAR -->
-                <StudentSidebar :student="student" :getStatusText="getStatusText" :updateArchive="updateArchive" :updateRate="updateRate" :showDailogCreate="showDailogCreate" :studentService="studentService" />
+                <StudentSidebar
+                    :student="student"
+                    :getStatusText="getStatusText"
+                    :updateArchive="updateArchive"
+                    :updateRate="updateRate"
+                    :editStudent="editDialogCreate"
+                    :showDailogCreate="showDailogCreate"
+                    :studentService="studentService"
+                />
 
                 <!-- MAIN CONTENT -->
                 <main class="flex flex-1 flex-col gap-6">
                     <!-- Tabs -->
                     <nav class="text-md flex flex-wrap gap-4 border-b bg-white p-6 font-medium">
                         <div class="border-sidebar-border/70 dark:border-sidebar-border relative flex-1 border bg-gray-100 p-3">
-                            <Button v-for="item in sidebarNavItems" :key="item.href" variant="ghost" as-child>
+                            <Button class="mr-1 dark:bg-black" v-for="item in sidebarNavItems" :key="item.href" variant="ghost" as-child>
                                 <Link :href="item.href">
                                     {{ item.title }}
                                 </Link>
@@ -376,7 +425,7 @@ const updateAssignee = () => {
                     <!-- Select Document Type -->
                     <div class="grid gap-2">
                         <Label for="doctype">Select Assignee User</Label>
-                        <Select v-model="form.user_id">
+                        <Select v-model="assaignform.user_id">
                             <SelectTrigger class="w-full">
                                 <SelectValue placeholder="Select user" />
                             </SelectTrigger>
@@ -406,6 +455,213 @@ const updateAssignee = () => {
                         </template>
                         <template v-else>Save</template>
                     </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <Dialog v-model:open="editDialog">
+            <DialogContent class="max-h-[90vh] max-w-[900px] overflow-y-auto bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+                <!-- Header -->
+                <DialogHeader class="border-b border-gray-200 pb-4 dark:border-gray-700">
+                    <DialogTitle class="text-xl font-bold text-gray-900 dark:text-white">Student Information Update</DialogTitle>
+                    <DialogDescription class="text-gray-600 dark:text-gray-400"
+                        >Update student details and click save when you're done.</DialogDescription
+                    >
+                </DialogHeader>
+
+                <!-- Main Form Content -->
+                <div class="space-y-8 py-4">
+                    <!-- Personal Details -->
+                    <section class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                        <h2 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-white">
+                            <User class="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            Personal Details
+                        </h2>
+
+                        <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
+                            <!-- Personal Info Fields -->
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:col-span-3">
+                                <div class="space-y-2">
+                                    <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        First Name <span class="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        v-model="form.fname"
+                                        type="text"
+                                        placeholder="Enter first name"
+                                        class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
+                                    />
+                                    <span v-if="form.errors.fname" class="text-sm text-red-600 dark:text-red-400">{{ form.errors.fname }}</span>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Last Name <span class="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        v-model="form.lname"
+                                        placeholder="Enter last name"
+                                        type="text"
+                                        class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
+                                    />
+                                    <span v-if="form.errors.lname" class="text-sm text-red-600 dark:text-red-400">{{ form.errors.lname }}</span>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Date Of Birth <span class="text-red-500">*</span>
+                                    </Label>
+                                    <VueDatePicker
+                                        v-model="dob"
+                                        :max-date="maxDate"
+                                        :format="'yyyy-MM-dd'"
+                                        :enable-time-picker="false"
+                                        placeholder="Select date of birth"
+                                        auto-apply
+                                        class="w-full"
+                                        :dark="isDarkMode"
+                                    />
+                                    <span v-if="form.errors.dateofbirth" class="text-sm text-red-600 dark:text-red-400">{{
+                                        form.errors.dateofbirth
+                                    }}</span>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Gender <span class="text-red-500">*</span>
+                                    </Label>
+                                    <Select v-model="form.gender">
+                                        <SelectTrigger
+                                            class="w-full border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                        >
+                                            <SelectValue placeholder="Select Gender" />
+                                        </SelectTrigger>
+                                        <SelectContent class="border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
+                                            <SelectGroup>
+                                                <SelectItem value="1" class="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                                    >Male</SelectItem
+                                                >
+                                                <SelectItem value="2" class="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                                    >Female</SelectItem
+                                                >
+                                                <SelectItem value="3" class="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                                    >Other</SelectItem
+                                                >
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    <span v-if="form.errors.gender" class="text-sm text-red-600 dark:text-red-400">{{ form.errors.gender }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Contact Details -->
+                    <section class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                        <h2 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-white">
+                            <Phone class="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            Contact Details
+                        </h2>
+
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            <div class="space-y-2">
+                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</Label>
+                                <Input
+                                    v-model="form.email"
+                                    placeholder="Enter email address"
+                                    type="email"
+                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
+                                />
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Phone Number <span class="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    v-model="form.phone"
+                                    placeholder="Enter phone number"
+                                    type="text"
+                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
+                                />
+                                <span v-if="form.errors.phone" class="text-sm text-red-600 dark:text-red-400">{{ form.errors.phone }}</span>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Contact Preference</Label>
+                                <RadioGroup class="flex flex-col space-y-3" v-model="form.contactpre">
+                                    <div class="flex items-center space-x-2">
+                                        <RadioGroupItem value="0" id="contact-email" class="text-indigo-600 dark:text-indigo-400" />
+                                        <Label for="contact-email" class="text-sm text-gray-700 dark:text-gray-300">Email</Label>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <RadioGroupItem value="1" id="contact-phone" class="text-indigo-600 dark:text-indigo-400" />
+                                        <Label for="contact-phone" class="text-sm text-gray-700 dark:text-gray-300">Phone</Label>
+                                    </div>
+                                </RadioGroup>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Emergency Contact -->
+                    <section class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                        <h2 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-white">
+                            <AlertCircle class="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            Emergency Contact Details
+                        </h2>
+
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div class="space-y-2">
+                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Emergency Contact Name</Label>
+                                <Input
+                                    v-model="form.ename"
+                                    placeholder="Enter emergency contact name"
+                                    type="text"
+                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
+                                />
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Emergency Phone Number</Label>
+                                <Input
+                                    v-model="form.ephone"
+                                    placeholder="Enter emergency phone number"
+                                    type="text"
+                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
+                                />
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Footer -->
+                <DialogFooter class="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
+                    <div class="flex w-full flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <DialogClose as-child>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                class="w-full border-gray-300 text-gray-700 hover:bg-gray-50 sm:w-auto dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                Cancel
+                            </Button>
+                        </DialogClose>
+
+                        <Button
+                            :disabled="form.processing"
+                            @click="updateStudent"
+                            class="w-full bg-indigo-600 text-white hover:bg-indigo-700 sm:w-auto dark:bg-indigo-700 dark:hover:bg-indigo-600"
+                        >
+                            <template v-if="form.processing">
+                                <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+                                Saving Changes...
+                            </template>
+                            <template v-else>
+                                <Save class="mr-2 h-4 w-4" />
+                                Update
+                            </template>
+                        </Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

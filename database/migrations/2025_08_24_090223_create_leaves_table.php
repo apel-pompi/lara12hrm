@@ -25,7 +25,8 @@ return new class extends Migration
             $table->string('reason');
             $table->tinyInteger('status')->default(0);  // 0=Pending, 1=Approved, 2=Rejected
             $table->timestamps();
-
+            $table->softDeletes();
+            
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
 

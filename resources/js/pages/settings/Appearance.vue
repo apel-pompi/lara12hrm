@@ -22,7 +22,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
         <Layout>
             <div class="flex h-full flex-1 flex-col gap-6 rounded-xl bg-gray-50 p-6">
-                <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
+                <HeadingSmall class="dark:text-black" title="Appearance settings" description="Update your account's appearance settings" />
                 <Card class="border border-gray-200 shadow-sm">
                     <CardContent class="pt-4">
                         <AppearanceTabs />

@@ -193,7 +193,7 @@ const goToPage = (url: string | null) => {
                     <!-- Left actions -->
                     <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
                         <!-- Create Master Category -->
-                        <Button variant="outline" size="sm" @click="showDailogCreate" class="w-full sm:w-auto">
+                        <Button class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate" >
                             <Plus class="mr-2 h-4 w-4" /> Master Category
                         </Button>
 
@@ -249,10 +249,10 @@ const goToPage = (url: string | null) => {
 
                         <!-- Search + Refresh -->
                         <div class="flex gap-2">
-                            <Button variant="outline" size="sm" @click="search" class="w-full sm:w-auto">
+                            <Button class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="search">
                                 <Search class="mr-1 h-4 w-4" /> Search
                             </Button>
-                            <Button variant="outline" size="sm" @click="refresh" class="w-full sm:w-auto">
+                            <Button variant="outline" size="sm" @click="refresh" class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-600">
                                 <RefreshCcw class="mr-1 h-4 w-4" /> Refresh
                             </Button>
                         </div>
@@ -260,8 +260,8 @@ const goToPage = (url: string | null) => {
 
                     <!-- Right actions -->
                     <div class="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" @click="goToPartnerType"> <HousePlus class="mr-1 h-4 w-4" /> Partner Type </Button>
-                        <Button variant="outline" size="sm" @click="goToProductType"> <PackageSearch class="mr-1 h-4 w-4" /> Product Type </Button>
+                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToPartnerType"> <HousePlus class="mr-1 h-4 w-4" /> Partner Type </Button>
+                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToProductType"> <PackageSearch class="mr-1 h-4 w-4" /> Product Type </Button>
                     </div>
                 </div>
 

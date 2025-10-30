@@ -17,7 +17,7 @@ class InstallmentTypeSeeder extends Seeder
         $json = File::get(database_path('seeders/json/installment.json'));
         $feesArray = json_decode($json, true); 
         $fees = $feesArray[0]['data'];
-        $user = User::where('email', 'admin@admin.com')->first();
+        $user = User::where('email', 'hop@glendonedu.com')->first();
         foreach ($fees as $fee) {
             Installment::create([
                 'name' => $fee['name'],

@@ -1,0 +1,105 @@
+<script setup lang="ts">
+import { Button } from '@/components/ui/button';
+import Label from '@/components/ui/label/Label.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import HrReportLayout from '@/layouts/settings/hrreportLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
+import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
+import { Head, useForm } from '@inertiajs/vue3';
+import { FileText } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'HR Reports', href: '/hrreports' }];
+
+const props = defineProps<{
+    employee: { id: number; empname: string };
+}>();
+
+const selectedEmployee = ref<any>(null);
+const queryEmployee = ref('');
+const filteredEmployee = computed(() =>
+    queryEmployee.value ? props.employee.filter((c) => c.empname.toLowerCase().includes(queryEmployee.value.toLowerCase())) : props.employee,
+);
+
+const form = useForm({
+    emid: '',
+});
+
+const onReport = async () => {
+    
+    if (!selectedEmployee.value || !selectedEmployee.value.id) {
+        alert('Employee is not selected');
+        return;
+    }
+
+    form.emid = selectedEmployee.value.id;
+    const url = route('hrreports.EmpInfoReport', {
+        empid: form.emid,
+    });
+
+    window.open(url, '_blank');
+};
+</script>
+<template>
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <Head title="HR Reports" />
+        <HrReportLayout>
+            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+                <!-- Title -->
+                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Personal Info Reports</h2>
+
+                <!-- Input -->
+                <div class="space-y-2">
+                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Employee Name and click PDF button</Label>
+                    <!-- Combobox -->
+                    <Combobox v-model="selectedEmployee">
+                        <div class="relative">
+                            <ComboboxInput
+                                class="w-full rounded-lg border-gray-300 bg-white py-2 pr-10 pl-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Search Employee..."
+                                @input="queryEmployee = $event.target.value"
+                                :display-value="(c) => (c ? c.empname : '')"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white py-1 text-sm shadow-lg"
+                            >
+                                <div v-if="filteredEmployee.length === 0 && queryEmployee !== ''" class="px-4 py-2 text-gray-500">Nothing found.</div>
+                                <ComboboxOption
+                                    v-for="emp in filteredEmployee"
+                                    :key="emp.id"
+                                    :value="emp"
+                                    class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
+                                >
+                                    {{ emp.empname }}
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                </div>
+
+                <!-- Submit -->
+                <div class="flex justify-center">
+                    <div class="group relative">
+                        <Button
+                            @click="onReport"
+                            class="cursor-pointer rounded-full border-blue-300 text-blue-600 transition hover:bg-blue-50 hover:text-blue-700"
+                            variant="outline"
+                            size="sm"
+                        >
+                            <FileText class="text-red-500" />
+                        </Button>
+                        <span
+                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+                        >
+                            Report
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </HrReportLayout>
+    </AppLayout>
+</template>

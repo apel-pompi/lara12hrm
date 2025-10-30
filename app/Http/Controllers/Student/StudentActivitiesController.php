@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Default\Country;
 use App\Models\Student\StudentActivities;
 use App\Models\Default\Transaction;
 use App\Models\Student\Student;
@@ -19,15 +20,11 @@ class StudentActivitiesController extends Controller
     public function index(Student $student, Request $request, StudentActivityService $service)
     {
         $student->load('assainuser');
+        
         return Inertia::render('allpages/Agency/Student/activites', [
             'student' => $student,
             'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get(),
-            //'activity' => $service->where('id', $student->id)->get($request->query()),
-            'activity' => $service->get(array_merge(
-                $request->query(),
-                ['id' => $student->id]
-            )),
-            'filters'   => $request->query(),
+            'activity' => StudentActivities::with(['user'])->orderBy('id','DESC')->where('student_id', $student->id)->paginate(15),
         ]);
     }
 
@@ -85,6 +82,7 @@ class StudentActivitiesController extends Controller
 
     public function updateAssignee(Request $request, Student $student)
     {
+        
         $studentID = $this->GetStudentID();
 
         if ($studentID) {

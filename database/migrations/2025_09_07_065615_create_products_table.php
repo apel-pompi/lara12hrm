@@ -27,7 +27,8 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->tinyInteger('active')->default(0);
             $table->timestamps();
-
+            $table->softDeletes();
+            
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
            

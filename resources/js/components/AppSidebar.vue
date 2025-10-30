@@ -17,7 +17,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-import { Book, BookCopy, Calculator, CalendarX2, MessageCircleOff, MonitorX, School, Settings, SquareTerminal, User } from 'lucide-vue-next';
+import { Book, Calculator, CalendarX2, MessageCircleOff, School, Settings, User,ClipboardPlus } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
     collapsible: 'icon',
@@ -70,21 +70,19 @@ const data = {
     ],
 };
 
-const menuholiday = [
-    {
-        title: 'Holiday',
-        icon: CalendarX2,
-    },
-    
-];
 
-const menupersonal = [
+const mainmenu = [
+    
     {
+        route:'holidayHd.index',
+        title:'Holiday',
+        icon:CalendarX2
+    },
+    {
+        route:'personalinfo.index',
         title:'Personal Info',
         icon:User
-    }
-];
-const menuleave = [
+    },
     {
         route:'leave.index',
         title:'Leave Request',
@@ -100,11 +98,6 @@ const menuleave = [
         title: 'Partners',
         icon:School
     },
-    // {
-    //     route:'product.index',
-    //     title: 'Product',
-    //     icon:BookCopy
-    // },
     {
         route:'accounts.index',
         title: 'Accounts',
@@ -112,6 +105,22 @@ const menuleave = [
     }
 ];
 
+const reportdata = {
+    navReport: [
+        {
+            title: 'Reports',
+            url: '#',
+            icon: ClipboardPlus,
+            items: [
+                {
+                    title: 'HR Reports',
+                    href: '/hrreports',
+                },
+            ],
+        },
+        
+    ],
+};
 </script>
 
 <template>
@@ -134,27 +143,7 @@ const menuleave = [
                         <NavMain :items="data.navMain" />
                     </SidebarContent>
                     <SidebarMenu>
-                        <SidebarMenuItem v-for="item in menuholiday" :key="item.title">
-                            <SidebarMenuButton asChild>
-                                <Link :href="route('holidayHd.index')" class="ps-4">
-                                    <component :is="item.icon" />
-                                    <span>{{ item.title }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                    <SidebarMenu>
-                        <SidebarMenuItem v-for="item in menupersonal" :key="item.title">
-                            <SidebarMenuButton asChild>
-                                <Link :href="route('personalinfo.index')" class="ps-4">
-                                    <component :is="item.icon" />
-                                    <span>{{ item.title }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                    <SidebarMenu>
-                        <SidebarMenuItem v-for="item in menuleave" :key="item.title">
+                        <SidebarMenuItem v-for="item in mainmenu" :key="item.title">
                             <SidebarMenuButton asChild>
                                 <Link :href="route(item.route)" class="ps-4">
                                     <component :is="item.icon" />
@@ -163,6 +152,9 @@ const menuleave = [
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
+                    <SidebarContent>
+                        <NavMain :items="reportdata.navReport" />
+                    </SidebarContent>
                 </SidebarGroupContent>
             </SidebarGroup>
         </SidebarContent>

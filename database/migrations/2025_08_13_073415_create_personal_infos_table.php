@@ -35,6 +35,8 @@ return new class extends Migration
             $table->integer('active')->nullable();
             $table->timestamps();
 
+            $table->softDeletes();
+            
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });

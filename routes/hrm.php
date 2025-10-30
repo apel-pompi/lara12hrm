@@ -11,12 +11,12 @@ use App\Http\Controllers\HRM\{
     HolidayDtController,
     PersonalInfoController,
     LeaveController,
-    DeviceController
+    HRreportsController
 
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth'])->group(function () {
+Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
     //Company Inforamation Route
     Route::controller(CompanyInfoController::class)
         ->prefix('/companyinfo')
@@ -154,12 +154,18 @@ Route::middleware(['verified', 'auth'])->group(function () {
                 Route::put('/{leave}', 'update')->name('leave.update');
             }
         );
-    //Device Route
-    Route::controller(DeviceController::class)
-        ->prefix('device')
+    
+    //Reports
+    Route::controller(HRreportsController::class)
+        ->prefix('hrreports')
         ->group(
             function () {
-                Route::get('/', 'index')->name('device.index');
+                Route::get('/', 'index')->name('hrreports.index');
+                Route::get('/empreport', 'EmpInfoReport')->name('hrreports.EmpInfoReport');
+                Route::get('/DailyAttendance', 'DailyAttendance')->name('hrreports.DailyAttendance');
+                Route::get('/DailyAttendanceReport', 'DailyAttendanceReport')->name('hrreports.DailyAttendanceReport');
+                Route::get('/EmployeeAttendance', 'EmployeeAttendance')->name('hrreports.EmployeeAttendance');
+                Route::get('/EmployeeAttendanceReport', 'EmployeeAttendanceReport')->name('hrreports.EmployeeAttendanceReport');
             }
         );
 });

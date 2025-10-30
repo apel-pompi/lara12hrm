@@ -15,11 +15,11 @@ use App\Http\Controllers\Student\{
     StudentConversations,
     StudentTasks,
     StudentEducations,
-    StudentCheckin
+    StudentCheckLogController,
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth'])->group(function () {
+Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
 
     // Student Stage
     Route::controller(StudentStageController::class)
@@ -57,10 +57,15 @@ Route::middleware(['verified', 'auth'])->group(function () {
         ->group(
             function () {
                 Route::get('/', 'index')->name('student.index');
+                Route::get('/lead', 'lead')->name('student.lead');
+                Route::get('/prospect', 'prospect')->name('student.prospect');
+                Route::get('/onBoard', 'onBoard')->name('student.onBoard');
+                Route::get('/archive', 'archive')->name('student.archive');
                 Route::get('/create', 'create')->name('student.create');
                 Route::post('/store', 'store')->name('student.store');
                 Route::put('/{student}/status', 'updateStatus')->name('student.updateStatus');
-                Route::put('/{student}', 'update')->name('student.update');
+                Route::get('/{student}/edit', 'edit')->name('student.edit');
+                Route::put('/{student}/update', 'update')->name('student.update');
                 Route::delete('/show/{student}', 'destroy')->name('student.destroy');
             }
         );
@@ -135,6 +140,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
         ->group(
             function () {
                 Route::get('/', 'index')->name('studentAppointements.index');
+                Route::post('/store', 'store')->name('studentAppointements.store');
             }
         );
     // Student Notes
@@ -156,6 +162,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
                 Route::put('/{product}/confirm', 'confirm')->name('studentQuotations.confirm');
                 Route::post('/{product}/destory', 'destory')->name('studentQuotations.destory');
                 Route::get('/{product}/{quoatation}/exportPdfGeneral', 'exportPdfGeneral')->name('studentQuotations.exportPdfGeneral');
+                Route::get('/{product}/{quoatation}/exportPdfApproved', 'exportPdfApproved')->name('studentQuotations.exportPdfApproved');
             }
         );
     // Student Accounts
@@ -177,6 +184,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
         ->group(
             function () {
                 Route::get('/', 'index')->name('studentConversations.index');
+                Route::post('/store', 'store')->name('studentConversations.store');
             }
         );
     // Student Tasks
@@ -196,11 +204,13 @@ Route::middleware(['verified', 'auth'])->group(function () {
             }
         );
     // Student Check in Log
-    Route::controller(StudentCheckin::class)
+    Route::controller(StudentCheckLogController::class)
         ->prefix('student/activities/{student}/checkin')
         ->group(
             function () {
                 Route::get('/', 'index')->name('studentCheckin.index');
+                Route::post('/store', 'store')->name('studentCheckin.store');
+                Route::post('/checkOut', 'checkOut')->name('studentCheckin.checkOut');
             }
         );
 });

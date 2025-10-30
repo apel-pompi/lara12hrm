@@ -103,6 +103,7 @@ const calcNetTotal = () => {
 
 const submit = () => {
     form.country_id = selectedCountry.value.map((p) => p.id);
+   
     form.ins_id = selectedInsType.value ? selectedInsType.value.id : null;
     const rowsForSubmit = form.rows.map((r) => ({
         fees_id: r.fees?.id ?? null,
@@ -116,14 +117,11 @@ const submit = () => {
         rows: rowsForSubmit,
         netamount: rowsForSubmit.reduce((sum, r) => sum + r.totalfees, 0),
     }));
-
-    form.post(route('productActivities.storefess', props.product.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            toast('Success', {
-                description: `Product fees create successfully`,
-            });
-            setTimeout(() => {
+    if (isEditMode.value && form.id) {
+        form.put(route('productActivities.updatefees', [props.product.id, form.id]), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast('Updated Successfully', { description: `Product fees updated successfully` });
                 showDialog.value = false;
                 form.reset();
                 router.visit(route('productActivities.fees', props.product.id), {
@@ -131,13 +129,59 @@ const submit = () => {
                     preserveScroll: true,
                     preserveState: false,
                 });
-            }, 200);
-        },
-        onError: (errors) => {
-            const firstError = Object.values(errors)[0];
-            toast('Validation Error', { description: firstError });
-        },
-    });
+            },
+            onError: (errors) => {
+                const firstError = Object.values(errors)[0];
+                toast('Validation Error', { description: firstError });
+            },
+        });
+    } else {
+        form.post(route('productActivities.storefess', props.product.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast('Created Successfully', { description: `Product fees created successfully` });
+                showDialog.value = false;
+                form.reset();
+                router.visit(route('productActivities.fees', props.product.id), {
+                    only: ['products'],
+                    preserveScroll: true,
+                    preserveState: false,
+                });
+            },
+            onError: (errors) => {
+                const firstError = Object.values(errors)[0];
+                toast('Validation Error', { description: firstError });
+            },
+        });
+    }
+};
+
+const editDialog = (fee: any) => {
+    
+    isEditMode.value = true;
+    showDialog.value = true;
+    form.reset();
+    form.id = fee.id;
+    form.name = fee.name;
+    selectedCountry.value = Array.isArray(fee.country_names)
+        ? fee.country_names.map((name: string, index: number) => ({
+              id: fee.country_id,
+              name,
+          }))
+        : [{ id: fee.country_id, name: fee.country_names }];
+
+    selectedInsType.value = fee.installment ? fee.installment : null;
+
+    form.rows = fee.details.map((d: any) => ({
+        fees: d.fees,
+        query: '',
+        ins_amount: d.amount,
+        insqty: d.insqty,
+        pay_type: d.pay_type,
+        totalfees: d.totalamount,
+    }));
+
+    form.netamount = fee.netamount;
 };
 
 const deleteForm = useForm({});
@@ -183,7 +227,7 @@ const onDelete = async (id: number, productId: number) => {
                                 <p class="text-sm text-gray-500">Fee Breakdown</p>
                                 <div v-for="detailFees in fee.details" :key="detailFees" class="mt-1">
                                     <p class="text-sm text-gray-700">{{ detailFees.fees.name }}</p>
-                                    <p class="text-sm">{{ detailFees.insqty }} {{ fee.installment.name }} @ $ {{ detailFees.amount }}</p>
+                                    <p class="text-sm">{{ detailFees.insqty }} {{ fee.installment.name }} @  {{ detailFees.amount }}</p>
                                     <p class="mt-2 text-sm font-semibold">{{ detailFees.totalamount }}</p>
                                 </div>
                             </div>
@@ -191,13 +235,13 @@ const onDelete = async (id: number, productId: number) => {
                         <div class="mt-4 flex items-center justify-between">
                             <!-- Buttons on the left -->
                             <div class="space-x-2">
-                                <Button variant="outline" size="sm"><SquarePen></SquarePen>Edit</Button>
+                                <Button variant="outline" size="sm" @click="editDialog(fee)"> <SquarePen class="mr-1" /> Edit </Button>
                                 <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(fee.id, props.product.id)"
                                     ><Trash></Trash
                                 ></Button>
                             </div>
                             <!-- Total Fees on the right -->
-                            <div class="text-lg font-bold text-blue-500">Total Fees $ {{ fee.netamount }}</div>
+                            <div class="text-lg font-bold text-blue-500">Total Fees  {{ fee.netamount }}</div>
                         </div>
                     </div>
                 </div>
@@ -357,15 +401,16 @@ const onDelete = async (id: number, productId: number) => {
                                 />
                             </div>
                             <div>
-                                <Label>Income/Payable <span class="text-red-600">*</span></Label>
+                                <Label>Payment Status <span class="text-red-600">*</span></Label>
                                 <Select v-model="row.pay_type">
                                     <SelectTrigger class="w-full">
-                                        <SelectValue placeholder="Choose income or payable" />
+                                        <SelectValue placeholder="Choose Payment Status" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectItem value="Income">Income</SelectItem>
-                                            <SelectItem value="Payable">Payable</SelectItem>
+                                            <SelectItem value="Revenue">Revenue</SelectItem>
+                                            <SelectItem value="Refundable">Refundable</SelectItem>
+                                            <SelectItem value="Non Refundable">Non Refundable</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>

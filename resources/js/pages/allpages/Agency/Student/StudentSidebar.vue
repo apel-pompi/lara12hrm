@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import Badge from '@/components/ui/badge/Badge.vue';
-import { Button } from '@/components/ui/button';
 import { Archive, Coffee, Flame, Mail, MessageCircleMore, Snowflake, SquarePen, TriangleAlert, Undo2, UserCheck } from 'lucide-vue-next';
 
 const props = defineProps<{
     student: any;
+    editStudent:() => void;
     showDailogCreate: () => void;
     updateRate: (value: number) => void;
     updateArchive: (studentId: number, status: number) => void;
@@ -57,7 +57,7 @@ const props = defineProps<{
                 </div>
 
                 <div class="group relative">
-                    <button class="cursor-pointer text-[8px] uppercase hover:text-gray-700"><SquarePen /></button>
+                    <button @click="editStudent" class="cursor-pointer text-[8px] uppercase hover:text-gray-700"><SquarePen /></button>
                     <span
                         class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
                     >
@@ -112,24 +112,24 @@ const props = defineProps<{
         </div>
 
         <!-- Sales Forecast -->
-        <div class="border-b pb-5" v-for="(service, index) in props.studentService" :key="service.id">
+        <!-- <div class="border-b pb-5" v-for="(service, index) in props.studentService" :key="service.id">
             <h3 class="pb-5 text-[12px] font-semibold text-gray-700 dark:text-gray-300">APPLICATION SALES FORECAST</h3>
             <p class="mt-1 flex items-center pb-5 text-sm"><span class="mr-2 h-2 w-2 rounded-full bg-green-500"></span> {{ service.productfees?.netamount ?? 0 }} CAD</p>
             <p class="text-gray-500">Product Fees</p>
                                 
             <h3 class="mt-2 pb-5 text-[12px] font-semibold text-gray-700 dark:text-gray-300">INTERESTED SERVICES SALES FORECAST</h3>
             <p class="mt-1 flex items-center pb-5 text-sm"><span class="mr-2 h-2 w-2 rounded-full bg-green-500"></span> {{ service.productfees?.netamount ?? 0 }} CAD</p>
-        </div>
+        </div> -->
 
         <!-- Personal Details -->
         <div class="border-b pb-5 text-sm">
-            <h4 class="mb-1 font-semibold text-gray-700 dark:text-gray-300">PERSONAL DETAILS:</h4>
-            <p>Tag(s): <span class="text-gray-500">-</span></p>
+            <!-- <h4 class="mb-1 font-semibold text-gray-700 dark:text-gray-300">PERSONAL DETAILS:</h4>
+            <p>Tag(s): <span class="text-gray-500">-</span></p> -->
 
-            <div class="mt-2 flex items-center gap-2">
+            <!-- <div class="mt-2 flex items-center gap-2">
                 <Button class="rounded-lg bg-blue-500 px-3 py-1 text-xs text-white shadow hover:bg-blue-600">Activate</Button>
                 <Button class="rounded-lg bg-gray-300 px-3 py-1 text-xs text-gray-700 shadow hover:bg-gray-400">De-Activate</Button>
-            </div>
+            </div> -->
 
             <p class="mt-2 text-gray-600">
                 Added From: <span class="font-medium">{{ props.student.assainuser.name }}</span>

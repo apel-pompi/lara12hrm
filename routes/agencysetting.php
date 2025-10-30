@@ -11,7 +11,7 @@ use App\Http\Controllers\AgencySetting\{
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth'])->group(function () {
+Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
     //General Master
     Route::controller(GeneralController::class)
         ->prefix('general')

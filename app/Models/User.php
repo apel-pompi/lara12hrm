@@ -3,18 +3,19 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Cog\Contracts\Ban\Bannable as BannableInterface;
+use Cog\Laravel\Ban\Traits\Bannable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
-use App\Models\CompanyInfo;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class User extends Authenticatable
+class User extends Authenticatable implements BannableInterface
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, Bannable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -51,11 +52,11 @@ class User extends Authenticatable
         ];
     }
 
-   
+
     public static function company()
     {
         $companyInfo = DB::table('company_infos', 'a')
-                        ->select('a.companyname', 'a.companylogo')->get();
+            ->select('a.companyname', 'a.companylogo')->get();
         return $companyInfo;
     }
 

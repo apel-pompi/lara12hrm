@@ -222,7 +222,7 @@ function getAvatarColor(name: string) {
                         </TableCell>
                         <TableCell>
                             <Link :href="route('productActivities.application', product.id)" method="get" class="flex items-center space-x-2">
-                                <span class="font-medium text-gray-900">{{ product.name }}</span>
+                                <span class="font-medium text-gray-900 dark:text-white">{{ product.name }}</span>
                             </Link>
                         </TableCell>
                         <TableCell>{{ product.productype.producttypename }}</TableCell>

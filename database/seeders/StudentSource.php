@@ -18,7 +18,7 @@ class StudentSource extends Seeder
         $json = File::get(database_path('seeders/json/studentsource.json'));
         $feesArray = json_decode($json, true); 
         $fees = $feesArray[0]['data'];
-        $user = User::where('email', 'admin@admin.com')->first();
+        $user = User::where('email', 'hop@glendonedu.com')->first();
         foreach ($fees as $fee) {
             StudentStudentSource::create([
                 'name' => $fee['name'],

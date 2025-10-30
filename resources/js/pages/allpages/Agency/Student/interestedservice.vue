@@ -247,14 +247,14 @@ const handleDelete = async (itemId: number) => {
                             <div>
                                 <p class="text-gray-500">Product Fees</p>
                                 <p class="font-semibold text-blue-600" v-if="inservice.productfees?.netamount">
-                                    ${{ inservice.productfees.netamount }}
+                                    {{ inservice.productfees.netamount }}
                                 </p>
                                 <p class="text-gray-500 italic" v-else>Fees not assigned</p>
                             </div>
                             <div>
                                 <p class="text-gray-500">Sales Forecast</p>
                                 <p class="font-semibold text-blue-600" v-if="inservice.productfees?.netamount">
-                                    ${{ inservice.productfees.netamount }}
+                                    {{ inservice.productfees.netamount }}
                                 </p>
                                 <p class="text-gray-500 italic" v-else>Forecast not assigned</p>
                             </div>

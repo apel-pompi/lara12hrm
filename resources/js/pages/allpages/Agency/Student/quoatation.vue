@@ -8,19 +8,29 @@ import Textarea from '@/components/ui/textarea/Textarea.vue';
 import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { FileText, Plus, ShieldCheck, Trash } from 'lucide-vue-next';
-import { computed, nextTick, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<{
     student: { id: number; status: string };
-    service: { id:number;workflow: string; partner: string; partnerbranch: string; product: string; amount: string; status: string; product_id: number };
+    service: {
+        id: number;
+        workflow: string;
+        partner: string;
+        partnerbranch: string;
+        product: string;
+        amount: string;
+        status: string;
+        product_id: number;
+    };
     quoatation: { id: number; product_id: number; quotation_no: string; totalamount: string; notes: string; status: number; active: number };
+    roles:{id:number}
 }>();
 
 const form = useForm({
     student_id: props.student.id,
     product_id: '',
-    service_id:'',
+    service_id: '',
     grandTotal: '',
     note: '',
     fees: [] as { id: number; amount: number }[],
@@ -107,14 +117,14 @@ const submitGeneral = () => {
     });
 };
 
-const onDelete = async (quoatId: number, id:number) => {
+const onDelete = async (quoatId: number, id: number) => {
     router.post(
         route('studentQuotations.destory', {
             student: props.student.id,
             product: quoatId,
         }),
         {
-            status: id
+            status: id,
         },
         {
             preserveState: true,
@@ -134,14 +144,14 @@ const onDelete = async (quoatId: number, id:number) => {
     );
 };
 
-const onConfirm = async (quoatId: number, id:number) => {
+const onConfirm = async (quoatId: number, id: number) => {
     router.put(
         route('studentQuotations.confirm', {
             student: props.student.id,
             product: quoatId,
         }),
         {
-            status: id
+            status: id,
         },
         {
             preserveState: true,
@@ -161,8 +171,18 @@ const onConfirm = async (quoatId: number, id:number) => {
     );
 };
 
-const onReport = async (quoatId: number, id:number) => {
+const onReport = async (quoatId: number, id: number) => {
     const url = route('studentQuotations.exportPdfGeneral', {
+        student: props.student.id,
+        product: quoatId,
+        quoatation: id,
+    });
+
+    window.open(url, '_blank');
+};
+
+const onReportApproved = async (quoatId: number, id: number) => {
+    const url = route('studentQuotations.exportPdfApproved', {
         student: props.student.id,
         product: quoatId,
         quoatation: id,
@@ -177,9 +197,7 @@ const onReport = async (quoatId: number, id:number) => {
         <div class="space-y-4">
             <div class="flex items-center justify-end space-x-2 py-4">
                 <div class="flex-1 text-sm">Student Quoatations</div>
-                <div class="space-x-2">
-                    
-                </div>
+                <div class="space-x-2"></div>
             </div>
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <!-- Services -->
@@ -212,7 +230,7 @@ const onReport = async (quoatId: number, id:number) => {
                                         ><span class="font-mono text-sm text-gray-400">{{ ser.status }}</span></TableCell
                                     >
                                     <TableCell class="text-center">
-                                        <Button class="m-[2px]" variant="outline" size="sm" @click="showDailog(ser.id,ser.product_id)">
+                                        <Button class="m-[2px]" variant="outline" size="sm" @click="showDailog(ser.id, ser.product_id)">
                                             <Plus />
                                         </Button>
                                     </TableCell>
@@ -243,55 +261,85 @@ const onReport = async (quoatId: number, id:number) => {
                                     <TableCell>{{ quoat.totalamount }}</TableCell>
                                     <TableCell>{{ quoat.notes }}</TableCell>
                                     <TableCell>
-                                        <span v-if="quoat.active==0">Open</span>
-                                        <span v-if="quoat.active==1">Confirmed</span>
-                                        <span v-if="quoat.active==2">Cancel</span>
+                                        <span v-if="quoat.active == 0">Open</span>
+                                        <span v-if="quoat.active == 1">Confirmed</span>
+                                        <span v-if="quoat.active == 2">Cancel</span>
                                     </TableCell>
                                     <TableCell class="text-center">
-                                        <div v-if="quoat.active==0" class="flex justify-center gap-2">
-                                            <!-- Delete Button -->
-                                            <div class="group relative">
-                                                <Button @click="onDelete(quoat.product_id,quoat.id)" class="m-[2px] cursor-pointer" variant="outline" size="sm">
-                                                    <Trash />
-                                                </Button>
-                                                <span
-                                                    class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
-                                                >
-                                                    Cancel
-                                                </span>
-                                            </div>
-
-                                            <!-- Shield Button -->
-                                            <div class="group relative">
-                                                <Button
-                                                    @click="onConfirm(quoat.product_id,quoat.id)"
-                                                    class="m-[2px] cursor-pointer"
-                                                    variant="outline"
-                                                    size="sm"
-                                                >
-                                                    <ShieldCheck />
-                                                </Button>
-                                                <span
-                                                    class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
-                                                >
-                                                    Confirm
-                                                </span>
-                                            </div>
+                                        <div class="flex items-center justify-center gap-2">
+                                            <template v-if="quoat.active == 0">
+                                                <!-- Cancel Button -->
+                                                <div class="group relative">
+                                                    <Button
+                                                        @click="onDelete(quoat.product_id, quoat.id)"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        class="cursor-pointer rounded-full border-red-300 text-red-600 transition hover:bg-red-50 hover:text-red-700"
+                                                    >
+                                                        <Trash class="h-4 w-4" />
+                                                    </Button>
+                                                    <span
+                                                        class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+                                                    >
+                                                        Cancel
+                                                    </span>
+                                                </div>
+                                                <!-- Confirm -->
+                                                <div class="group relative">
+                                                    <Button
+                                                        @click="onConfirm(quoat.product_id, quoat.id)"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        class="cursor-pointer rounded-full border-green-300 text-green-600 transition hover:bg-green-50 hover:text-green-700"
+                                                    >
+                                                        <ShieldCheck class="h-4 w-4" />
+                                                    </Button>
+                                                    <span
+                                                        class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+                                                    >
+                                                        Confirm
+                                                    </span>
+                                                </div>
+                                                
+                                                <div v-if="props.roles[0]=='superadmin'" class="group relative">
+                                                    <Button
+                                                        @click="onReportApproved(quoat.product_id, quoat.id)"
+                                                        class="cursor-pointer rounded-full border-blue-300 text-blue-600 transition hover:bg-blue-50 hover:text-blue-700"
+                                                        variant="outline"
+                                                        size="sm"
+                                                    >
+                                                        <FileText class="text-red-500" />
+                                                    </Button>
+                                                    <span
+                                                        class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+                                                    >
+                                                        Report
+                                                    </span>
+                                                </div>
+                                                <div v-else>
+                                                    
+                                                </div>
+                                            </template>
+                                            <template v-else-if="quoat.active == 1">
+                                                
+                                                <div class="group relative">
+                                                    <Button
+                                                        @click="onReport(quoat.product_id, quoat.id)"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        class="cursor-pointer rounded-full border-purple-300 text-purple-600 transition hover:bg-purple-50 hover:text-purple-700"
+                                                    >
+                                                        <FileText class="h-4 w-4" />
+                                                    </Button>
+                                                    <span
+                                                        class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+                                                    >
+                                                        Report
+                                                    </span>
+                                                </div>
+                                            </template>
+                                            <template v-else></template>
                                         </div>
-                                        <div v-if="quoat.active==1" class="flex justify-center gap-2">
-                                            <!-- File Button -->
-                                            <div class="group relative">
-                                                <Button @click="onReport(quoat.product_id,quoat.id)" class="m-[2px] cursor-pointer" variant="outline" size="sm">
-                                                    <FileText class="text-red-500" />
-                                                </Button>
-                                                <span
-                                                    class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
-                                                >
-                                                    Report
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div v-else></div>
                                     </TableCell>
                                 </TableRow>
                             </TableBody>

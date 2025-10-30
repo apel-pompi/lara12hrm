@@ -8,14 +8,20 @@ use App\Models\Student\Student;
 use App\Http\Requests\Student\StoreStudentRequest;
 use App\Http\Requests\Student\UpdateStudentRequest;
 use App\Models\Default\Country;
+use App\Models\Student\StudentActivities;
 use App\Models\Student\StudentSource;
 use App\Models\Student\StudentStage;
 use App\Models\User;
-use App\Services\Agency\Student as AgencyStudent;
+use App\Services\Agency\Student\Student as AgencyStudent;
+use App\Services\Agency\Student\StudentArchive;
+use App\Services\Agency\Student\StudentLead;
+use App\Services\Agency\Student\StudentOnBoard;
+use App\Services\Agency\Student\StudentProspect;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+
 
 class StudentController extends Controller
 {
@@ -26,13 +32,304 @@ class StudentController extends Controller
     public function index(Request $request, AgencyStudent $student)
     {
         $this->authorize('Student.index');
+        $perPage = $request->query('per_page', 10);
 
-        return Inertia::render('allpages/Agency/Student/student', [
-            'student' => $student->get($request->query()),
-            'filters'   => $student->get($request->query()),
-        ]);
+
+        $user = Auth::user();
+        $roles = $user->getRoleNames();
+        if ($roles->contains('superadmin')) {
+
+            return Inertia::render('allpages/Agency/Student/student', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } elseif ($roles->contains('Admin')) {
+
+            return Inertia::render('allpages/Agency/Student/student', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } elseif ($roles->contains('Manager')) {
+
+            return Inertia::render('allpages/Agency/Student/student', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } else {
+            
+            return Inertia::render('allpages/Agency/Student/student', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::where('assain_user', Auth::id())->count(),
+                'countLead' => Student::where('assain_user', Auth::id())->where('status', 1)->count(),
+                'countProspect' => Student::where('assain_user', Auth::id())->where('status', 2)->count(),
+                'countonBoard' => Student::where('assain_user', Auth::id())->where('status', 3)->count(),
+                'countArchive' => Student::where('assain_user', Auth::id())->where('status', 4)->count(),
+            ]);
+            
+        }
+
     }
 
+    public function lead(Request $request, StudentLead $student)
+    {
+        $this->authorize('Student.index');
+
+        $perPage = $request->query('per_page', 10);
+
+        $user = Auth::user();
+        $roles = $user->getRoleNames();
+        if ($roles->contains('superadmin')) {
+
+            return Inertia::render('allpages/Agency/Student/studentlead', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } elseif ($roles->contains('Admin')) {
+
+            return Inertia::render('allpages/Agency/Student/studentlead', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } elseif ($roles->contains('Manager')) {
+
+            return Inertia::render('allpages/Agency/Student/studentlead', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } else {
+            
+            return Inertia::render('allpages/Agency/Student/studentlead', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::where('assain_user', Auth::id())->count(),
+                'countLead' => Student::where('assain_user', Auth::id())->where('status', 1)->count(),
+                'countProspect' => Student::where('assain_user', Auth::id())->where('status', 2)->count(),
+                'countonBoard' => Student::where('assain_user', Auth::id())->where('status', 3)->count(),
+                'countArchive' => Student::where('assain_user', Auth::id())->where('status', 4)->count(),
+            ]);
+            
+        }
+
+        
+    }
+
+    public function prospect(Request $request, StudentProspect $student)
+    {
+        $this->authorize('Student.index');
+        $perPage = $request->query('per_page', 10);
+
+        $user = Auth::user();
+        $roles = $user->getRoleNames();
+        if ($roles->contains('superadmin')) {
+
+            return Inertia::render('allpages/Agency/Student/studentprospect', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } elseif ($roles->contains('Admin')) {
+
+            return Inertia::render('allpages/Agency/Student/studentprospect', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } elseif ($roles->contains('Manager')) {
+
+            return Inertia::render('allpages/Agency/Student/studentprospect', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } else {
+            
+            return Inertia::render('allpages/Agency/Student/studentprospect', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::where('assain_user', Auth::id())->count(),
+                'countLead' => Student::where('assain_user', Auth::id())->where('status', 1)->count(),
+                'countProspect' => Student::where('assain_user', Auth::id())->where('status', 2)->count(),
+                'countonBoard' => Student::where('assain_user', Auth::id())->where('status', 3)->count(),
+                'countArchive' => Student::where('assain_user', Auth::id())->where('status', 4)->count(),
+            ]);
+            
+        }
+       
+    }
+
+    public function onBoard(Request $request, StudentOnBoard $student)
+    {
+        $this->authorize('Student.index');
+        
+        $perPage = $request->query('per_page', 10);
+
+        $user = Auth::user();
+        $roles = $user->getRoleNames();
+        if ($roles->contains('superadmin')) {
+
+            return Inertia::render('allpages/Agency/Student/studentonboard', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } elseif ($roles->contains('Admin')) {
+
+            return Inertia::render('allpages/Agency/Student/studentonboard', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } elseif ($roles->contains('Manager')) {
+
+            return Inertia::render('allpages/Agency/Student/studentonboard', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } else {
+            
+            return Inertia::render('allpages/Agency/Student/studentonboard', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::where('assain_user', Auth::id())->count(),
+                'countLead' => Student::where('assain_user', Auth::id())->where('status', 1)->count(),
+                'countProspect' => Student::where('assain_user', Auth::id())->where('status', 2)->count(),
+                'countonBoard' => Student::where('assain_user', Auth::id())->where('status', 3)->count(),
+                'countArchive' => Student::where('assain_user', Auth::id())->where('status', 4)->count(),
+            ]);
+            
+        }
+
+       
+    }
+
+    public function archive(Request $request, StudentArchive $student)
+    {
+        $this->authorize('Student.index');
+        
+        $perPage = $request->query('per_page', 10);
+
+        $user = Auth::user();
+        $roles = $user->getRoleNames();
+        if ($roles->contains('superadmin')) {
+
+            return Inertia::render('allpages/Agency/Student/studentarchive', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } elseif ($roles->contains('Admin')) {
+
+            return Inertia::render('allpages/Agency/Student/studentarchive', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } elseif ($roles->contains('Manager')) {
+
+            return Inertia::render('allpages/Agency/Student/studentarchive', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::count(),
+                'countLead' => Student::where('status', 1)->count(),
+                'countProspect' => Student::where('status', 2)->count(),
+                'countonBoard' => Student::where('status', 3)->count(),
+                'countArchive' => Student::where('status', 4)->count(),
+            ]);
+
+        } else {
+            
+            return Inertia::render('allpages/Agency/Student/studentarchive', [
+                'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
+                'filters' => $request->only(['name', 'status']),
+                'countAll' => Student::where('assain_user', Auth::id())->count(),
+                'countLead' => Student::where('assain_user', Auth::id())->where('status', 1)->count(),
+                'countProspect' => Student::where('assain_user', Auth::id())->where('status', 2)->count(),
+                'countonBoard' => Student::where('assain_user', Auth::id())->where('status', 3)->count(),
+                'countArchive' => Student::where('assain_user', Auth::id())->where('status', 4)->count(),
+            ]);
+            
+        }
+
+       
+    }
     /**
      * Show the form for creating a new resource.
      */
@@ -124,15 +421,18 @@ class StudentController extends Controller
     /**
      * Display the specified resource.
      */
-    
-    
-    
+
+
+
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Student $student)
     {
-        //
+        return response()->json([
+            'success' => true,
+            'student' => $student
+        ]);
     }
 
     /**
@@ -140,7 +440,32 @@ class StudentController extends Controller
      */
     public function update(UpdateStudentRequest $request, Student $student)
     {
-        //
+
+        $update = Student::where('id', $student->id)
+            ->update(
+                [
+                    'fname' => $request->fname,
+                    'lname' => $request->lname,
+                    'dateofbirth' => $request->dateofbirth,
+                    'gender' => $request->gender,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'ename' => $request->ename,
+                    'ephone' => $request->ephone,
+                    'contactpre' => $request->contactpre
+                ]
+            );
+        if ($update) {
+            StudentActivities::create([
+                'student_id' => $student->id,
+                'title' => 'has student updated',
+                'fristactivity' => null,
+                'lastactivity' => null,
+                'user_id' => Auth::id()
+            ]);
+        }
+
+        return back()->with('message', 'Stusent update successfully.');
     }
 
     /**
@@ -150,5 +475,4 @@ class StudentController extends Controller
     {
         //
     }
-
 }

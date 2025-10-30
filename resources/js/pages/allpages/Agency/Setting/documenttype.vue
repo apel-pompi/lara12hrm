@@ -128,8 +128,8 @@ const goToWorkflow = () => {
         <AgencyLayout>
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
-                    <Button variant="outline" size="sm" @click="goToWorkflow"><CornerDownLeft></CornerDownLeft>Back Workflows </Button>
-                    <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Document Type </Button>
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToWorkflow"><CornerDownLeft></CornerDownLeft>Back Workflows </Button>
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Document Type </Button>
                 </div>
                 <div class="rounded-md border">
                     <Table>

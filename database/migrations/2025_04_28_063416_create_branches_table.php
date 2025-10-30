@@ -22,7 +22,8 @@ return new class extends Migration
             $table->string('phone', 20)->nullable();
             $table->integer('active')->nullable();
             $table->timestamps();
-
+            $table->softDeletes();
+            
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });

@@ -2,14 +2,74 @@
 
 namespace App\Http\Controllers\HRM;
 
+
 use App\Http\Controllers\Controller;
-use CodingLibs\ZktecoPhp\Libs\ZKTeco;
+use App\Models\HRM\Attendance;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class DeviceController extends Controller
 {
-    public function index(){
-        //$zktecoLib = new Zkteco('118.67.221.57');
-        $zktecoLib = new Zkteco(ip:'118.67.221.57', port:4370, shouldPing:false, timeout:25, password:12345); // Password means CMD Key
-        dd($zktecoLib->deviceName());
+
+    public function device()
+    {
+        return Inertia::render('allpages/hrm/device');
     }
+
+    public function syncData(Request $request)
+    {
+        $request->validate([
+            'senddate' => 'required|date_format:Y-m-d',
+        ]);
+
+        if ($request->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $request->errors()
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'date' => $request->senddate,
+            'message' => 'Date received successfully'
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required',
+            'record_time' => 'required',
+            'device_ip' => 'required',
+            'state' => 'nullable|integer',
+        ]);
+
+        if ($request->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $request->errors()
+            ], 422);
+        }
+
+        try {
+            $attendance = Attendance::create($request->all());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Attendance saved successfully!',
+                'data' => $attendance
+            ], 201);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save attendance',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
 }

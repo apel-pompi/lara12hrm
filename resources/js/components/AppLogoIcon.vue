@@ -12,6 +12,7 @@ interface Auth {
 
 const page = usePage<{ auth: Auth }>();
 const company = page.props.auth.company?.[0];
+
 </script>
 
 <template>

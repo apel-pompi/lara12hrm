@@ -5,7 +5,7 @@ use App\Http\Controllers\Accounts\{
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth'])->group(function () {
+Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
     //Accounts Route
     Route::controller(AccountsController::class)
         ->prefix('accounts')

@@ -7,8 +7,8 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Company Info',
-        href: '/companyinfo',
+        title: 'Employee Attendance',
+        href: '/hrreports',
     },
     {
         title: 'Branch Setting',

@@ -22,24 +22,25 @@ class ProductActivities extends Controller
 {
     public function aplication(Product $product)
     {
-        $productwithuser = Product::with(['partner','user'])->where('id',$product->id)->first();
+        $productwithuser = Product::with(['partner', 'user'])->where('id', $product->id)->first();
         return Inertia::render('allpages/Agency/Product/productlayout', [
             'product' => $productwithuser
         ]);
     }
 
-    
+
     public function documents(Product $product)
     {
+        $productwithuser = Product::with(['partner', 'user'])->where('id', $product->id)->first();
         return Inertia::render('allpages/Agency/Product/documents', [
-            'product' => $product,
+            'product' => $productwithuser,
 
         ]);
     }
 
     public function fees(Product $product)
-    {   
-        $productwithuser = Product::with(['partner','user'])->where('id',$product->id)->first();
+    {
+        $productwithuser = Product::with(['partner', 'user'])->where('id', $product->id)->first();
         return Inertia::render('allpages/Agency/Product/fees', [
             'product' => $productwithuser,
             'country' => Country::where('status', 1)->get(),
@@ -51,7 +52,7 @@ class ProductActivities extends Controller
 
     public function storefess(StoreProductFeesHdRequest $request, Product $product)
     {
-        
+
         $validated = $request->validated();
         $countryString = is_array($validated['country_id'])
             ? implode(',', $validated['country_id'])
@@ -80,6 +81,42 @@ class ProductActivities extends Controller
         }
     }
 
+    public function updatefees(Product $product, Request $request)
+    {
+
+        $countryString = is_array($request['country_id'])
+            ? implode(',', $request['country_id'])
+            : $request['country_id'];
+        
+        $feesHd = ProductFeesHd::findOrFail($request->id);
+        
+        $feesHd->update([
+            'name'       => $request['name'],
+            'product_id' => $product->id,
+            'country_id' => $countryString,
+            'ins_id'     => $request['ins_id'],
+            'netamount'  => $request['netamount'],
+            'user_id'    => Auth::id(),
+        ]);
+
+        if (!empty($request['rows']) && is_array($request['rows'])) {
+            ProductFeesDt::where('fees_hd_id', $request->id)->delete();
+            foreach ($request['rows'] as $row) {
+                ProductFeesDt::create([
+                    'fees_hd_id'  => $request->id,
+                    'fees_id'     => $row['fees_id'],
+                    'amount'      => $row['ins_amount'],
+                    'insqty'      => $row['insqty'],
+                    'pay_type'    => $row['pay_type'],
+                    'totalamount' => ($row['totalfees'] ?? ($row['ins_amount'] ?? 0) * ($row['insqty'] ?? 1)),
+                ]);
+            }
+        }
+       return back()
+            ->with('success', 'Product updated successfully.');
+    }
+
+
     public function feeDelete(Product $product, ProductFeesHd $productFeesHd)
     {
 
@@ -94,8 +131,8 @@ class ProductActivities extends Controller
     }
 
     public function requirement(Product $product)
-    {   
-        $productwithuser = Product::with(['partner','user'])->where('id',$product->id)->first();
+    {
+        $productwithuser = Product::with(['partner', 'user'])->where('id', $product->id)->first();
         return Inertia::render('allpages/Agency/Product/requirement', [
             'product' => $productwithuser,
             'academic' => Academic::where('active', 1)->get(),
@@ -244,14 +281,14 @@ class ProductActivities extends Controller
 
     public function others(Product $product)
     {
-        $productwithuser = Product::with(['partner','user'])->where('id',$product->id)->first();
+        $productwithuser = Product::with(['partner', 'user'])->where('id', $product->id)->first();
         return Inertia::render('allpages/Agency/Product/others', [
             'product' => $productwithuser
         ]);
     }
     public function promotions(Product $product)
     {
-        $productwithuser = Product::with(['partner','user'])->where('id',$product->id)->first();
+        $productwithuser = Product::with(['partner', 'user'])->where('id', $product->id)->first();
         return Inertia::render('allpages/Agency/Product/promotions', [
             'product' => $productwithuser
         ]);

@@ -4,31 +4,17 @@ import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import UserLayout from '@/layouts/settings/userLayout.vue';
-import { cn, valueUpdater } from '@/lib/utils';
+
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import {
-    Column,
-    ColumnDef,
-    FlexRender,
-    getCoreRowModel,
-    getExpandedRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    Row,
-    useVueTable,
-} from '@tanstack/vue-table';
-import { AlertCircle, ArrowUpDown, ChevronDown, CircleAlertIcon, Loader2, Plus } from 'lucide-vue-next';
 
-import { h, ref } from 'vue';
+import { ref } from 'vue';
 
-import DropdownAction from '@/components/DataTable.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
+import { Plus,Eye, Trash, Undo2 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'User Permission', href: '/userpermission' }];
@@ -47,159 +33,13 @@ const props = defineProps<{
         name: string;
         username: string;
         email: string;
+        banned_at: string;
         roles: { name: string }[];
     }>;
     roles: any[];
 }>();
 
 const data = props.users;
-
-const columns: ColumnDef<Users, any>[] = [
-    {
-        id: 'sl',
-        header: () => 'SL',
-        cell: ({ row }: { row: Row<Users> }) => {
-            // Calculate SL number based on pagination
-            const pageIndex = table.getState().pagination.pageIndex;
-            const pageSize = table.getState().pagination.pageSize;
-            const rowIndex = row.index;
-            return h('div', rowIndex + 1 + pageIndex * pageSize);
-        },
-        enableSorting: false,
-        enableHiding: false,
-    },
-    {
-        accessorKey: 'name',
-        header: ({ column }: { column: Column<Users, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Full Name', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<Users> }) => h('div', { class: 'capitalize' }, row.getValue('name')),
-    },
-
-    {
-        accessorKey: 'username',
-        header: ({ column }: { column: Column<Users, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['User Name', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<Users> }) => h('div', row.getValue('username')),
-    },
-
-    {
-        accessorKey: 'email',
-        header: ({ column }: { column: Column<Users, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Email', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<Users> }) => h('div', row.getValue('email')),
-    },
-
-    {
-        id: 'roles',
-        header: ({ column }: { column: Column<Users, unknown> }) => {
-            return h(
-                Button,
-                {
-                    variant: 'ghost',
-                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-                },
-                () => ['Role Name', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
-            );
-        },
-        cell: ({ row }: { row: Row<Users> }) => {
-            const roles = row.original.roles || [];
-
-            if (roles.length === 0) {
-                return h('div', '-');
-            }
-
-            return h(
-                'div',
-                { class: 'flex flex-wrap gap-2' },
-                roles.map((role) => h(Badge, () => role.name)),
-            );
-        },
-    },
-    {
-        id: 'actions',
-        enableHiding: false,
-        cell: ({ row }: { row: Row<Users> }) => {
-            const dataID = row.original;
-
-            return h(
-                'div',
-                { class: 'relative' },
-                h(DropdownAction, {
-                    dataID,
-                    onShow,
-                    onEdit,
-                    onDelete,
-                    onExpand: row.toggleExpanded,
-                }),
-            );
-        },
-    },
-];
-// Reactive states
-const sorting = ref([]);
-const columnFilters = ref([]);
-const columnVisibility = ref({});
-const rowSelection = ref({});
-const expanded = ref({});
-
-const table = useVueTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
-    onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
-    onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
-    onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
-    onRowSelectionChange: (updaterOrValue) => valueUpdater(updaterOrValue, rowSelection),
-    onExpandedChange: (updaterOrValue) => valueUpdater(updaterOrValue, expanded),
-    state: {
-        get sorting() {
-            return sorting.value;
-        },
-        get columnFilters() {
-            return columnFilters.value;
-        },
-        get columnVisibility() {
-            return columnVisibility.value;
-        },
-        get rowSelection() {
-            return rowSelection.value;
-        },
-        get expanded() {
-            return expanded.value;
-        },
-        columnPinning: {
-            left: ['status'],
-        },
-    },
-});
 
 const showPassword = ref<boolean>(false);
 
@@ -237,7 +77,7 @@ const showDailogCreate = () => {
 const onShow = async (id: number) => {
     try {
         const res = await fetch(`/userpermission/${id}`);
-        console.log(res);
+
         if (!res.ok) {
             toast.error('Server error while fetching userpermission details.');
             return;
@@ -249,8 +89,7 @@ const onShow = async (id: number) => {
         showDialog.value = false;
         showDialogOpen.value = true;
     } catch (error) {
-        console.error('Fetch error:', error);
-        toast.error('userpermission show not necessary !');
+        toast.error('userpermission show not necessary !' + error);
     }
 };
 
@@ -310,13 +149,30 @@ const submit = () => {
 const deleteForm = useForm({});
 
 const onDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this User Permission?')) return;
+    if (!confirm('Are you sure you want to banned this User?')) return;
 
     if (deleteForm.processing) return;
 
     deleteForm.delete(`/userpermission/show/${id}`, {
         onSuccess: () => {
-            toast.success('User Permission deleted successfully');
+            toast.success('User banned successfully');
+        },
+        onError: () => {
+            toast.success('Somethings wrong !');
+        },
+        preserveScroll: true,
+        preserveState: false,
+    });
+};
+
+const onReturn = async (id: number) => {
+    if (!confirm('Are you sure you want to active this User?')) return;
+
+    if (deleteForm.processing) return;
+
+    deleteForm.post(`/userpermission/active/${id}`, {
+        onSuccess: () => {
+            toast.success('User active successfully');
         },
         onError: () => {
             toast.success('Somethings wrong !');
@@ -332,94 +188,76 @@ const onDelete = async (id: number) => {
         <UserLayout>
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
-                    <Input
-                        class="max-w-sm"
-                        placeholder="Filter Roles Name..."
-                        :model-value="table.getColumn('name')?.getFilterValue() as string"
-                        @update:model-value="table.getColumn('name')?.setFilterValue($event)"
-                    />
-                    <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create User </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="outline" class="ml-auto"> Columns <ChevronDown class="ml-2 h-4 w-4" /> </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuCheckboxItem
-                                v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
-                                :key="column.id"
-                                class="capitalize"
-                                :model-value="column.getIsVisible()"
-                                @update:model-value="
-                                    (value) => {
-                                        column.toggleVisibility(!!value);
-                                    }
-                                "
-                            >
-                                {{ column.id }}
-                            </DropdownMenuCheckboxItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create </Button>
                 </div>
                 <div class="rounded-md border">
                     <Table>
                         <TableHeader>
-                            <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                                <TableHead
-                                    v-for="header in headerGroup.headers"
-                                    :key="header.id"
-                                    :data-pinned="header.column.getIsPinned()"
-                                    :class="
-                                        cn(
-                                            { 'bg-background/95 sticky': header.column.getIsPinned() },
-                                            header.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                        )
-                                    "
-                                >
-                                    <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
-                                </TableHead>
+                            <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>User Name</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Roles</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead class="text-center">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <template v-if="table.getRowModel().rows?.length">
-                                <template v-for="row in table.getRowModel().rows" :key="row.id">
-                                    <TableRow :data-state="row.getIsSelected() && 'selected'">
-                                        <TableCell
-                                            v-for="cell in row.getVisibleCells()"
-                                            :key="cell.id"
-                                            :data-pinned="cell.column.getIsPinned()"
-                                            :class="
-                                                cn(
-                                                    { 'bg-background/95 sticky': cell.column.getIsPinned() },
-                                                    cell.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                                )
-                                            "
-                                        >
-                                            <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow v-if="row.getIsExpanded()">
-                                        <TableCell :colspan="row.getAllCells().length">
-                                            {{ row.original }}
-                                        </TableCell>
-                                    </TableRow>
-                                </template>
-                            </template>
+                            <TableRow v-for="(trn, index) in data" :key="trn.id ?? index">
+                                <TableCell>{{ trn.name }}</TableCell>
+                                <TableCell>{{ trn.username }}</TableCell>
+                                <TableCell>{{ trn.email }}</TableCell>
+                                <TableCell>
+                                    <div v-for="(role, index) in trn.roles" :key="index">
+                                        <Badge variant="default" size="sm" class="flex flex-wrap gap-2">{{ role.name }}</Badge>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <span v-if="trn.banned_at">Banned</span>
+                                    <span v-else><Badge variant="outline" size="sm" class="flex flex-wrap gap-2">Active</Badge></span>
+                                </TableCell>
 
-                            <TableRow v-else>
-                                <TableCell :colspan="columns.length" class="h-24 text-center"> No results. </TableCell>
+                                <TableCell class="text-right flex justify-center gap-2">
+                                    
+                                    <div class="group relative">
+                                        <Button @click="onEdit(trn.id)" class="m-[2px] cursor-pointer" variant="outline" size="sm">
+                                            <Eye />
+                                        </Button>
+                                        <span
+                                            class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                                        >
+                                            Edit User
+                                        </span>
+                                    </div>
+                                    <div class="group relative" v-if="trn.banned_at">
+                                        <Button @click="onReturn(trn.id)" class="m-[2px] cursor-pointer" variant="outline" size="sm">
+                                            <Undo2/>
+                                        </Button>
+                                        <span
+                                            class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                                        >
+                                            Active User
+                                        </span>
+                                    </div>
+                                    <div class="group relative" v-else>
+                                        <Button @click="onDelete(trn.id)" class="m-[2px] cursor-pointer" variant="outline" size="sm">
+                                            <Trash />
+                                        </Button>
+                                        <span
+                                            class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                                        >
+                                            Banned User
+                                        </span>
+                                    </div>
+                                </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </div>
 
                 <div class="flex items-center justify-end space-x-2 py-4">
-                    <div class="text-muted-foreground flex-1 text-sm">
-                        {{ table.getFilteredSelectedRowModel().rows.length }} of {{ table.getFilteredRowModel().rows.length }} row(s) selected.
-                    </div>
-                    <div class="space-x-2">
-                        <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()"> Previous </Button>
-                        <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()"> Next </Button>
-                    </div>
+                    <div class="text-muted-foreground flex-1 text-sm"></div>
+                    <div class="space-x-2"></div>
                 </div>
             </div>
             <!-- Enhanced User Dialog Component -->

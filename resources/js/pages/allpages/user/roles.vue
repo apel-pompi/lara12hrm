@@ -377,10 +377,10 @@ const checkPermissionByGroup = (className: string | number, checkThis: Event) =>
                         :model-value="table.getColumn('name')?.getFilterValue() as string"
                         @update:model-value="table.getColumn('name')?.setFilterValue($event)"
                     />
-                    <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Roles </Button>
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Roles </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
-                            <Button variant="outline" class="ml-auto"> Columns <ChevronDown class="ml-2 h-4 w-4" /> </Button>
+                            <Button class="ml-auto dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline"> Columns <ChevronDown class="ml-2 h-4 w-4" /> </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                             <DropdownMenuCheckboxItem

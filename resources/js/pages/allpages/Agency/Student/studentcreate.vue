@@ -176,7 +176,7 @@ const filteredSource = computed(() =>
     querySource.value === '' ? props.source : props.source.filter((c) => c.name.toLowerCase().includes(querySource.value.toLowerCase())),
 );
 const showDialog = ref(false);
-const isEditMode = ref(false);
+
 const errors = ref<FormErrors>();
 
 const form = useForm({
@@ -375,13 +375,14 @@ const goToManageStudent = () => {
 
                         <!-- Phone -->
                         <div class="w-full md:w-1/3">
-                            <Label class="block text-sm font-medium text-gray-700">Phone</Label>
+                            <Label class="block text-sm font-medium text-gray-700"><span class="text-red-500">*</span>Phone</Label>
                             <Input
                                 v-model="form.phone"
                                 placeholder="Enter phone number"
                                 type="text"
                                 class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                             />
+                            <span v-if="form.errors.phone" class="text-sm text-red-600">{{ form.errors.phone }}</span>
                         </div>
 
                         <!-- Contact Preference -->

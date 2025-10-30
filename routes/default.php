@@ -5,7 +5,7 @@ use App\Http\Controllers\Default\{
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth'])->group(function () {
+Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
     //transaction Route
     Route::controller(TransactionController::class)
         ->prefix('transaction')

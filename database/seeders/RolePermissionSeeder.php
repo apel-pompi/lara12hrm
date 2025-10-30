@@ -49,11 +49,12 @@ class RolePermissionSeeder extends Seeder
             [
                 'group_name' => 'Parmission',
                 'permissions' => [
-                    'permission.index',
-                    'permission.store',
-                    'permission.edit',
-                    'permission.update',
-                    'permission.destroy',
+                    'user.index',
+                    'user.store',
+                    'user.edit',
+                    'user.update',
+                    'user.destroy',
+                    'user.active',
                     
                 ],
             ],
@@ -432,6 +433,7 @@ class RolePermissionSeeder extends Seeder
                     'StudQuoat.confirm',
                     'StudQuoat.approval',
                     'StudQuoat.destroy',
+                    'StudQuoat.ApprovedReport',
                     'StudQuoat.report',
                     
                 ],

@@ -8,12 +8,14 @@ abstract class BaseFilter
 
     public function getResults($contents)
     {
+        $perPage = $contents['params']['per_page'] ?? 10;
+
         $results = app(Pipeline::class)
             ->send($contents)
             ->through($this->getFilters())
             ->then(fn ($contents) => $contents['builder']);
 
-        return $results->paginate(10)->withQueryString();
+        return $results->paginate($perPage)->withQueryString();
     }
 }
 

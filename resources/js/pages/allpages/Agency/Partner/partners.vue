@@ -113,7 +113,7 @@ function getAvatarColor(name: string) {
                                             {{ (partner.name?.charAt(0) ?? '').toUpperCase() }}
                                         </span>
                                     </template>
-                                    <span class="font-medium text-gray-900">{{ partner.name }}</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">{{ partner.name }}</span>
                                 </Link>
                             </TableCell>
                             <TableCell>

@@ -103,11 +103,11 @@ const updateStatus = (active: number) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border bg-gray-100 px-4 md:min-h-min">
             <div class="flex items-center justify-end space-x-2 pt-4 pl-4">
-                <div class="flex-1 text-sm">
+                <div class="flex-1 text-sm dark:text-black">
                     <Heading title="Partner Actvities" description="Manage your partner activities and account settings" />
                 </div>
                 <div class="space-x-2">
-                    <Button variant="outline" size="sm" @click="goToPartner"><CornerDownLeft></CornerDownLeft> Back</Button>
+                    <Button class="dark:text-black" variant="outline" size="sm" @click="goToPartner"><CornerDownLeft></CornerDownLeft> Back</Button>
                 </div>
             </div>
             <div class="flex flex-col gap-6 p-4 lg:flex-row">
@@ -204,7 +204,7 @@ const updateStatus = (active: number) => {
                     <!-- Tabs -->
                     <nav class="text-md flex flex-wrap gap-4 border-b bg-white p-6 font-medium">
                         <div class="border-sidebar-border/70 dark:border-sidebar-border relative flex-1 border bg-gray-100 p-3">
-                            <Button v-for="item in sidebarNavItems" :key="item.href" variant="ghost" as-child>
+                            <Button class="p-4 m-1 dark:bg-black" v-for="item in sidebarNavItems" :key="item.href" variant="ghost" as-child>
                                 <Link :href="item.href">
                                     {{ item.title }}
                                 </Link>

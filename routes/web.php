@@ -5,7 +5,7 @@ use App\Http\Controllers\Default\{
     CountryController,
     StateController,
 };
-
+use App\Http\Controllers\HRM\DeviceController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -14,7 +14,7 @@ Route::get('/', function () {
 })->name('home');
 
 
-Route::middleware(['verified', 'auth'])->group(function () {
+Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
 
     Route::get('dashboard', function () {
         return Inertia::render('Dashboard');
@@ -25,7 +25,6 @@ Route::middleware(['verified', 'auth'])->group(function () {
     Route::get('/states/{state}/cities', [StateController::class, 'cities']);
 
 });
-
 
 
 require __DIR__ . '/users.php';

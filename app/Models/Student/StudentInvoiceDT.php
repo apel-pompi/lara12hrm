@@ -6,11 +6,11 @@ use App\Models\AgencySetting\Fees;
 use App\Models\Product\Product;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudentInvoiceDT extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     
     protected $table = 'student_invoices_dt';
 

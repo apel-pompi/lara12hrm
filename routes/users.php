@@ -6,7 +6,7 @@ use App\Http\Controllers\Users\{
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth'])->group(function () {
+Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
     //User Permission Route
     Route::controller(UserPermissionController::class)
         ->prefix('/userpermission')
@@ -15,6 +15,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
                 Route::get('/', 'index')->name('userpermission.index');
                 Route::post('/store', 'store')->name('userpermission.store');
                 Route::delete('/show/{id}', 'destroy')->name('userpermission.destroy');
+                Route::post('/active/{id}', 'active')->name('userpermission.active');
                 Route::get('/{id}/edit', 'edit')->name('userpermission.edit');
                 Route::put('/{id}', 'update')->name('userpermission.update');
             }

@@ -19,7 +19,8 @@ return new class extends Migration
             $table->timestamp('last_activity_at')->nullable();
             $table->string('ip_address')->nullable();
             $table->timestamps();
-
+            $table->softDeletes();
+            
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });

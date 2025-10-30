@@ -21,7 +21,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->decimal('amount', 20, 2)->default(0);
             $table->timestamps();
-
+            $table->softDeletes();
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });

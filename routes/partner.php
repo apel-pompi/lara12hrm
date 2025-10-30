@@ -7,7 +7,7 @@ use App\Http\Controllers\Partner\{
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth'])->group(function () {
+Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
 
     //partner Branch Setting
     Route::controller(PartnerBranchController::class)

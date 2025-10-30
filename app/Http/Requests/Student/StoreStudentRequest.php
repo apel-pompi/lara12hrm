@@ -28,7 +28,7 @@ class StoreStudentRequest extends FormRequest
             'dateofbirth'    => ['required', 'date'],
             'gender'         => ['required', 'integer', 'in:0,1,2'],
             'email'          => ['nullable', 'email', 'max:255'],
-            'phone'          => ['nullable', 'string', 'max:20'],
+            'phone'          => ['required', 'string', 'max:20'],
             'contactpre'     => ['nullable', 'string', 'max:50'],
             'ename'          => ['nullable', 'string', 'max:255'],
             'ephone'          => ['nullable', 'string', 'max:255'],
@@ -62,6 +62,7 @@ class StoreStudentRequest extends FormRequest
         return [
             'fname.required'        => 'First name is required.',
             'lname.required'        => 'Last name is required.',
+            'phone.required'        => 'Phone no is required.',
             'email.email'           => 'Provide a valid email address.',
             'dateofbirth.required'           => 'Provide a valid date of birth address.',
             'gender.required'           => 'Provide gender.',
@@ -76,6 +77,7 @@ class StoreStudentRequest extends FormRequest
         return [
             'fname'         => 'First Name',
             'lname'         => 'Last Name',
+            'phone'         => 'Phone No',
             'dateofbirth'   => 'Date of Birth',
             'preaddcountry' => 'Country',
             'preaddstate'   => 'State',

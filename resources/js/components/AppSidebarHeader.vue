@@ -6,6 +6,7 @@ import NavUser from '@/components/NavUser.vue';
 import { ref, onMounted, onUnmounted } from "vue";
 
 const time = ref<string>("");
+const color = ref<string>("text-black");
 const updateTime = () => {
     const now = new Date();
 
@@ -18,6 +19,15 @@ const updateTime = () => {
     hours = hours % 12 || 12; // convert 0 → 12
 
     time.value = `${String(hours).padStart(2, "0")}:${minutes}:${seconds} ${ampm}`;
+
+    const hour24 = now.getHours();
+    if (hour24 > 10) {
+        color.value = "text-green-600";
+    } else if (hour24 > 17) {
+        color.value = "text-red-600";
+    } else {
+        color.value = "text-black";
+    }
 };
 let interval: number;
 onMounted(() => {
@@ -52,9 +62,10 @@ withDefaults(defineProps<{
             </template>
         </div>
         <div class="flex justify-center items-center">
-            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 
-                   font-mono font-bold tracking-widest text-black 
-                   px-2 sm:px-4 md:px-6 py-1 md:py-2">
+            <span :class="[
+                'text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-mono font-bold tracking-widest px-2 sm:px-4 md:px-6 py-1 md:py-2 transition-colors duration-500',
+                color
+            ]">
             {{ time }}
         </span>
         </div>

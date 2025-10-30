@@ -21,7 +21,8 @@ return new class extends Migration
             $table->time('ltime')->nullable();
             $table->integer('active');
             $table->timestamps();
-
+            $table->softDeletes();
+            
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });

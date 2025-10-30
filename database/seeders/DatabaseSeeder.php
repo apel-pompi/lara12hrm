@@ -13,25 +13,27 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $user = User::where('email', 'admin@admin.com')->first();
+        //$user = User::where('email', 'admin@admin.com')->first();
         // if (is_null($user)) {
         //     $user = new User();
-        //     $user->name = "Md. Ashrafur Rahman";
+        //     $user->name = "Md. Kawsar Ahmed";
         //     $user->username = "superadmin";
         //     $user->email = "admin@admin.com";
         //     $user->password = Hash::make('Admin@123');
         //     $user->save();
         // }
         
-        // $this->call(CompanySeeder::class);
-        // $this->call(MasterSeeder::class);
-        // $this->call(StudentSource::class);
-        // $this->call(StudentStage::class);
-        // $this->call(FeesTypeSeeder::class);
-        // $this->call(InstallmentTypeSeeder::class);
-        // $this->call(CountrySeeder::class);
-        // $this->call(StatesSeeder::class);
-        // $this->call(CitiesSeeder::class);
+        $this->call(CompanySeeder::class);
+        $this->call(MasterSeeder::class);
+        $this->call(StudentSource::class);
+        $this->call(StudentStage::class);
+        $this->call(FeesTypeSeeder::class);
+        $this->call(InstallmentTypeSeeder::class);
+        $this->call(AcademicSeeder::class);
+        $this->call(TransactionSeeder::class);
+        $this->call(CountrySeeder::class);
+        $this->call(StatesSeeder::class);
+        $this->call(CitiesSeeder::class);
         $this->call(RolePermissionSeeder::class);
     }
 }

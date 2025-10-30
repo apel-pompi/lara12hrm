@@ -17,7 +17,7 @@ class MasterSeeder extends Seeder
         $json = File::get(database_path('seeders/json/master.json'));
         $countriesArray = json_decode($json, true); 
         $countries = $countriesArray[0]['data'];
-        $user = User::where('email', 'admin@admin.com')->first();
+        $user = User::where('email', 'hop@glendonedu.com')->first();
         foreach ($countries as $country) {
             MasterCategory::create([
                 'catname' => $country['catname'],

@@ -6,7 +6,7 @@ use App\Http\Controllers\Product\{
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth'])->group(function () {
+Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
 
     //product
     Route::controller(ProductController::class)
@@ -35,6 +35,7 @@ Route::middleware(['verified', 'auth'])->group(function () {
 
                 Route::get('/fees', 'fees')->name('productActivities.fees');
                 Route::post('/fees', 'storefess')->name('productActivities.storefess');
+                Route::put('/fees/{id}', 'updatefees')->name('productActivities.updatefees');
                 Route::delete('/fees/show/{productFeesHd}', 'feeDelete')->name('productActivities.feeDelete');
 
                 Route::get('/requirement', 'requirement')->name('productActivities.requirement');

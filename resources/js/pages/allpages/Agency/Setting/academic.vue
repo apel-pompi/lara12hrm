@@ -186,7 +186,7 @@ const goToPage = (url: string | null) => {
         <AgencyLayout>
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
-                    <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Academic </Button>
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Academic </Button>
                     <!-- Search start -->
                     <div class="grid gap-2">
                         <Combobox v-model="selecteName">
@@ -237,10 +237,10 @@ const goToPage = (url: string | null) => {
                         </Combobox>
                     </div>
                     <div class="grid gap-2">
-                        <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
+                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
                     </div>
                     <div class="grid gap-2">
-                        <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
                     </div>
                 </div>
                 <div class="rounded-md border">

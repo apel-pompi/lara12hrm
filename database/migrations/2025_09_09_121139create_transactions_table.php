@@ -22,7 +22,8 @@ return new class extends Migration
             $table->date('adddate');
             $table->tinyInteger('active')->default(0);
             $table->timestamps();
-
+            $table->softDeletes();
+            
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });

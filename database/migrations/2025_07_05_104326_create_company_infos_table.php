@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string('company_email')->nullable();
             $table->string('companylogo')->nullable();
             $table->timestamps();
-
+            $table->softDeletes();
+            
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });

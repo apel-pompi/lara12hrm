@@ -204,7 +204,7 @@ const onDelete = async (id: number) => {
                     <TableBody>
                         <TableRow v-for="(product, index) in data" :key="product.id ?? index">
                             <TableCell>
-                                <Link :href="route('productActivities.application', product.id)" method="get" class="flex items-center space-x-2">{{ product.name }}</Link>
+                                <Link :href="route('productActivities.application', product.id)" method="get" class="flex items-center space-x-2 dark:text-white">{{ product.name }}</Link>
                             </TableCell>
                             <TableCell>{{ product.productype.producttypename }}</TableCell>
                             <TableCell>{{ product.partner.name }}</TableCell>

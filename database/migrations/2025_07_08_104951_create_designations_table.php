@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('desname')->unique();
             $table->integer('active');
             $table->timestamps();
-
+            $table->softDeletes();
+            
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });

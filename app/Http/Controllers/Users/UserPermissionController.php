@@ -17,7 +17,7 @@ class UserPermissionController extends Controller
      */
     public function index()
     {
-        $this->authorize('permission.index');
+        $this->authorize('user.index');
 
         $users = User::with('roles')->orderBy('id', 'desc')->get()->map(function ($user) {
             return [
@@ -25,6 +25,7 @@ class UserPermissionController extends Controller
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
+                'banned_at' => $user->banned_at,
                 'roles' => $user->roles->map(fn($role) => ['name' => $role->name]),
             ];
         });
@@ -42,7 +43,7 @@ class UserPermissionController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('permission.store');
+        $this->authorize('user.store');
 
         $validated = $request->validate([
             'name' => 'required',
@@ -69,7 +70,7 @@ class UserPermissionController extends Controller
      */
     public function edit(string $id)
     {
-        $this->authorize('permission.edit');
+        $this->authorize('user.edit');
 
         $user = User::with('roles')->findOrFail($id);
         return response()->json([
@@ -89,7 +90,7 @@ class UserPermissionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $this->authorize('permission.update');
+        $this->authorize('user.update');
 
         $validated = $request->validate([
             'name' => 'required',
@@ -121,11 +122,20 @@ class UserPermissionController extends Controller
      */
     public function destroy(string $id)
     {
-        $this->authorize('permission.destroy');
+        $this->authorize('user.destroy');
 
         $user = User::findOrFail($id);
-        $user->delete();
+        $ban = $user->ban();
+        $ban->isPermanent();
+        return redirect()->back()->with('success', 'User deleted successfully');
+    }
 
+    public function active(string $id)
+    {
+        $this->authorize('user.active');
+
+        $user = User::findOrFail($id);
+        $user->unban();
         return redirect()->back()->with('success', 'User deleted successfully');
     }
 }

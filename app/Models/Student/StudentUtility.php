@@ -1,26 +1,26 @@
 <?php
 
-namespace App\Models\Default;
+namespace App\Models\Student;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-
-class TransactionName extends Model
+class StudentUtility extends Model
 {
-   use HasFactory;
-   protected $fillable = [
+    use HasFactory;
+
+    protected $fillable = [
         'name',
-        'code',
-        'adddate',
-        'user_id',
-        'active',
+        'datetime',
+        'discus',
+        'student_id',
+        'user_id'
     ];
 
     /**
-     * Get the user that owns the TransactionName
+     * Get the user that owns the MasterCategory
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */

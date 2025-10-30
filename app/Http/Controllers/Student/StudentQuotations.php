@@ -28,6 +28,10 @@ class StudentQuotations extends Controller
     {
         $this->authorize('StudQuoat.index');
 
+        $user = Auth::user();
+        $roles = $user->getRoleNames();
+
+
         $student->load('assainuser');
         return Inertia::render('allpages/Agency/Student/quoatation', [
             'student' => $student,
@@ -49,9 +53,13 @@ class StudentQuotations extends Controller
                     DB::raw('SUM(e.netamount) as amount')
                 )
                 ->where('a.student_id', $student->id)
+                ->where('e.deleted_at',null)
+                ->where('a.deleted_at',null)
+                ->where('a.deleted_at',null)
                 ->groupBy('a.id', 'a.product_id', 'b.name', 'd.name', 'c.branch_name', 'f.name', 'a.status')
                 ->get(),
             'quoatation' => StudentQuotationHD::where('student_id', $student->id)->get(),
+            'roles' => $roles
         ]);
     }
 
@@ -63,6 +71,8 @@ class StudentQuotations extends Controller
             ->leftJoin('fees as d', 'c.fees_id', '=', 'd.id')
             ->where('a.student_id', $student)
             ->where('a.product_id', $product)
+            ->where('b.deleted_at',null)
+            ->where('c.deleted_at',null)
             ->select(
                 'd.id as feesid',
                 'd.name as feename',
@@ -158,6 +168,8 @@ class StudentQuotations extends Controller
             ->where('a.student_id', $student->id)
             ->where('a.product_id', $product->id)
             ->where('a.id', $request->status)
+            ->where('a.deleted_at', null)
+            ->where('b.deleted_at', null)
             ->groupBy('a.totalamount', 'a.quotation_no')
             ->first();
         if (!$chkamount) {
@@ -285,6 +297,8 @@ class StudentQuotations extends Controller
             ->where('a.id', $quoatation->id)
             ->where('a.student_id', $student->id)
             ->where('a.product_id', $product->id)
+            ->where('d.deleted_at', null)
+            ->where('e.deleted_at', null)
             ->where('a.active', 1)
             ->whereColumn('b.fee_id', '=', 'e.fees_id')
             ->get();
@@ -292,6 +306,75 @@ class StudentQuotations extends Controller
         $numberToWords = new NumberToWords();
         $numberTransformer = $numberToWords->getNumberTransformer('en');
         $pdf = Pdf::loadView('exports.studentQuatation', [
+            'student' => $student,
+            'quatHd' => $quoatation,
+            'company' => $company,
+            'service' => $service,
+            'fees' => $fees,
+            'numberTransformer' => $numberTransformer
+        ])
+            ->setPaper('a4', 'portrait')
+            ->setOption([
+                'margin-top'    => 10,
+                'margin-right'  => 5,
+                'margin-bottom' => 5,
+                'margin-left'   => 10,
+            ]);;
+
+        return $pdf->stream("Quotation_{$quoatation->quotation_no}.pdf");
+    }
+
+    public function exportPdfApproved(Student $student, Product $product, StudentQuotationHD $quoatation)
+    {
+        $this->authorize('StudQuoat.ApprovedReport');
+
+        StudentActivities::create([
+            'student_id' => $student->id,
+            'title' => "has show student quotation's reports without approval",
+            'fristactivity' => null,
+            'lastactivity' => null,
+            'user_id' => Auth::id()
+        ]);
+
+        $student->load('country');
+        $company = CompanyInfo::firstOrFail();
+        $service = DB::table('student_in_services as a')
+            ->leftJoin('workflows as b', 'a.workflow_id', '=', 'b.id')
+            ->leftJoin('partner_branches as c', 'a.partner_branch_id', '=', 'c.id')
+            ->leftJoin('partners as d', 'c.partner_id', '=', 'd.id')
+            ->leftJoin('products as f', 'a.product_id', '=', 'f.id')
+            ->select(
+                'b.name as workflow',
+                'd.name as partner',
+                'c.branch_name as partnerbranch',
+                'f.name as product'
+            )
+            ->where('a.student_id', $student->id)
+            ->where('a.product_id', $product->id)
+            ->first();
+        $fees = DB::table('student_quotation_h_d_s as a')
+            ->leftJoin('student_quoation_fees as b', 'a.id', '=', 'b.quotation_hd_id')
+            ->leftJoin('fees as c', 'b.fee_id', '=', 'c.id')
+            ->leftJoin('product_fees_hds as d', 'a.product_id', '=', 'd.product_id')
+            ->leftJoin('product_fees_dts as e', 'd.id', '=', 'e.fees_hd_id')
+            ->select(
+                'c.name',
+                'b.amount as quoatamount',
+                'e.totalamount as pamount',
+                'e.pay_type'
+            )
+            ->where('a.id', $quoatation->id)
+            ->where('a.student_id', $student->id)
+            ->where('a.product_id', $product->id)
+            ->where('d.deleted_at', null)
+            ->where('e.deleted_at', null)
+            ->where('a.active', 0)
+            ->whereColumn('b.fee_id', '=', 'e.fees_id')
+            ->get();
+
+        $numberToWords = new NumberToWords();
+        $numberTransformer = $numberToWords->getNumberTransformer('en');
+        $pdf = Pdf::loadView('exports.studentQuatationApproval', [
             'student' => $student,
             'quatHd' => $quoatation,
             'company' => $company,

@@ -56,7 +56,7 @@ const updatePassword = () => {
 
         <Layout>
             <div class="flex h-full flex-1 flex-col gap-6 rounded-xl bg-gray-50 p-6">
-                <HeadingSmall title="Update password" description="Ensure your account is using a long, random password to stay secure" />
+                <HeadingSmall class="dark:text-black" title="Update password" description="Ensure your account is using a long, random password to stay secure" />
                 <Card class="border border-gray-200 shadow-sm">
                     <CardContent class="pt-4">
                         <form @submit.prevent="updatePassword" class="space-y-6">

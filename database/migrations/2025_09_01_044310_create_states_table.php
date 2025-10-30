@@ -20,7 +20,8 @@ return new class extends Migration
             $table->decimal('longitude',11,8)->nullable();
             $table->tinyInteger('status')->default(0);
             $table->timestamps();
-
+            $table->softDeletes();
+            
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });

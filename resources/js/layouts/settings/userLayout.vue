@@ -13,7 +13,7 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'User Permission',
         href: '/userpermission',
-    },
+    }
 ];
 
 const page = usePage<{

@@ -29,7 +29,11 @@ return new class extends Migration
             $table->string('docname')->nullable();
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->softDeletes();
             $table->timestamps();
+            
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_general_ci';
         });
     }
 
