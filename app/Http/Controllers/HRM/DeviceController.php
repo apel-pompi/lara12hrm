@@ -22,14 +22,6 @@ class DeviceController extends Controller
             'senddate' => 'required|date_format:Y-m-d',
         ]);
 
-        if ($request->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $request->errors()
-            ], 422);
-        }
-
         return response()->json([
             'success' => true,
             'date' => $request->senddate,
@@ -46,15 +38,18 @@ class DeviceController extends Controller
             'state' => 'nullable|integer',
         ]);
 
-        if ($request->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $request->errors()
-            ], 422);
-        }
-
         try {
+            $exists = Attendance::where('user_id', $request->user_id)
+                ->where('record_time', $request->record_time)
+                ->where('device_ip', $request->device_ip)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Duplicate attendance — already exists for this user and time.'
+                ], 200);
+            }
             $attendance = Attendance::create($request->all());
 
             return response()->json([
@@ -62,7 +57,6 @@ class DeviceController extends Controller
                 'message' => 'Attendance saved successfully!',
                 'data' => $attendance
             ], 201);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -71,5 +65,4 @@ class DeviceController extends Controller
             ], 500);
         }
     }
-    
 }

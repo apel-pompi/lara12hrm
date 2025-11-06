@@ -58,6 +58,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
             function () {
                 Route::get('/', 'index')->name('student.index');
                 Route::get('/lead', 'lead')->name('student.lead');
+                Route::get('/pending', 'pending')->name('student.pending');
                 Route::get('/prospect', 'prospect')->name('student.prospect');
                 Route::get('/onBoard', 'onBoard')->name('student.onBoard');
                 Route::get('/archive', 'archive')->name('student.archive');
@@ -173,6 +174,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/', 'index')->name('studentAccounts.index');
                 Route::get('/{quotation}/create', 'create')->name('studentAccounts.create');
                 Route::post('/{quotation}/store', 'store')->name('studentAccounts.store');
+                Route::get('/{confirm}/onView', 'onView')->name('studentAccounts.onView');
                 Route::post('/{confirm}/onDelete', 'onDelete')->name('studentAccounts.onDelete');
                 Route::post('/{confirm}/onConfirm', 'onConfirm')->name('studentAccounts.onConfirm');
                 Route::get('/{confirm}/onReport', 'onReport')->name('studentAccounts.onReport');

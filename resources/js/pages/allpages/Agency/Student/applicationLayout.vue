@@ -248,7 +248,7 @@ const backStep = () => {
                         </div>
 
                         <!-- Assignees -->
-                        <div class="flex flex-wrap items-center gap-2">
+                        <!-- <div class="flex flex-wrap items-center gap-2">
                             <span class="text-xs text-gray-500 uppercase">Started by</span>
                             <span class="flex h-6 w-6 items-center justify-center rounded-full bg-red-200 text-[10px] font-semibold"> M </span>
 
@@ -257,7 +257,7 @@ const backStep = () => {
                             <span class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs">
                                 <Users class="h-4 w-4" />
                             </span>
-                        </div>
+                        </div> -->
 
                         <!-- View More -->
                         <div class="lg:ml-auto">

@@ -41,10 +41,14 @@ export interface Paginated<T> {
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Student', href: '/student' }];
 
 const props = defineProps<{
+    allsearch:[],
+    allcountry:[],
+    assaignUser:[],
     student: Paginated<Student>;
     filters: { name?: string };
     countAll: { countAll: number };
     countLead: { countLead: number };
+    countPending: { countPending: number };
     countProspect: { countProspect: number };
     countonBoard: { countonBoard: number };
     countArchive: { countArchive: number };
@@ -102,8 +106,11 @@ const getStatusText = (status: number) => {
             return { id: '2', text: 'Prospect', color: 'bg-yellow-500 text-black' };
         case 3:
             return { id: '3', text: 'onBoard', color: 'bg-blue-500 text-white' };
-        default:
+        case 4:
             return { id: '4', text: 'Achieved', color: 'bg-gray-500 text-white' };
+        default:
+            return { id: null, text: 'Pending', color: 'bg-red-800 text-white' };
+        
     }
 };
 
@@ -134,39 +141,29 @@ const selectedStatus = ref(null);
 const queryStatus = ref('');
 // Filtered lists
 const filteredName = computed(() => {
-    if (queryName.value === '') return data.data;
+    if (queryName.value === '') return props.allsearch;
 
-    return data.data.filter((n) => `${n.fname} ${n.lname}`.toLowerCase().includes(queryName.value.toLowerCase()));
+    return props.allsearch.filter((n) => `${n.fname} ${n.lname}`.toLowerCase().includes(queryName.value.toLowerCase()));
 });
 
 const filteredPhone = computed(() => {
-    if (queryPhone.value === '') return data.data;
+    if (queryPhone.value === '') return props.allsearch;
 
-    return data.data.filter((n) => n.phone.toLowerCase().includes(queryPhone.value.toLowerCase()));
+    return props.allsearch.filter((n) => n.phone && n.phone.toLowerCase().includes(queryPhone.value.toLowerCase()));
 });
 
 const filteredCountries = computed(() => {
-    const filtered =
-        queryDesCoun.value === ''
-            ? data.data
-            : data.data.filter((n) => n.country && n.country.name.toLowerCase().includes(queryDesCoun.value.toLowerCase()));
-
-    // unique country name
-    const uniqueMap = new Map();
-    filtered.forEach((item) => {
-        if (item.country && !uniqueMap.has(item.country.id)) {
-            uniqueMap.set(item.country.id, item.country);
-        }
-    });
-
-    return Array.from(uniqueMap.values());
+     if (queryDesCoun.value === '') return props.allcountry;
+    
+     return props.allcountry.filter((n) => n.name && n.name.toLowerCase().includes(queryDesCoun.value.toLowerCase()));
 });
 
 const filteredAssain = computed(() => {
+   
     const filtered =
         queryAssain.value === ''
-            ? data.data
-            : data.data.filter((n) => n.assainuser && n.assainuser.name.toLowerCase().includes(queryAssain.value.toLowerCase()));
+            ? props.assaignUser
+            : props.assaignUser.filter((n) => n.assainuser && n.assainuser.name.toLowerCase().includes(queryAssain.value.toLowerCase()));
 
     // unique user name
     const uniqueMap = new Map();
@@ -182,8 +179,8 @@ const filteredAssain = computed(() => {
 const filteredTime = computed(() => {
     const filtered =
         queryTime.value === ''
-            ? data.data
-            : data.data.filter((item) => getTimeText(item.created_at).text.toLowerCase().includes(queryTime.value.toLowerCase()));
+            ? props.allsearch
+            : props.allsearch.filter((item) => getTimeText(item.created_at).text.toLowerCase().includes(queryTime.value.toLowerCase()));
 
     // Remove duplicates by text
     const uniqueMap = new Map<string, { text: string; color: string }>();
@@ -199,7 +196,7 @@ const filteredTime = computed(() => {
 
 const filteredUser = computed(() => {
     const filtered =
-        queryUser.value === '' ? data.data : data.data.filter((n) => n.user && n.user.name.toLowerCase().includes(queryUser.value.toLowerCase()));
+        queryUser.value === '' ? props.allsearch : props.allsearch.filter((n) => n.user && n.user.name.toLowerCase().includes(queryUser.value.toLowerCase()));
 
     // unique user name
     const uniqueMap = new Map();
@@ -215,11 +212,11 @@ const filteredUser = computed(() => {
 const filteredStatus = computed(() => {
     const filtered =
         queryStatus.value === ''
-            ? data.data
-            : data.data.filter((item) => getStatusText(item.status).text.toLowerCase().includes(queryStatus.value.toLowerCase()));
+            ? props.allsearch
+            : props.allsearch.filter((item) => getStatusText(item.status).text.toLowerCase().includes(queryStatus.value.toLowerCase()));
 
     // Unique status by name
-    const uniqueMap = new Map<string, { text: string; color: string }>();
+    const uniqueMap = new Map<string, { text: string}>();
     filtered.forEach((item) => {
         const statusObj = getStatusText(item.status);
         if (!uniqueMap.has(statusObj.text)) {
@@ -263,11 +260,16 @@ const goToPage = (url: string | null) => {
 };
 
 
+const goToAll = () => {
+    router.get(route('student.index'), {}, { replace: true });
+};
 
 const goToLead = () => {
     router.get(route('student.lead'), {}, { replace: true });
 };
-
+const goToPending = () => {
+    router.get(route('student.pending'), {}, { replace: true });
+};
 const goToProspect = () => {
     router.get(route('student.prospect'), {}, { replace: true });
 };
@@ -354,12 +356,12 @@ const goToArchive = () => {
                                 </div>
 
                                 <ComboboxOption
-                                    v-for="country in filteredPhone"
-                                    :key="country.id"
-                                    :value="country"
+                                    v-for="ph in filteredPhone"
+                                    :key="ph.id"
+                                    :value="ph"
                                     class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
                                 >
-                                    {{ country.phone }}
+                                    {{ ph.phone }}
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
@@ -593,11 +595,12 @@ const goToArchive = () => {
                 </div>
             </div>
             <div class="flex items-center gap-2 py-4">
-                <Button class="bg-green-600" size="sm" @click="refresh">({{ props.countAll }})All</Button>
-                <Button class="bg-green-500 text-black" size="sm" @click="goToLead">({{ props.countLead }})Lead</Button>
-                <Button class="bg-yellow-500 text-black" size="sm" @click="goToProspect">({{ props.countProspect }})Prospect</Button>
-                <Button class="bg-blue-500 text-white" size="sm" @click="goToOnBoard">({{ props.countonBoard }})OnBoard</Button>
-                <Button class="bg-gray-500 text-white" size="sm" @click="goToArchive">({{ props.countArchive }})Archive</Button>
+                <Button class="bg-green-600 text-white cursor-pointer" size="sm" @click="goToAll">({{ props.countAll }})All</Button>
+                <Button class="bg-red-800 text-white cursor-pointer" size="sm" @click="goToPending">({{ props.countPending }})Pending</Button>
+                <Button class="bg-green-500 text-white cursor-pointer" size="sm" @click="goToLead">({{ props.countLead }})Lead</Button>
+                <Button class="bg-yellow-500 text-white cursor-pointer" size="sm" @click="goToProspect">({{ props.countProspect }})Prospect</Button>
+                <Button class="bg-blue-500 text-white cursor-pointer" size="sm" @click="goToOnBoard">({{ props.countonBoard }})OnBoard</Button>
+                <Button class="bg-gray-500 text-white cursor-pointer" size="sm" @click="goToArchive">({{ props.countArchive }})Archive</Button>
             </div>
             <div class="rounded-md border">
                 <Table>
@@ -663,7 +666,7 @@ const goToArchive = () => {
                 <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
                     <label for="per-page" class="text-gray-600">Show:</label>
                     <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
-                        <option v-for="size in [5, 10, 25, 50, 100]" :key="size" :value="size">{{ size }}</option>
+                        <option v-for="size in [5, 10, 25, 50, 100,200]" :key="size" :value="size">{{ size }}</option>
                     </select>
                     <span>Showing {{ student.from }} to {{ student.to }} of {{ student.total }} results</span>
                 </div>

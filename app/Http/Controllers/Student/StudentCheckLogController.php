@@ -19,7 +19,7 @@ class StudentCheckLogController extends Controller
         return Inertia::render('allpages/Agency/Student/checkin', [
             'student' => $student,
             'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get(),
-            'checkin' => StudentCheckLog::with(['student','user'])->orderBy('id','DESC')->where('student_id', $student->id)->paginate(15)
+            'checkin' => StudentCheckLog::with(['student', 'user'])->orderBy('id', 'DESC')->where('student_id', $student->id)->paginate(15)
         ]);
     }
 
@@ -32,6 +32,9 @@ class StudentCheckLogController extends Controller
         ]);
 
         if ($created) {
+            $student->update([
+                'status'      => 1,
+            ]);
             StudentActivities::create([
                 'student_id' => $student->id,
                 'title' => "has created student check in",

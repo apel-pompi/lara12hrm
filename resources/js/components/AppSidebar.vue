@@ -17,7 +17,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-import { Book, Calculator, CalendarX2, MessageCircleOff, School, Settings, User,ClipboardPlus } from 'lucide-vue-next';
+import { Book, Calculator, CalendarX2, MessageCircleOff, School, Settings, User,ClipboardPlus, Upload } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
     collapsible: 'icon',
@@ -87,6 +87,11 @@ const mainmenu = [
         route:'leave.index',
         title:'Leave Request',
         icon:MessageCircleOff
+    },
+    {
+        route:'imports.showImportForm',
+        title: 'Upload Lead',
+        icon:Upload
     },
     {
         route:'student.index',

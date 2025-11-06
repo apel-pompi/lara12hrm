@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
+import Textarea from '@/components/ui/textarea/Textarea.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type NavItem } from '@/types';
 
@@ -15,7 +15,7 @@ import { getLocalTimeZone, today } from '@internationalized/date';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import axios from 'axios';
-import { AlertCircle, CornerDownLeft, Phone, Save, Loader2 } from 'lucide-vue-next';
+import { AlertCircle, CornerDownLeft, Loader2, Phone, Save } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import StudentSidebar from './StudentSidebar.vue';
@@ -32,6 +32,24 @@ const props = defineProps<{
     studentService: Array<{ id: number; startdate: string; enddate: string; status: string }>;
 }>();
 
+const pending = [
+    {
+        title: 'Activities',
+        href: route('studentActivities.index', props.student.id),
+    },
+    {
+        title: 'Appointements',
+        href: route('studentAppointements.index', props.student.id),
+    },
+    {
+        title: 'Conversations',
+        href: route('studentConversations.index', props.student.id),
+    },
+    {
+        title: 'Check-in Logs',
+        href: route('studentCheckin.index', props.student.id),
+    },
+];
 const lead = [
     {
         title: 'Activities',
@@ -173,15 +191,19 @@ const getStatusText = (status: number) => {
             return { id: '2', text: 'Prospect', color: 'bg-yellow-500 text-black' };
         case 3:
             return { id: '3', text: 'onBoard', color: 'bg-blue-500 text-white' };
-        default:
+        case 4:
             return { id: '4', text: 'Achieved', color: 'bg-gray-500 text-white' };
+        default:
+            return { id: null, text: 'Pending', color: 'bg-red-800 text-white' };
     }
 };
 
 const sidebarNavItems = computed<NavItem[]>(() => {
     if (!props.student) return [];
 
-    if (props.student.status === 1) {
+    if (props.student.status === null) {
+        return pending;
+    } else if (props.student.status === 1) {
         return lead;
     } else if (props.student.status === 2) {
         return prospect;
@@ -212,22 +234,70 @@ const updateRate = (status: number) => {
     );
 };
 
+const errors = ref<FormErrors>();
+
+interface FormErrors {
+    details?: string;
+}
+
+const showArchive = ref(false);
+const archiveform = useForm({
+    details: '',
+});
 const updateArchive = (studentId: number, status: number) => {
     if (!confirm(status === 4 ? 'Archive this student?' : 'Restore this student?')) return;
-    router.put(
-        route('studentActivities.updateArchive', props.student.id),
-        {
-            student_id: studentId,
-            status,
-        },
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                toast.success('Partner  status update');
-            },
-        },
-    );
+
+    showArchive.value = true;
+
 };
+
+const submitArchive = () => {
+    if (!archiveform.details) {
+        toast('error', {
+            description: 'Please write archive details before submitting.',
+        });
+        return;
+    }
+    archiveform.post(route('approval.studentArchive', 
+        { 
+            student: props.student.id
+        }
+    ), {
+        onSuccess: () => {
+            const flash = usePage().props.flash;
+            
+            if (flash?.success) {
+                toast('success', {
+                    description: flash.success,
+                });
+            }
+            if (flash?.error) {
+                toast('error', {
+                    description: flash.error,
+                });
+                return; 
+            }
+            
+            setTimeout(() => {
+                showDialog.value = false;
+                assaignform.reset();
+                router.visit(route('studentActivities.index', [props.student.id]), {
+                    preserveScroll: true,
+                    preserveState: false,
+                });
+            }, 200);
+            showDialog.value = false;
+            form.reset();
+        },
+        onError: () => {
+            toast('Validation Error', {
+                description: 'Student archive request send error',
+            });
+        },
+    });
+    
+};
+
 const assaignform = useForm({
     user_id: '',
 });
@@ -248,9 +318,19 @@ const showDailogCreate = async () => {
 const updateAssignee = () => {
     assaignform.post(route('studentActivities.updateAssignee', { student: props.student.id }), {
         onSuccess: () => {
-            toast('Success', {
-                description: `User assignee successfully`,
-            });
+            const flash = usePage().props.flash;
+            
+            if (flash?.success) {
+                toast('success', {
+                    description: flash.success,
+                });
+            }
+            if (flash?.error) {
+                toast('error', {
+                    description: flash.error,
+                });
+                return; 
+            }
             setTimeout(() => {
                 showDialog.value = false;
                 assaignform.reset();
@@ -263,8 +343,9 @@ const updateAssignee = () => {
             form.reset();
         },
         onError: () => {
-            toast('Validation Error', {
-                description: 'User assignee error',
+            const flash = usePage().props.flash;
+            toast('error', {
+                description: flash.error,
             });
         },
     });
@@ -310,7 +391,6 @@ watch(dob, (newDate) => {
     }
 });
 
-const errors = ref<FormErrors>();
 const editDialog = ref(false);
 
 const editDialogCreate = async () => {
@@ -348,7 +428,7 @@ const updateStudent = () => {
         route('student.update', {
             student: props.student.id,
         }),
-        
+
         {
             preserveState: true,
             onSuccess: () => {
@@ -367,7 +447,6 @@ const updateStudent = () => {
         },
     );
 };
-
 </script>
 
 <template>
@@ -448,8 +527,8 @@ const updateStudent = () => {
                     </DialogClose>
 
                     <!-- Submit Right -->
-                    <Button :disabled="form.processing" @click="updateAssignee">
-                        <template v-if="form.processing">
+                    <Button :disabled="assaignform.processing" @click="updateAssignee">
+                        <template v-if="assaignform.processing">
                             Saving...
                             <Loader2 class="mr-2 h-4 w-4 animate-spin" />
                         </template>
@@ -662,6 +741,43 @@ const updateStudent = () => {
                             </template>
                         </Button>
                     </div>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <Dialog v-model:open="showArchive">
+            <DialogContent class="max-w-[825px]">
+                <!-- Header -->
+                <DialogHeader>
+                    <DialogTitle> Archive Request </DialogTitle>
+                    <DialogDescription> Submit archive request. Click save when you're done. </DialogDescription>
+                </DialogHeader>
+
+                <!-- Body -->
+                <div class="grid gap-6">
+                    <!-- Select Document Type -->
+                    <div class="grid gap-2">
+                        <Label for="doctype">why doing you archive this student ? <span class="text-red-500">*</span></Label>
+                        <Textarea v-model="archiveform.details" id="paddress" placeholder="Please write details" />
+                        <span v-if="archiveform.errors.details" class="text-sm text-red-600">{{ archiveform.errors.details }}</span>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <DialogFooter class="mt-6 flex items-center justify-between">
+                    <!-- Close Left -->
+                    <DialogClose as-child>
+                        <Button type="button" variant="secondary">Close</Button>
+                    </DialogClose>
+
+                    <!-- Submit Right -->
+                    <Button :disabled="archiveform.processing" @click="submitArchive">
+                        <template v-if="archiveform.processing">
+                            Saving...
+                            <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+                        </template>
+                        <template v-else>Save</template>
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

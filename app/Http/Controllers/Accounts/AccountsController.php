@@ -28,7 +28,11 @@ class AccountsController extends Controller
         $this->authorize('Accounts.MRIndex');
 
         return Inertia::render('allpages/accounts/index', [
-            'invoice' => StudentInvoiceHD::with(['student', 'user'])->where('status', 'Confirmed')->whereRaw("LEFT(insnumber, 4) = 'INV-'")->get(),
+            'invoice' => StudentInvoiceHD::with(['student', 'user'])
+                ->withSum('details', 'amount')
+                ->where('status', 'Confirmed')
+                ->whereRaw("LEFT(insnumber, 4) = 'INV-'")
+                ->get(),
         ]);
     }
 
@@ -39,7 +43,7 @@ class AccountsController extends Controller
         $invoice = StudentInvoiceHD::with(['details.fee', 'user'])->where('insnumber', $insid)->whereRaw("LEFT(insnumber, 4) = 'INV-'")->first();
         $invoicemr = StudentInvoiceHD::with(['user'])->where('refe_code', $insid)->whereRaw("LEFT(insnumber, 4) = 'MR--'")->get();
         $student = StudentApplication::with(['student', 'partnerBranch.partner', 'product'])->where('student_id', $sid)->first();
-        
+
         StudentActivities::create([
             'student_id' => $sid,
             'title' => "has show student money receipt",
@@ -147,6 +151,65 @@ class AccountsController extends Controller
         ]);
 
         return back()->with(['success' => true, 'message' => 'Student money received create successfully']);
+    }
+
+    public function onView(StudentInvoiceHD $confirm)
+    {
+        $this->authorize('Accounts.ViewMR');
+
+        if (!$confirm) {
+            return back()->with(['error' => true, 'message' => 'Invalid request']);
+        }
+
+        $invoice = StudentInvoiceHD::with(['user'])->where('insnumber',$confirm->refe_code)->first();
+        $money_reecive = StudentInvoiceHD::with(['student.country','mrdetails.fees'])->where('id',$confirm->id)->first();
+        return response()->json([
+            'success' => true,
+            'data' => $money_reecive,
+            'invoice' => $invoice
+        ]);
+
+    }
+
+    public function onCancel(StudentInvoiceHD $confirm)
+    {
+        $this->authorize('Accounts.CancelMR');
+
+        if (!$confirm) {
+            return back()->with(['error' => true, 'message' => 'Invalid request']);
+        }
+
+        $invoice = StudentInvoiceHD::find($confirm->id);
+
+        if (!$invoice) {
+            return back()->with(['error' => true, 'message' => 'Invoice not found']);
+        }
+
+        if ($invoice->status !== 'Open') {
+            return back()->with(['error' => true, 'message' => 'Only open receive can be Cancel']);
+        }
+
+        $invoice->update(['status' => 'Cancel']);
+
+        $mramount = StudentInvoiceHD::where('refe_code', $confirm->refe_code)
+            ->where('sign', '-1')
+            ->where('status', '<>', 'Cancel')
+            ->sum(DB::raw('disc_amt + netamount'));
+
+        $invoice_amount = StudentInvoiceHD::where('insnumber', $confirm->refe_code)->first(['netamount', 'status']);
+        if ($mramount == $invoice_amount->netamount) {
+            $invoice_amount->update(['status' => 'Delivered']);
+        }
+
+        StudentActivities::create([
+            'student_id' => $confirm->student_id,
+            'title' => "has confirm student money receipt",
+            'fristactivity' => null,
+            'lastactivity' => null,
+            'user_id' => Auth::id()
+        ]);
+
+        return back()->with(['success' => true, 'message' => 'Money receive confirmed successfully']);
     }
 
     public function onConfirm(StudentInvoiceHD $confirm)

@@ -24,10 +24,7 @@ class HRreportsController extends Controller
         ]);
     }
 
-    public function EmpInfoReport(Request $request)
-    {
-        dd($request->all());
-    }
+    public function EmpInfoReport(Request $request) {}
     public function EmployeeAttendance()
     {
 
@@ -47,40 +44,35 @@ class HRreportsController extends Controller
     public function EmployeeAttendanceReport(Request $request)
     {
         $sql = PersonalInfo::with(['designation', 'department'])->where('empid', $request->empid)->where('active', 1)->first();
-        $holistatus = DB::table('personal_infos', 'a')
-            ->select('holiday_dts.holidate')
-            ->leftJoin('holiday_hds', 'a.branch_id', 'holiday_hds.branch_id')
-            ->leftJoin('holiday_dts', 'holiday_hds.id', 'holiday_dts.holihd_id')
-            ->where('a.empid', $request->empid)
-            ->where('holiday_hds.active', 1)
-            ->where('holiday_hds.yearname', $request->yearname)
-            ->where('holiday_hds.monthname', $request->monthname)
-            ->first();
-        if ($holistatus == false) {
-        } else {
-            $reportData = [];
-            for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $request->monthname, $request->yearname); $i++) {
-                $values = '';
-                if (strlen($i) == 1) {
-                    $values = '0' . $i;
-                } else {
-                    $values = $i;
-                }
-                $holiday = HolidayDt::select('holitypes')->where('holidate', $request->yearname . '-' . $request->monthname . '-' . $i)->first();
-                if ($holiday == false) {
-                    //In Time
-                    $inquery = Attendance::getAttendanceIn($request->empid, $request->yearname . '-' . $request->monthname . '-' . $i);
-                    $intime = $inquery->record_time ?? null;
-                    $in = $intime ? date('h:i:s A', strtotime($intime)) : '---';
-                    //Out Time
-                    $outquery = Attendance::getAttendanceOut($request->empid, $request->yearname . '-' . $request->monthname . '-' . $i);
-                    $outtime = $outquery->record_time ?? null;
-                    $out = $outtime ? date('h:i:s A', strtotime($outtime)) : '---';
-                    //Status
-                    $status = Attendance::getAttendanceStatus($request->empid, $request->yearname . '-' . $request->monthname . '-' . $i);
-                    $statusname = $status->TimeName ?? '---';
-                }
 
+        $reportData = [];
+        for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $request->monthname, $request->yearname); $i++) {
+            $values = str_pad($i, 2, '0', STR_PAD_LEFT);
+            $currentDate = $request->yearname . '-' . $request->monthname . '-' . $values;
+            $displayDate = $values . '-' . $request->monthname . '-' . $request->yearname;
+            $holiday = HolidayDt::select('holitypes')->where('holidate', $currentDate)->first();
+            if ($holiday) {
+                $reportData[] = [
+                    'datename' => $displayDate,
+                    'intime' => '---',
+                    'outtime' => '---',
+                    'status' => '---',
+                    'workhours' => '---',
+                    'holiday_type' => $holiday->holitypes,
+                    'is_holiday' => true
+                ];
+            } else {
+                //In Time
+                $inquery = Attendance::getAttendanceIn($request->empid, $currentDate);
+                $intime = $inquery->record_time ?? null;
+                $in = $intime ? date('h:i:s A', strtotime($intime)) : '---';
+                //Out Time
+                $outquery = Attendance::getAttendanceOut($request->empid, $currentDate);
+                $outtime = $outquery->record_time ?? null;
+                $out = $outtime ? date('h:i:s A', strtotime($outtime)) : '---';
+                //Status
+                $status = Attendance::getAttendanceStatus($request->empid, $currentDate);
+                $statusname = $status->TimeName ?? '---';
                 // Work hours calculation
                 $workHours = '---';
                 if ($statusname != 'Absent' && $intime && $outtime) {
@@ -91,16 +83,18 @@ class HRreportsController extends Controller
                     $minutes = floor(($diffSeconds % 3600) / 60);
                     $workHours = sprintf("%02d:%02d", $hours, $minutes); // format HH:MM
                 }
-
                 $reportData[] = [
-                    'datename' => $values . '-' . $request->monthname . '-' . $request->yearname,
+                    'datename' => $displayDate,
                     'intime' => $in,
                     'outtime' => $out,
                     'status' => $statusname,
                     'workhours' => $workHours,
+                    'is_holiday' => false,
+                    'holiday_type' => null
                 ];
             }
         }
+
 
         $pdf = Pdf::loadView('exports.hrreports.employeeAttendance', [
             'employees' => $sql,
@@ -131,6 +125,7 @@ class HRreportsController extends Controller
 
     public function DailyAttendanceReport(Request $request)
     {
+
         $sql = '';
         if ($request->empid) {
             $sql = PersonalInfo::with(['designation', 'department'])->where('branch_id', $request->branch_id)->where('id', $request->empid)->where('active', 1)->where(DB::raw("(date_format(joindate,'%Y-%m-%d'))"), '<=', $request->datename)->orderBy('id', 'ASC')->get();
@@ -138,7 +133,6 @@ class HRreportsController extends Controller
             $sql = PersonalInfo::with(['designation', 'department'])->where('branch_id', $request->branch_id)->where('active', 1)->where(DB::raw("(date_format(joindate,'%Y-%m-%d'))"), '<=', $request->datename)->orderBy('id', 'ASC')->get();
         }
         $branch = Branch::where('id', $request->branch_id)->where('active', 1)->first();
-
         $reportData = [];
 
         foreach ($sql as  $value) {

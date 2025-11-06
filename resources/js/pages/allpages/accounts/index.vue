@@ -3,9 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router} from '@inertiajs/vue3';
-import { HandCoins} from 'lucide-vue-next';
-import { toast } from 'vue-sonner';
+import { Head, router } from '@inertiajs/vue3';
+import { HandCoins } from 'lucide-vue-next';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Accounts',
@@ -14,22 +13,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const props = defineProps<{
-    invoice: {
-        id: number;
+    invoice?: Array<{
         insnumber: string;
-        insdate: string;
-        disc_amt: number;
-        totalamt: number;
-        netamount: number;
-        student: { id: number; name: string };
-    };
+        student?: { student_id: string; fname: string; lname: string; phone: string };
+        details_sum_amount?: number;
+    }>;
 }>();
 
 
 const onCreateMR = async (invId: number, sid: number) => {
     router.visit(route('accounts.createMR', { insid: invId, sid: sid }));
 };
-
 </script>
 
 <template>
@@ -43,31 +37,26 @@ const onCreateMR = async (invId: number, sid: number) => {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Sl</TableHead>
+                            <TableHead>Create MR</TableHead>
                             <TableHead>Invoice No</TableHead>
                             <TableHead>Student ID</TableHead>
                             <TableHead>Student Name</TableHead>
                             <TableHead>Phone</TableHead>
                             <TableHead>Total Recevable</TableHead>
                             <TableHead>Due Amount</TableHead>
-                            <TableHead>Action</TableHead>
+                            
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(inv, index) in props.invoice" :key="index">
+                    <TableBody v-for="(inv, index) in props.invoice ?? []" :key="index">
+                        <TableRow v-if="inv.details_sum_amount >= 0"> 
                             <TableCell>{{ index + 1 }}</TableCell>
-                            <TableCell>{{ inv.insnumber }}</TableCell>
-                            <TableCell>{{ inv.student.student_id }}</TableCell>
-                            <TableCell>{{ inv.student.fname }} {{ inv.student.lname }}</TableCell>
-                            <TableCell>{{ inv.student.phone }}</TableCell>
-                            <TableCell>{{ inv.netamount }}</TableCell>
-                            <TableCell></TableCell>
                             <TableCell>
                                 <div class="group relative inline-block">
                                     <Button
                                         class="m-[2px] cursor-pointer"
                                         size="sm"
                                         variant="outline"
-                                        @click="onCreateMR(inv.insnumber,inv.student_id)"
+                                        @click="onCreateMR(inv.insnumber, inv.student_id)"
                                         ><HandCoins class="text-red-500"></HandCoins
                                     ></Button>
                                     <span
@@ -77,6 +66,15 @@ const onCreateMR = async (invId: number, sid: number) => {
                                     </span>
                                 </div>
                             </TableCell>
+                            <TableCell>{{ inv.insnumber }}</TableCell>
+                            <TableCell>{{ inv.student.student_id }}</TableCell>
+                            <TableCell>{{ inv.student.fname }} {{ inv.student.lname }}</TableCell>
+                            <TableCell>{{ inv.student.phone }}</TableCell>
+                            <TableCell>{{ inv.netamount }}</TableCell>
+                            <TableCell>{{ inv.details_sum_amount }}</TableCell>
+                        </TableRow>
+                        <TableRow v-else>
+                            
                         </TableRow>
                     </TableBody>
                 </Table>

@@ -7,6 +7,7 @@ use App\Models\Default\Country;
 use App\Models\Student\StudentActivities;
 use App\Models\Default\Transaction;
 use App\Models\Student\Student;
+use App\Models\Student\StudentApplication;
 use App\Models\Student\StudentInService;
 use App\Models\User;
 use App\Services\Agency\Student\StudentActivityService;
@@ -20,11 +21,11 @@ class StudentActivitiesController extends Controller
     public function index(Student $student, Request $request, StudentActivityService $service)
     {
         $student->load('assainuser');
-        
+
         return Inertia::render('allpages/Agency/Student/activites', [
             'student' => $student,
             'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get(),
-            'activity' => StudentActivities::with(['user'])->orderBy('id','DESC')->where('student_id', $student->id)->paginate(15),
+            'activity' => StudentActivities::with(['user'])->orderBy('id', 'DESC')->where('student_id', $student->id)->paginate(15),
         ]);
     }
 
@@ -82,35 +83,44 @@ class StudentActivitiesController extends Controller
 
     public function updateAssignee(Request $request, Student $student)
     {
-        
-        $studentID = $this->GetStudentID();
-
-        if ($studentID) {
-            // Validate user_id
-            $validated = $request->validate([
-                'user_id' => 'required|exists:users,id',
-            ]);
-
-            // Student update
-            $student->update([
-                'student_id'   => $studentID,
-                'assain_user'  => $validated['user_id'],
-                'status'       => '2',
-            ]);
-        }
-
-        $numericPart = (int) preg_replace('/[^0-9]/', '', $studentID);
-        $transaction = Transaction::where('name', 'Student ID')->where('active', 1)->first();
-        if ($transaction) {
-            $transaction->update(['lastnumber' => $numericPart]);
-        }
-        StudentActivities::create([
-            'student_id' => $student->id,
-            'title' => "has created student ID",
-            'fristactivity' => null,
-            'lastactivity' => null,
-            'user_id' => Auth::id()
+        // Validate user first
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
         ]);
-        return back()->with('error', 'Unable to generate Student ID.');
+
+        // Check existing application
+        if (!StudentApplication::where('student_id', $student->id)->exists()) {
+            return back()->with('error', 'Unable to generate Student ID. No student application found.');
+        }
+
+        // Get new Student ID
+        $studentID = $this->GetStudentID();
+        if (!$studentID) {
+            return back()->with('error', 'Unable to generate Student ID.');
+        }
+
+        // Update student
+        $student->update([
+            'student_id'  => $studentID,
+            'assain_user' => $validated['user_id'],
+            'status'      => 2,
+        ]);
+
+        // Update lastnumber in transactions table
+        if ($transaction = Transaction::where('name', 'Student ID')->where('active', 1)->first()) {
+            $numericPart = preg_replace('/\D/', '', $studentID); // digits only
+            $transaction->update(['lastnumber' => (int) $numericPart]);
+        }
+
+        // Record activity
+        StudentActivities::create([
+            'student_id'    => $student->id,
+            'title'         => "has created student ID",
+            'fristactivity' => null,
+            'lastactivity'  => null,
+            'user_id'       => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Student ID generated and assigned successfully.');
     }
 }

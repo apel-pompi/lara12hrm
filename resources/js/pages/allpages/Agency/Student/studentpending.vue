@@ -7,7 +7,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Plus } from 'lucide-vue-next';
+import { Plus, RefreshCcw, Search } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 export interface Student {
@@ -24,7 +24,7 @@ export interface Student {
     assain_user: number;
     source_id: number;
     user_id: number;
-    created_at:string;
+    created_at: string;
     status: number;
 }
 
@@ -238,26 +238,27 @@ const search = () => {
     if (selectedUser.value) params.user_id = selectedUser.value.id;
     if (selectedStatus.value) params.status = selectedStatus.value.id;
 
-    router.get(route('student.onBoard'), params, {
+    router.get(route('student.pending'), params, {
         preserveState: false,
         preserveScroll: true,
     });
 };
 
 const refresh = () => {
-    router.get(route('student.onBoard'), {}, { replace: true });
+    router.get(route('student.pending'), {}, { replace: true });
 };
 
 const perPage = ref(10);
 
 const changePerPage = () => {
-    router.get(route('student.onBoard'), { per_page: perPage.value }, { preserveState: false, replace: true });
+    router.get(route('student.pending'), { per_page: perPage.value }, { preserveState: false, replace: true });
 };
 const goToPage = (url: string | null) => {
     if (url) {
         router.get(url, {}, { preserveState: false, replace: true });
     }
 };
+
 
 const goToAll = () => {
     router.get(route('student.index'), {}, { replace: true });
@@ -266,6 +267,7 @@ const goToAll = () => {
 const goToLead = () => {
     router.get(route('student.lead'), {}, { replace: true });
 };
+
 const goToPending = () => {
     router.get(route('student.pending'), {}, { replace: true });
 };
@@ -280,17 +282,14 @@ const goToOnBoard = () => {
 const goToArchive = () => {
     router.get(route('student.archive'), {}, { replace: true });
 };
-
-
 </script>
 
 <template>
     <Head title="Student" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 mb-10 md:min-h-min">
             <div class="flex items-center gap-2 py-4">
                 <Button variant="outline" size="sm" @click="goToStudentCreate"><Plus></Plus> Student Create </Button>
-               
             </div>
             <div class="flex items-center gap-2 py-4">
                 <!-- Search start -->
@@ -358,12 +357,12 @@ const goToArchive = () => {
                                 </div>
 
                                 <ComboboxOption
-                                    v-for="country in filteredPhone"
-                                    :key="country.id"
-                                    :value="country"
+                                    v-for="ph in filteredPhone"
+                                    :key="ph.id"
+                                    :value="ph"
                                     class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
                                 >
-                                    {{ country.phone }}
+                                    {{ ph.phone }}
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
@@ -469,10 +468,7 @@ const goToArchive = () => {
                             <ComboboxOptions
                                 class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
                             >
-                                <div
-                                    v-if="filteredTime.length === 0 && queryTime !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
+                                <div v-if="filteredTime.length === 0 && queryTime !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
                                     Nothing found.
                                 </div>
 
@@ -518,10 +514,7 @@ const goToArchive = () => {
                             <ComboboxOptions
                                 class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
                             >
-                                <div
-                                    v-if="filteredUser.length === 0 && queryUser !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
+                                <div v-if="filteredUser.length === 0 && queryUser !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
                                     Nothing found.
                                 </div>
 
@@ -594,7 +587,7 @@ const goToArchive = () => {
                         </div>
                     </Combobox>
                 </div>
-                
+
                 <div class="grid gap-2">
                     <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
                 </div>
@@ -645,14 +638,14 @@ const goToArchive = () => {
                                             {{ (stud.fname?.charAt(0) ?? '').toUpperCase() }}{{ (stud.lname?.charAt(0) ?? '').toUpperCase() }}
                                         </span>
                                     </template>
-                                    <span class="font-medium text-gray-900">{{ stud.fname }} {{ stud.lname }} </span>
+                                    <span class="font-medium text-gray-900 dark:text-white">{{ stud.fname }} {{ stud.lname }} </span>
                                 </Link>
                             </TableCell>
                             <TableCell>{{ stud.phone }}</TableCell>
                             <TableCell>
-                                <span v-if="stud.gender==1">Male</span>
-                                <span v-if="stud.gender==2">Female</span>
-                                <span v-if="stud.gender==3">Other's</span>
+                                <span v-if="stud.gender == 1">Male</span>
+                                <span v-if="stud.gender == 2">Female</span>
+                                <span v-if="stud.gender == 3">Other's</span>
                             </TableCell>
                             <TableCell>{{ stud.country.name }}</TableCell>
                             <TableCell>{{ stud.assainuser.name }}</TableCell>

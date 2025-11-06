@@ -36,6 +36,9 @@ class StudentAppointements extends Controller
             'discus' => 'required|string|max:1000',
         ]);
         $datetime = Carbon::parse($request->apdate)->format('Y-m-d H:i:s');
+        $student->update([
+            'status'      => 1,
+        ]);
         $created = StudentUtility::create([
             'name' => 'appoinments',
             'datetime' => $datetime,

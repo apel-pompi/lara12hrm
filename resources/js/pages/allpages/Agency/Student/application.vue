@@ -40,12 +40,6 @@ const form = useForm({
     user_id: null as number | null,
 });
 
-const showDailogCreate = () => {
-    form.reset();
-    form.id = null;
-    isEditMode.value = false;
-    showDialog.value = true;
-};
 
 // Combobox states
 const selectedWorkflow = ref<{ id: number; name: string } | null>(null);
@@ -110,27 +104,7 @@ const onShow = (id: number) => {
     router.visit(`/student/activities/${props.student.id}/application/${id}/activities`);
 };
 
-const onEdit = async (id: number) => {
-    try {
-        const url = route('studentApplication.edit', {
-            student: props.student.id,
-            studentApplication: id,
-        });
-        const res = await fetch(url);
-        if (!res.ok) {
-            toast.error('Server error while fetching application details.');
-            return;
-        }
-        const data = await res.json();
- 
-        Object.assign(form, data.data);
-        form.id = data.data.id;
-        isEditMode.value = true;
-        showDialog.value = true;
-    } catch (error) {
-        console.error('Fetch error:', error);
-    }
-};
+
 
 const submit = () => {
     const action =

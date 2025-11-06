@@ -48,42 +48,6 @@ class PersonalInfoController extends Controller
         $validated = $request->validated();
 
         $validated['active'] = $request->input('active', 0);
-        // $client = new Client();
-        // $file = $request->file('photo');
-        // $name = time() . '_' . $file->getClientOriginalName();
-        // $path = $file->getRealPath();
-        // $folderId = config('services.google.folder_id');
-
-        // $accessToken = gDrive::token();
-        // if (!$accessToken) {
-        //     return response()->json(['error' => 'Google Access Token not found'], 500);
-        // }
-
-        // $multipart = [
-        //     [
-        //         'name'     => 'metadata',
-        //         'contents' => json_encode([
-        //             'name' => $name,
-        //             'parents' => [$folderId],
-        //         ]),
-        //         'headers'  => ['Content-Type' => 'application/json; charset=UTF-8']
-        //     ],
-        //     [
-        //         'name'     => 'file',
-        //         'contents' => fopen($path, 'r'),
-        //         'filename' => $name,
-        //     ],
-        // ];
-
-        // $response = $client->request('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', [
-        //     'headers' => [
-        //         'Authorization' => "Bearer $accessToken",
-        //     ],
-        //     'multipart' => $multipart,
-        // ]);
-
-        // $result = json_decode($response->getBody(), true);
-        // dd($result);
 
         if ($request->hasFile('photo')) {
             $filePath = public_path('storage/employee');

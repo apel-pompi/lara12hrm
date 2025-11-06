@@ -382,6 +382,17 @@ class RolePermissionSeeder extends Seeder
                 ],
             ],
 
+            //Student Lead
+            [
+                'group_name' => 'Student Lead',
+                'permissions' => [
+                    'StudentLead.index',
+                    'StudentLead.import',
+                    'Student.download'
+                    
+                ],
+            ],
+
             //Student Application
             [
                 'group_name' => 'Student Application',
@@ -445,6 +456,7 @@ class RolePermissionSeeder extends Seeder
                     'StudIns.index',
                     'StudIns.create',
                     'StudIns.store',
+                    'StudIns.view',
                     'StudIns.confirm',
                     'StudIns.approval',
                     'StudIns.destroy',
@@ -504,6 +516,8 @@ class RolePermissionSeeder extends Seeder
                     'Accounts.MRIndex',
                     'Accounts.CreateMR',
                     'Accounts.storeMR',
+                    'Accounts.ViewMR',
+                    'Accounts.CancelMR',
                     'Accounts.ConfirmMR',
                     'Accounts.ReportMR',
                 ],

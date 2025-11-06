@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import FormGroup from '@/components/FormGroup.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -73,7 +72,7 @@ interface FormErrors {
 
 const showDialog = ref(false);
 const isEditMode = ref(false);
-const showDialogOpen = ref(false);
+
 const errors = ref<FormErrors>();
 
 const form = useForm({

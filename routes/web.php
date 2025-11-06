@@ -2,10 +2,11 @@
 
 
 use App\Http\Controllers\Default\{
+    DashboardController,
     CountryController,
     StateController,
 };
-use App\Http\Controllers\HRM\DeviceController;
+
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -16,9 +17,7 @@ Route::get('/', function () {
 
 Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
 
-    Route::get('dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class,'dashboard'])->name('dashboard');
 
     Route::get('/users/list', [CountryController::class, 'userlist'])->name('users.list');
     Route::get('/countries/{country}/states', [CountryController::class, 'states']);

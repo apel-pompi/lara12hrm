@@ -22,7 +22,10 @@ class StudentConversations extends Controller
         return Inertia::render('allpages/Agency/Student/conversations', [
             'student' => $student,
             'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get(),
-            'conversation' => $service->get(array_merge($request->query(), ['per_page' => $perPage])),
+            'conversation' => $service->get(array_merge($request->query(), [
+                'per_page' => $perPage,
+                'student_id' => $student->id,
+            ])),
             'filters'   => $service->get($request->query()),
         ]);
     }
@@ -43,11 +46,12 @@ class StudentConversations extends Controller
         if ($created) {
             StudentActivities::create([
                 'student_id' => $student->id,
-                'title' => "has created student conversations",
+                'title' => "has started student conversations",
                 'fristactivity' => null,
                 'lastactivity' => null,
                 'user_id' => Auth::id()
             ]);
+            $student->update(['status' => 1]);
             return back()->with('message', 'Conversation created successfully!');
         } else {
             return back()->with('error', 'Unable to storage');

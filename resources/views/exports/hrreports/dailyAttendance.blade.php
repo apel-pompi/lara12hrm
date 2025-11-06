@@ -91,7 +91,7 @@
 <body>
     <div class="header">
         <h2>Daily Attendance Sheet</h2>
-        <p>Branch:<strong>{{ $branch->branch_name }}</strong></p>
+        <p>Branch:<strong>{{ $branch->branchname }}</strong></p>
         <p>Date: {{ $date }}</p>
     </div>
 

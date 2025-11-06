@@ -187,7 +187,6 @@ interface FormErrors {
 
 const dtdate = ref<string | null>(null);
 
-const maxDate = today(getLocalTimeZone());
 
 watch(dtdate, (newDate) => {
     if (newDate instanceof Date && !isNaN(newDate.getTime())) {
@@ -422,7 +421,6 @@ const goToHolidayHd = () => {
                         <Label for="holidate">Holi Date</Label>
                         <VueDatePicker
                             v-model="dtdate"
-                            :max-date="maxDate"
                             :format="'yyyy-MM-dd'"
                             :enable-time-picker="false"
                             placeholder="Holi Date"

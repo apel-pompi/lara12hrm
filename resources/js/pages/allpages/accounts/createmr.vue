@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { CornerDownLeft, FileText, LucideEdit, Plus, ShieldCheck } from 'lucide-vue-next';
+import { CornerDownLeft, Eye, FileText, LucideEdit, LucideSave, LucideTrash2, Plus, ShieldCheck, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -27,20 +27,20 @@ const props = defineProps<{
         totalamt: number;
         netamount: number;
     };
-        invoice: {
+    invoice: {
+        id: number;
+        insnumber: string;
+        insdate: string;
+        netamount: number;
+        details: {
             id: number;
-            insnumber: string;
-            insdate: string;
-            netamount: number;
-            details: {
-                id: number;
-                amount: string;
-                product_id: number;
-                invoice_hd_id: number;
-                fee: { id: number; name: string };
-            };
+            amount: string;
+            product_id: number;
+            invoice_hd_id: number;
+            fee: { id: number; name: string };
         };
-    student: { id: number; fname: string; lname: string;student_id:number };
+    };
+    student: { id: number; fname: string; lname: string; student_id: number };
 }>();
 
 const showDialogCreate = ref(false);
@@ -62,13 +62,14 @@ const selectedFees = ref<
 
 // Form for payment type and discount
 const feesForm = useForm({
-    selectedFees: [],
+    fees: [],
     paytype: '',
     bankname: '',
     bankbranch: '',
     chequeno: '',
     transactionNo: '',
     discount: 0,
+    netamount: 0,
 });
 
 // Add fee row to editable box
@@ -79,8 +80,8 @@ function addFeeRow(dt: any) {
     if (!selectedFees.value.some((f) => f.fee_id === dt.fee.id)) {
         selectedFees.value.push({
             fee_id: dt.fee.id,
-            product_id:dt.product_id,
-            invoice_hd_id:dt.invoice_hd_id,
+            product_id: dt.product_id,
+            invoice_hd_id: dt.invoice_hd_id,
             fee_name: dt.fee.name,
             amount: Number(dt.amount) || 0,
         });
@@ -111,6 +112,8 @@ const totalReceiveAmount = computed(() => {
 
     return totalFees - discount;
 });
+
+
 
 const submitMR = () => {
     if (!feesForm.paytype) {
@@ -168,38 +171,119 @@ const submitMR = () => {
         });
         return;
     }
-    const payload = {
-        fees: selectedFees.value,
-        paytype: feesForm.paytype,
-        bankname: feesForm.bankname,
-        bankbranch: feesForm.bankbranch,
-        chequeno: feesForm.chequeno,
-        transactionNo: feesForm.transactionNo,
-        discount: Number(feesForm.discount) || 0,
-        netamount: totalAmount,
-    };
 
-    router.post(
+    feesForm.fees = selectedFees.value
+    feesForm.paytype = feesForm.paytype
+    feesForm.bankname = feesForm.bankname
+    feesForm.bankbranch = feesForm.bankbranch
+    feesForm.chequeno = feesForm.chequeno
+    feesForm.transactionNo = feesForm.transactionNo
+    feesForm.discount = Number(feesForm.discount) || 0
+    feesForm.netamount = totalAmount
+    
+    feesForm.post(
         route('accounts.storeMR', {
             insnumber: props.invoice.insnumber,
             student: props.student.student_id,
         }),
-        payload,
         {
+            preserveState: true,
             onSuccess: () => {
                 toast('success', { description: 'Money receipt created successfully.' });
-                selectedFees.value = [];
+                feesForm.reset();
                 showDialogCreate.value = false;
             },
             onError: (errors) => {
-                toast('error', { description: 'Something went wrong.' });
-                console.log(errors);
+                console.error(errors);
+                toast('error', { description: 'Something went wrong during submission.' });
+            },
+            
+        }
+    );
+};
+
+const ViewDailog = ref(false);
+const viewForm = useForm({
+    student_id: '',
+    stundent_fname: '',
+    stundent_lname: '',
+    student_gender: '',
+    student_phone: '',
+    student_email: '',
+    student_country: '',
+    student_invno: '',
+    student_invdate: '',
+    student_invby: '',
+    disc_amt:'',
+    netamount:'',
+    viewfees: [] as {
+        feename: string;
+        amount: number;
+    }[],
+});
+
+const onView = async (invId: number) => {
+    try {
+        const url = route('accounts.onView', {
+            confirm: invId,
+        });
+        const res = await fetch(url);
+        if (!res.ok) {
+            toast.error('Server error while fetching money receive details.');
+            return;
+        }
+        const data = await res.json();
+        console.log(data);
+        viewForm.student_id = data.data.student.student_id;
+        viewForm.stundent_fname = data.data.student.fname;
+        viewForm.stundent_lname = data.data.student.lname;
+        viewForm.student_gender = data.data.student.gender;
+        viewForm.student_phone = data.data.student.phone;
+        viewForm.student_email = data.data.student.email;
+        viewForm.student_country = data.data.student.country.name;
+        viewForm.student_invno = data.invoice.insnumber;
+        viewForm.student_invdate = data.invoice.insdate;
+        viewForm.student_invby = data.invoice.user.name;
+        viewForm.disc_amt = data.data.disc_amt;
+        viewForm.netamount = data.data.netamount;
+        viewForm.viewfees =
+            data.data.mrdetails?.map((s: any) => ({
+                feename: s.fees.name,
+                amount: s.amount,
+            })) ?? [];
+        ViewDailog.value = true;
+    } catch (error) {
+        console.error('Fetch error:', error);
+    }
+};
+
+const deleteForm = useForm({});
+
+const onCancel = async (invId: number) => {
+    if (!confirm('Are you sure you want to cancel this money receive?')) return;
+
+    if (deleteForm.processing) return;
+
+    const newStatus = !Boolean(invId);
+
+    router.post(
+        route('accounts.onCancel', {
+            confirm: invId,
+        }),
+        { id: invId },
+        {
+            preserveState: true,
+            onSuccess: () => {
+                invId = newStatus ? 1 : 0;
+                toast.success('Money receive cancel successfully');
+            },
+            onError: (errors) => {
+                const firstError = Object.values(errors)[0];
+                toast.error(firstError as string);
             },
         },
     );
 };
-
-const deleteForm = useForm({});
 
 const onConfirm = async (invId: number) => {
     if (!confirm('Are you sure you want to confirm this money receive?')) return;
@@ -238,8 +322,6 @@ const onReport = async (invId: number) => {
 const goToAccounts = () => {
     router.visit('/accounts');
 };
-
-console.log(props.student)
 </script>
 
 <template>
@@ -254,35 +336,6 @@ console.log(props.student)
                 <div class="space-x-2"></div>
             </div>
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <!-- Quotations -->
-                <Card class="w-full border-green-300 shadow-sm">
-                    <div class="space-y-6 p-4 text-sm">
-                        <!-- Student Details -->
-                        <div>
-                            <h3 class="mb-3 border-b border-green-200 pb-1 text-base font-semibold text-green-700">Student Details</h3>
-                            <div class="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-                                <p>
-                                    <span class="font-medium text-gray-600">Name:</span> {{ props.student.student.fname }}
-                                    {{ props.student.student.lname }}
-                                </p>
-                                <p><span class="font-medium text-gray-600">Student ID:</span> {{ props.student.student.student_id }}</p>
-                                <p><span class="font-medium text-gray-600">Phone:</span> {{ props.student.student.phone }}</p>
-                                <p><span class="font-medium text-gray-600">Email:</span> {{ props.student.student.email }}</p>
-                            </div>
-                        </div>
-
-                        <!-- Workflow Details -->
-                        <div>
-                            <h3 class="mb-3 border-b border-green-200 pb-1 text-base font-semibold text-green-700">Workflow Details</h3>
-                            <div class="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-                                <p><span class="font-medium text-gray-600">Partner Name:</span> {{ props.student.partner_branch.partner.name }}</p>
-                                <p><span class="font-medium text-gray-600">Branch:</span> {{ props.student.partner_branch.branch_name }}</p>
-                                <p><span class="font-medium text-gray-600">Product Name:</span> {{ props.student.product.name }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </Card>
-
                 <!-- Invoices -->
                 <Card class="w-full border-green-300">
                     <div class="overflow-x-auto text-sm">
@@ -318,8 +371,38 @@ console.log(props.student)
                                                 class="m-[2px] cursor-pointer"
                                                 size="sm"
                                                 variant="outline"
+                                                @click="onView(inv.id)"
+                                                ><Eye class="text-green-500"></Eye
+                                            ></Button>
+                                            <span
+                                                class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
+                                            >
+                                                View
+                                            </span>
+                                        </div>
+                                        <div class="group relative inline-block">
+                                            <Button
+                                                v-if="inv.status == 'Open'"
+                                                class="m-[2px] cursor-pointer"
+                                                size="sm"
+                                                variant="outline"
+                                                @click="onCancel(inv.id)"
+                                                ><X class="text-red-500"></X
+                                            ></Button>
+                                            <span
+                                                class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
+                                            >
+                                                Cancel
+                                            </span>
+                                        </div>
+                                        <div class="group relative inline-block">
+                                            <Button
+                                                v-if="inv.status == 'Open'"
+                                                class="m-[2px] cursor-pointer"
+                                                size="sm"
+                                                variant="outline"
                                                 @click="onConfirm(inv.id)"
-                                                ><ShieldCheck></ShieldCheck
+                                                ><ShieldCheck class="text-black"></ShieldCheck
                                             ></Button>
                                             <span
                                                 class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
@@ -348,6 +431,34 @@ console.log(props.student)
                         </Table>
                     </div>
                 </Card>
+                <!-- Quotations -->
+                <Card class="w-full border-green-300 shadow-sm">
+                    <div class="space-y-6 p-4 text-sm">
+                        <!-- Student Details -->
+                        <div>
+                            <h3 class="mb-3 border-b border-green-200 pb-1 text-base font-semibold text-green-700">Student Details</h3>
+                            <div class="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+                                <p>
+                                    <span class="font-medium text-gray-600">Name:</span> {{ props.student.student.fname }}
+                                    {{ props.student.student.lname }}
+                                </p>
+                                <p><span class="font-medium text-gray-600">Student ID:</span> {{ props.student.student.student_id }}</p>
+                                <p><span class="font-medium text-gray-600">Phone:</span> {{ props.student.student.phone }}</p>
+                                <p><span class="font-medium text-gray-600">Email:</span> {{ props.student.student.email }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Workflow Details -->
+                        <div>
+                            <h3 class="mb-3 border-b border-green-200 pb-1 text-base font-semibold text-green-700">Workflow Details</h3>
+                            <div class="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+                                <p><span class="font-medium text-gray-600">Partner Name:</span> {{ props.student.partner_branch.partner.name }}</p>
+                                <p><span class="font-medium text-gray-600">Branch:</span> {{ props.student.partner_branch.branch_name }}</p>
+                                <p><span class="font-medium text-gray-600">Product Name:</span> {{ props.student.product.name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </Card>
             </div>
         </div>
         <Dialog v-model:open="showDialogCreate">
@@ -372,27 +483,21 @@ console.log(props.student)
                                     <th class="px-3 py-2 text-left">#</th>
                                     <th class="px-3 py-2 text-left">Fee Name</th>
                                     <th class="px-3 py-2 text-left">Amount</th>
-                                    <th class="px-3 py-2 text-center">Action</th>
                                 </tr>
                             </thead>
 
                             <tbody class="border-t">
                                 <template v-for="(dt, j) in props.invoice.details" :key="j">
-                                    <tr class="transition hover:bg-blue-50 dark:hover:bg-gray-700/50">
-                                        <td class="px-3 py-2">{{ j + 1 }}</td>
-                                        <td class="px-3 py-2">{{ dt.fee?.name }}</td>
-                                        <td class="px-3 py-2">{{ dt.amount }}</td>
-                                        <td class="px-3 py-2 text-center">
-                                            <Button size="sm" variant="outline" class="hover:bg-blue-100" title="Add for edit" @click="addFeeRow(dt)">
-                                                <Plus class="h-4 w-4 text-blue-500" />
-                                            </Button>
-                                        </td>
+                                    <tr class="cursor-pointer transition hover:bg-blue-50 dark:hover:bg-gray-700/50" @click="addFeeRow(dt)">
+                                        <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">{{ j + 1 }}</td>
+                                        <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">{{ dt.fee?.name }}</td>
+                                        <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">{{ dt.amount }}</td>
                                     </tr>
                                 </template>
 
                                 <!-- Grand Total -->
                                 <tr class="bg-gray-50 font-semibold dark:bg-gray-800/80">
-                                    <td colspan="3" class="px-3 py-2 text-right">Grand Total:</td>
+                                    <td colspan="2" class="px-3 py-2 text-right">Grand Total:</td>
                                     <td class="px-3 py-2 text-right text-blue-600">
                                         {{ props.invoice.netamount }}
                                     </td>
@@ -413,7 +518,7 @@ console.log(props.student)
                         <div
                             v-for="(fee, index) in selectedFees"
                             :key="fee.fee_id"
-                            class="mb-3 flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md md:flex-row md:items-center dark:border-gray-700 dark:bg-gray-800"
+                            class="mb-3 flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-2 shadow-sm transition hover:shadow-md md:flex-row md:items-center dark:border-gray-700 dark:bg-gray-800"
                         >
                             <div class="flex-1">
                                 <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -431,9 +536,9 @@ console.log(props.student)
                             </div>
 
                             <!-- Delete -->
-                            <div class="flex justify-end md:justify-center">
+                            <div class="flex justify-end pt-6 md:justify-center">
                                 <Button variant="destructive" size="sm" class="flex items-center gap-1" @click="deleteFeeRow(index)">
-                                    <LucideTrash2 class="h-4 w-4" /> Delete
+                                    <LucideTrash2 class="h-4 w-4" />
                                 </Button>
                             </div>
                         </div>
@@ -448,6 +553,8 @@ console.log(props.student)
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
+                                            <SelectItem value="Bkash">Bkash</SelectItem>
+                                            <SelectItem value="Nagad">Nagad</SelectItem>
                                             <SelectItem value="Cash">Cash</SelectItem>
                                             <SelectItem value="Bank">Bank</SelectItem>
                                             <SelectItem value="Cheque">Cheque</SelectItem>
@@ -487,7 +594,7 @@ console.log(props.student)
                                 />
                             </div>
 
-                            <div v-if="feesForm.paytype === 'Card'">
+                            <div v-if="feesForm.paytype === 'Card' || feesForm.paytype === 'Bkash' || feesForm.paytype === 'Nagad'">
                                 <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Transaction No</label>
                                 <input
                                     v-model="feesForm.transactionNo"
@@ -531,6 +638,105 @@ console.log(props.student)
                         <template v-if="feesForm.processing">Creating...</template>
                         <template v-else><LucideSave class="h-4 w-4" />Create</template>
                     </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <Dialog v-model:open="ViewDailog">
+            <DialogContent
+                class="flex max-h-[90vh] w-[95vw] max-w-full flex-col rounded-2xl bg-white shadow-xl sm:max-w-lg md:max-w-2xl lg:max-w-4xl dark:bg-gray-900"
+            >
+                <!-- Header -->
+                <DialogHeader class="flex-shrink-0 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                    <DialogTitle class="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-100"> Create Student Invoice </DialogTitle>
+                    <DialogDescription class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Fill in the details below to create a new Invoice.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <!-- Scrollable Content -->
+                <div class="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+                    <!-- Student & Invoice Info -->
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="space-y-1">
+                            <p><span class="font-medium text-gray-700 dark:text-gray-200">Student ID:</span> {{ viewForm.student_id }}</p>
+                            <p>
+                                <span class="font-medium text-gray-700 dark:text-gray-200">Student Name:</span> {{ viewForm.stundent_fname }}
+                                {{ viewForm.stundent_lname }}
+                            </p>
+                            <p>
+                                <span class="font-medium text-gray-700 dark:text-gray-200">Gender:</span>
+                                {{
+                                    viewForm.student_gender == 1
+                                        ? 'Man'
+                                        : viewForm.student_gender == 2
+                                          ? 'Woman'
+                                          : viewForm.student_gender == 3
+                                            ? "Other's"
+                                            : 'Unknown'
+                                }}
+                            </p>
+                            <p><span class="font-medium text-gray-700 dark:text-gray-200">Phone:</span> {{ viewForm.student_phone }}</p>
+                            <p><span class="font-medium text-gray-700 dark:text-gray-200">Email:</span> {{ viewForm.student_email }}</p>
+                            <p>
+                                <span class="font-medium text-gray-700 dark:text-gray-200">Destination Country:</span>
+                                {{ viewForm.student_country }}
+                            </p>
+                        </div>
+                        <div class="space-y-1">
+                            <p><span class="font-medium text-gray-700 dark:text-gray-200">Invoice No:</span> {{ viewForm.student_invno }}</p>
+                            <p><span class="font-medium text-gray-700 dark:text-gray-200">Invoice Date:</span> {{ viewForm.student_invdate }}</p>
+                            <p><span class="font-medium text-gray-700 dark:text-gray-200">By:</span> {{ viewForm.student_invby }}</p>
+                        </div>
+                    </div>
+
+                    <!-- fees List -->
+                    <div class="space-y-4">
+                        <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <!-- Fees Table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-[500px] table-auto border-collapse border border-gray-200 text-sm dark:border-gray-700">
+                                    <thead class="bg-gray-100 dark:bg-gray-700">
+                                        <tr>
+                                            <th class="border-b border-gray-300 px-3 py-2 text-left dark:border-gray-600">Fee Name</th>
+                                            <th class="border-b border-gray-300 px-3 py-2 text-left dark:border-gray-600">Net Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr
+                                            v-for="(fee, fIndex) in viewForm.viewfees"
+                                            :key="fIndex"
+                                            class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                                        >
+                                            <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">{{ fee.feename }}</td>
+                                            <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">{{ fee.amount }}</td>
+                                        </tr>
+                                        <tr class="bg-gray-200 font-medium dark:bg-gray-700">
+                                            <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">Discount</td>
+                                            <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">
+                                                {{ viewForm.disc_amt }}
+                                            </td>
+                                        </tr>
+                                        <tr class="font-medium dark:bg-gray-700">
+                                            <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">Grand Total</td>
+                                            <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">
+                                                {{ viewForm.netamount }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <DialogFooter
+                    class="flex flex-shrink-0 flex-col-reverse gap-3 border-t border-gray-200 px-6 py-4 sm:flex-row sm:justify-end dark:border-gray-700"
+                >
+                    <DialogClose as-child>
+                        <Button type="button" variant="secondary" class="w-full px-4 py-2 sm:w-auto">Cancel</Button>
+                    </DialogClose>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

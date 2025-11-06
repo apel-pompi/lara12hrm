@@ -28,4 +28,14 @@ class StudentUtility extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    /**
+     * Get the student that owns the StudentUtility
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(Student::class, 'student_id');
+    }
 }

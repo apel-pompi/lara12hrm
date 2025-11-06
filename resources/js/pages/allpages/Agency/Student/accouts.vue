@@ -5,7 +5,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 import { router, useForm } from '@inertiajs/vue3';
-import { FileText, LucideEdit, LucideSave, LucideTrash2, Plus, ShieldCheck, X } from 'lucide-vue-next';
+import { Eye, FileText, LucideEdit, LucideSave, LucideTrash2, Plus, ShieldCheck, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -20,9 +20,8 @@ const props = defineProps<{
         user: { id: number; name: string };
     }[];
     services: { workflow: string; partner: string; branch_name: string; product: string }[];
-    invoice: { id: number;insnumber:string;insdate:string;netamount:number;status:string; };
-    application:{id:number;}
-
+    invoice: { id: number; insnumber: string; insdate: string; netamount: number; status: string };
+    application: { id: number };
 }>();
 
 const form = useForm({
@@ -43,10 +42,10 @@ const form = useForm({
         branch_name: string;
         product: string;
     }[],
-    fees:[] as {
-        fee_id:number;
-        feename:string;
-        amount:number;
+    fees: [] as {
+        fee_id: number;
+        feename: string;
+        amount: number;
     }[],
 });
 
@@ -54,8 +53,9 @@ const feesForm = useForm({
     selectedFees: [],
 });
 const showDialogAdd = ref(false);
+const ViewDailog = ref(false);
 
-const fetchData = async (id:number) => {
+const fetchData = async (id: number) => {
     try {
         const url = route('studentAccounts.create', {
             student: props.student.id,
@@ -87,7 +87,7 @@ const fetchData = async (id:number) => {
             })) ?? [];
         form.fees =
             data.fees?.map((s: any) => ({
-                fee_id:s.fee_id,
+                fee_id: s.fee_id,
                 feename: s.feename,
                 amount: s.amount,
             })) ?? [];
@@ -112,7 +112,7 @@ const showDailog = async (id: number) => {
 // Editable fee state
 const selectedFees = ref<
     Array<{
-        fee_id:number;
+        fee_id: number;
         feename: string;
         amount: number;
     }>
@@ -133,7 +133,7 @@ function editFee(fee: any) {
     const exists = selectedFees.value.find((f) => f.feename === fee.feename);
     if (!exists) {
         selectedFees.value.push({
-            fee_id:fee.fee_id,
+            fee_id: fee.fee_id,
             feename: fee.feename,
             amount: fee.amount,
         });
@@ -185,6 +185,56 @@ const submitInvoice = () => {
             }
         },
     });
+};
+
+const viewForm = useForm({
+    student_id: '',
+    stundent_fname: '',
+    stundent_lname: '',
+    student_gender: '',
+    student_phone: '',
+    student_email: '',
+    student_country: '',
+    student_quoatno: '',
+    student_quoatdate: '',
+    student_quoatby: '',
+    viewfees: [] as {
+        feename: string;
+        amount: number;
+    }[],
+});
+const onView = async (invId: number) => {
+    try {
+        const url = route('studentAccounts.onView', {
+            student: props.student.id,
+            confirm: invId,
+        });
+        const res = await fetch(url);
+        if (!res.ok) {
+            toast.error('Server error while fetching application details.');
+            return;
+        }
+        const data = await res.json();
+        
+
+        viewForm.stundent_fname = data.data.student.fname;
+        viewForm.stundent_lname = data.data.student.lname;
+        viewForm.student_gender = data.data.student.gender;
+        viewForm.student_phone = data.data.student.phone;
+        viewForm.student_email = data.data.student.email;
+        viewForm.student_country = data.data.student.country.name;
+        viewForm.student_quoatno = data.quoat.quotation_no;
+        viewForm.student_quoatdate = data.quoat.adddate;
+        viewForm.student_quoatby = data.quoat.user.name;
+        viewForm.viewfees =
+            data.data.details?.map((s: any) => ({
+                feename: s.fee.name,
+                amount: s.amount,
+            })) ?? [];
+        ViewDailog.value = true;
+    } catch (error) {
+        console.error('Fetch error:', error);
+    }
 };
 
 const deleteForm = useForm({});
@@ -322,9 +372,25 @@ const onReport = async (invId: number) => {
                                                 class="m-[2px] cursor-pointer"
                                                 size="sm"
                                                 variant="outline"
+                                                @click="onView(inv.id)"
+                                                :disabled="form.processing"
+                                                ><Eye class="text-green-500"></Eye
+                                            ></Button>
+                                            <span
+                                                class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
+                                            >
+                                                View
+                                            </span>
+                                        </div>
+                                        <div class="group relative inline-block">
+                                            <Button
+                                                v-if="inv.status == 'pending'"
+                                                class="m-[2px] cursor-pointer"
+                                                size="sm"
+                                                variant="outline"
                                                 @click="onDelete(inv.id)"
                                                 :disabled="form.processing"
-                                                ><X></X
+                                                ><X class="text-red-500"></X
                                             ></Button>
                                             <span
                                                 class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
@@ -371,7 +437,7 @@ const onReport = async (invId: number) => {
                 </Card>
             </div>
 
-            <!-- Dialog Quoatations-->
+            <!-- Dialog Invoice-->
             <Dialog v-model:open="showDialogAdd">
                 <DialogContent
                     class="flex max-h-[90vh] w-[95vw] max-w-full flex-col rounded-2xl bg-white shadow-xl sm:max-w-lg md:max-w-2xl lg:max-w-4xl dark:bg-gray-900"
@@ -386,29 +452,6 @@ const onReport = async (invId: number) => {
 
                     <!-- Scrollable Content -->
                     <div class="flex-1 space-y-4 overflow-y-auto px-6 py-4">
-                        <!-- Student & Quotation Info -->
-                        <!-- <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div class="space-y-1">
-                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Student ID:</span> {{ form.studentId }}</p>
-                                <p>
-                                    <span class="font-medium text-gray-700 dark:text-gray-200">Student Name:</span> {{ form.student_fname }}
-                                    {{ form.student_lname }}
-                                </p>
-                                <p>
-                                    <span class="font-medium text-gray-700 dark:text-gray-200">Gender:</span>
-                                    {{ form.gender == 1 ? 'Man' : form.gender == 2 ? 'Woman' : form.gender == 3 ? "Other's" : 'Unknown' }}
-                                </p>
-                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Phone:</span> {{ form.phone }}</p>
-                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Email:</span> {{ form.email }}</p>
-                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Destination Country:</span> {{ form.descountry_id }}</p>
-                            </div>
-                            <div class="space-y-1">
-                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Quotation No:</span> {{ form.quotation_no }}</p>
-                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Quotation Date:</span> {{ form.q_adddate }}</p>
-                                <p><span class="font-medium text-gray-700 dark:text-gray-200">By:</span> {{ form.q_user }}</p>
-                            </div>
-                        </div> -->
-
                         <!-- Services List -->
                         <div class="space-y-4">
                             <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
@@ -477,7 +520,6 @@ const onReport = async (invId: number) => {
                             >
                                 <!-- Fee Details -->
                                 <div class="flex-1">
-                                    
                                     <p class="font-medium text-gray-700">
                                         Fee Name: <span class="font-normal">{{ fee.feename }}</span>
                                     </p>
@@ -521,6 +563,105 @@ const onReport = async (invId: number) => {
                             <template v-if="feesForm.processing">Creating...</template>
                             <template v-else><LucideSave class="h-4 w-4" />Create</template>
                         </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <!-- Dialog Invoice View -->
+            <!-- Dialog Quoatations-->
+            <Dialog v-model:open="ViewDailog">
+                <DialogContent
+                    class="flex max-h-[90vh] w-[95vw] max-w-full flex-col rounded-2xl bg-white shadow-xl sm:max-w-lg md:max-w-2xl lg:max-w-4xl dark:bg-gray-900"
+                >
+                    <!-- Header -->
+                    <DialogHeader class="flex-shrink-0 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                        <DialogTitle class="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-100"> Create Student Invoice </DialogTitle>
+                        <DialogDescription class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Fill in the details below to create a new Invoice.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <!-- Scrollable Content -->
+                    <div class="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+                        <!-- Student & Quotation Info -->
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="space-y-1">
+                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Student ID:</span> {{ viewForm.student_id }}</p>
+                                <p>
+                                    <span class="font-medium text-gray-700 dark:text-gray-200">Student Name:</span> {{ viewForm.stundent_fname }}
+                                    {{ viewForm.stundent_lname }}
+                                </p>
+                                <p>
+                                    <span class="font-medium text-gray-700 dark:text-gray-200">Gender:</span>
+                                    {{
+                                        viewForm.student_gender == 1
+                                            ? 'Man'
+                                            : viewForm.student_gender == 2
+                                              ? 'Woman'
+                                              : viewForm.student_gender == 3
+                                                ? "Other's"
+                                                : 'Unknown'
+                                    }}
+                                </p>
+                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Phone:</span> {{ viewForm.student_phone }}</p>
+                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Email:</span> {{ viewForm.student_email }}</p>
+                                <p>
+                                    <span class="font-medium text-gray-700 dark:text-gray-200">Destination Country:</span>
+                                    {{ viewForm.student_country }}
+                                </p>
+                            </div>
+                            <div class="space-y-1">
+                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Quotation No:</span> {{ viewForm.student_quoatno }}</p>
+                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Quotation Date:</span> {{ viewForm.student_quoatdate }}</p>
+                                <p><span class="font-medium text-gray-700 dark:text-gray-200">By:</span> {{ viewForm.student_quoatby }}</p>
+                            </div>
+                        </div>
+
+                        <!-- fees List -->
+                        <div class="space-y-4">
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+
+                                <!-- Fees Table -->
+                                <div class="overflow-x-auto">
+                                    <table
+                                        class="w-full min-w-[500px] table-auto border-collapse border border-gray-200 text-sm dark:border-gray-700"
+                                    >
+                                        <thead class="bg-gray-100 dark:bg-gray-700">
+                                            <tr>
+                                                <th class="border-b border-gray-300 px-3 py-2 text-left dark:border-gray-600">Fee Name</th>
+                                                <th class="border-b border-gray-300 px-3 py-2 text-left dark:border-gray-600">Net Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr
+                                                v-for="(fee, fIndex) in viewForm.viewfees"
+                                                :key="fIndex"
+                                                class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                                            >
+                                                <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">{{ fee.feename }}</td>
+                                                <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">{{ fee.amount }}</td>
+                                            </tr>
+                                            <tr class="bg-gray-200 font-medium dark:bg-gray-700">
+                                                <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">Grand Total</td>
+                                                <td class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">
+                                                    {{ viewForm.viewfees.reduce((total, f) => total + Number(f.amount || 0), 0).toFixed(2) }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                       
+                    </div>
+
+                    <!-- Footer -->
+                    <DialogFooter
+                        class="flex flex-shrink-0 flex-col-reverse gap-3 border-t border-gray-200 px-6 py-4 sm:flex-row sm:justify-end dark:border-gray-700"
+                    >
+                        <DialogClose as-child>
+                            <Button type="button" variant="secondary" class="w-full px-4 py-2 sm:w-auto">Cancel</Button>
+                        </DialogClose>
+                       
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

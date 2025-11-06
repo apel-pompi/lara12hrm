@@ -127,6 +127,8 @@ class StudentInServiceController extends Controller
                 ]);
 
                 $data->update(['status' => 'converted']);
+            }else{
+                return back()->with('message', 'Student application is allready created');
             }
 
             StudentActivities::create([
@@ -137,9 +139,8 @@ class StudentInServiceController extends Controller
                 'user_id' => Auth::id()
             ]);
         }
-        return redirect()
-            ->route('studentApplication.index', $student->id)
-            ->with('success', 'Student application created successfully.');
+        return back()->with('message', 'Student application created successfully.');
+        
     }
 
     /**

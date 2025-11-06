@@ -207,13 +207,11 @@ class StudentAccounts extends Controller
         ]);
         foreach ($invoice->details as $key) {
             $invamount = $key->amount;
-            $invoice_id = $key->invoice_hd_id;
             $fees_id = $key->fees_id;
 
             $updatequoat = StudentQuoationFee::where('quotation_hd_id', $quatHD->id)
                 ->where('fee_id', $fees_id)
                 ->first();
-            //dd($invamount,$invoice_id,$fees_id,$updatequoat);
             if ($updatequoat) {
                 $quoat_amount = $updatequoat->amount;
                 $update_amount = $quoat_amount + $invamount;
@@ -259,7 +257,35 @@ class StudentAccounts extends Controller
         return back()->with(['success' => true, 'message' => 'Student Invoice confirmed successfully']);
     }
 
+    public function onView(Student $student, StudentInvoiceHD $confirm)
+    {
 
+        $this->authorize('StudIns.view');
+
+        if (!$student || !$confirm) {
+            return back()->with(['error' => true, 'message' => 'Invalid request']);
+        }
+        
+        $invoice = StudentInvoiceHD::with(['student.country','details.fee'])->where('id',$confirm->id)->where('student_id',$student->id)->first();
+        $quoat = StudentQuotationHD::with(['user'])->where('quotation_no',$invoice->refe_code)->first();
+        StudentActivities::create([
+            'student_id' => $student->id,
+            'title' => "has view student invoice's",
+            'fristactivity' => null,
+            'lastactivity' => null,
+            'user_id' => Auth::id()
+        ]);
+        return response()->json([
+            'success' => true,
+            'data' => $invoice,
+            'quoat' => $quoat
+        ]);
+
+
+        
+
+        
+    }
 
     public function onReport(Student $student, StudentInvoiceHD $confirm)
     {
