@@ -63,8 +63,15 @@ class StudentQuotationHD extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public static function getFees($quoat_id,$product_id){
-        $data = StudentQuoationFee::with('fee')->where('quotation_hd_id',$quoat_id)->where('product_id',$product_id)->get();
+    // public static function getFees($quoat_id,$product_id){
+    //     $data = StudentQuoationFee::with('fee')->where('quotation_hd_id',$quoat_id)->where('product_id',$product_id)->get();
+    //     return $data;
+    // }
+    public static function getFees($quoat_id){
+        $data = StudentQuoationFee::with(['fee','productfee'])
+                ->whereHas('productfee', function ($q) {
+                })
+                ->where('quotation_hd_id',$quoat_id)->get();
         return $data;
     }
 }

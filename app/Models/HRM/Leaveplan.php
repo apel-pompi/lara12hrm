@@ -25,6 +25,6 @@ class Leaveplan extends Model
      */
     public function leaves(): HasMany
     {
-        return $this->hasMany(Leave::class, 'leaveplan_id', 'id');
+        return $this->hasMany(Leave::class, 'leaveplan_id','id');
     }
 }

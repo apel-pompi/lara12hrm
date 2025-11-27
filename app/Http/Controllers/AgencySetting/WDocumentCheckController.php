@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AgencySetting\WDocumentCheck;
 use App\Models\AgencySetting\WDocumentType;
 use App\Models\AgencySetting\Workflow;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +18,14 @@ class WDocumentCheckController extends Controller
 
     public function index($id)
     {
-        $this->authorize('workflowDocumentCheck.index');
+        try {
+            $this->authorize('workflowDocumentCheck.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/Agency/Setting/documentcheck', [
             'documentcheck' => WDocumentCheck::get(),
@@ -29,7 +37,15 @@ class WDocumentCheckController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('workflowDocumentCheck.store');
+        try {
+            $this->authorize('workflowDocumentCheck.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'workflow_id' => 'required|integer',

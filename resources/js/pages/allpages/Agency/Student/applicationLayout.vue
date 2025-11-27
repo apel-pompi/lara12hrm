@@ -4,7 +4,7 @@ import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 import { type NavItem } from '@/types';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 
-import { BookPlus, CloudUpload, Mail, MoveLeft, MoveRight, NotepadText, Users, X } from 'lucide-vue-next';
+import { BookPlus, CloudUpload, Mail, MoveLeft, MoveRight, NotepadText, X } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import ApplicationSidebar from './ApplicationSidebar.vue';
 import { nextTick } from 'vue';

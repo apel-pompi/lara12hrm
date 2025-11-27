@@ -19,11 +19,16 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->date('fromdate');
             $table->date('todate'); 
-            $table->integer('days');
+            $table->integer('requestdays');
+            $table->date('approveddate')->nullable();
+            $table->integer('approveddays')->nullable();
             $table->foreignId('substitute')->constrained('personal_infos')->nullable()
                 ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->string('contact_address');
             $table->string('reason');
             $table->tinyInteger('status')->default(0);  // 0=Pending, 1=Approved, 2=Rejected
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
             $table->softDeletes();
             

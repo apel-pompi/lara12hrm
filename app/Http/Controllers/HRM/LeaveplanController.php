@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HRM\Leaveplan;
 use App\Http\Requests\Leaveplan\StoreLeaveplanRequest;
 use App\Http\Requests\Leaveplan\UpdateLeaveplanRequest;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 
@@ -17,7 +18,14 @@ class LeaveplanController extends Controller
      */
     public function index()
     {
-        $this->authorize('leaveplan.index');
+        try {
+            $this->authorize('leaveplan.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/hrm/leaveplan',[
             'leaveplan' => Leaveplan::orderBy('id', 'desc')->get()
@@ -30,7 +38,15 @@ class LeaveplanController extends Controller
      */
     public function store(StoreLeaveplanRequest $request)
     {
-        $this->authorize('leaveplan.store');
+        try {
+            $this->authorize('leaveplan.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         Leaveplan::create($request->validated());
         return redirect()->route('leaveplan.index')->with('success', 'Leaveplan Create successfully.');
@@ -41,7 +57,15 @@ class LeaveplanController extends Controller
      */
     public function show(Leaveplan $leaveplan)
     {
-        $this->authorize('leaveplan.show');
+        try {
+            $this->authorize('leaveplan.show');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         if (!$leaveplan) {
             return response()->json(['message' => 'Leaveplan not found'], 404);
@@ -54,7 +78,15 @@ class LeaveplanController extends Controller
      */
     public function edit(Leaveplan $leaveplan)
     {
-        $this->authorize('leaveplan.edit');
+        try {
+            $this->authorize('leaveplan.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return response()->json([
             'success' => true,
@@ -67,7 +99,15 @@ class LeaveplanController extends Controller
      */
     public function update(UpdateLeaveplanRequest $request, Leaveplan $leaveplan)
     {
-        $this->authorize('leaveplan.update');
+        try {
+            $this->authorize('leaveplan.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $leaveplan->update($request->validated());
         return redirect()->route('leaveplan.index')->with('success', 'Leaveplan Update successfully.');
@@ -78,7 +118,15 @@ class LeaveplanController extends Controller
      */
     public function destroy(Leaveplan $leaveplan)
     {
-        $this->authorize('leaveplan.destroy');
+        try {
+            $this->authorize('leaveplan.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             $leaveplan->delete();

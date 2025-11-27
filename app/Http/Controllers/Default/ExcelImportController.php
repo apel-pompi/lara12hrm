@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Default;
 use App\Http\Controllers\Controller;
 
 use App\Imports\StudentImport;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -16,13 +17,29 @@ class ExcelImportController extends Controller
 
     public function showImportForm()
     {
-        //$this->authorize('StudentLead.index');
+        try {
+            $this->authorize('StudentLead.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
         return Inertia::render('allpages/Excel/Import');
     }
 
     public function import(Request $request)
     {
-        //$this->authorize('StudentLead.import');
+        try {
+            $this->authorize('StudentLead.import');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
         $request->validate([
             'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
         ]);
@@ -56,7 +73,15 @@ class ExcelImportController extends Controller
 
     public function downloadTemplate()
     {
-        //$this->authorize('StudentLead.download');
+        try {
+            $this->authorize('StudentLead.download');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
         $filePath = public_path('storage/templates/student_import_template.xlsx');
 
         if (!file_exists($filePath)) {

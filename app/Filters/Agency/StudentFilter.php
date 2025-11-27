@@ -4,7 +4,7 @@ namespace App\Filters\Agency;
 use App\Filters\BaseFilter;
 use App\Filters\Components\Agency\AssaignUser;
 use App\Filters\Components\Agency\Country;
-use App\Filters\Components\Agency\User;
+use App\Filters\Components\Agency\Source;
 use App\Filters\Components\Default\CreateAt;
 use App\Filters\Components\Default\Email;
 use App\Filters\Components\Default\IDName;
@@ -22,7 +22,7 @@ class StudentFilter extends BaseFilter
             Country::class,
             AssaignUser::class,
             Status::class,
-            User::class,
+            Source::class,
             CreateAt::class,
         ];
     }

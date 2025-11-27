@@ -12,17 +12,40 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    per_page: number;
+    to: number | null;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
+export interface Invoice {
+    insnumber: number;
+    student: {
+        student_id: string; fname: string; lname: string; phone: string
+    }
+     details_sum_amount?: number;
+}
+
 const props = defineProps<{
-    invoice?: Array<{
-        insnumber: string;
-        student?: { student_id: string; fname: string; lname: string; phone: string };
-        details_sum_amount?: number;
-    }>;
+    invoice: Paginated<Invoice>;
+   
 }>();
 
+const data = props.invoice;
 
 const onCreateMR = async (invId: number, sid: number) => {
     router.visit(route('accounts.createMR', { insid: invId, sid: sid }));
+};
+
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
 };
 </script>
 
@@ -47,7 +70,7 @@ const onCreateMR = async (invId: number, sid: number) => {
                             
                         </TableRow>
                     </TableHeader>
-                    <TableBody v-for="(inv, index) in props.invoice ?? []" :key="index">
+                    <TableBody v-for="(inv, index) in data.data ?? []" :key="index">
                         <TableRow v-if="inv.details_sum_amount >= 0"> 
                             <TableCell>{{ index + 1 }}</TableCell>
                             <TableCell>
@@ -81,10 +104,18 @@ const onCreateMR = async (invId: number, sid: number) => {
             </div>
 
             <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">Showing results</div>
+                <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
                 <div class="space-x-2">
-                    <Button variant="outline" size="sm">
-                        <span></span>
+                    <Button
+                        v-for="(link, index) in data.links"
+                        :key="index"
+                        :disabled="!link.url"
+                        variant="outline"
+                        size="sm"
+                        :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                        @click="goToPage(link.url)"
+                    >
+                        <span v-html="link.label"></span>
                     </Button>
                 </div>
             </div>

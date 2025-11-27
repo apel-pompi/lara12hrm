@@ -17,6 +17,10 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Employee Attendance',
         href: '/hrreports/EmployeeAttendance',
+    },
+    {
+        title: 'Monthly Attendance',
+        href: '/hrreports/MonthlyAttendance',
     }
 ];
 

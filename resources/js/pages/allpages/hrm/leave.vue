@@ -6,11 +6,11 @@ import { ref, watch } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 
-import { Eye, Plus, SquarePen, Trash } from 'lucide-vue-next';
+import { FileText, Plus, ShieldCheck, SquarePen, X } from 'lucide-vue-next';
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Select from '@/components/ui/select/Select.vue';
@@ -32,14 +32,21 @@ export interface Employee {
     empid: number;
     empname: string;
 }
+export interface Substitute {
+    empid: number;
+    empname: string;
+}
 export interface Leave {
     id: number;
     leaveplan_id: string;
     empid: string;
     fromdate: string;
     todate: string;
-    days: string;
+    requestdays: string;
+    approveddate: string;
+    approveddays: string;
     substitute: string;
+    contact_address: string;
     reason: string;
     status: string;
 }
@@ -50,10 +57,10 @@ const props = defineProps<{
     leaves: Leave[];
     leaveplan: LeavePlan[];
     employee: Employee[];
+    substitute: Substitute[];
 }>();
 
 const data = props.leaves;
-
 
 const fromdate = ref<string | null>(null);
 const todate = ref<string | null>(null);
@@ -64,8 +71,11 @@ interface FormErrors {
     empid?: string;
     fromdate: string;
     todate: string;
-    days: string;
+    requestdays: string;
+    approveddate:string;
+    approveddays: string;
     substitute: string;
+    contact_address: string;
     reason: string;
     status: string;
 }
@@ -81,8 +91,11 @@ const form = useForm({
     empid: '',
     fromdate: '',
     todate: '',
-    days: '',
+    requestdays: '',
+    approveddate:'',
+    approveddays: '',
     substitute: '',
+    contact_address: '',
     reason: '',
     status: '0',
 });
@@ -94,21 +107,38 @@ const showDailogCreate = () => {
     showDialog.value = true;
 };
 
-const exportPdf = (id: number) => {
-    window.open(route('leave.exportPdf', id), '_blank')
-}
+const balanceLeave = ref({
+    allow: 0,
+    taken: 0,
+    balance: 0,
+});
+
+const fetchLeave = async () => {
+    if (!form.empid || !form.leaveplan_id) return;
+
+    const res = await fetch(`/leave/${form.leaveplan_id}/${form.empid}/fetchUserLeave`);
+    balanceLeave.value = await res.json();
+};
+
+watch(
+    () => [form.empid, form.leaveplan_id],
+    async () => {
+        if (form.empid && form.leaveplan_id) {
+            await fetchLeave();
+        }
+    }
+);
 
 const onEdit = async (id: number) => {
     try {
-        const res = await fetch(`/leaveplan/${id}/edit`);
+        const res = await fetch(`/leave/${id}/edit`);
 
         if (!res.ok) {
-            toast.error('Server error while fetching leaveplan details.');
+            toast.error('Server error while fetching leave details.');
             return;
         }
 
         const data = await res.json();
-
         Object.assign(form, data.data);
         form.id = data.data.id;
         isEditMode.value = true;
@@ -147,14 +177,14 @@ const submit = () => {
 };
 const deleteForm = useForm({});
 
-const onDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this leaveplan?')) return;
+const onConfirm = async (id: number) => {
+    if (!confirm('Are you sure you want to send this leave for approval')) return;
 
     if (deleteForm.processing) return;
 
-    deleteForm.delete(`/leaveplan/show/${id}`, {
+    deleteForm.post(`/leave/confirm/${id}`, {
         onSuccess: () => {
-            toast.success('Leave Plan deleted successfully');
+            toast.success('Leave approval sending successfully');
         },
         onError: () => {
             toast.success('Somethings wrong !');
@@ -164,6 +194,26 @@ const onDelete = async (id: number) => {
     });
 };
 
+const onDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to cancel this leave?')) return;
+
+    if (deleteForm.processing) return;
+
+    deleteForm.delete(`/leave/show/${id}`, {
+        onSuccess: () => {
+            toast.success('Leave cancel successfully');
+        },
+        onError: () => {
+            toast.success('Somethings wrong !');
+        },
+        preserveScroll: true,
+        preserveState: false,
+    });
+};
+
+const exportPdf = (id: number) => {
+    window.open(route('leave.exportPdf', id), '_blank');
+};
 
 watch(fromdate, (newDate) => {
     if (newDate instanceof Date && !isNaN(newDate.getTime())) {
@@ -175,22 +225,20 @@ watch(todate, (newDate) => {
     if (newDate instanceof Date && !isNaN(newDate.getTime())) {
         form.todate = newDate.toISOString().split('T')[0];
     }
-    
 });
 
 watch([fromdate, todate], ([newFrom, newTo]) => {
-  if (newFrom && newTo) {
-    const start = new Date(newFrom);
-    const end = new Date(newTo);
-    const diffTime = end.getTime() - start.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    if (newFrom && newTo) {
+        const start = new Date(newFrom);
+        const end = new Date(newTo);
+        const diffTime = end.getTime() - start.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-    form.days = diffDays > 0 ? diffDays.toString() : "0"; 
-  } else {
-    form.days = "0";
-  }
+        form.requestdays = diffDays > 0 ? diffDays.toString() : '0';
+    } else {
+        form.requestdays = '0';
+    }
 });
-
 </script>
 
 <template>
@@ -208,7 +256,9 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
                             <TableHead>Employee Name</TableHead>
                             <TableHead>From Date</TableHead>
                             <TableHead>To Date</TableHead>
-                            <TableHead>Total Days</TableHead>
+                            <TableHead>Request Days</TableHead>
+                            <TableHead>Approved Date</TableHead>
+                            <TableHead>Approved Days</TableHead>
                             <TableHead>Substitute</TableHead>
                             <TableHead>Reason</TableHead>
                             <TableHead class="text-center">Action</TableHead>
@@ -220,13 +270,60 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
                             <TableCell>{{ leave.employee.empname }}</TableCell>
                             <TableCell>{{ leave.fromdate }}</TableCell>
                             <TableCell>{{ leave.todate }}</TableCell>
-                            <TableCell>{{ leave.days }}</TableCell>
+                            <TableCell>{{ leave.requestdays }}</TableCell>
+                            <TableCell>{{ leave.approveddate }}</TableCell>
+                            <TableCell>{{ leave.approveddays }}</TableCell>
                             <TableCell>{{ leave.substitute_employee.empname }}</TableCell>
                             <TableCell>{{ leave.reason }}</TableCell>
-                            <TableCell class="text-right">
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="exportPdf(leave.id)"><Eye></Eye></Button>
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(leave.id)"><SquarePen></SquarePen></Button>
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(leave.id)"><Trash></Trash></Button>
+                            <TableCell class="text-center">
+                                <div v-if="leave.status == 0" class="flex items-center justify-center gap-2">
+                                    <div class="group relative">
+                                        <Button @click="onEdit(leave.id)" variant="outline" size="icon" class="cursor-pointer">
+                                            <SquarePen class="h-4 w-4 text-blue-500" />
+                                        </Button>
+                                        <span
+                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+                                        >
+                                            Edit
+                                        </span>
+                                    </div>
+                                    <div class="group relative">
+                                        <Button @click="onDelete(leave.id)" variant="outline" size="icon" class="cursor-pointer">
+                                            <X class="h-4 w-4 text-red-500" />
+                                        </Button>
+                                        <span
+                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+                                        >
+                                            Cancel
+                                        </span>
+                                    </div>
+
+                                    <div class="group relative">
+                                        <Button @click="onConfirm(leave.id)" variant="outline" size="icon" class="cursor-pointer">
+                                            <ShieldCheck class="h-4 w-4 text-green-500" />
+                                        </Button>
+                                        <span
+                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+                                        >
+                                            Send
+                                        </span>
+                                    </div>
+                                </div>
+                                <div v-else-if="leave.status == 1" class="flex items-center justify-center gap-2">Leave Cancel</div>
+                                <div v-else-if="leave.status == 2" class="flex items-center justify-center gap-2">Approval Pending</div>
+                                <div v-else-if="leave.status == 3" class="flex items-center justify-center gap-2">
+                                    <div class="group relative">
+                                        <Button @click="exportPdf(leave.id)" variant="outline" size="icon" class="cursor-pointer">
+                                            <FileText class="h-4 w-4 text-red-500" />
+                                        </Button>
+                                        <span
+                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+                                        >
+                                            Report
+                                        </span>
+                                    </div>
+                                </div>
+                                <div v-else></div>
                             </TableCell>
                         </TableRow>
                     </TableBody>
@@ -248,7 +345,23 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
                 <div class="grid grid-cols-2 gap-5">
                     <div class="grid gap-y-3">
                         <div class="grid gap-2">
-                            <Label for="leaveplan_id">Leave Name</Label>
+                            <Label for="empid">Employee Name<span class="text-red-500">*</span></Label>
+                            <Select v-model="form.empid">
+                                <SelectTrigger class="w-full">
+                                    <SelectValue placeholder="Select Employee Name" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem v-for="employees in props.employee" :key="employees.id" :value="employees.id">
+                                            {{ employees.empname }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <span v-if="errors?.empid" class="text-sm text-red-600">{{ errors.empid }}</span>
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="leaveplan_id">Leave Name<span class="text-red-500">*</span></Label>
                             <Select v-model="form.leaveplan_id">
                                 <SelectTrigger class="w-full">
                                     <SelectValue placeholder="Select Leave Name" />
@@ -263,27 +376,18 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
                             </Select>
                             <span v-if="errors?.leaveplan_id" class="text-sm text-red-600">{{ errors.leaveplan_id }}</span>
                         </div>
-                        <div class="grid gap-2">
-                            <Label for="empid">Employee Name</Label>
-                            <Select v-model="form.empid">
-                                <SelectTrigger class="w-full">
-                                    <SelectValue placeholder="Select Employee Name" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem v-for="employees in props.employee" :key="employees.empid" :value="employees.empid">
-                                            {{ employees.empname }}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <span v-if="errors?.empid" class="text-sm text-red-600">{{ errors.empid }}</span>
+
+                        <div v-if="balanceLeave.balance !== null" class="mt-4 rounded bg-gray-100 p-3">
+                            <p><b>Total Allow:</b> {{ balanceLeave.allow }}</p>
+                            <p><b>Taken:</b> {{ balanceLeave.taken }}</p>
+                            <p><b>Balance:</b> {{ balanceLeave.balance }}</p>
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="fromdate">From Date</Label>
+                            <Label for="fromdate">From Date<span class="text-red-500">*</span></Label>
                             <VueDatePicker
                                 v-model="fromdate"
+                                :disabled="balanceLeave?.balance === 0"
                                 :max-date="maxDate"
                                 :format="'yyyy-MM-dd'"
                                 :enable-time-picker="false"
@@ -293,10 +397,10 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
                             <span v-if="errors?.fromdate" class="text-sm text-red-600">{{ errors.fromdate }}</span>
                         </div>
                         <div class="grid gap-2">
-                            <Label for="todate">To Date</Label>
+                            <Label for="todate">To Date<span class="text-red-500">*</span></Label>
                             <VueDatePicker
                                 v-model="todate"
-                                :max-date="maxDate"
+                                :disabled="balanceLeave?.balance === 0"
                                 :format="'yyyy-MM-dd'"
                                 :enable-time-picker="false"
                                 placeholder="To date"
@@ -307,19 +411,19 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
                     </div>
                     <div class="grid gap-y-3">
                         <div class="grid gap-2">
-                            <Label for="days">Total Days</Label>
-                            <Input class="max-w-sm" placeholder="Total Days" id="empid" v-model="form.days" autofocus />
-                            <span v-if="errors?.days" class="text-sm text-red-600">{{ errors.days }}</span>
+                            <Label for="days">Total Days<span class="text-red-500">*</span></Label>
+                            <Input class="max-w-sm" placeholder="Total Days" id="empid" v-model="form.requestdays" autofocus :disabled="balanceLeave?.balance === 0"/>
+                            <span v-if="errors?.requestdays" class="text-sm text-red-600">{{ errors.requestdays }}</span>
                         </div>
                         <div class="grid gap-2">
-                            <Label for="substitute">Substitute</Label>
+                            <Label for="substitute">Substitute<span class="text-red-500">*</span></Label>
                             <Select v-model="form.substitute">
                                 <SelectTrigger class="w-full">
                                     <SelectValue placeholder="Select Substitute Name" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="employees in props.employee" :key="employees.empid" :value="employees.empid">
+                                        <SelectItem v-for="employees in props.substitute" :key="employees.id" :value="employees.id">
                                             {{ employees.empname }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -328,7 +432,18 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
                             <span v-if="errors?.substitute" class="text-sm text-red-600">{{ errors.substitute }}</span>
                         </div>
                         <div class="grid gap-2">
-                            <Label for="reason">Reason</Label>
+                            <Label for="contact_address">Contact address during leave period<span class="text-red-500">*</span></Label>
+                            <Textarea
+                                class="max-w-sm"
+                                placeholder="Write address"
+                                id="contact_address"
+                                v-model="form.contact_address"
+                                autofocus
+                            ></Textarea>
+                            <span v-if="errors?.contact_address" class="text-sm text-red-600">{{ errors.contact_address }}</span>
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="reason">Reason<span class="text-red-500">*</span></Label>
                             <Textarea class="max-w-sm" placeholder="Write Reason" id="reason" v-model="form.reason" autofocus></Textarea>
                             <span v-if="errors?.reason" class="text-sm text-red-600">{{ errors.reason }}</span>
                         </div>

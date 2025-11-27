@@ -7,6 +7,7 @@ use App\Models\AgencySetting\Fees;
 use App\Http\Requests\Fees\StoreFeesRequest;
 use App\Http\Requests\Fees\UpdateFeesRequest;
 use App\Services\Agency\Setting\FeesService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -20,7 +21,14 @@ class FeesController extends Controller
      */
     public function index(Request $request, FeesService $feesService)
     {
-        $this->authorize('Fees.index');
+        try {
+            $this->authorize('Fees.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/Agency/Setting/fees',[
             'feesFilter' => Fees::with('user')->orderBy('id', 'desc')->get(),
@@ -35,7 +43,15 @@ class FeesController extends Controller
      */
     public function store(StoreFeesRequest $request)
     {
-        $this->authorize('Fees.store');
+        try {
+            $this->authorize('Fees.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validated();
         Fees::create([
@@ -52,7 +68,15 @@ class FeesController extends Controller
      */
     public function edit(Fees $fees)
     {
-        $this->authorize('Fees.edit');
+        try {
+            $this->authorize('Fees.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return response()->json([
             'success' => true,
@@ -65,7 +89,15 @@ class FeesController extends Controller
      */
     public function update(UpdateFeesRequest $request, Fees $fees)
     {
-        $this->authorize('Fees.update');
+        try {
+            $this->authorize('Fees.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $fees->update($request->validated());
         return redirect()->route('fees.index')->with('success', 'Fees Update successfully.');
@@ -76,7 +108,15 @@ class FeesController extends Controller
      */
     public function destroy(Fees $fees)
     {
-        $this->authorize('Fees.destroy');
+        try {
+            $this->authorize('Fees.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             $fees->delete();
@@ -91,7 +131,15 @@ class FeesController extends Controller
 
     public function updateStatus(Request $request, $fees)
     {
-        $this->authorize('Fees.updateStatus');
+        try {
+            $this->authorize('Fees.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'

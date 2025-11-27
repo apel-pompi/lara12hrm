@@ -3,23 +3,29 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
-const name = page.props.name;
+const loginimage = page.props.company.loginimage;
 const quote = page.props.quote;
 
 defineProps<{
     title?: string;
     description?: string;
 }>();
-
 </script>
 
 <template>
-    <div class="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0">
-        <div class="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-            <div class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-emerald-900" id="loginleft"/>
-            <Link :href="route('home')" class="relative z-20 flex items-center text-lg font-medium">
-                <AppLogoIcon class="mr-2 size-8 fill-current text-black" />
-                {{ name }}
+    <div
+        class="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0"
+        :style="{
+            backgroundImage: `url('/storage/company/${loginimage}')`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+        }"
+    >
+        <div class="relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r">
+            <div class="absolute inset-0" />
+            <Link :href="route('home')" class="relative z-20 items-center text-lg font-medium">
+                <AppLogoIcon class="size-35 fill-current text-black" />
             </Link>
             <div v-if="quote" class="relative z-20 mt-auto">
                 <blockquote class="space-y-2">
@@ -32,7 +38,7 @@ defineProps<{
             <div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
                 <div class="flex flex-col space-y-2 text-center">
                     <h1 class="text-xl font-medium tracking-tight" v-if="title">{{ title }}</h1>
-                    <p class="text-sm text-muted-foreground" v-if="description">{{ description }}</p>
+                    <p class="text-muted-foreground text-sm" v-if="description">{{ description }}</p>
                 </div>
                 <slot />
             </div>
@@ -41,9 +47,10 @@ defineProps<{
 </template>
 
 <style scoped>
-#loginleft{
-    background-image: url("//plus.unsplash.com/premium_photo-1664368832444-466464d54df3?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170");
+#loginleft {
+    background-image: var(--bg-image);
     background-position: center;
     background-size: cover;
+    background-repeat: no-repeat;
 }
 </style>

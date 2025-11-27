@@ -7,6 +7,7 @@ use App\Models\AgencySetting\MasterCategory;
 use App\Models\Partner\PartnerTypeSetup;
 use App\Models\Product\ProductTypeSetup;
 use App\Services\Agency\Setting\GeneralMaster;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +19,14 @@ class GeneralController extends Controller
 
     public function index(Request $request, GeneralMaster $generalMaster)
     {
-        $this->authorize('general.index');
+        try {
+            $this->authorize('general.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/Agency/Setting/generalmaster', [
 
@@ -30,7 +38,14 @@ class GeneralController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('general.store');
+        try {
+            $this->authorize('general.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $validated = $request->validate([
             'catname' => 'required|string',
@@ -49,7 +64,15 @@ class GeneralController extends Controller
 
     public function show(MasterCategory $general)
     {
-        $this->authorize('general.show');
+        try {
+            $this->authorize('general.show');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         if (!$general) {
             return response()->json(['message' => 'Master Category not found'], 404);
@@ -59,7 +82,15 @@ class GeneralController extends Controller
 
     public function edit(MasterCategory $general)
     {
-        $this->authorize('general.edit');
+        try {
+            $this->authorize('general.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return response()->json([
             'success' => true,
@@ -70,7 +101,15 @@ class GeneralController extends Controller
 
     public function update(Request $request, MasterCategory $general)
     {
-        $this->authorize('general.update');
+        try {
+            $this->authorize('general.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'catname' => 'required',
@@ -85,7 +124,15 @@ class GeneralController extends Controller
 
     public function updateStatus(Request $request, $general)
     {
-        $this->authorize('general.updateStatus');
+        try {
+            $this->authorize('general.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
@@ -102,7 +149,15 @@ class GeneralController extends Controller
 
     public function destroy(MasterCategory $general)
     {
-        $this->authorize('general.destroy');
+        try {
+            $this->authorize('general.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             $general->delete();
@@ -116,7 +171,15 @@ class GeneralController extends Controller
 
     public function patnersetup()
     {
-        $this->authorize('patnerSetting.index');
+        try {
+            $this->authorize('patnerSetting.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/Agency/Setting/partnertype', [
             'mastersetup' => MasterCategory::where('active', 1)->get(),
@@ -126,7 +189,15 @@ class GeneralController extends Controller
 
     public function patnersetupstore(Request $request)
     {
-        $this->authorize('patnerSetting.store');
+        try {
+            $this->authorize('patnerSetting.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'partnertypename' => 'required|string',
@@ -146,7 +217,15 @@ class GeneralController extends Controller
 
     public function patnersetupUpdateStatus(Request $request, $patnersetup)
     {
-        $this->authorize('patnerSetting.updateStatus');
+        try {
+            $this->authorize('patnerSetting.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
@@ -163,7 +242,15 @@ class GeneralController extends Controller
 
     public function patnersetupdestroy(PartnerTypeSetup $patnersetup)
     {
-        $this->authorize('patnerSetting.destroy');
+        try {
+            $this->authorize('patnerSetting.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             $patnersetup->delete();
@@ -177,7 +264,15 @@ class GeneralController extends Controller
 
     public function productsetup()
     {
-        $this->authorize('productSetting.index');
+        try {
+            $this->authorize('productSetting.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/Agency/Setting/productsetup', [
             'mastersetup' => MasterCategory::where('active', 1)->get(),
@@ -187,7 +282,15 @@ class GeneralController extends Controller
 
     public function productsetuppstore(Request $request)
     {
-        $this->authorize('productSetting.store');
+        try {
+            $this->authorize('productSetting.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'producttypename' => 'required|string',
@@ -207,7 +310,14 @@ class GeneralController extends Controller
 
     public function producttypeUpdateStatus(Request $request, $productsetup)
     {
-        $this->authorize('productSetting.updateStatus');
+        try {
+            $this->authorize('productSetting.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
@@ -224,7 +334,15 @@ class GeneralController extends Controller
 
     public function productsetupdestroy(ProductTypeSetup $productsetup)
     {
-        $this->authorize('productSetting.destroy');
+        try {
+            $this->authorize('productSetting.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             $productsetup->delete();

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Users;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,7 +18,15 @@ class UserPermissionController extends Controller
      */
     public function index()
     {
-        $this->authorize('user.index');
+        try {
+            $this->authorize('user.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $users = User::with('roles')->orderBy('id', 'desc')->get()->map(function ($user) {
             return [
@@ -43,7 +52,15 @@ class UserPermissionController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('user.store');
+        try {
+            $this->authorize('user.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'name' => 'required',
@@ -70,7 +87,15 @@ class UserPermissionController extends Controller
      */
     public function edit(string $id)
     {
-        $this->authorize('user.edit');
+        try {
+            $this->authorize('user.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $user = User::with('roles')->findOrFail($id);
         return response()->json([
@@ -90,7 +115,15 @@ class UserPermissionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $this->authorize('user.update');
+        try {
+            $this->authorize('user.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'name' => 'required',
@@ -122,7 +155,15 @@ class UserPermissionController extends Controller
      */
     public function destroy(string $id)
     {
-        $this->authorize('user.destroy');
+        try {
+            $this->authorize('user.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $user = User::findOrFail($id);
         $ban = $user->ban();

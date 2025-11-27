@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use App\Services\PersonalInfoService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 
@@ -26,7 +27,15 @@ class PersonalInfoController extends Controller
      */
     public function index(Request $request, PersonalInfoService $personalInfoService)
     {
-        $this->authorize('personal.index');
+        try {
+            $this->authorize('personal.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/hrm/personalinfo', [
             'personalinfo' => $personalInfoService->get($request->query()),
@@ -43,7 +52,15 @@ class PersonalInfoController extends Controller
      */
     public function store(StorePersonalInfoRequest $request)
     {
-        $this->authorize('personal.store');
+        try {
+            $this->authorize('personal.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validated();
 
@@ -70,7 +87,15 @@ class PersonalInfoController extends Controller
 
     public function updateStatus(Request $request, $PersonalInfo)
     {
-        $this->authorize('personal.updateStatus');
+        try {
+            $this->authorize('personal.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
@@ -90,7 +115,15 @@ class PersonalInfoController extends Controller
      */
     public function show(PersonalInfo $PersonalInfo)
     {
-        $this->authorize('personal.show');
+        try {
+            $this->authorize('personal.show');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         if (!$PersonalInfo) {
             return response()->json(['message' => 'Personal Info not found'], 404);
@@ -114,7 +147,15 @@ class PersonalInfoController extends Controller
      */
     public function edit(PersonalInfo $PersonalInfo)
     {
-        $this->authorize('personal.edit');
+        try {
+            $this->authorize('personal.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return response()->json([
             'success' => true,
@@ -127,7 +168,15 @@ class PersonalInfoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->authorize('personal.update');
+        try {
+            $this->authorize('personal.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'empid'         => 'required',
@@ -182,8 +231,15 @@ class PersonalInfoController extends Controller
      */
     public function destroy(PersonalInfo $PersonalInfo)
     {
+        try {
+            $this->authorize('personal.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        $this->authorize('personal.destroy');
 
         try {
             if (!empty($PersonalInfo->photo)) {

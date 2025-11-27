@@ -27,14 +27,12 @@ class StudentCheckLogController extends Controller
     {
         $created = StudentCheckLog::create([
             'student_id' => $student->id,
-            'status' => $request->status,
+            'status' => 'Check IN',
             'user_id' => Auth::id(),
         ]);
 
         if ($created) {
-            $student->update([
-                'status'      => 1,
-            ]);
+            
             StudentActivities::create([
                 'student_id' => $student->id,
                 'title' => "has created student check in",

@@ -2,6 +2,7 @@
 
 namespace App\Models\HRM;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
@@ -16,10 +17,14 @@ class Leave extends Model
         'empid',
         'fromdate',
         'todate',
-        'days',
+        'requestdays',
+        'approveddate',
+        'approveddays',
         'substitute',
+        'contact_address',
         'reason',
         'status',
+        'user_id'
     ];
 
     /**
@@ -29,7 +34,7 @@ class Leave extends Model
      */
     public function leavePlan(): BelongsTo
     {
-        return $this->belongsTo(Leaveplan::class, 'leaveplan_id', 'id');
+        return $this->belongsTo(Leaveplan::class, 'leaveplan_id','id');
     }
 
     /**
@@ -39,7 +44,7 @@ class Leave extends Model
      */
     public function employee(): BelongsTo
     {
-        return $this->belongsTo(PersonalInfo::class, 'empid', 'empid');
+        return $this->belongsTo(PersonalInfo::class, 'empid','id');
     }
 
     /**
@@ -49,6 +54,16 @@ class Leave extends Model
      */
     public function substituteEmployee(): BelongsTo
     {
-        return $this->belongsTo(PersonalInfo::class, 'substitute', 'empid');
+        return $this->belongsTo(PersonalInfo::class, 'substitute','id');
+    }
+
+    /**
+     * Get the user that owns the Leave
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

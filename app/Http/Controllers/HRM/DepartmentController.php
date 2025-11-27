@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HRM\Department;
 use App\Http\Requests\Department\StoreDepartmentRequest;
 use App\Http\Requests\Department\UpdateDepartmentRequest;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 
@@ -17,7 +18,15 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        $this->authorize('department.index');
+        try {
+            $this->authorize('department.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/hrm/department',[
             'department' => Department::orderBy('id', 'desc')->get()
@@ -30,7 +39,14 @@ class DepartmentController extends Controller
      */
     public function store(StoreDepartmentRequest $request)
     {
-        $this->authorize('department.store');
+        try {
+            $this->authorize('department.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         Department::create($request->validated());
         return redirect()->route('department.index')->with('success', 'Department Create successfully.');
@@ -41,7 +57,14 @@ class DepartmentController extends Controller
      */
     public function show(Department $department)
     {
-        $this->authorize('department.show');
+        try {
+            $this->authorize('department.show');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         if (!$department) {
             return response()->json(['message' => 'Department not found'], 404);
@@ -54,7 +77,14 @@ class DepartmentController extends Controller
      */
     public function edit(Department $department)
     {
-        $this->authorize('department.edit');
+        try {
+            $this->authorize('department.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -67,7 +97,15 @@ class DepartmentController extends Controller
      */
     public function update(UpdateDepartmentRequest $request, Department $department)
     {
-        $this->authorize('department.update');
+        try {
+            $this->authorize('department.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $department->update($request->validated());
         return redirect()->route('department.index')->with('success', 'Department Update successfully.');
@@ -78,7 +116,15 @@ class DepartmentController extends Controller
      */
     public function destroy(Department $department)
     {
-        $this->authorize('department.destroy');
+        try {
+            $this->authorize('department.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             $department->delete();

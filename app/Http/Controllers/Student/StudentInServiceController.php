@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Student\StudentInService;
 use App\Http\Requests\StudentInService\StoreStudentInServiceRequest;
 use App\Http\Requests\StudentInService\UpdateStudentInServiceRequest;
-use App\Models\AgencySetting\gDrive;
 use App\Models\AgencySetting\Workflow;
 use App\Models\AgencySetting\WorkflowStage;
 use App\Models\Partner\PartnerBranch;
@@ -15,12 +14,12 @@ use App\Models\Student\Student;
 use App\Models\Student\StudentActivities;
 use App\Models\Student\StudentApplication;
 use App\Models\Student\StudentQuotation;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Log;
 
 class StudentInServiceController extends Controller
 {
@@ -30,7 +29,14 @@ class StudentInServiceController extends Controller
      */
     public function index(Student $student)
     {
-        $this->authorize('Service.index');
+        try {
+            $this->authorize('Service.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $student->load('assainuser');
         return Inertia::render('allpages/Agency/Student/interestedservice', [
@@ -45,7 +51,14 @@ class StudentInServiceController extends Controller
      */
     public function create(Request $request, Student $student)
     {
-        $this->authorize('Service.create');
+        try {
+            $this->authorize('Service.create');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $checkID = Student::find($student->id);
         if (!$checkID || !$checkID->student_id) {
@@ -148,7 +161,14 @@ class StudentInServiceController extends Controller
      */
     public function store(StoreStudentInServiceRequest $request)
     {
-        $this->authorize('Service.store');
+        try {
+            $this->authorize('Service.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $validated = $request->validated();
 
@@ -194,7 +214,15 @@ class StudentInServiceController extends Controller
      */
     public function show(StudentInService $studentInService)
     {
-        $this->authorize('Service.show');
+        try {
+            $this->authorize('Service.show');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
     }
 
     /**
@@ -202,7 +230,15 @@ class StudentInServiceController extends Controller
      */
     public function edit(StudentInService $studentInService)
     {
-        $this->authorize('Service.edit');
+        try {
+            $this->authorize('Service.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
     }
 
     /**
@@ -210,7 +246,15 @@ class StudentInServiceController extends Controller
      */
     public function update(UpdateStudentInServiceRequest $request, StudentInService $studentInService)
     {
-        $this->authorize('Service.update');
+        try {
+            $this->authorize('Service.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
     }
 
     /**
@@ -218,7 +262,14 @@ class StudentInServiceController extends Controller
      */
     public function destroy(Student $student, StudentInService $studentInService)
     {
-        $this->authorize('Service.destroy');
+        try {
+            $this->authorize('Service.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         try {
 

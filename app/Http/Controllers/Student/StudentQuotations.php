@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Default\ApprovalRequest;
 use App\Models\Default\Transaction;
 use App\Models\HRM\CompanyInfo;
 use App\Models\Product\Product;
@@ -14,6 +15,7 @@ use App\Models\Student\StudentQuotation;
 use App\Models\Student\StudentQuotationHD;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 use NumberToWords\NumberToWords;
@@ -26,7 +28,15 @@ class StudentQuotations extends Controller
 
     public function index(Student $student)
     {
-        $this->authorize('StudQuoat.index');
+        try {
+            $this->authorize('StudQuoat.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $user = Auth::user();
         $roles = $user->getRoleNames();
@@ -53,9 +63,9 @@ class StudentQuotations extends Controller
                     DB::raw('SUM(e.netamount) as amount')
                 )
                 ->where('a.student_id', $student->id)
-                ->where('e.deleted_at',null)
-                ->where('a.deleted_at',null)
-                ->where('a.deleted_at',null)
+                ->where('e.deleted_at', null)
+                ->where('a.deleted_at', null)
+                ->where('a.deleted_at', null)
                 ->groupBy('a.id', 'a.product_id', 'b.name', 'd.name', 'c.branch_name', 'f.name', 'a.status')
                 ->get(),
             'quoatation' => StudentQuotationHD::where('student_id', $student->id)->get(),
@@ -71,8 +81,8 @@ class StudentQuotations extends Controller
             ->leftJoin('fees as d', 'c.fees_id', '=', 'd.id')
             ->where('a.student_id', $student)
             ->where('a.product_id', $product)
-            ->where('b.deleted_at',null)
-            ->where('c.deleted_at',null)
+            ->where('b.deleted_at', null)
+            ->where('c.deleted_at', null)
             ->select(
                 'd.id as feesid',
                 'd.name as feename',
@@ -88,6 +98,7 @@ class StudentQuotations extends Controller
         ]);
     }
 
+    
     private function GetInvoiceNO()
     {
         $transaction = Transaction::where('name', 'Quoatations No')
@@ -103,8 +114,15 @@ class StudentQuotations extends Controller
 
     public function store(Student $student, Request $request)
     {
+        try {
+            $this->authorize('StudQuoat.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        $this->authorize('StudQuoat.store');
 
         $QuaotNo = $this->GetInvoiceNO();
         if ($QuaotNo) {
@@ -122,7 +140,7 @@ class StudentQuotations extends Controller
                 'active' => 0,
             ]);
             if ($createHd) {
-               
+
                 foreach ($request['fees'] as $value) {
                     StudentQuoationFee::create([
                         'student_id' => $student->id,
@@ -146,6 +164,34 @@ class StudentQuotations extends Controller
                 'lastactivity' => null,
                 'user_id' => Auth::id()
             ]);
+
+            $chkamount = DB::table('student_quotation_h_d_s as a')
+                ->select(
+                    'a.totalamount',
+                    'a.quotation_no',
+                    DB::raw('SUM(b.netamount) as amount')
+                )
+                ->leftJoin('product_fees_hds as b', 'a.product_id', '=', 'b.product_id')
+                ->where('a.student_id', $student->id)
+                ->where('a.product_id', $request->product_id)
+                ->where('a.id', $createHd->id)
+                ->where('a.deleted_at', null)
+                ->where('b.deleted_at', null)
+                ->groupBy('a.totalamount', 'a.quotation_no')
+                ->first();
+                
+            $total = $chkamount->amount;
+            $totalnet = $request->grandTotal;
+            if ($total == $totalnet) {
+            } else {
+                ApprovalRequest::create([
+                    'reference_id' => $student->id,
+                    'description' => $createHd->id,
+                    'remarks' => 'quotation',
+                    'status' => null,
+                    'user_id' => Auth::id()
+                ]);
+            }
 
             return back()->with('success', 'Quotation(s) created successfully.');
         } else {
@@ -204,7 +250,10 @@ class StudentQuotations extends Controller
                     'message' => 'Quotation confirmed successfully.'
                 ]);
             } else {
-                abort(403, 'Unauthorized: You cannot confirm this quotation.');
+                return back()->with([
+                    'success' => true,
+                    'message' => 'Unauthorized: You cannot confirm this quotation.'
+                ]);
             }
         }
         // Case 2: total != totalnet
@@ -228,7 +277,10 @@ class StudentQuotations extends Controller
                     'message' => 'Amount mismatch. Approval confirmed.'
                 ]);
             } else {
-                abort(403, 'Unauthorized: You cannot approve this quotation.');
+                return back()->with([
+                    'success' => true,
+                    'message' => 'Unauthorized: You cannot approve this quotation.'
+                ]);
             }
         }
     }
@@ -236,7 +288,22 @@ class StudentQuotations extends Controller
 
     public function destory(Student $student, Product $product, Request $request)
     {
-        $this->authorize('StudQuoat.destroy');
+
+        try {
+            $this->authorize('StudQuoat.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+        $chk = ApprovalRequest::where('reference_id',$student->id)->where('description',$request->status)->exists();
+        if($chk){
+            return back()->with([
+                'error' => true,
+                'message' => 'Quotations cancel not working approval pending'
+            ]);
+        }
         DB::table('student_quotation_h_d_s')->where('id', $request->status)
             ->update(['active' => 2]);
         StudentActivities::create([
@@ -257,7 +324,15 @@ class StudentQuotations extends Controller
     // PDF Export
     public function exportPdfGeneral(Student $student, Product $product, StudentQuotationHD $quoatation)
     {
-        $this->authorize('StudQuoat.report');
+        try {
+            $this->authorize('StudQuoat.report');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         StudentActivities::create([
             'student_id' => $student->id,
@@ -326,7 +401,15 @@ class StudentQuotations extends Controller
 
     public function exportPdfApproved(Student $student, Product $product, StudentQuotationHD $quoatation)
     {
-        $this->authorize('StudQuoat.ApprovedReport');
+        try {
+            $this->authorize('StudQuoat.ApprovedReport');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         StudentActivities::create([
             'student_id' => $student->id,

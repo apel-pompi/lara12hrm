@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Student\Student;
 use App\Models\Student\StudentActivities;
 use App\Models\Student\StudentInService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 use Illuminate\Http\JsonResponse;
@@ -35,7 +36,14 @@ class StudentApplicationController extends Controller
      */
     public function index(Student $student)
     {
-        $this->authorize('Application.index');
+        try {
+            $this->authorize('Application.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $student->load('assainuser');
         return Inertia::render('allpages/Agency/Student/application', [
@@ -51,7 +59,15 @@ class StudentApplicationController extends Controller
      */
     public function store(StoreStudentApplicationRequest $request)
     {
-        $this->authorize('Application.store');
+        try {
+            $this->authorize('Application.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validated();
         $exists = StudentApplication::where('student_id', $validated['student_id'])
@@ -81,9 +97,16 @@ class StudentApplicationController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Student $student, StudentApplication $studentApplication): JsonResponse
+    public function edit(Student $student, StudentApplication $studentApplication)
     {
-        $this->authorize('Application.edit');
+        try {
+            $this->authorize('Application.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -95,8 +118,17 @@ class StudentApplicationController extends Controller
      * Update the specified resource in storage.
      */
     public function update(UpdateStudentApplicationRequest $request, Student $student, StudentApplication $studentApplication)
-    {
-        $this->authorize('Application.update');
+    {   
+
+        try {
+            $this->authorize('Application.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         // Ensure that this application belongs to the given student
         if ($studentApplication->student_id !== $student->id) {
@@ -128,8 +160,15 @@ class StudentApplicationController extends Controller
      */
     public function destroy(Student $student, StudentApplication $studentApplication)
     {
+        try {
+            $this->authorize('Application.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        $this->authorize('Application.destroy');
 
         try {
             $studentApplication->delete();

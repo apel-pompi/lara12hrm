@@ -6,10 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\HRM\Leave;
 use App\Http\Requests\Leave\StoreLeaveRequest;
 use App\Http\Requests\Leave\UpdateLeaveRequest;
+use App\Models\HRM\CompanyInfo;
 use App\Models\HRM\Leaveplan;
 use App\Models\HRM\PersonalInfo;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class LeaveController extends Controller
@@ -20,29 +25,85 @@ class LeaveController extends Controller
      */
     public function index()
     {
-        $this->authorize('Leave.index');
+        try {
+            $this->authorize('Leave.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        $leaves = Leave::with(['employee', 'substituteEmployee', 'leavePlan'])
-                       ->orderBy('fromdate', 'desc')
-                       ->get();
-        $leaveplan = Leaveplan::where('active',1)->orderBy('id', 'desc')->get();
-        $employee = PersonalInfo::where('active',1)->orderBy('id', 'desc')->get();
+        $user = Auth::user();
+
+
+        $leaveplan = Leaveplan::where('active', 1)->orderBy('id', 'desc')->get();
+
+
+        $roles = $user->getRoleNames();
+        if ($roles->contains('superadmin') or $roles->contains('Admin') or $roles->contains('Manager')) {
+            $leaves = Leave::with(['employee', 'substituteEmployee', 'leavePlan'])
+                ->where('user_id', Auth::id())
+                ->orderBy('fromdate', 'desc')
+                ->get();
+            $employee = PersonalInfo::where('active', 1)->orderBy('id', 'desc')->get();
+            $substitute = PersonalInfo::where('active', 1)->orderBy('id', 'desc')->get();
+        } else {
+            $leaves = Leave::with(['employee', 'substituteEmployee', 'leavePlan'])
+                ->whereHas('employee', function ($q) use ($user) {
+                    $q->where('empname', $user->name);
+                })
+                ->orderBy('fromdate', 'desc')
+                ->get();
+            $employee = PersonalInfo::where('empname', $user->name)->where('active', 1)->orderBy('id', 'desc')->get();
+            $substitute = PersonalInfo::where('active', 1)->orderBy('id', 'desc')->get();
+        }
+
         return Inertia::render('allpages/hrm/leave', [
             'leaves' => $leaves,
             'leaveplan' => $leaveplan,
-            'employee' => $employee
+            'employee' => $employee,
+            'substitute' => $substitute
         ]);
     }
 
 
+    public function fetchUserLeave($leaveplan_id, $empid)
+    {
+        // total allowed leave days from leaveplans
+        $plan = Leaveplan::where('id', $leaveplan_id)->first(['leavedays']);
+        if (!$plan) {
+            return response()->json(['balance' => 0]);
+        }
+
+        // total leave already taken
+        $taken = Leave::where('empid', $empid)->where('leaveplan_id', $leaveplan_id)->sum('requestdays');
+
+        $balance = $plan->leavedays - $taken;
+
+        return response()->json([
+            'balance' => $balance,
+            'allow' => $plan->leavedays,
+            'taken' => $taken
+        ]);
+    }
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreLeaveRequest $request)
     {
-        $this->authorize('Leave.store');
+        try {
+            $this->authorize('Leave.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        Leave::create($request->validated());
+        $data = $request->validated();
+        $data['user_id'] = Auth::id();
+        Leave::create($data);
         return redirect()->route('leave.index')->with('success', 'Leave Create successfully.');
     }
 
@@ -51,12 +112,21 @@ class LeaveController extends Controller
      */
     public function show(Leave $leave)
     {
-        $this->authorize('Leave.show');
+       
+        try {
+            $this->authorize('Leave.show');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         if (!$leave) {
             return response()->json(['message' => 'Leave not found'], 404);
         }
-        return response()->json($leave);
+        $data = Leave::with(['leavePlan','employee','substituteEmployee','user'])->where('id',$leave->id)->first();
+        return response()->json($data);
     }
 
     /**
@@ -64,7 +134,19 @@ class LeaveController extends Controller
      */
     public function edit(Leave $leave)
     {
-        $this->authorize('Leave.edit');
+        try {
+            $this->authorize('Leave.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $leave,
+        ]);
     }
 
     /**
@@ -72,24 +154,114 @@ class LeaveController extends Controller
      */
     public function update(UpdateLeaveRequest $request, Leave $leave)
     {
-        $this->authorize('Leave.update');
+        try {
+            $this->authorize('Leave.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+        
+        $data = $request->validated();
+        $data['user_id'] = Auth::id();
+        $leave->update($data);
+        return redirect()->route('leave.index')->with('success', 'Leave Update successfully.');
     }
 
+    public function confirm(Leave $leave)
+    {
+        try {
+            $this->authorize('Leave.confirm');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
+        $leave->update([
+            'status' => 2
+        ]);
+    }
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Leave $leave)
     {
-        $this->authorize('Leave.destroy');
+        try {
+            $this->authorize('Leave.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
+
+        $leave->update([
+            'status' => 1
+        ]);
     }
 
 
     // PDF Export
     public function exportPdf(Leave $leave)
     {
-        $this->authorize('Leave.reports');
+        try {
+            $this->authorize('Leave.reports');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        $pdf = Pdf::loadView('exports.leave', compact('leave'))->setPaper('a4', 'portrait');
-        return $pdf->stream('users.pdf');
+
+        $leave->load(
+            'leavePlan',
+            'employee.designation',
+            'employee.department',
+            'substituteEmployee.designation',
+            'substituteEmployee.department'
+        );
+        $company = CompanyInfo::first();
+        $fromdate = Carbon::parse($leave->fromdate)->format('d F, Y');
+        $todate = Carbon::parse($leave->todate)->format('d F, Y');
+
+        $empId = $leave->empid;
+        $allleave = DB::table('leaveplans as a')
+            ->leftJoin('leaves as b', function ($join) use ($empId) {
+                $join->on('a.id', '=', 'b.leaveplan_id')
+                    ->where('b.empid', '=', $empId);
+            })
+            ->select(
+                'a.leavename',
+                'a.leavedays as allow_days',
+                DB::raw('SUM(CASE WHEN b.status = 3 THEN b.approveddays ELSE 0 END) as taken'),
+                DB::raw('(a.leavedays - SUM(CASE WHEN b.status = 3 THEN b.approveddays ELSE 0 END)) as balance'),
+                DB::raw('SUM(CASE WHEN b.status = 2 THEN b.approveddays ELSE 0 END) as nowapply')
+            )
+            ->where('a.active', 1)
+            ->groupBy('a.id', 'a.leavename', 'a.leavedays')
+            ->get();
+        $pdf = Pdf::loadView('exports.leave', [
+            'company' => $company,
+            'yearname' => Carbon::parse(date('Y-m-d'))->format('Y'),
+            'monthname' => Carbon::createFromDate(date('Y'), date('m'), 1)->format('F'),
+            'leave' => $leave,
+            'fromdate' => $fromdate,
+            'todate' => $todate,
+            'allleave' => $allleave
+        ])
+            ->setPaper('a4', 'portrait')
+            ->setOption([
+                'margin-top'    => 5,
+                'margin-right'  => 5,
+                'margin-bottom' => 5,
+                'margin-left'   => 5,
+            ]);;
+
+        return $pdf->stream("LeaveApplication_{$leave->id}.pdf");
     }
 }

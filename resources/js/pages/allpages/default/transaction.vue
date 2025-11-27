@@ -160,7 +160,7 @@ watch(
   () => form.name,
   (newVal) => {
     if (newVal === 'Student ID') {
-      form.trncode = 'SUT-';
+      form.trncode = 'STU-';
     } else if (newVal === 'Money Received') {
       form.trncode = 'MR--';
     } else if (newVal === 'Quoatations No') {
@@ -181,15 +181,6 @@ watch(
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
                     <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create </Button>
-
-                    <!-- Search start -->
-
-                    <!-- <div class="grid gap-2">
-                        <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                    </div>
-                    <div class="grid gap-2">
-                        <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
-                    </div> -->
                 </div>
                 <div class="rounded-md border">
                     <Table>

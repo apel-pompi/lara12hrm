@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HRM\AttenSetting;
 use App\Http\Requests\AttenSetting\StoreAttenSettingRequest;
 use App\Http\Requests\AttenSetting\UpdateAttenSettingRequest;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\HRM\Branch;
 use Inertia\Inertia;
@@ -21,8 +22,15 @@ class AttenSettingController extends Controller
      */
     public function index()
     {
-        
-        $this->authorize('attendanmst.index');
+
+        try {
+            $this->authorize('attendanmst.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/hrm/attensetting', [
             'attensetting' => AttenSetting::with(['branch' => function ($query) {
@@ -37,7 +45,14 @@ class AttenSettingController extends Controller
      */
     public function store(StoreAttenSettingRequest $request)
     {
-        $this->authorize('attendanmst.store');
+        try {
+            $this->authorize('attendanmst.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         AttenSetting::create($request->validated());
         return redirect()->route('attensetting.index')->with('success', 'Attendance Setting Create successfully.');
@@ -48,7 +63,14 @@ class AttenSettingController extends Controller
      */
     public function show(AttenSetting $attensetting)
     {
-        $this->authorize('attendanmst.show');
+        try {
+            $this->authorize('attendanmst.show');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $attensetting->load('branch');
         return response()->json($attensetting);
@@ -59,12 +81,20 @@ class AttenSettingController extends Controller
      */
     public function edit(AttenSetting $attensetting): JsonResponse
     {
-        $this->authorize('attendanmst.edit');
+        try {
+            $this->authorize('attendanmst.edit');
 
-        return response()->json([
-            'success' => true,
-            'data' => $attensetting,
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $attensetting,
+            ]);
+        } catch (AuthorizationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ], 403);
+        }
     }
 
     /**
@@ -72,7 +102,14 @@ class AttenSettingController extends Controller
      */
     public function update(UpdateAttenSettingRequest $request, AttenSetting $attensetting)
     {
-        $this->authorize('attendanmst.update');
+        try {
+            $this->authorize('attendanmst.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $attensetting->update($request->validated());
         return redirect()->route('attensetting.index')->with('success', 'Attendance Setting Update successfully.');
@@ -81,9 +118,19 @@ class AttenSettingController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+
+    
     public function destroy(AttenSetting $attensetting)
     {
-        $this->authorize('attendanmst.destroy');
+        try {
+            $this->authorize('attendanmst.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
         try {
             $attensetting->delete();
         } catch (\Exception $e) {

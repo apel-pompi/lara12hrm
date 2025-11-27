@@ -6,14 +6,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { router, useForm, usePage } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import axios from 'axios';
 import { CircleDot, MoreVertical, Plus } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
-import { nextTick } from 'vue';
 
 const props = defineProps<{
     student: { id: number; status: string };
@@ -155,38 +154,25 @@ const submit = () => {
 };
 
 const createdForm = useForm({
-    studentInService: null
+    studentInService: '',
 });
 
 const handleCreateApplication = async (itemId: number) => {
     if (!confirm('Are you sure you want to create this Student Application?')) return;
     createdForm.studentInService = itemId;
-    createdForm.post(
-        route('studentInService.create', [props.student.id, itemId]),
-        {
-            preserveScroll: true,
-            onSuccess: async () => {
-                await router.reload({ only: ['flash'] });
-                await nextTick();
+    createdForm.post(route('studentInService.create', [props.student.id, itemId]), {
+        onSuccess: async () => {
+            setTimeout(() => {
+                form.reset();
+            }, 200);
+        },
 
-                const message = usePage().props.flash?.message;
-                if (message) {
-                    toast('Success', { description: message });
-                }
-                setTimeout(() => {
-                    form.reset();
-                    
-                }, 200);
-            },
-            onError: (errors) => {
-                const firstError = Object.values(errors)[0];
-                toast('Validation Error', { description: firstError });
-            },
-        }
-    );
+        onError: (errors) => {
+            const firstError = Object.values(errors)[0];
+            toast('Validation Error', { description: firstError });
+        },
+    });
 };
-
-
 
 const handleDelete = async (itemId: number) => {
     if (!confirm('Are you sure you want to delete this Student Interested Service?')) return;

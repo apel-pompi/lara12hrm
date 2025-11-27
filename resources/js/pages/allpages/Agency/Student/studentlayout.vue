@@ -234,11 +234,62 @@ const updateRate = (status: number) => {
     );
 };
 
-const errors = ref<FormErrors>();
 
-interface FormErrors {
-    details?: string;
-}
+
+const showTransfer = ref(false);
+const Transferform = useForm({
+    details: '',
+});
+const updateTransfer = (studentId: number) => {
+    if (confirm('Transfer this student?'))
+    showTransfer.value = true;
+};
+const submitTransfer = () => {
+    if (!Transferform.details) {
+        toast('error', {
+            description: 'Please write student transfer details before submitting.',
+        });
+        return;
+    }
+    Transferform.post(
+        route('approval.studentTransfer', {
+            student: props.student.id,
+        }),
+        {
+            onSuccess: () => {
+                const flash = usePage().props.flash;
+
+                if (flash?.success) {
+                    toast('success', {
+                        description: flash.success,
+                    });
+                }
+                if (flash?.error) {
+                    toast('error', {
+                        description: flash.error,
+                    });
+                    return;
+                }
+
+                setTimeout(() => {
+                    showDialog.value = false;
+                    assaignform.reset();
+                    router.visit(route('studentActivities.index', [props.student.id]), {
+                        preserveScroll: true,
+                        preserveState: false,
+                    });
+                }, 200);
+                showDialog.value = false;
+                form.reset();
+            },
+            onError: () => {
+                toast('Validation Error', {
+                    description: 'Student transfer request send error',
+                });
+            },
+        },
+    );
+};
 
 const showArchive = ref(false);
 const archiveform = useForm({
@@ -246,9 +297,7 @@ const archiveform = useForm({
 });
 const updateArchive = (studentId: number, status: number) => {
     if (!confirm(status === 4 ? 'Archive this student?' : 'Restore this student?')) return;
-
     showArchive.value = true;
-
 };
 
 const submitArchive = () => {
@@ -258,44 +307,44 @@ const submitArchive = () => {
         });
         return;
     }
-    archiveform.post(route('approval.studentArchive', 
-        { 
-            student: props.student.id
-        }
-    ), {
-        onSuccess: () => {
-            const flash = usePage().props.flash;
-            
-            if (flash?.success) {
-                toast('success', {
-                    description: flash.success,
-                });
-            }
-            if (flash?.error) {
-                toast('error', {
-                    description: flash.error,
-                });
-                return; 
-            }
-            
-            setTimeout(() => {
+    archiveform.post(
+        route('approval.studentArchive', {
+            student: props.student.id,
+        }),
+        {
+            onSuccess: () => {
+                const flash = usePage().props.flash;
+
+                if (flash?.success) {
+                    toast('success', {
+                        description: flash.success,
+                    });
+                }
+                if (flash?.error) {
+                    toast('error', {
+                        description: flash.error,
+                    });
+                    return;
+                }
+
+                setTimeout(() => {
+                    showDialog.value = false;
+                    assaignform.reset();
+                    router.visit(route('studentActivities.index', [props.student.id]), {
+                        preserveScroll: true,
+                        preserveState: false,
+                    });
+                }, 200);
                 showDialog.value = false;
-                assaignform.reset();
-                router.visit(route('studentActivities.index', [props.student.id]), {
-                    preserveScroll: true,
-                    preserveState: false,
+                form.reset();
+            },
+            onError: () => {
+                toast('Validation Error', {
+                    description: 'Student archive request send error',
                 });
-            }, 200);
-            showDialog.value = false;
-            form.reset();
+            },
         },
-        onError: () => {
-            toast('Validation Error', {
-                description: 'Student archive request send error',
-            });
-        },
-    });
-    
+    );
 };
 
 const assaignform = useForm({
@@ -319,7 +368,7 @@ const updateAssignee = () => {
     assaignform.post(route('studentActivities.updateAssignee', { student: props.student.id }), {
         onSuccess: () => {
             const flash = usePage().props.flash;
-            
+
             if (flash?.success) {
                 toast('success', {
                     description: flash.success,
@@ -329,7 +378,7 @@ const updateAssignee = () => {
                 toast('error', {
                     description: flash.error,
                 });
-                return; 
+                return;
             }
             setTimeout(() => {
                 showDialog.value = false;
@@ -351,6 +400,61 @@ const updateAssignee = () => {
     });
 };
 
+const showonBoard = ref(false);
+const onBoardform = useForm({
+    details: '',
+});
+const updateonBoard = (studentId: number) => {
+    if (confirm('onBoard this student?'))
+    showonBoard.value = true;
+};
+const submitonBoard = () => {
+    if (!onBoardform.details) {
+        toast('error', {
+            description: 'Please write student onBoard details before submitting.',
+        });
+        return;
+    }
+    onBoardform.post(
+        route('approval.studentOnBoard', {
+            student: props.student.id,
+        }),
+        {
+            onSuccess: () => {
+                const flash = usePage().props.flash;
+
+                if (flash?.success) {
+                    toast('success', {
+                        description: flash.success,
+                    });
+                }
+                if (flash?.error) {
+                    toast('error', {
+                        description: flash.error,
+                    });
+                    return;
+                }
+
+                setTimeout(() => {
+                    showonBoard.value = false;
+                    onBoardform.reset();
+                    router.visit(route('studentActivities.index', [props.student.id]), {
+                        preserveScroll: true,
+                        preserveState: false,
+                    });
+                }, 200);
+                showonBoard.value = false;
+                onBoardform.reset();
+            },
+            onError: () => {
+                toast('Validation Error', {
+                    description: 'Student onBoard request send error',
+                });
+            },
+        },
+    );
+};
+
 export interface Student {
     id: number;
     student_id: string;
@@ -363,12 +467,7 @@ export interface Student {
     ename: string;
     ephone: string;
 }
-interface FormErrors {
-    fname?: string;
-    lname?: string;
-    dateofbirth: string;
-    gender: number;
-}
+
 const form = useForm({
     student_id: '',
     fname: '',
@@ -469,6 +568,8 @@ const updateStudent = () => {
                     :updateRate="updateRate"
                     :editStudent="editDialogCreate"
                     :showDailogCreate="showDailogCreate"
+                    :updateTransfer="updateTransfer"
+                    :updateonBoard="updateonBoard"
                     :studentService="studentService"
                 />
 
@@ -529,6 +630,43 @@ const updateStudent = () => {
                     <!-- Submit Right -->
                     <Button :disabled="assaignform.processing" @click="updateAssignee">
                         <template v-if="assaignform.processing">
+                            Saving...
+                            <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+                        </template>
+                        <template v-else>Save</template>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <Dialog v-model:open="showTransfer">
+            <DialogContent class="max-w-[825px]">
+                <!-- Header -->
+                <DialogHeader>
+                    <DialogTitle> Lead Transfer Request </DialogTitle>
+                    <DialogDescription> Submit transfer request. Click save when you're done. </DialogDescription>
+                </DialogHeader>
+
+                <!-- Body -->
+                <div class="grid gap-6">
+                    <!-- Select Document Type -->
+                    <div class="grid gap-2">
+                        <Label for="doctype">why doing you transfer this student ? <span class="text-red-500">*</span></Label>
+                        <Textarea v-model="Transferform.details" id="paddress" placeholder="Please write details" />
+                        <span v-if="Transferform.errors.details" class="text-sm text-red-600">{{ Transferform.errors.details }}</span> 
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <DialogFooter class="mt-6 flex items-center justify-between">
+                    <!-- Close Left -->
+                    <DialogClose as-child>
+                        <Button type="button" variant="secondary">Close</Button>
+                    </DialogClose>
+
+                    <!-- Submit Right -->
+                    <Button :disabled="Transferform.processing" @click="submitTransfer">
+                        <template v-if="Transferform.processing">
                             Saving...
                             <Loader2 class="mr-2 h-4 w-4 animate-spin" />
                         </template>
@@ -741,6 +879,43 @@ const updateStudent = () => {
                             </template>
                         </Button>
                     </div>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <Dialog v-model:open="showonBoard">
+            <DialogContent class="max-w-[825px]">
+                <!-- Header -->
+                <DialogHeader>
+                    <DialogTitle> Student onBoard Request </DialogTitle>
+                    <DialogDescription> Submit onBoard request. Click save when you're done. </DialogDescription>
+                </DialogHeader>
+
+                <!-- Body -->
+                <div class="grid gap-6">
+                    <!-- Select Document Type -->
+                    <div class="grid gap-2">
+                        <Label for="doctype">why doing you onBoard this student ? <span class="text-red-500">*</span></Label>
+                        <Textarea v-model="onBoardform.details" id="paddress" placeholder="Please write details" />
+                        <span v-if="onBoardform.errors.details" class="text-sm text-red-600">{{ onBoardform.errors.details }}</span> 
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <DialogFooter class="mt-6 flex items-center justify-between">
+                    <!-- Close Left -->
+                    <DialogClose as-child>
+                        <Button type="button" variant="secondary">Close</Button>
+                    </DialogClose>
+
+                    <!-- Submit Right -->
+                    <Button :disabled="onBoardform.processing" @click="submitonBoard">
+                        <template v-if="onBoardform.processing">
+                            Saving...
+                            <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+                        </template>
+                        <template v-else>Save</template>
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

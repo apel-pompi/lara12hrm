@@ -4,7 +4,7 @@ namespace App\Models\Student;
 
 use App\Models\AgencySetting\Fees;
 use App\Models\Product\Product;
-use App\Models\Product\ProductFeesHd;
+use App\Models\Product\ProductFeesDt;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,7 +38,7 @@ class StudentQuoationFee extends Model
      */
     public function productfee(): BelongsTo
     {
-        return $this->belongsTo(ProductFeesHd::class, 'product_id', 'product_id');
+        return $this->belongsTo(ProductFeesDt::class, 'fee_id', 'fees_id');
     }
 
     /**
@@ -58,6 +58,6 @@ class StudentQuoationFee extends Model
      */
     public function fee(): BelongsTo
     {
-        return $this->belongsTo(Fees::class, 'fee_id');
+        return $this->belongsTo(Fees::class, 'fee_id','id');
     }
 }

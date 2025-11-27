@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Default\Notification;
 use App\Models\Student\Student;
 use App\Models\Student\StudentInService;
 use App\Models\Student\StudentUtility;
@@ -23,7 +24,10 @@ class StudentAppointements extends Controller
         return Inertia::render('allpages/Agency/Student/appoinments', [
             'student' => $student,
             'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get(),
-            'appoiment' => $service->get(array_merge($request->query(), ['per_page' => $perPage])),
+            'appoiment' => $service->get(array_merge($request->query(), [
+                'per_page' => $perPage,
+                'student_id' => $student->id,
+            ])),
             'filters'   => $service->get($request->query()),
         ]);
     }
@@ -39,6 +43,15 @@ class StudentAppointements extends Controller
         $student->update([
             'status'      => 1,
         ]);
+
+        Notification::create([
+                'user_id' => Auth::id(),
+                'title' => 'Appoinment',
+                'message' => $request->discus,
+                'type' => 'info',
+                'action_url' => '/student/activities/'.$student->id.'/appoinments',
+                'read' => false
+            ]);
         $created = StudentUtility::create([
             'name' => 'appoinments',
             'datetime' => $datetime,

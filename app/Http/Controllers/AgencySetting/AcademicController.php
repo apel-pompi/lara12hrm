@@ -7,6 +7,7 @@ use App\Models\AgencySetting\Academic;
 use App\Http\Requests\Academic\StoreAcademicRequest;
 use App\Http\Requests\Academic\UpdateAcademicRequest;
 use App\Services\Agency\Setting\AcademicService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +21,14 @@ class AcademicController extends Controller
      */
     public function index(Request $request, AcademicService $academicService)
     {
-        $this->authorize('Academic.index');
+        try {
+            $this->authorize('Academic.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/Agency/Setting/academic',[
             'academicFilter' => Academic::with('user')->orderBy('id', 'desc')->get(),
@@ -35,7 +43,15 @@ class AcademicController extends Controller
      */
     public function store(StoreAcademicRequest $request)
     {
-        $this->authorize('Academic.store');
+        try {
+            $this->authorize('Academic.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validated();
         Academic::create([
@@ -53,7 +69,15 @@ class AcademicController extends Controller
      */
     public function edit(Academic $academic)
     {
-        $this->authorize('Academic.edit');
+        try {
+            $this->authorize('Academic.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return response()->json([
             'success' => true,
@@ -66,7 +90,15 @@ class AcademicController extends Controller
      */
     public function update(UpdateAcademicRequest $request, Academic $academic)
     {
-        $this->authorize('Academic.update');
+        try {
+            $this->authorize('Academic.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $academic->update($request->validated());
         return redirect()->route('academic.index')->with('success', 'Academic Update successfully.');
@@ -77,7 +109,15 @@ class AcademicController extends Controller
      */
     public function destroy(Academic $academic)
     {
-        $this->authorize('Academic.destroy');
+        try {
+            $this->authorize('Academic.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             $academic->delete();
@@ -92,7 +132,15 @@ class AcademicController extends Controller
 
     public function updateStatus(Request $request, $academic)
     {
-        $this->authorize('Academic.updateStatus');
+        try {
+            $this->authorize('Academic.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'

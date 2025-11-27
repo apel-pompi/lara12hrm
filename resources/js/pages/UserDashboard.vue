@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import DualBarChart from '@/Components/ui/chart/DualBarChart.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
+import { Calendar, CheckCircle, Clock, Palmtree, TrendingUp, XCircle } from 'lucide-vue-next';
+import { onMounted, ref } from 'vue';
 import PlaceholderPattern from '../components/PlaceholderPattern.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -14,13 +17,43 @@ const breadcrumbs: BreadcrumbItem[] = [
 const props = defineProps<{
     countAll: number;
     countLead: number;
-    countPending:number;
+    countPending: number;
     countProspect: number;
     countonBoard: number;
     countArchive: number;
+    countArchiveApproval: number;
+    countQuotationApproval: number;
+    intimes: string;
+    outtimes: string;
+    statuses: string;
+    workhours: string;
+    presentCount: number;
+    lateCount: number;
+    absentCount: number;
+    leaveCount: number;
+    holidayCount: number;
+    totalWork: number;
 }>();
 
-console.log(props.countAll)
+const currentDate = ref('');
+onMounted(() => {
+    // Set current date
+    const now = new Date();
+    currentDate.value = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+});
+
+const labels = [''];
+const alllead = [props.countAll];
+const lead = [props.countLead];
+const pending = [props.countPending];
+const prospect = [props.countProspect];
+const onboard = [props.countonBoard];
+const archive = [props.countArchive];
 </script>
 
 <template>
@@ -39,7 +72,7 @@ console.log(props.countAll)
 
                     <!-- Lead Summary Grid -->
 
-                    <div class="grid grid-cols-1 gap-5 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="grid grid-cols-2 gap-5 p-4 sm:grid-cols-2 lg:grid-cols-3">
                         <!-- All Lead -->
                         <Link :href="route('student.index')" method="get">
                             <div
@@ -97,8 +130,7 @@ console.log(props.countAll)
                     </div>
                 </div>
 
-                <div class="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-                    <div
+                <div
                     class="border-sidebar-border/70 dark:border-sidebar-border overflow-hidden rounded-xl border bg-white shadow-sm dark:bg-gray-900"
                 >
                     <!-- Header -->
@@ -108,68 +140,147 @@ console.log(props.countAll)
 
                     <!-- Lead Summary Grid -->
 
-                    <div class="grid grid-cols-1 gap-5 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="grid grid-cols-2 gap-5 p-4 sm:grid-cols-2 lg:grid-cols-3">
                         <!-- All Lead -->
-                        <Link :href="route('student.index')" method="get">
+                        <Link :href="route('dashboard.ArchiveRequest')" method="get">
                             <div
                                 class="rounded-lg bg-gradient-to-r from-slate-500 to-slate-800 p-3 text-center text-white shadow-sm transition hover:scale-[1.02] hover:shadow-md dark:border-gray-700"
                             >
                                 <h4 class="text-sm font-medium opacity-90">Archive</h4>
-                                <p class="mt-2 text-3xl font-bold">{{ props.countAll }}</p>
+                                <p class="mt-2 text-3xl font-bold">{{ props.countArchiveApproval }}</p>
                             </div>
                         </Link>
-                        <Link :href="route('student.lead')" method="get">
+                        <Link :href="route('dashboard.QuotationRequest')" method="get">
                             <!-- Lead -->
                             <div
                                 class="rounded-lg bg-gradient-to-r from-slate-300 to-slate-500 p-3 text-center text-white shadow-sm transition hover:scale-[1.02] hover:shadow-md dark:border-gray-700"
                             >
                                 <h4 class="text-sm font-medium opacity-90">Quotations</h4>
-                                <p class="mt-2 text-3xl font-bold">{{ props.countLead }}</p>
+                                <p class="mt-2 text-3xl font-bold">{{ props.countQuotationApproval }}</p>
                             </div>
                         </Link>
-                        <Link :href="route('student.pending')" method="get">
-                            <!-- Pending Lead -->
-                            <div
-                                class="rounded-lg bg-gradient-to-r from-slate-800 to-slate-500 p-3 text-center text-white shadow-sm transition hover:scale-[1.02] hover:shadow-md dark:border-gray-700"
-                            >
-                                <h4 class="text-sm font-medium opacity-90">Invoice</h4>
-                                <p class="mt-2 text-3xl font-bold">{{ props.countPending }}</p>
-                            </div>
-                        </Link>
-                        <Link :href="route('student.prospect')" method="get">
-                            <!-- Prospect Lead -->
-                            <div
-                                class="rounded-lg bg-gradient-to-r from-rose-400 to-red-500 p-3 text-center text-white shadow-sm transition hover:scale-[1.02] hover:shadow-md dark:border-gray-700"
-                            >
-                                <h4 class="text-sm font-medium opacity-90">M.R</h4>
-                                <p class="mt-2 text-3xl font-bold">{{ props.countProspect }}</p>
-                            </div>
-                        </Link>
-                        <Link :href="route('student.onBoard')" method="get">
+
+                        <Link :href="route('leave.index')">
                             <!-- Onboard Lead -->
                             <div
                                 class="rounded-lg bg-gradient-to-r from-amber-200 to-yellow-500 p-3 text-center text-white shadow-sm transition hover:scale-[1.02] hover:shadow-md dark:border-gray-700"
                             >
                                 <h4 class="text-sm font-medium opacity-90">Leave</h4>
-                                <p class="mt-2 text-3xl font-bold">{{ props.countonBoard }}</p>
-                            </div>
-                        </Link>
-                        <Link :href="route('student.archive')" method="get">
-                            <!-- Archive Lead -->
-                            <div
-                                class="rounded-lg bg-gradient-to-r from-lime-400 to-lime-500 p-3 text-center text-white shadow-sm transition hover:scale-[1.02] hover:shadow-md dark:border-gray-700"
-                            >
-                                <h4 class="text-sm font-medium opacity-90">Other's</h4>
-                                <p class="mt-2 text-3xl font-bold">{{ props.countArchive }}</p>
+                                <p class="mt-2 text-3xl font-bold">{{ props.leaveCount }}</p>
                             </div>
                         </Link>
                     </div>
                 </div>
+
+                <div class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <!-- Header -->
+                    <div class="border-b border-gray-200 p-4 dark:border-gray-800">
+                        <h3 class="text-center text-lg font-semibold text-gray-800 dark:text-white">Attendance Overview</h3>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="p-5">
+                        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                            <!-- Stat Item -->
+                            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                <div class="flex flex-col items-center">
+                                    <CheckCircle class="h-5 w-5 text-green-500" />
+                                    <span class="mt-2 text-lg font-bold text-gray-800 dark:text-white">{{ props.presentCount }}</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Present</span>
+                                </div>
+                            </div>
+
+                            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                <div class="flex flex-col items-center">
+                                    <Clock class="h-5 w-5 text-amber-500" />
+                                    <span class="mt-2 text-lg font-bold text-gray-800 dark:text-white">{{ props.lateCount }}</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Late</span>
+                                </div>
+                            </div>
+
+                            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                <div class="flex flex-col items-center">
+                                    <XCircle class="h-5 w-5 text-red-500" />
+                                    <span class="mt-2 text-lg font-bold text-gray-800 dark:text-white">{{ props.absentCount }}</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Absent</span>
+                                </div>
+                            </div>
+
+                            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                <div class="flex flex-col items-center">
+                                    <Calendar class="h-5 w-5 text-blue-500" />
+                                    <span class="mt-2 text-lg font-bold text-gray-800 dark:text-white">{{ props.leaveCount }}</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Leave</span>
+                                </div>
+                            </div>
+
+                            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                <div class="flex flex-col items-center">
+                                    <Palmtree class="h-5 w-5 text-purple-500" />
+                                    <span class="mt-2 text-lg font-bold text-gray-800 dark:text-white">{{ props.holidayCount }}</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Holiday</span>
+                                </div>
+                            </div>
+
+                            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                <div class="flex flex-col items-center">
+                                    <TrendingUp class="h-5 w-5 text-indigo-500" />
+                                    <span class="mt-2 text-lg font-bold text-gray-800 dark:text-white">{{ props.totalWork }}</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Work Hours</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Today Status -->
+                        <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                            <!-- In Time -->
+                            <div class="rounded-xl bg-gradient-to-r from-emerald-400 to-green-600 p-2 text-center text-white shadow-md">
+                                <span class="mt-1 block text-lg font-bold">{{ props.intimes }}</span>
+                                <span class="text-xs opacity-90">In Time</span>
+                            </div>
+
+                            <!-- Out Time -->
+                            <div class="rounded-xl bg-gradient-to-r from-blue-400 to-indigo-600 p-2 text-center text-white shadow-md">
+                                <span class="mt-1 block text-lg font-bold">{{ props.outtimes }}</span>
+                                <span class="text-xs opacity-90">Out Time</span>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="rounded-xl bg-gradient-to-r from-red-400 to-pink-600 p-2 text-center text-white shadow-md">
+                                <span class="mt-1 block text-lg font-bold">{{ props.statuses }}</span>
+                                <span class="text-xs opacity-90">Status</span>
+                            </div>
+
+                            <!-- Total Hours -->
+                            <div class="rounded-xl bg-gradient-to-r from-purple-400 to-violet-600 p-2 text-center text-white shadow-md">
+                                <span class="mt-1 block text-lg font-bold">{{ props.workhours }}</span>
+                                <span class="text-xs opacity-90">Total Hours</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-                    <PlaceholderPattern />
+                <div
+                    class="border-sidebar-border/70 dark:border-sidebar-border overflow-hidden rounded-xl border bg-white shadow-sm dark:bg-gray-900"
+                >
+                    <!-- Header -->
+                    <div class="border-b border-gray-200 p-5 dark:border-gray-800">
+                        <h3 class="text-center text-lg font-semibold text-gray-800 dark:text-white">Lead Chart</h3>
+                    </div>
+                    <!-- Lead Summary Grid -->
+                    <div class="rounded-xl bg-white p-6 shadow dark:bg-gray-900">
+                        <DualBarChart
+                            :labels="labels"
+                            :alllead="alllead"
+                            :pending="pending"
+                            :lead="lead"
+                            :prospect="prospect"
+                            :onboard="onboard"
+                            :archive="archive"
+                        />
+                    </div>
                 </div>
             </div>
+            
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
                 <PlaceholderPattern />
             </div>

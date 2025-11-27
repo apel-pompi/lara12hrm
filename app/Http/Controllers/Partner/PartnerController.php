@@ -10,6 +10,7 @@ use App\Http\Requests\Partner\UpdatePartnerRequest;
 use App\Models\AgencySetting\MasterCategory;
 use App\Models\AgencySetting\Workflow;
 use App\Models\Default\Country;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,15 @@ class PartnerController extends Controller
      */
     public function index()
     {
-         $this->authorize('Partner.index');
+        try {
+            $this->authorize('Partner.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/Agency/Partner/partners',[
             'pertners' => Partner::with(['partnertype','state.country','city'])->get()
@@ -35,7 +44,15 @@ class PartnerController extends Controller
      */
     public function create()
     {
-        $this->authorize('Partner.create');
+        try {
+            $this->authorize('Partner.create');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/Agency/Partner/partnerscreate', [
             'master' => MasterCategory::with(['parnerTypes'])->where('active', 1)->get(),
@@ -49,7 +66,15 @@ class PartnerController extends Controller
      */
     public function store(StorePartnerRequest $request)
     {
-        $this->authorize('Partner.store');
+        try {
+            $this->authorize('Partner.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validated();
 
@@ -108,7 +133,15 @@ class PartnerController extends Controller
      */
     public function update(UpdatePartnerRequest $request, Partner $partner)
     {
-        $this->authorize('Partner.update');
+        try {
+            $this->authorize('Partner.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
     }
 
     /**
@@ -116,14 +149,29 @@ class PartnerController extends Controller
      */
     public function destroy(Partner $partner)
     {
-         $this->authorize('Partner.destroy');
+        try {
+            $this->authorize('Partner.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
     }
 
 
     public function updateStatus(Request $request, $partner)
     {
+        try {
+            $this->authorize('Partner.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        $this->authorize('Partner.updateStatus');
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'

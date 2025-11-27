@@ -134,8 +134,8 @@ const queryAssain = ref('');
 const selectedTime = ref(null);
 const queryTime = ref('');
 
-const selectedUser = ref(null);
-const queryUser = ref('');
+const selectedSource = ref(null);
+const querySource = ref('');
 
 const selectedStatus = ref(null);
 const queryStatus = ref('');
@@ -194,15 +194,15 @@ const filteredTime = computed(() => {
     return Array.from(uniqueMap.values());
 });
 
-const filteredUser = computed(() => {
+const filteredSource = computed(() => {
     const filtered =
-        queryUser.value === '' ? props.allsearch : props.allsearch.filter((n) => n.user && n.user.name.toLowerCase().includes(queryUser.value.toLowerCase()));
+        querySource.value === '' ? props.allsearch : props.allsearch.filter((n) => n.source && n.source.name.toLowerCase().includes(querySource.value.toLowerCase()));
 
     // unique user name
     const uniqueMap = new Map();
     filtered.forEach((item) => {
-        if (item.user && !uniqueMap.has(item.user.id)) {
-            uniqueMap.set(item.user.id, item.user);
+        if (item.source && !uniqueMap.has(item.source.id)) {
+            uniqueMap.set(item.source.id, item.source);
         }
     });
 
@@ -402,6 +402,51 @@ const goToArchive = () => {
                     </Combobox>
                 </div>
                 <div class="grid gap-2">
+                    <Combobox v-model="selectedSource">
+                        <div class="relative w-48">
+                            <!-- Input -->
+                            <div class="relative w-full">
+                                <ComboboxInput
+                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                    placeholder="Select source"
+                                    :display-value="(n) => n?.name"
+                                    @input="querySource = $event.target.value"
+                                />
+                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                </ComboboxButton>
+                            </div>
+
+                            <!-- Options -->
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            >
+                                <div v-if="filteredSource.length === 0 && querySource !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="n in filteredSource"
+                                    :key="n.id"
+                                    :value="n"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ n.name }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                </div>
+                <div class="grid gap-2">
                     <Combobox v-model="selectedAssain">
                         <div class="relative w-48">
                             <!-- Input -->
@@ -498,54 +543,7 @@ const goToArchive = () => {
                         </div>
                     </Combobox>
                 </div>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedUser">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select entry user"
-                                    :display-value="(n) => n?.name"
-                                    @input="queryUser = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
-
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div
-                                    v-if="filteredUser.length === 0 && queryUser !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredUser"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ n.name }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
+                
                 <div class="grid gap-2">
                     <Combobox v-model="selectedStatus">
                         <div class="relative w-48">
@@ -618,9 +616,9 @@ const goToArchive = () => {
                             <TableHead>Phone</TableHead>
                             <TableHead>Gender</TableHead>
                             <TableHead>Destination Country</TableHead>
+                            <TableHead>Source</TableHead>
                             <TableHead>Assignee</TableHead>
                             <TableHead>Entry Time</TableHead>
-                            <TableHead>Entry User</TableHead>
                             <TableHead>Status</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -655,9 +653,9 @@ const goToArchive = () => {
                                 <span v-if="stud.gender==3">Other's</span>
                             </TableCell>
                             <TableCell>{{ stud.country.name }}</TableCell>
+                            <TableCell>{{ stud.source.name }}</TableCell>
                             <TableCell>{{ stud.assainuser.name }}</TableCell>
                             <TableCell>{{ formatDate(stud.created_at) }}</TableCell>
-                            <TableCell>{{ stud.user.name }}</TableCell>
                             <TableCell>
                                 <div class="flex items-center space-x-2">
                                     <Badge size="sm" :class="getStatusText(stud.status).color">

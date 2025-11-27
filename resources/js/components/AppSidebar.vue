@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import NavMain from '@/components/NavMain.vue';
 import { type SidebarProps } from '@/components/ui/sidebar';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import AppLogo from './AppLogo.vue';
-import { usePage } from '@inertiajs/vue3';
 
 import {
     Sidebar,
@@ -17,18 +16,35 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-import { Book, Calculator, CalendarX2, MessageCircleOff, School, Settings, User,ClipboardPlus, Upload } from 'lucide-vue-next';
+import {
+    BadgeCent,
+    Book,
+    Calculator,
+    CalendarCog,
+    CalendarX2,
+    ClipboardCheck,
+    ClipboardPlus,
+    FileCog,
+    MessageCircleOff,
+    MonitorCog,
+    School,
+    Settings,
+    Upload,
+    User,
+    UserCog,
+    BookOpenCheck
+} from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
     collapsible: 'icon',
 });
 
 interface Company {
-  companyname: string;
+    companyname: string;
 }
 
 interface Auth {
-  company: Company[];
+    company: Company[];
 }
 
 const year = new Date().getFullYear();
@@ -45,69 +61,81 @@ const data = {
                 {
                     title: 'Users Setting',
                     href: '/roles',
+                    icon: UserCog,
                 },
                 {
                     title: 'General Setting',
                     href: '/settings/profile',
+                    icon: FileCog,
                 },
                 {
                     title: 'CRM Setting',
                     href: '/general',
+                    icon: MonitorCog,
                 },
                 {
                     title: 'HRM Setting',
                     href: '/companyinfo',
+                    icon: CalendarCog,
                 },
                 {
                     title: 'Accounts Setting',
-                    
+                    href: '/accountssetting',
+                    icon: BadgeCent,
                 },
-                
-                
             ],
         },
-        
     ],
 };
 
+const HRMenu = {
+    navHRmenu: [
+        {
+            title: 'HRM',
+            url: '#',
+            icon: ClipboardPlus,
+            items: [
+                {
+                    title: 'Holiday',
+                    href: '/holidayHd',
+                    icon: CalendarX2,
+                },
+                {
+                    title: 'Personal Info',
+                    href: '/personalinfo',
+                    icon: User,
+                },
+            ],
+        },
+    ],
+};
 
 const mainmenu = [
-    
     {
-        route:'holidayHd.index',
-        title:'Holiday',
-        icon:CalendarX2
+        route: 'leave.index',
+        title: 'Leave Request',
+        icon: MessageCircleOff,
     },
     {
-        route:'personalinfo.index',
-        title:'Personal Info',
-        icon:User
-    },
-    {
-        route:'leave.index',
-        title:'Leave Request',
-        icon:MessageCircleOff
-    },
-    {
-        route:'imports.showImportForm',
+        route: 'imports.showImportForm',
         title: 'Upload Lead',
-        icon:Upload
+        icon: Upload,
     },
     {
-        route:'student.index',
+        route: 'student.index',
         title: 'Student',
-        icon:Book
+        icon: Book,
     },
     {
-        route:'partner.index',
+        route: 'partner.index',
         title: 'Partners',
-        icon:School
+        icon: School,
     },
     {
-        route:'accounts.index',
+        route: 'accounts.index',
         title: 'Accounts',
-        icon:Calculator
-    }
+        icon: Calculator,
+    },
 ];
 
 const reportdata = {
@@ -115,15 +143,20 @@ const reportdata = {
         {
             title: 'Reports',
             url: '#',
-            icon: ClipboardPlus,
+            icon: ClipboardCheck,
             items: [
+                {
+                    title: 'Lead Reports',
+                    href: '/leadreports',
+                    icon: BookOpenCheck,
+                },
                 {
                     title: 'HR Reports',
                     href: '/hrreports',
+                    icon: ClipboardCheck,
                 },
             ],
         },
-        
     ],
 };
 </script>
@@ -147,6 +180,9 @@ const reportdata = {
                     <SidebarContent>
                         <NavMain :items="data.navMain" />
                     </SidebarContent>
+                    <SidebarContent>
+                        <NavMain :items="HRMenu.navHRmenu" />
+                    </SidebarContent>
                     <SidebarMenu>
                         <SidebarMenuItem v-for="item in mainmenu" :key="item.title">
                             <SidebarMenuButton asChild>
@@ -157,13 +193,14 @@ const reportdata = {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
+
                     <SidebarContent>
                         <NavMain :items="reportdata.navReport" />
                     </SidebarContent>
                 </SidebarGroupContent>
             </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter class="border-t border-sidebar-border/70 p-3 text-xs text-gray-500 text-center">
+        <SidebarFooter class="border-sidebar-border/70 border-t p-3 text-center text-xs text-gray-500">
             © {{ year }} {{ company?.companyname }}
         </SidebarFooter>
     </Sidebar>

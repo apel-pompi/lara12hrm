@@ -6,10 +6,7 @@ import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Employee Attendance',
-        href: '/hrreports',
-    },
+    
     {
         title: 'Branch Setting',
         href: '/branch',
@@ -27,8 +24,20 @@ const sidebarNavItems: NavItem[] = [
         href: '/leaveplan',
     },
     {
+        title: 'Work Hour Setup',
+        href: '/workhour',
+    },
+    {
         title: 'Attendance Setting',
         href: '/attensetting',
+    },
+    {
+        title: 'Attendance Deduct',
+        href: '/attendeduct',
+    },
+    {
+        title: 'Salary Type Setup',
+        href: '/salarytype',
     }
 ];
 

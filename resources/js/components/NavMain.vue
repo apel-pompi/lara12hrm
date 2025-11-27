@@ -27,6 +27,7 @@ defineProps<{
     items?: {
       title: string
       href: string
+      icon?: LucideIcon
     }[]
   }[]
 }>()
@@ -54,7 +55,8 @@ defineProps<{
                         <SidebarMenuSub>
                             <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
                                 <SidebarMenuSubButton as-child>
-                                    <Link :href="subItem.href">
+                                    <Link :href="subItem.href" class="flex items-center gap-2">
+                                        <component :is="subItem.icon" v-if="subItem.icon" class="w-4 h-4" />
                                         <span>{{ subItem.title }}</span>
                                     </Link>
                                 </SidebarMenuSubButton>

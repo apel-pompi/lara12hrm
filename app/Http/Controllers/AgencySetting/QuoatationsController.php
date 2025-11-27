@@ -8,6 +8,7 @@ use App\Models\AgencySetting\Quoatations;
 use App\Http\Requests\Quoatations\StoreQuoatationsRequest;
 use App\Http\Requests\Quoatations\UpdateQuoatationsRequest;
 use App\Services\Agency\Setting\QuoatationsService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +22,15 @@ class QuoatationsController extends Controller
      */
     public function index(Request $request, QuoatationsService $quoatations)
     {
-        $this->authorize('quoatations.index');
+        try {
+            $this->authorize('quoatations.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/Agency/Setting/quoatations',[
             'quoatationsFilter' => Quoatations::orderBy('id', 'desc')->get(),
@@ -36,7 +45,15 @@ class QuoatationsController extends Controller
      */
     public function store(StoreQuoatationsRequest $request)
     {
-        $this->authorize('quoatations.store');
+        try {
+            $this->authorize('quoatations.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validated();
         Quoatations::create([
@@ -54,7 +71,15 @@ class QuoatationsController extends Controller
      */
     public function destroy(Quoatations $quoatations)
     {
-        $this->authorize('quoatations.destroy');
+        try {
+            $this->authorize('quoatations.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             $quoatations->delete();
@@ -69,7 +94,16 @@ class QuoatationsController extends Controller
 
     public function updateStatus(Request $request, $quoatations)
     {
-        $this->authorize('quoatations.updateStatus');
+        try {
+            $this->authorize('quoatations.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'

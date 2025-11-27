@@ -3,22 +3,21 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Default\ApprovalRequest;
 use App\Models\Default\Country;
 use App\Models\Student\StudentActivities;
 use App\Models\Default\Transaction;
 use App\Models\Student\Student;
 use App\Models\Student\StudentApplication;
 use App\Models\Student\StudentInService;
-use App\Models\User;
-use App\Services\Agency\Student\StudentActivityService;
-use Illuminate\Http\Client\Request as ClientRequest;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class StudentActivitiesController extends Controller
 {
-    public function index(Student $student, Request $request, StudentActivityService $service)
+    public function index(Student $student)
     {
         $student->load('assainuser');
 
@@ -31,6 +30,7 @@ class StudentActivitiesController extends Controller
 
     public function updateArchive(Request $request)
     {
+
         $request->validate([
             'student_id' => 'required|exists:students,id',
             'status' => 'required|in:1,4',
@@ -39,9 +39,37 @@ class StudentActivitiesController extends Controller
         Student::where('id', $request->student_id)
             ->update(['status' => $request->status]);
 
+        ApprovalRequest::where('reference_id', $request->student_id)
+            ->update(['status' => 1]);
+
         return back()->with('message', $request->status == 4
             ? 'Student archived successfully.'
             : 'Student restored successfully.');
+    }
+
+    public function confirmTransfer(Request $request)
+    {
+
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'user_id' => 'required',
+        ]);
+
+        Student::where('id', $request->student_id)
+            ->update(['assain_user' => $request->user_id]);
+
+        ApprovalRequest::where('reference_id', $request->student_id)
+            ->update(['status' => 1]);
+        // Record activity
+        StudentActivities::create([
+            'student_id'    => $request->student_id,
+            'title'         => "has confirm lead transfer",
+            'fristactivity' => null,
+            'lastactivity'  => null,
+            'user_id'       => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Student Transfer successfully');
     }
 
     public function updateRate(Request $request)
@@ -89,8 +117,8 @@ class StudentActivitiesController extends Controller
         ]);
 
         // Check existing application
-        if (!StudentApplication::where('student_id', $student->id)->exists()) {
-            return back()->with('error', 'Unable to generate Student ID. No student application found.');
+        if (StudentApplication::where('student_id', $student->id)->exists()) {
+            return back()->with('error', 'Unable to generate Student ID. Student application is exists.');
         }
 
         // Get new Student ID
@@ -122,5 +150,30 @@ class StudentActivitiesController extends Controller
         ]);
 
         return back()->with('success', 'Student ID generated and assigned successfully.');
+    }
+
+    public function confirmonBoard(Request $request)
+    {
+       
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'status' => 'required',
+        ]);
+
+        Student::where('id', $request->student_id)
+            ->update(['status' => $request->status]);
+
+        ApprovalRequest::where('reference_id', $request->student_id)
+            ->update(['status' => 1]);
+        
+        // Record activity
+        StudentActivities::create([
+            'student_id'    => $request->student_id,
+            'title'         => "has confirm student onBoard",
+            'fristactivity' => null,
+            'lastactivity'  => null,
+            'user_id'       => Auth::id(),
+        ]);
+        return back()->with('success', 'Student onBoard confirm successfully');
     }
 }

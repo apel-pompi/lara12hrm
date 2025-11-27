@@ -8,6 +8,7 @@ use App\Http\Requests\PartnerBranch\StorePartnerBranchRequest;
 use App\Http\Requests\PartnerBranch\UpdatePartnerBranchRequest;
 use App\Models\Default\Country;
 use App\Models\Partner\Partner;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -21,7 +22,15 @@ class PartnerBranchController extends Controller
      */
     public function index()
     {
-        $this->authorize('partnerBranch.index');
+        try {
+            $this->authorize('partnerBranch.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/Agency/Setting/partnerbranch',[
             'partner' => Partner::where('active',1)->get(['id','name']),
@@ -36,7 +45,15 @@ class PartnerBranchController extends Controller
      */
     public function store(StorePartnerBranchRequest $request)
     {
-        $this->authorize('partnerBranch.store');
+        try {
+            $this->authorize('partnerBranch.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validated();
         $validated['active'] = $request->input('active', 0);
@@ -60,7 +77,15 @@ class PartnerBranchController extends Controller
      */
     public function show(PartnerBranch $partnerBranch)
     {
-        $this->authorize('partnerBranch.show');
+        try {
+            $this->authorize('partnerBranch.show');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
     }
 
     /**
@@ -68,7 +93,15 @@ class PartnerBranchController extends Controller
      */
     public function edit(PartnerBranch $partnerBranch)
     {
-        $this->authorize('partnerBranch.edit');
+        try {
+            $this->authorize('partnerBranch.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
     }
 
     /**
@@ -76,7 +109,15 @@ class PartnerBranchController extends Controller
      */
     public function update(UpdatePartnerBranchRequest $request, PartnerBranch $partnerBranch)
     {
-        $this->authorize('partnerBranch.update');
+        try {
+            $this->authorize('partnerBranch.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
     }
 
     /**
@@ -84,12 +125,28 @@ class PartnerBranchController extends Controller
      */
     public function destroy(PartnerBranch $partnerBranch)
     {
-        $this->authorize('partnerBranch.destory');
+        try {
+            $this->authorize('partnerBranch.destory');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
     }
 
     public function updateStatus(Request $request, $PartnerBranch)
     {
-        $this->authorize('partnerBranch.updateStatus');
+        try {
+            $this->authorize('partnerBranch.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'

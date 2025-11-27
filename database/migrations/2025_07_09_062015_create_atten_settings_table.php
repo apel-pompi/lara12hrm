@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('atten_settings', function (Blueprint $table) {
             $table->id();
-           $table->foreignId('branch_id')->constrained('branches')
+            $table->foreignId('branch_id')->constrained('branches')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('pname');
             $table->string('lname');
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->integer('active');
             $table->timestamps();
             $table->softDeletes();
-            
+
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });

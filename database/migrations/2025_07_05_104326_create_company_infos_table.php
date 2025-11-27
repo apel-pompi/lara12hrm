@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('company_phone')->nullable();
             $table->string('company_email')->nullable();
             $table->string('companylogo')->nullable();
+            $table->string('loginimage')->nullable();
             $table->timestamps();
             $table->softDeletes();
             

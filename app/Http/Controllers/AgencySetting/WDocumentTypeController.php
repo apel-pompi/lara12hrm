@@ -4,6 +4,7 @@ namespace App\Http\Controllers\AgencySetting;
 
 use App\Http\Controllers\Controller;
 use App\Models\AgencySetting\WDocumentType;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +16,14 @@ class WDocumentTypeController extends Controller
 
     public function index()
     {
-        $this->authorize('workflowDocument.index');
+        try {
+            $this->authorize('workflowDocument.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/Agency/Setting/documenttype', [
             'documenttype' => WDocumentType::with(['user'])->orderBy('id', 'desc')->get()
@@ -24,7 +32,15 @@ class WDocumentTypeController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('workflowDocument.store');
+        try {
+            $this->authorize('workflowDocument.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'docname' => 'required|string',
@@ -44,7 +60,15 @@ class WDocumentTypeController extends Controller
 
     public function edit($id)
     {
-        $this->authorize('workflowDocument.edit');
+        try {
+            $this->authorize('workflowDocument.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $documenttype = WDocumentType::findOrFail($id);
 
@@ -59,7 +83,15 @@ class WDocumentTypeController extends Controller
 
     public function update(Request $request, $id)
     {
-        $this->authorize('workflowDocument.update');
+        try {
+            $this->authorize('workflowDocument.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $documenttype = WDocumentType::findOrFail($id);
 
@@ -78,7 +110,15 @@ class WDocumentTypeController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        $this->authorize('workflowDocument.updateStatus');
+        try {
+            $this->authorize('workflowDocument.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'

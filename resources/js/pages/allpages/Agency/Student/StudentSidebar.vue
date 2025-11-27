@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import Badge from '@/components/ui/badge/Badge.vue';
-import { Archive, Coffee, Flame, Mail, MessageCircleMore, Snowflake, SquarePen, TriangleAlert, Undo2, UserCheck } from 'lucide-vue-next';
+import { Archive, Coffee, Flame, Mail, MessageCircleMore, Move3D, Rotate3D, Snowflake, SquarePen, TriangleAlert, Undo2, UserCheck } from 'lucide-vue-next';
 
 const props = defineProps<{
     student: any;
-    editStudent:() => void;
+    editStudent: () => void;
     showDailogCreate: () => void;
+    updateTransfer: (studentId: number) => void;
+    updateonBoard: (studentId: number) => void;
     updateRate: (value: number) => void;
     updateArchive: (studentId: number, status: number) => void;
     getStatusText: (status: number) => { text: string; color: string };
     studentService: Array<{ id: number; startdate: string; enddate: string; status: string }>;
 }>();
-
 </script>
 
 <template>
@@ -95,10 +96,7 @@ const props = defineProps<{
 
                 <div class="group relative">
                     <div v-if="props.student.status <= 1">
-                        <button
-                            @click="showDailogCreate"
-                            class="cursor-pointer text-[8px] uppercase hover:text-gray-700"
-                        >
+                        <button @click="showDailogCreate" class="cursor-pointer text-[8px] uppercase hover:text-gray-700">
                             <UserCheck />
                         </button>
                         <span
@@ -107,36 +105,59 @@ const props = defineProps<{
                             Assignee
                         </span>
                     </div>
+                    <div v-else>
+                        <button @click="updateTransfer(props.student.id)" class="cursor-pointer text-[8px] uppercase hover:text-gray-700">
+                            <Move3D />
+                        </button>
+                        <span
+                            class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
+                        >
+                            Transfer
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Sales Forecast -->
-        <!-- <div class="border-b pb-5" v-for="(service, index) in props.studentService" :key="service.id">
-            <h3 class="pb-5 text-[12px] font-semibold text-gray-700 dark:text-gray-300">APPLICATION SALES FORECAST</h3>
-            <p class="mt-1 flex items-center pb-5 text-sm"><span class="mr-2 h-2 w-2 rounded-full bg-green-500"></span> {{ service.productfees?.netamount ?? 0 }} CAD</p>
-            <p class="text-gray-500">Product Fees</p>
-                                
-            <h3 class="mt-2 pb-5 text-[12px] font-semibold text-gray-700 dark:text-gray-300">INTERESTED SERVICES SALES FORECAST</h3>
-            <p class="mt-1 flex items-center pb-5 text-sm"><span class="mr-2 h-2 w-2 rounded-full bg-green-500"></span> {{ service.productfees?.netamount ?? 0 }} CAD</p>
-        </div> -->
-
         <!-- Personal Details -->
-        <div class="border-b pb-5 text-sm">
-            <!-- <h4 class="mb-1 font-semibold text-gray-700 dark:text-gray-300">PERSONAL DETAILS:</h4>
-            <p>Tag(s): <span class="text-gray-500">-</span></p> -->
+        <div class="rounded-xl border bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <!-- Info Section -->
+            <div class="space-y-3 text-sm">
+                <div class="flex items-center justify-between">
+                    <p class="text-gray-600 dark:text-gray-400">Added From:</p>
+                    <p class="font-medium text-gray-900 dark:text-gray-200">
+                        {{ props.student.assainuser.name }}
+                    </p>
+                </div>
 
-            <!-- <div class="mt-2 flex items-center gap-2">
-                <Button class="rounded-lg bg-blue-500 px-3 py-1 text-xs text-white shadow hover:bg-blue-600">Activate</Button>
-                <Button class="rounded-lg bg-gray-300 px-3 py-1 text-xs text-gray-700 shadow hover:bg-gray-400">De-Activate</Button>
-            </div> -->
+                <div class="flex items-center justify-between">
+                    <p class="text-gray-600 dark:text-gray-400">Student ID:</p>
+                    <p class="font-medium text-gray-900 dark:text-gray-200">
+                        {{ props.student.student_id }}
+                    </p>
+                </div>
+            </div>
 
-            <p class="mt-2 text-gray-600">
-                Added From: <span class="font-medium">{{ props.student.assainuser.name }}</span>
-            </p>
-            <p class="text-gray-600">
-                Student Id: <span class="font-medium">{{ props.student.student_id }}</span>
-            </p>
+            <!-- Message -->
+            <div class="mt-4 text-xs text-gray-500 dark:text-gray-400" v-if="props.student.status==2">
+                If there is no service charge or file opening charge, then you can transfer to onboard request.
+            </div>
+
+            <!-- Action Button -->
+            <div class="mt-3 flex justify-end" v-if="props.student.student_id">
+                <div class="group relative" v-if="props.student.status==2">
+                    <button @click="updateonBoard(props.student.id)" class="rounded-full cursor-pointer p-2 transition hover:bg-green-100 dark:hover:bg-gray-800">
+                        <Rotate3D class="h-6 w-6 text-green-700 dark:text-gray-300" />
+                    </button>
+
+                    <!-- Tooltip -->
+                    <span
+                        class="absolute -top-8 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100"
+                    >
+                        OnBoard
+                    </span>
+                </div>
+            </div>
         </div>
     </aside>
 </template>

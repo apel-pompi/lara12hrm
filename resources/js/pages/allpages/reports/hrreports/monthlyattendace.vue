@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import Label from '@/components/ui/label/Label.vue';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import HrReportLayout from '@/layouts/settings/hrreportLayout.vue';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { type BreadcrumbItem } from '@/types';
+import { Head, useForm} from '@inertiajs/vue3';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { Head, useForm } from '@inertiajs/vue3';
-import { FileText } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { FileText } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'HR Reports', href: '/hrreports' }];
 
@@ -34,7 +34,6 @@ const onReport = async () => {
         alert('Branch is not selected');
         return;
     }
-
     if (form.yearname == '') {
         alert('Year is not selected');
         return;
@@ -45,7 +44,7 @@ const onReport = async () => {
         return;
     }
     form.branch_id = selecteBranch.value.id;
-    const url = route('hrreports.DailyAttendanceReport', {
+    const url = route('hrreports.MonthlyAttendanceReport', {
         branch_id: form.branch_id,
         yearname: form.yearname,
         monthname: form.monthname,
@@ -58,9 +57,9 @@ const onReport = async () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="HR Reports" />
         <HrReportLayout>
-            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+                    <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
                 <!-- Title -->
-                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Daily attendance Reports</h2>
+                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Monthly attendance Reports</h2>
 
                 <!-- Input -->
                 <div class="space-y-2">

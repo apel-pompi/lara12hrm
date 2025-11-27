@@ -301,7 +301,20 @@ class RolePermissionSeeder extends Seeder
                     
                 ],
             ],
-
+             //Working Hour Setup       
+            [
+                'group_name' => 'Working Hour',
+                'permissions' => [
+                    'worksetup.index',
+                    'worksetup.store',
+                    'worksetup.show',
+                    'worksetup.edit',
+                    'worksetup.update',
+                    'worksetup.destroy',
+                    'worksetup.updateStatus'
+                    
+                ],
+            ],
             //Attendance Setting         
             [
                 'group_name' => 'AttendanceSetting',
@@ -312,6 +325,33 @@ class RolePermissionSeeder extends Seeder
                     'attendanmst.edit',
                     'attendanmst.update',
                     'attendanmst.destroy'
+                    
+                ],
+            ],
+             //Attendance Deduct         
+            [
+                'group_name' => 'AttendanceDeduct',
+                'permissions' => [
+                    'deduct.index',
+                    'deduct.store',
+                    'deduct.show',
+                    'deduct.edit',
+                    'deduct.update',
+                    'deduct.destroy'
+                    
+                ],
+            ],
+             //Salary Type Setup       
+            [
+                'group_name' => 'Salary Type Setup',
+                'permissions' => [
+                    'salaryType.index',
+                    'salaryType.store',
+                    'salaryType.show',
+                    'salaryType.edit',
+                    'salaryType.update',
+                    'salaryType.destroy',
+                    'salaryType.updateStatus'
                     
                 ],
             ],
@@ -366,7 +406,7 @@ class RolePermissionSeeder extends Seeder
                     'Leave.edit',
                     'Leave.update',
                     'Leave.destroy',
-                    'Leave.updateStatus',
+                    'Leave.approve',
                     'Leave.reports'
                 ],
             ],
@@ -388,8 +428,17 @@ class RolePermissionSeeder extends Seeder
                 'permissions' => [
                     'StudentLead.index',
                     'StudentLead.import',
-                    'Student.download'
+                    'StudentLead.download'
                     
+                ],
+            ],
+
+            //Student Lead Reports
+            [
+                'group_name' => 'Lead Reports',
+                'permissions' => [
+                    'leadReports.monthly-lead-info',
+                    'leadReports.yearly-lead-info',
                 ],
             ],
 
@@ -509,6 +558,64 @@ class RolePermissionSeeder extends Seeder
                     'ProductActivities.Promotions',
                 ],
             ],
+            //Account Setting
+            [
+                'group_name' => 'Accounts Setting',
+                'permissions' => [
+                    'accsetting.GroupOne',
+                    'accsetting.GroupTwo',
+                    'accsetting.GroupThree',
+                ],
+            ],
+            //Group One Setting
+            [
+                'group_name' => 'Group One',
+                'permissions' => [
+                    'GroupOne.store',
+                    'GroupOne.show',
+                    'GroupOne.edit',
+                    'GroupOne.update',
+                    'GroupOne.updateStatus',
+                    'GroupOne.destroy',
+                ],
+            ],
+            //Group Two Setting
+            [
+                'group_name' => 'Group Two',
+                'permissions' => [
+                    'GroupTwo.store',
+                    'GroupTwo.show',
+                    'GroupTwo.edit',
+                    'GroupTwo.update',
+                    'GroupTwo.updateStatus',
+                    'GroupTwo.destroy',
+                ],
+            ],
+            //Group Three Setting
+            [
+                'group_name' => 'Group Three',
+                'permissions' => [
+                    'GroupThree.store',
+                    'GroupThree.show',
+                    'GroupThree.edit',
+                    'GroupThree.update',
+                    'GroupThree.updateStatus',
+                    'GroupThree.destroy',
+                ],
+            ],
+            //Chart Of Accounts
+            [
+                'group_name' => 'Chart Of Account',
+                'permissions' => [
+                    'ChartOfAccount.index',
+                    'ChartOfAccount.store',
+                    'ChartOfAccount.show',
+                    'ChartOfAccount.edit',
+                    'ChartOfAccount.update',
+                    'ChartOfAccount.updateStatus',
+                    'ChartOfAccount.destroy',
+                ],
+            ],
             //Account Money Receipt
             [
                 'group_name' => 'Money Receipt',
@@ -520,6 +627,20 @@ class RolePermissionSeeder extends Seeder
                     'Accounts.CancelMR',
                     'Accounts.ConfirmMR',
                     'Accounts.ReportMR',
+                ],
+            ],
+            //HR Reports
+            [
+                'group_name' => 'HR Reports',
+                'permissions' => [
+                    'hrReports.personal-info',
+                    'hrReports.personal-info-reports',
+                    'hrReports.employee-attendance',
+                    'hrReports.employee-attendance-reports',
+                    'hrReports.daily-attendance',
+                    'hrReports.daily-attendance-reports',
+                    'hrReports.monthly-attendance',
+                    'hrReports.monthly-attendance-reports',
                 ],
             ],
         ];

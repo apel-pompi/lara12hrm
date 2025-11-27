@@ -8,6 +8,7 @@ use App\Models\AgencySetting\Installment;
 use App\Http\Requests\Installment\StoreInstallmentRequest;
 use App\Http\Requests\Installment\UpdateInstallmentRequest;
 use App\Services\Agency\Setting\InstallmentService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +22,14 @@ class InstallmentController extends Controller
      */
     public function index(Request $request, InstallmentService $installmentService)
     {
-        $this->authorize('Installment.index');
+        try {
+            $this->authorize('Installment.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/Agency/Setting/installment',[
             'installmentFilter' => Installment::with('user')->orderBy('id', 'desc')->get(),
@@ -36,7 +44,15 @@ class InstallmentController extends Controller
      */
     public function store(StoreInstallmentRequest $request)
     {
-        $this->authorize('Installment.store');
+        try {
+            $this->authorize('Installment.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validated();
         Installment::create([
@@ -53,7 +69,15 @@ class InstallmentController extends Controller
      */
     public function edit(Installment $installment)
     {
-        $this->authorize('Installment.edit');
+        try {
+            $this->authorize('Installment.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return response()->json([
             'success' => true,
@@ -66,7 +90,15 @@ class InstallmentController extends Controller
      */
     public function update(UpdateInstallmentRequest $request, Installment $installment)
     {
-        $this->authorize('Installment.update');
+        try {
+            $this->authorize('Installment.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $installment->update($request->validated());
         return redirect()->route('installment.index')->with('success', 'Installment Update successfully.');
@@ -77,7 +109,15 @@ class InstallmentController extends Controller
      */
     public function destroy(Installment $installment)
     {
-        $this->authorize('Installment.destroy');
+        try {
+            $this->authorize('Installment.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             $installment->delete();
@@ -92,7 +132,15 @@ class InstallmentController extends Controller
 
     public function updateStatus(Request $request, $installment)
     {
-        $this->authorize('Installment.updateStatus');
+        try {
+            $this->authorize('Installment.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'

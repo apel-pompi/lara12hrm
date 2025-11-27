@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Users;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
@@ -17,7 +18,15 @@ class RoleController extends Controller
 
     public function index()
     {
-        $this->authorize('role.index');
+        try {
+            $this->authorize('role.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $roles = Role::orderBy('id', 'desc')->get();
         $rolesWithPermissions = $roles->map(function ($role) {
@@ -56,7 +65,15 @@ class RoleController extends Controller
     
     public function store(Request $request){
 
-        $this->authorize('role.store');
+        try {
+            $this->authorize('role.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'name' => 'required',
@@ -71,7 +88,15 @@ class RoleController extends Controller
 
     public function edit(string $id)
     {
-        $this->authorize('role.edit');
+        try {
+            $this->authorize('role.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
         
         $role = Role::with('permissions')->findOrFail($id);
         $permissionGroup = Permission::groupBy('group_name')->select('group_name')->get();
@@ -87,7 +112,15 @@ class RoleController extends Controller
 
     public function update(Request $request, string $id){
 
-        $this->authorize('role.update');
+        try {
+            $this->authorize('role.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'name' => 'required',
@@ -105,7 +138,15 @@ class RoleController extends Controller
 
     public function destroy(string $id)
     {
-        $this->authorize('role.destroy');
+        try {
+            $this->authorize('role.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $role = Role::find($id);
         if (!is_null($role)) {

@@ -38,6 +38,14 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
         ->group(
             function () {
                 Route::post('/studentArchive/{student}', 'studentArchive')->name('approval.studentArchive');
+                Route::post('/studentTransfer/{student}', 'studentTransfer')->name('approval.studentTransfer');
+                Route::post('/studentOnBoard/{student}', 'studentOnBoard')->name('approval.studentOnBoard');
+                Route::post('/{leave}/leaveRequest', 'leaveRequest')->name('approval.leaveRequest');
+                Route::post('/{leave}/leaveApproved', 'leaveApproved')->name('approval.leaveApproved');
+                Route::post('/{leave}/leaveCancel', 'leaveCancel')->name('approval.leaveCancel');
+                Route::get('/{quotation}/QuoattionView', 'QuoattionView')->name('approval.QuoattionView');
+                Route::put('/{quotation}/QuoattionConfirm', 'QuoattionConfirm')->name('approval.QuoattionConfirm');
+                Route::put('/{quotation}/QuoattionCancel', 'QuoattionCancel')->name('approval.QuoattionCancel');
             }
         );
 });

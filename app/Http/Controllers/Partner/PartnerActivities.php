@@ -9,6 +9,7 @@ use App\Models\Partner\Partner;
 use App\Models\Partner\PartnerBranch;
 use App\Models\Product\Product;
 use App\Models\Product\ProductTypeSetup;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -52,8 +53,16 @@ class PartnerActivities extends Controller
 
     public function branchStore(Partner $partner, StorePartnerBranchRequest $request)
     {
+        try {
+            $this->authorize('partnerBranch.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        $this->authorize('partnerBranch.store');
+
 
         $validated = $request->validated();
         $validated['active'] = $request->input('active', 0);
@@ -74,8 +83,15 @@ class PartnerActivities extends Controller
 
     public function branchDelete(Partner $partner, PartnerBranch $partnerBranch)
     {
+        try {
+            $this->authorize('partnerBranch.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        $this->authorize('partnerBranch.destroy');
 
         try {
             $partnerBranch->delete();

@@ -7,6 +7,7 @@ use App\Models\Student\StudentSource;
 use App\Http\Requests\StudentSource\StoreStudentSourceRequest;
 use App\Http\Requests\StudentSource\UpdateStudentSourceRequest;
 use App\Services\Agency\Setting\StudentSourceService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -20,7 +21,15 @@ class StudentSourceController extends Controller
      */
     public function index(Request $request, StudentSourceService $studentSourceService)
     {
-         $this->authorize('StudentSource.index');
+        try {
+            $this->authorize('StudentSource.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/Agency/Setting/studentsource', [
             'searchName' => StudentSource::select('name')->get(),
@@ -36,7 +45,14 @@ class StudentSourceController extends Controller
      */
     public function store(StoreStudentSourceRequest $request)
     {
-        $this->authorize('StudentSource.store');
+        try {
+            $this->authorize('StudentSource.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $validated = $request->validated();
         StudentSource::create([
@@ -56,7 +72,15 @@ class StudentSourceController extends Controller
      */
     public function show(StudentSource $studentSource)
     {
-        $this->authorize('StudentSource.show');
+        try {
+            $this->authorize('StudentSource.show');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         if (!$studentSource) {
             return response()->json(['message' => 'Student source not found'], 404);
@@ -69,7 +93,15 @@ class StudentSourceController extends Controller
      */
     public function edit(StudentSource $studentSource)
     {
-        $this->authorize('StudentSource.edit');
+        try {
+            $this->authorize('StudentSource.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return response()->json([
             'success' => true,
@@ -82,7 +114,15 @@ class StudentSourceController extends Controller
      */
     public function update(UpdateStudentSourceRequest $request, StudentSource $studentSource)
     {
-        $this->authorize('StudentSource.update');
+        try {
+            $this->authorize('StudentSource.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $studentSource->update($request->validated());
         return redirect()->route('studentSource.index')->with('success', 'Student stage update successfully.');
@@ -93,7 +133,15 @@ class StudentSourceController extends Controller
      */
     public function destroy(StudentSource $studentSource)
     {
-        $this->authorize('StudentSource.destory');
+        try {
+            $this->authorize('StudentSource.destory');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             $studentSource->delete();
@@ -109,7 +157,15 @@ class StudentSourceController extends Controller
 
     public function updateStatus(Request $request, $student)
     {
-        $this->authorize('StudentSource.updateStatus');
+        try {
+            $this->authorize('StudentSource.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'

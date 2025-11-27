@@ -16,6 +16,18 @@ Route::get('/', function () {
 
 
 Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
+    // Dashboard Route
+    Route::controller(DashboardController::class)
+        ->prefix('/dashboard')
+        ->group(
+            function () {
+                Route::get('/ArchiveRequest', 'ArchiveRequest')->name('dashboard.ArchiveRequest');
+                Route::get('/TransferRequest', 'TransferRequest')->name('dashboard.TransferRequest');
+                Route::get('/onBoardRequest', 'onBoardRequest')->name('dashboard.onBoardRequest');
+                Route::get('/LeaveRequest', 'LeaveRequest')->name('dashboard.LeaveRequest');
+                Route::get('/QuotationRequest', 'QuotationRequest')->name('dashboard.QuotationRequest');
+            }
+        );
 
     Route::get('/dashboard', [DashboardController::class,'dashboard'])->name('dashboard');
 
@@ -26,6 +38,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
 });
 
 
+require __DIR__ . '/notifications.php';
 require __DIR__ . '/users.php';
 require __DIR__ . '/hrm.php';
 require __DIR__ . '/partner.php';

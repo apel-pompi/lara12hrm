@@ -11,6 +11,7 @@ use App\Models\Student\StudentInvoiceDT;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Student\StudentInvoiceHD;
 use App\Models\Student\StudentMoneyReceiptDT;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use App\Models\Student\StudentActivities;
@@ -25,20 +26,36 @@ class AccountsController extends Controller
 
     public function index()
     {
-        $this->authorize('Accounts.MRIndex');
+        try {
+            $this->authorize('Accounts.MRIndex');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/accounts/index', [
             'invoice' => StudentInvoiceHD::with(['student', 'user'])
                 ->withSum('details', 'amount')
                 ->where('status', 'Confirmed')
                 ->whereRaw("LEFT(insnumber, 4) = 'INV-'")
-                ->get(),
+                ->having('details_sum_amount', '>', 0)
+                ->paginate(15),
         ]);
     }
 
     public function createmr($insid, $sid)
     {
-        $this->authorize('Accounts.CreateMR');
+        try {
+            $this->authorize('Accounts.CreateMR');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $invoice = StudentInvoiceHD::with(['details.fee', 'user'])->where('insnumber', $insid)->whereRaw("LEFT(insnumber, 4) = 'INV-'")->first();
         $invoicemr = StudentInvoiceHD::with(['user'])->where('refe_code', $insid)->whereRaw("LEFT(insnumber, 4) = 'MR--'")->get();
@@ -74,9 +91,16 @@ class AccountsController extends Controller
 
     public function storeMR($insnumber, $student, Request $request)
     {
+        try {
+            $this->authorize('Accounts.storeMR');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        
-        $this->authorize('Accounts.storeMR');
+
 
         $mrNo = $this->GetMoneyNO();
         if (!$insnumber || !$student) {
@@ -155,7 +179,15 @@ class AccountsController extends Controller
 
     public function onView(StudentInvoiceHD $confirm)
     {
-        $this->authorize('Accounts.ViewMR');
+        try {
+            $this->authorize('Accounts.ViewMR');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         if (!$confirm) {
             return back()->with(['error' => true, 'message' => 'Invalid request']);
@@ -173,7 +205,15 @@ class AccountsController extends Controller
 
     public function onCancel(StudentInvoiceHD $confirm)
     {
-        $this->authorize('Accounts.CancelMR');
+        try {
+            $this->authorize('Accounts.CancelMR');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         if (!$confirm) {
             return back()->with(['error' => true, 'message' => 'Invalid request']);
@@ -214,7 +254,15 @@ class AccountsController extends Controller
 
     public function onConfirm(StudentInvoiceHD $confirm)
     {
-        $this->authorize('Accounts.ConfirmMR');
+        try {
+            $this->authorize('Accounts.ConfirmMR');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         if (!$confirm) {
             return back()->with(['error' => true, 'message' => 'Invalid request']);
@@ -260,7 +308,15 @@ class AccountsController extends Controller
     public function onReport(StudentInvoiceHD $onReport)
     {
 
-        $this->authorize('Accounts.ReportMR');
+        try {
+            $this->authorize('Accounts.ReportMR');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $company = CompanyInfo::firstOrFail();
         $student = Student::with(['country'])->where('id', $onReport->student_id)->first();

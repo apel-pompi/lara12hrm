@@ -9,6 +9,7 @@ use App\Http\Requests\Holidayhd\UpdateHolidayHdRequest;
 use App\Models\HRM\Branch;
 use App\Models\HRM\HolidayDt;
 use App\Services\HolydayHdService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,7 +23,14 @@ class HolidayHdController extends Controller
      */
     public function index(Request $request, HolydayHdService $holydayHdService)
     {
-        $this->authorize('holiday.index');
+        try {
+            $this->authorize('holiday.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/hrm/holidayHd', [
             
@@ -40,7 +48,14 @@ class HolidayHdController extends Controller
      */
     public function store(StoreHolidayHdRequest $request)
     {
-        $this->authorize('holiday.store');
+        try {
+            $this->authorize('holiday.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $validated = $request->validated();
 
@@ -65,7 +80,14 @@ class HolidayHdController extends Controller
 
     public function updateStatus(Request $request, $holidayhd)
     {
-        $this->authorize('holiday.updateStatus');
+        try {
+            $this->authorize('holiday.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
@@ -85,7 +107,14 @@ class HolidayHdController extends Controller
      */
     public function show(HolidayHd $holidayHd)
     {
-        $this->authorize('holiday.show');
+        try {
+            $this->authorize('holiday.show');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $holidayHd->load('branch');
         return response()->json($holidayHd);
@@ -96,7 +125,14 @@ class HolidayHdController extends Controller
      */
     public function edit(HolidayHd $holidayHd)
     {
-        $this->authorize('holiday.edit');
+        try {
+            $this->authorize('holiday.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -109,7 +145,14 @@ class HolidayHdController extends Controller
      */
     public function update(UpdateHolidayHdRequest $request, HolidayHd $holidayHd)
     {
-        $this->authorize('holiday.update');
+        try {
+            $this->authorize('holiday.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $year  = (int) ($request->input('yearname',  $holidayHd->yearname));
         $month = (int) ($request->input('monthname', $holidayHd->monthname));
@@ -136,7 +179,14 @@ class HolidayHdController extends Controller
      */
     public function destroy(HolidayHd $holidayHd)
     {
-        $this->authorize('holiday.destroy');
+        try {
+            $this->authorize('holiday.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         try {
             $holidayHd->delete();

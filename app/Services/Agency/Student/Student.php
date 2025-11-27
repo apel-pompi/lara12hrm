@@ -12,24 +12,20 @@ class Student
     {
         $user = Auth::user();
         $roles = $user->getRoleNames();
-        $queryBuilder = '';
-        if ($roles->contains('superadmin')) {
-            $queryBuilder = ModelsStudent::with(['user', 'assainuser', 'source', 'country'])->orderBy('id', 'DESC');
-        }elseif($roles->contains('Admin')){
-            $queryBuilder = ModelsStudent::with(['user', 'assainuser', 'source', 'country'])->orderBy('id', 'DESC');
-        }elseif($roles->contains('Manager')){
-            $queryBuilder = ModelsStudent::with(['user', 'assainuser', 'source', 'country'])->orderBy('id', 'DESC');
-        }else{
-            $queryBuilder = ModelsStudent::with(['user', 'assainuser', 'source', 'country'])->where('assain_user',Auth::id())->orderBy('id', 'DESC');
+        $queryBuilder = ModelsStudent::with(['user', 'assainuser', 'source', 'country'])
+            ->orderBy('id', 'DESC');
+
+        if (! $roles->intersect(['superadmin', 'Admin', 'Manager'])->count()) {
+            $queryBuilder->where('assain_user', Auth::id());
         }
 
 
 
-        $student = resolve(StudentFilter::class)->getResults([
+        $students = resolve(StudentFilter::class)->getResults([
             'builder' => $queryBuilder,
-            'params' => $queryParams
+            'params' => $queryParams,
         ]);
 
-        return $student;
+        return $students;
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\AgencySetting;
 use App\Http\Controllers\Controller;
 use App\Models\AgencySetting\Workflow;
 use App\Models\AgencySetting\WorkflowStage;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +19,15 @@ class WorkflowController extends Controller
      */
     public function index()
     {
-        $this->authorize('workflow.index');
+        try {
+            $this->authorize('workflow.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/Agency/Setting/workflow', [
             'workflow' => Workflow::with(['user'])->orderBy('id', 'desc')->get()
@@ -30,7 +39,15 @@ class WorkflowController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('workflow.store');
+        try {
+            $this->authorize('workflow.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'name' => 'required|string',
@@ -62,7 +79,15 @@ class WorkflowController extends Controller
      */
     public function edit($workflow)
     {
-        $this->authorize('workflow.edit');
+        try {
+            $this->authorize('workflow.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $workflow = Workflow::with('stages')->findOrFail($workflow);
         return response()->json([
@@ -81,7 +106,15 @@ class WorkflowController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->authorize('workflow.update');
+        try {
+            $this->authorize('workflow.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $workflow = Workflow::findOrFail($id);
         $validated = $request->validate([
@@ -112,7 +145,15 @@ class WorkflowController extends Controller
 
     public function updateStatus(Request $request, $workflow)
     {
-        $this->authorize('workflow.updateStatus');
+        try {
+            $this->authorize('workflow.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'

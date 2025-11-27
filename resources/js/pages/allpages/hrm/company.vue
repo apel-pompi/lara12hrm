@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Briefcase, Building, Mail, MapPin, Phone } from 'lucide-vue-next';
 
 import ImageUpload from '@/components/ImageUpload.vue';
+import LoginBG from '@/components/LoginBG.vue';
 import { toast } from 'vue-sonner';
 
 export interface Company {
@@ -23,6 +24,7 @@ export interface Company {
     company_phone: string;
     company_email: string;
     companylogo: any;
+    loginimage: any;
 }
 
 const props = defineProps<{
@@ -31,6 +33,7 @@ const props = defineProps<{
 
 const data = props.company;
 const currentImage = data.companylogo ? `/storage/company/${data.companylogo}` : null;
+const LoginImage = data.loginimage ? `/storage/company/${data.loginimage}` : null;
 const form = useForm({
     id: data.id,
     companyname: data.companyname,
@@ -39,6 +42,7 @@ const form = useForm({
     company_phone: data.company_phone,
     company_email: data.company_email,
     companylogo: data.companylogo,
+    loginimage: data.loginimage,
 });
 
 const submit = () => {
@@ -52,8 +56,12 @@ const submit = () => {
     formData.append('company_phone', form.company_phone);
     formData.append('company_email', form.company_email);
 
-    if (form.companylogo instanceof File) {
+    if (form.companylogo && typeof form.companylogo !== 'string') {
         formData.append('companylogo', form.companylogo);
+    }
+
+    if (form.loginimage && typeof form.loginimage !== 'string') {
+        formData.append('loginimage', form.loginimage);
     }
 
     router.post(action, formData, {
@@ -192,16 +200,35 @@ const submit = () => {
                                     <div class="flex items-center gap-4">
                                         <div class="relative">
                                             <ImageUpload
-                                                @image="(file) => (form.companylogo = file)"
+                                                @logo="(file) => (form.companylogo = file)"
                                                 :Image="data.companylogo"
                                                 :disabled="form.processing"
                                             />
                                         </div>
                                         <div>
-                                            <p class="text-xs text-gray-500">Recommended size: 256x256px</p>
-                                            <p class="text-xs text-gray-500">Max file size: 2MB</p>
+                                            <p class="text-xs text-gray-500">Recommended size: 300x150px</p>
+                                            <p class="text-xs text-gray-500">Max file size: 1MB</p>
                                         </div>
                                         <span v-if="form.errors.companylogo" class="text-xs text-red-600">{{ form.errors.companylogo }}</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <Label for="loginimage" class="flex items-center gap-1 text-sm font-medium text-gray-700">
+                                        Login Background mage <span class="text-red-500">*</span>
+                                    </Label>
+                                    <div class="flex items-center gap-4">
+                                        <div class="relative">
+                                            <LoginBG
+                                                @loginbg="(file) => (form.loginimage = file)"
+                                                :Image="data.loginimage"
+                                                :disabled="form.processing"
+                                            />
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500">Recommended size: 1600x1400px</p>
+                                            <p class="text-xs text-gray-500">Max file size: 1MB</p>
+                                        </div>
+                                        <span v-if="form.errors.loginimage" class="text-xs text-red-600">{{ form.errors.loginimage }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -273,6 +300,19 @@ const submit = () => {
                                             <div class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gray-200">
                                                 <img
                                                     :src="currentImage || '/storage/company/default.png'"
+                                                    alt="preview"
+                                                    class="object-cover object-center"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- loginimage Preview -->
+                                    <div class="rounded-lg bg-gray-50 p-4">
+                                        <h3 class="mb-3 text-sm font-medium text-gray-800">Login Image</h3>
+                                        <div class="flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-6">
+                                            <div class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gray-200">
+                                                <img
+                                                    :src="LoginImage || '/storage/company/default.png'"
                                                     alt="preview"
                                                     class="object-cover object-center"
                                                 />

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HRM\Designation;
 use App\Http\Requests\Designation\StoreDesignationRequest;
 use App\Http\Requests\Designation\UpdateDesignationRequest;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 
@@ -17,7 +18,15 @@ class DesignationController extends Controller
      */
     public function index()
     {
-        $this->authorize('designation.index');
+        try {
+            $this->authorize('designation.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/hrm/designation',[
             'designation' => Designation::orderBy('id', 'desc')->get()
@@ -31,7 +40,14 @@ class DesignationController extends Controller
      */
     public function store(StoreDesignationRequest $request)
     {
-        $this->authorize('designation.store');
+        try {
+            $this->authorize('designation.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         Designation::create($request->validated());
         return redirect()->route('designation.index')->with('success', 'Designation Create successfully.');
@@ -42,7 +58,14 @@ class DesignationController extends Controller
      */
     public function show(Designation $designation)
     {
-        $this->authorize('designation.show');
+        try {
+            $this->authorize('designation.show');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         if (!$designation) {
             return response()->json(['message' => 'Designation not found'], 404);
@@ -55,7 +78,14 @@ class DesignationController extends Controller
      */
     public function edit(Designation $designation)
     {
-        $this->authorize('designation.edit');
+        try {
+            $this->authorize('designation.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -68,7 +98,14 @@ class DesignationController extends Controller
      */
     public function update(UpdateDesignationRequest $request, Designation $designation)
     {
-        $this->authorize('designation.update');
+        try {
+            $this->authorize('designation.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $designation->update($request->validated());
         return redirect()->route('designation.index')->with('success', 'Designation Update successfully.');
@@ -79,7 +116,14 @@ class DesignationController extends Controller
      */
     public function destroy(Designation $designation)
     {
-        $this->authorize('designation.destroy');
+        try {
+            $this->authorize('designation.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         try {
             $designation->delete();

@@ -41,9 +41,8 @@ class Attendance extends Model
     {
         return DB::table('attendances as a')
             ->select(DB::raw("
-            CASE WHEN a.record_time <= atten_settings.ptime THEN atten_settings.pname WHEN a.record_time <= atten_settings.ltime THEN atten_settings.lname ELSE 'Absent' END AS TimeName,
-            a.record_time,
-            a.record_time
+            CASE WHEN time(a.record_time) <= atten_settings.ptime THEN atten_settings.pname WHEN time(a.record_time) <= atten_settings.ltime THEN atten_settings.lname ELSE 'Absent' END AS TimeName,
+            time(a.record_time)
         "))
             ->leftJoin('personal_infos', 'a.user_id', '=', 'personal_infos.empid')
             ->leftJoin('atten_settings', 'personal_infos.branch_id', '=', 'atten_settings.branch_id')

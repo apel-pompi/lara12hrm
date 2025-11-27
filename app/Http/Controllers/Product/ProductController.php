@@ -10,6 +10,7 @@ use App\Http\Requests\Product\UpdateProductRequest;
 use App\Models\Partner\Partner;
 use App\Models\Partner\PartnerBranch;
 use App\Models\Product\ProductTypeSetup;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -23,7 +24,14 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $this->authorize('Product.update');
+        try {
+            $this->authorize('Product.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/Agency/Product/product', [
             'product' => Product::with(['partner','productype'])->get(),
@@ -44,7 +52,14 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $this->authorize('Product.store');
+        try {
+            $this->authorize('Product.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $validated = $request->validated();
 
@@ -82,7 +97,15 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-         $this->authorize('Product.edit');
+        try {
+            $this->authorize('Product.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
          return response()->json([
             'success' => true,
@@ -101,7 +124,15 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-       $this->authorize('Product.update');
+        try {
+            $this->authorize('Product.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         if (isset($request['intake_months']) && is_array($request['intake_months'])) {
             $request['intake_months'] = implode(',', $request['intake_months']);
@@ -130,7 +161,15 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $this->authorize('Product.destroy');
+        try {
+            $this->authorize('Product.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             
@@ -146,7 +185,15 @@ class ProductController extends Controller
 
     public function updateStatus(Request $request, $product)
     {
-        $this->authorize('Product.updateStatus');
+        try {
+            $this->authorize('Product.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'

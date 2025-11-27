@@ -8,6 +8,7 @@ use App\Http\Requests\Holidaydt\StoreHolidayDtRequest;
 use App\Http\Requests\Holidaydt\UpdateHolidayDtRequest;
 use App\Models\HRM\Branch;
 use App\Models\HRM\HolidayHd;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 
@@ -20,7 +21,14 @@ class HolidayDtController extends Controller
      */
     public function create($id)
     {
-        $this->authorize('holidaydt.create');
+        try {
+            $this->authorize('holidaydt.create');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/hrm/holidayDt', [
             'holidayHd' => HolidayHd::with(['branch' => function ($query) {
@@ -37,7 +45,14 @@ class HolidayDtController extends Controller
      */
     public function store(StoreHolidayDtRequest $request)
     {
-        $this->authorize('holidaydt.store');
+        try {
+            $this->authorize('holidaydt.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
         
         $holidayHd = HolidayHd::findOrFail($request->holihd_id);
         $holidays = $holidayHd->holidays;
@@ -91,7 +106,14 @@ class HolidayDtController extends Controller
      */
     public function edit(HolidayDt $holidayDt)
     {
-        $this->authorize('holidaydt.edit');
+        try {
+            $this->authorize('holidaydt.edit');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -104,7 +126,14 @@ class HolidayDtController extends Controller
      */
     public function update(UpdateHolidayDtRequest $request, HolidayDt $holidayDt)
     {
-        $this->authorize('holidaydt.update');
+        try {
+            $this->authorize('holidaydt.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         $exists = HolidayDt::where('holihd_id', $request->holihd_id)
             ->where('holidate', $request->holidate)
@@ -126,7 +155,14 @@ class HolidayDtController extends Controller
      */
     public function destroy(HolidayDt $holidayDt)
     {
-        $this->authorize('holidaydt.destroy');
+        try {
+            $this->authorize('holidaydt.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         try {
             $holidayDt->delete();

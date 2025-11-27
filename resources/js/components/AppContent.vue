@@ -9,6 +9,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const className = computed(() => props.class);
+
 </script>
 
 <template>

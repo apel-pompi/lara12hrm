@@ -11,18 +11,18 @@ interface Auth {
 }
 
 const page = usePage<{ auth: Auth }>();
-const company = page.props.auth.company?.[0];
+const company = page.props.company;
 
 </script>
 
 <template>
-    <div class="flex items-center">
+    <div class="items-center">
         <!-- Logo -->
         <img
             v-if="company?.companylogo"
             :src="`/storage/company/${company.companylogo}`"
             alt="Company Logo"
-            class="w-10 object-cover"
+            class="w-27 mx-auto"
         />
         
     </div>

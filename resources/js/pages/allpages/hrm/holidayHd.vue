@@ -235,6 +235,10 @@ const goToPage = (url: string | null) => {
         router.get(url, {}, { preserveState: true, replace: true });
     }
 };
+
+const getMonthName = (m) => {
+  return new Date(0, m - 1).toLocaleString("en-US", { month: "long" });
+};
 </script>
 
 <template>
@@ -311,7 +315,7 @@ const goToPage = (url: string | null) => {
                         <TableRow v-for="(holidayhd, index) in data.data" :key="holidayhd.id ?? index">
                             <TableCell>{{ holidayhd.branch?.branchname }}</TableCell>
                             <TableCell>{{ holidayhd.yearname }}</TableCell>
-                            <TableCell>{{ holidayhd.monthname }}</TableCell>
+                            <TableCell>{{ getMonthName(holidayhd.monthname) }}</TableCell>
                             <TableCell><a :href="`/holidaydt/${holidayhd.id}/create/`" class="text-blue-600 hover:text-blue-800 underline font-medium">{{ holidayhd.holidays }}</a></TableCell>
                             <TableCell>{{ holidayhd.holiworking }}</TableCell>
                             <TableCell>

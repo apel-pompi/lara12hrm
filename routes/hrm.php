@@ -6,7 +6,10 @@ use App\Http\Controllers\HRM\{
     DepartmentController,
     DesignationController,
     LeaveplanController,
+    WorkHourSetupController,
     AttenSettingController,
+    AttenDeductController,
+    SalaryTypeController,
     HolidayHdController,
     HolidayDtController,
     PersonalInfoController,
@@ -82,6 +85,21 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::put('/{leaveplan}', 'update')->name('leaveplan.update');
             }
         );
+    
+    //Working Hours Route
+    Route::controller(WorkHourSetupController::class)
+        ->prefix('workhour')
+        ->group(
+            function () {
+                Route::get('/', 'index')->name('workhour.index');
+                Route::post('/store', 'store')->name('workhour.store');
+                Route::get('/{workHourSetup}', 'show')->name('workhour.show');
+                Route::delete('/show/{workHourSetup}', 'destroy')->name('workhour.destroy');
+                Route::get('/{workHourSetup}/edit', 'edit')->name('workhour.edit');
+                Route::put('/{workHourSetup}', 'update')->name('workhour.update');
+                Route::put('/{workHourSetup}/status', 'updateStatus')->name('workhour.updateStatus');
+            }
+        );
 
     //Attendance Setting Route
     Route::controller(AttenSettingController::class)
@@ -96,7 +114,35 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::put('/{attensetting}', 'update')->name('attensetting.update');
             }
         );
-
+    
+    //Attendance Setting Route
+    Route::controller(AttenDeductController::class)
+        ->prefix('attendeduct')
+        ->group(
+            function () {
+                Route::get('/', 'index')->name('attendeduct.index');
+                Route::post('/store', 'store')->name('attendeduct.store');
+                Route::get('/{attendeduct}', 'show')->name('attendeduct.show');
+                Route::delete('/show/{attendeduct}', 'destroy')->name('attendeduct.destroy');
+                Route::get('/{attendeduct}/edit', 'edit')->name('attendeduct.edit');
+                Route::put('/{attendeduct}', 'update')->name('attendeduct.update');
+            }
+        );
+    
+    //Salary Type Setup
+    Route::controller(SalaryTypeController::class)
+        ->prefix('salarytype')
+        ->group(
+            function () {
+                Route::get('/', 'index')->name('salarytype.index');
+                Route::post('/store', 'store')->name('salarytype.store');
+                Route::get('/{salaryType}', 'show')->name('salarytype.show');
+                Route::delete('/show/{salaryType}', 'destroy')->name('salarytype.destroy');
+                Route::get('/{salaryType}/edit', 'edit')->name('salarytype.edit');
+                Route::put('/{salaryType}', 'update')->name('salarytype.update');
+                Route::put('/{salaryType}/status', 'updateStatus')->name('salarytype.updateStatus');
+            }
+        );
     //Holiday Header Route
     Route::controller(HolidayHdController::class)
         ->prefix('holidayHd')
@@ -147,11 +193,13 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
             function () {
                 Route::get('/', 'index')->name('leave.index');
                 Route::post('/store', 'store')->name('leave.store');
-                Route::get('/{leave}', 'show')->name('leave.show');
+                Route::get('/show/{leave}', 'show')->name('leave.show');
                 Route::get('/{leave}', 'exportPdf')->name('leave.exportPdf');
                 Route::delete('/show/{leave}', 'destroy')->name('leave.destroy');
                 Route::get('/{leave}/edit', 'edit')->name('leave.edit');
                 Route::put('/{leave}', 'update')->name('leave.update');
+                Route::post('/confirm/{leave}', 'confirm')->name('leave.confirm');
+                Route::get('/{leave}/{empid}/fetchUserLeave', 'fetchUserLeave')->name('leave.fetchUserLeave');
             }
         );
     
@@ -166,6 +214,8 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/DailyAttendanceReport', 'DailyAttendanceReport')->name('hrreports.DailyAttendanceReport');
                 Route::get('/EmployeeAttendance', 'EmployeeAttendance')->name('hrreports.EmployeeAttendance');
                 Route::get('/EmployeeAttendanceReport', 'EmployeeAttendanceReport')->name('hrreports.EmployeeAttendanceReport');
+                Route::get('/MonthlyAttendance', 'MonthlyAttendance')->name('hrreports.MonthlyAttendance');
+                Route::get('/MonthlyAttendanceReport', 'MonthlyAttendanceReport')->name('hrreports.MonthlyAttendanceReport');
             }
         );
 });

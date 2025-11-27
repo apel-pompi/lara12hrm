@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Default\Transaction;
 use App\Http\Requests\Default\Transaction\StoreTransactionRequest;
 use App\Services\Default\TransactionNoService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -19,7 +20,15 @@ class TransactionController extends Controller
      */
     public function index(Request $request, TransactionNoService $transaction)
     {
-        $this->authorize('Trancaction.index');
+        try {
+            $this->authorize('Trancaction.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         return Inertia::render('allpages/default/transaction',[
             'tranaction' => $transaction->get($request->query()),
@@ -33,7 +42,15 @@ class TransactionController extends Controller
      */
     public function store(StoreTransactionRequest $request)
     {
-        $this->authorize('Trancaction.store');
+        try {
+            $this->authorize('Trancaction.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validated();
         Transaction::create([
@@ -56,7 +73,15 @@ class TransactionController extends Controller
      */
     public function destroy(Transaction $transaction)
     {
-        $this->authorize('Trancaction.destroy');
+        try {
+            $this->authorize('Trancaction.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         try {
             $transaction->delete();
@@ -71,7 +96,15 @@ class TransactionController extends Controller
 
     public function updateStatus(Request $request, $transaction)
     {
-        $this->authorize('Trancaction.updateStatus');
+        try {
+            $this->authorize('Trancaction.updateStatus');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'

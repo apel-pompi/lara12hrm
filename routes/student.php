@@ -16,6 +16,7 @@ use App\Http\Controllers\Student\{
     StudentTasks,
     StudentEducations,
     StudentCheckLogController,
+    StudentReportController
 };
 use Illuminate\Support\Facades\Route;
 
@@ -78,6 +79,8 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
             function () {
                 Route::get('/', 'index')->name('studentActivities.index');
                 Route::put('/status/archive', 'updateArchive')->name('studentActivities.updateArchive');
+                Route::put('/status/transfer', 'confirmTransfer')->name('studentActivities.confirmTransfer');
+                Route::put('/status/transfer', 'confirmonBoard')->name('studentActivities.confirmonBoard');
                 Route::put('/status', 'updateRate')->name('studentActivities.updateRate');
                 Route::post('/assignee', 'updateAssignee')->name('studentActivities.updateAssignee');
             }
@@ -215,4 +218,15 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::post('/checkOut', 'checkOut')->name('studentCheckin.checkOut');
             }
         );
+    // lead reports
+    Route::controller(StudentReportController::class)
+        ->prefix('leadreports')
+        ->group(
+            function () {
+                Route::get('/', 'index')->name('leadreports.index');
+                Route::get('/{year}/{month}', 'MonthlyLeadReport')->name('leadreports.MonthlyLeadReport');
+                Route::get('/emp/{year}/{month}/{employee?}', 'MonthlyEmpLeadReport')->name('leadreports.MonthlyEmpLeadReport');
+            }
+        );
+    
 });

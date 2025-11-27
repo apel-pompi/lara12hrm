@@ -23,17 +23,17 @@ class DatabaseSeeder extends Seeder
         //     $user->save();
         // }
         
-        $this->call(CompanySeeder::class);
-        $this->call(MasterSeeder::class);
-        $this->call(StudentSource::class);
-        $this->call(StudentStage::class);
-        $this->call(FeesTypeSeeder::class);
-        $this->call(InstallmentTypeSeeder::class);
-        $this->call(AcademicSeeder::class);
-        $this->call(TransactionSeeder::class);
-        $this->call(CountrySeeder::class);
-        $this->call(StatesSeeder::class);
-        $this->call(CitiesSeeder::class);
+         //$this->call(CompanySeeder::class);
+        // $this->call(MasterSeeder::class);
+        // $this->call(StudentSource::class);
+        // $this->call(StudentStage::class);
+        // $this->call(FeesTypeSeeder::class);
+        // $this->call(InstallmentTypeSeeder::class);
+        // $this->call(AcademicSeeder::class);
+        // $this->call(TransactionSeeder::class);
+        // $this->call(CountrySeeder::class);
+        // $this->call(StatesSeeder::class);
+        // $this->call(CitiesSeeder::class);
         $this->call(RolePermissionSeeder::class);
     }
 }

@@ -13,6 +13,7 @@ use App\Models\Student\StudentQuoationFee;
 use App\Models\Student\StudentQuotationHD;
 use App\Models\Student\StudentInvoiceDT;
 use App\Models\Student\StudentActivities;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +27,15 @@ class StudentAccounts extends Controller
 
     public function index(Student $student)
     {
-        $this->authorize('StudIns.index');
+        try {
+            $this->authorize('StudIns.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
         $student->load('assainuser');
         return Inertia::render('allpages/Agency/Student/accouts', [
             'student' => $student,
@@ -39,7 +48,15 @@ class StudentAccounts extends Controller
 
     public function create(Student $student, StudentQuotationHD $quotation)
     {
-        $this->authorize('StudIns.create');
+        try {
+            $this->authorize('StudIns.create');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         $student->load('country');
         $quotation->load('user');
@@ -109,8 +126,15 @@ class StudentAccounts extends Controller
 
     public function store(Student $student, StudentQuotationHD $quotation, Request $request)
     {
+        try {
+            $this->authorize('StudIns.store');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        $this->authorize('StudIns.store');
 
         if (empty($request->selectedFees)) {
             return back()->with(['success' => false, 'message' => 'No fees selected']);
@@ -180,8 +204,15 @@ class StudentAccounts extends Controller
 
     public function onDelete(Student $student, StudentInvoiceHD $confirm)
     {
-        
-        $this->authorize('StudIns.destroy');
+        try {
+            $this->authorize('StudIns.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
 
         if (!$student || !$confirm) {
             return back()->with(['error' => true, 'message' => 'Invalid request']);
@@ -227,8 +258,15 @@ class StudentAccounts extends Controller
 
     public function onConfirm(Student $student, StudentInvoiceHD $confirm)
     {
+        try {
+            $this->authorize('StudIns.confirm');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        $this->authorize('StudIns.confirm');
 
         if (!$student || !$confirm) {
             return back()->with(['error' => true, 'message' => 'Invalid request']);
@@ -251,7 +289,7 @@ class StudentAccounts extends Controller
             'lastactivity' => null,
             'user_id' => Auth::id()
         ]);
-
+        
         $invoice->update(['status' => 'Confirmed']);
 
         return back()->with(['success' => true, 'message' => 'Student Invoice confirmed successfully']);
@@ -259,8 +297,15 @@ class StudentAccounts extends Controller
 
     public function onView(Student $student, StudentInvoiceHD $confirm)
     {
+        try {
+            $this->authorize('StudIns.view');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
-        $this->authorize('StudIns.view');
 
         if (!$student || !$confirm) {
             return back()->with(['error' => true, 'message' => 'Invalid request']);
@@ -289,8 +334,14 @@ class StudentAccounts extends Controller
 
     public function onReport(Student $student, StudentInvoiceHD $confirm)
     {
-
-        $this->authorize('StudIns.report');
+        try {
+            $this->authorize('StudIns.report');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         StudentActivities::create([
             'student_id' => $student->id,
