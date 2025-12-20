@@ -125,9 +125,6 @@ const queryName = ref('');
 const selectedPhone = ref(null);
 const queryPhone = ref('');
 
-const selectedCountry = ref(null);
-const queryDesCoun = ref('');
-
 const selectedAssain = ref(null);
 const queryAssain = ref('');
 
@@ -137,33 +134,43 @@ const queryTime = ref('');
 const selectedSource = ref(null);
 const querySource = ref('');
 
-const selectedStatus = ref(null);
-const queryStatus = ref('');
+
 // Filtered lists
 const filteredName = computed(() => {
-    if (queryName.value === '') return props.allsearch;
+    if (queryName.value === '') return data.data;
 
-    return props.allsearch.filter((n) => `${n.fname} ${n.lname}`.toLowerCase().includes(queryName.value.toLowerCase()));
+    return data.data.filter((n) => `${n.fname} ${n.lname}`.toLowerCase().includes(queryName.value.toLowerCase()));
 });
 
 const filteredPhone = computed(() => {
-    if (queryPhone.value === '') return props.allsearch;
+    if (queryPhone.value === '') return data.data;
 
-    return props.allsearch.filter((n) => n.phone && n.phone.toLowerCase().includes(queryPhone.value.toLowerCase()));
+    return data.data.filter((n) => n.phone && n.phone.toLowerCase().includes(queryPhone.value.toLowerCase()));
 });
 
+const selectedCountry = ref<string | null>(null);
+const queryDesCoun = ref('');
+
 const filteredCountries = computed(() => {
-     if (queryDesCoun.value === '') return props.allcountry;
-    
-     return props.allcountry.filter((n) => n.name && n.name.toLowerCase().includes(queryDesCoun.value.toLowerCase()));
+    const countries = data.data.map((i) => i.country).filter(Boolean);
+
+    const uniqueCountries = countries.filter((c, index, self) => index === self.findIndex((t) => t.id === c.id));
+
+    if (!queryDesCoun.value) return uniqueCountries;
+
+    return uniqueCountries.filter(
+        (c) =>
+            c.name.toLowerCase().includes(queryDesCoun.value.toLowerCase()) ||
+            c.id.toLowerCase().includes(queryDesCoun.value.toLowerCase()),
+    );
 });
 
 const filteredAssain = computed(() => {
    
     const filtered =
         queryAssain.value === ''
-            ? props.assaignUser
-            : props.assaignUser.filter((n) => n.assainuser && n.assainuser.name.toLowerCase().includes(queryAssain.value.toLowerCase()));
+            ? data.data
+            : data.data.filter((n) => n.assainuser && n.assainuser.name.toLowerCase().includes(queryAssain.value.toLowerCase()));
 
     // unique user name
     const uniqueMap = new Map();
@@ -209,22 +216,13 @@ const filteredSource = computed(() => {
     return Array.from(uniqueMap.values());
 });
 
-const filteredStatus = computed(() => {
-    const filtered =
-        queryStatus.value === ''
-            ? props.allsearch
-            : props.allsearch.filter((item) => getStatusText(item.status).text.toLowerCase().includes(queryStatus.value.toLowerCase()));
+const selectedStudentID = ref(null);
+const queryStudentID = ref('');
 
-    // Unique status by name
-    const uniqueMap = new Map<string, { text: string}>();
-    filtered.forEach((item) => {
-        const statusObj = getStatusText(item.status);
-        if (!uniqueMap.has(statusObj.text)) {
-            uniqueMap.set(statusObj.text, statusObj);
-        }
-    });
+const filteredStudentID = computed(() => {
+    if (queryStudentID.value === '') return data.data;
 
-    return Array.from(uniqueMap.values());
+    return data.data.filter((n) => n.student_id && n.student_id.toLowerCase().includes(queryStudentID.value.toLowerCase()));
 });
 
 const search = () => {
@@ -236,7 +234,7 @@ const search = () => {
     if (selectedSource.value) params.source_id = selectedSource.value.id;
     if (selectedAssain.value) params.user = selectedAssain.value.id;
     if (selectedTime.value) params.created_at = selectedTime.value;
-    if (selectedStatus.value) params.status = selectedStatus.value.id;
+    if (selectedStudentID.value) params.student_id = selectedStudentID.value.student_id;
 
     router.get(route('student.onBoard'), params, {
         preserveState: false,
@@ -294,6 +292,49 @@ const goToArchive = () => {
             </div>
             <div class="flex items-center gap-2 py-4">
                 <!-- Search start -->
+                 <div class="grid gap-2">
+                    <Combobox v-model="selectedStudentID">
+                        <div class="relative w-full md:w-48">
+                            <ComboboxInput
+                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                placeholder="Select ID..."
+                                :display-value="(invoice) => invoice?.student_id ?? ''"
+                                @input="queryStudentID = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+
+                            <!-- Options -->
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            >
+                                <div
+                                    v-if="filteredStudentID.length === 0 && queryStudentID !== ''"
+                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                >
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="n in filteredStudentID"
+                                    :key="n.id"
+                                    :value="n"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.student_id }}</span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                </div>
                 <div class="grid gap-2">
                     <Combobox v-model="selectedName">
                         <div class="relative w-48">
@@ -544,54 +585,7 @@ const goToArchive = () => {
                     </Combobox>
                 </div>
                 
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedStatus">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select status..."
-                                    :display-value="(n) => n?.text"
-                                    @input="queryStatus = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
-
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div
-                                    v-if="filteredStatus.length === 0 && queryStatus !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredStatus"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ n.text }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
+               
                 
                 <div class="grid gap-2">
                     <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
@@ -612,6 +606,7 @@ const goToArchive = () => {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead>ID</TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Phone</TableHead>
                             <TableHead>Gender</TableHead>
@@ -623,6 +618,7 @@ const goToArchive = () => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
+                        
                         <TableRow v-for="(stud, index) in data.data" :key="stud.id ?? index">
                             <TableCell>
                                 <Link :href="route('studentActivities.index', stud.id)" method="get" class="flex items-center space-x-2">
@@ -643,6 +639,11 @@ const goToArchive = () => {
                                             {{ (stud.fname?.charAt(0) ?? '').toUpperCase() }}{{ (stud.lname?.charAt(0) ?? '').toUpperCase() }}
                                         </span>
                                     </template>
+                                    <span class="font-medium text-gray-900">{{ stud.student_id }}</span>
+                                </Link>
+                            </TableCell>
+                            <TableCell>
+                                <Link :href="route('studentActivities.index', stud.id)" method="get" class="flex items-center space-x-2">
                                     <span class="font-medium text-gray-900">{{ stud.fname }} {{ stud.lname }} </span>
                                 </Link>
                             </TableCell>

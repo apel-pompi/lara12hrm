@@ -12,7 +12,7 @@ import { type BreadcrumbItem, type NavItem } from '@/types';
 
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker from '@vuepic/vue-datepicker';
+import VueDatePicker  from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css';
 import axios from 'axios';
 import { AlertCircle, CornerDownLeft, Loader2, Phone, Save } from 'lucide-vue-next';

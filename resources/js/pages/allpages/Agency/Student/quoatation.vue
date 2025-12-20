@@ -2,11 +2,20 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Select from '@/components/ui/select/Select.vue';
+import SelectContent from '@/components/ui/select/SelectContent.vue';
+import SelectGroup from '@/components/ui/select/SelectGroup.vue';
+import SelectItem from '@/components/ui/select/SelectItem.vue';
+import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
+import SelectValue from '@/components/ui/select/SelectValue.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Textarea from '@/components/ui/textarea/Textarea.vue';
 import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
-import { router, useForm, usePage } from '@inertiajs/vue3';
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
+import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
+import { router, useForm } from '@inertiajs/vue3';
 import { FileText, Plus, ShieldCheck, Trash } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -24,8 +33,18 @@ const props = defineProps<{
         product_id: number;
     };
     quoatation: { id: number; product_id: number; quotation_no: string; totalamount: string; notes: string; status: number; active: number };
-    roles:{id:number}
+    roles: { id: number };
+    feestype: { id: number; name: string };
 }>();
+
+interface FeeRow {
+    fees: any | null;
+    query: string;
+    ins_amount: number;
+    insqty: number;
+    pay_type: string;
+    totalfees?: number;
+}
 
 const form = useForm({
     student_id: props.student.id,
@@ -34,7 +53,20 @@ const form = useForm({
     grandTotal: '',
     note: '',
     fees: [] as { id: number; amount: number }[],
+    rows: [{ fees: null, query: '', ins_amount: 0, insqty: 1, pay_type: '', totalfees: 0 } as FeeRow],
 });
+
+const filteredFeesType = (query: string) => {
+    if (!query) return props.feestype;
+    return props.feestype.filter((c) => c.name.toLowerCase().includes(query.toLowerCase()));
+};
+const addRow = () => {
+    form.rows.push({ fees: null, query: '', ins_amount: 0, insqty: 1, pay_type: '', totalfees: 0 });
+};
+
+const removeRow = (index: number) => {
+    if (form.rows.length > 1) form.rows.splice(index, 1);
+};
 
 const fees = ref<any[]>([]);
 const fetchData = async (id: number) => {
@@ -64,6 +96,57 @@ const showDailog = async (sid: number, id: number) => {
     form.product_id = id;
     form.service_id = sid;
     showDialogAdd.value = true;
+};
+
+const AddFeesDialog = ref(false);
+const AddFees = () => {
+    AddFeesDialog.value = true;
+    showDialogAdd.value = true;
+};
+
+const removeFee = (index) => {
+    fees.value.splice(index, 1);
+};
+
+const saveAddedFees = () => {
+    for (const row of form.rows) {
+        if (!row.fees) {
+            toast('Error', {
+                description: 'Please select a Fee Type.',
+            });
+
+            return;
+        }
+        if (!row.ins_amount || row.ins_amount <= 0) {
+            toast('Error', {
+                description: 'Amount must be greater than 0.',
+            });
+
+            return;
+        }
+
+        if (!row.pay_type) {
+            toast('Error', {
+                description: 'Please select a Payment Type.',
+            });
+
+            return;
+        }
+    }
+    form.rows.forEach((row) => {
+        if (row.fees && row.ins_amount > 0 && row.insqty > 0) {
+            fees.value.push({
+                feename: row.fees.name,
+                feesid: row.fees.id,
+                amount: row.ins_amount,
+                insqty: row.insqty,
+                pay_type: row.pay_type,
+                totalamount: (row.ins_amount * row.insqty).toFixed(2),
+            });
+        }
+    });
+    AddFeesDialog.value = false;
+    form.rows = [{ fees: null, query: '', ins_amount: 0, insqty: 1, pay_type: '', totalfees: 0 } as FeeRow];
 };
 
 const grandTotal = computed(() => {
@@ -129,12 +212,7 @@ const onDelete = async (quoatId: number, id: number) => {
         {
             preserveState: true,
             onSuccess: () => {
-                const flash = usePage().props.flash;
-                if (flash.message) {
-                    toast('Success', {
-                        description: flash.message,
-                    });
-                }
+                
             },
             onError: (errors) => {
                 const firstError = Object.values(errors)[0];
@@ -155,18 +233,7 @@ const onConfirm = async (quoatId: number, id: number) => {
         },
         {
             preserveState: true,
-            onSuccess: () => {
-                const flash = usePage().props.flash;
-                if (flash.message) {
-                    toast('Success', {
-                        description: flash.message,
-                    });
-                }
-            },
-            onError: (errors) => {
-                const firstError = Object.values(errors)[0];
-                toast.error(firstError as string);
-            },
+            
         },
     );
 };
@@ -300,8 +367,8 @@ const onReportApproved = async (quoatId: number, id: number) => {
                                                         Confirm
                                                     </span>
                                                 </div>
-                                                
-                                                <div v-if="props.roles[0]=='superadmin'" class="group relative">
+
+                                                <div v-if="props.roles[0] == 'superadmin'" class="group relative">
                                                     <Button
                                                         @click="onReportApproved(quoat.product_id, quoat.id)"
                                                         class="cursor-pointer rounded-full border-blue-300 text-blue-600 transition hover:bg-blue-50 hover:text-blue-700"
@@ -316,12 +383,9 @@ const onReportApproved = async (quoatId: number, id: number) => {
                                                         Report
                                                     </span>
                                                 </div>
-                                                <div v-else>
-                                                    
-                                                </div>
+                                                <div v-else></div>
                                             </template>
                                             <template v-else-if="quoat.active == 1">
-                                                
                                                 <div class="group relative">
                                                     <Button
                                                         @click="onReport(quoat.product_id, quoat.id)"
@@ -391,13 +455,28 @@ const onReportApproved = async (quoatId: number, id: number) => {
                                                     />
                                                 </td>
                                                 <td class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">
-                                                    <div class="flex flex-col gap-1">
-                                                        <span>Ins Qty: {{ fee.insqty }}</span>
-                                                        <span>Pay Type: {{ fee.pay_type }}</span>
-                                                        <span>Total: {{ fee.totalamount }}</span>
+                                                    <div class="flex items-center justify-between">
+                                                        <div class="flex flex-col gap-1">
+                                                            <span>Ins Qty: {{ fee.insqty }}</span>
+                                                            <span>Pay Type: {{ fee.pay_type }}</span>
+                                                            <span>Total: {{ fee.totalamount }}</span>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            @click="removeFee(index)"
+                                                            class="ml-3 rounded-md bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-600"
+                                                        >
+                                                            ✕
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
+                                            <tr class="bg-gray-50 font-medium dark:bg-gray-800">
+                                                <td colspan="3" class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">
+                                                    <Button variant="default" size="sm" @click="AddFees()">Add Fees</Button>
+                                                </td>
+                                            </tr>
+
                                             <tr class="bg-gray-50 font-medium dark:bg-gray-800">
                                                 <td class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">Grand Total</td>
                                                 <td class="border-b border-gray-200 px-2 py-2 dark:border-gray-700">{{ grandTotal }}</td>
@@ -430,6 +509,120 @@ const onReportApproved = async (quoatId: number, id: number) => {
                         <Button :disabled="form.processing" @click="submitGeneral" class="w-full px-5 py-2 sm:w-auto">
                             <template v-if="form.processing">Creating...</template>
                             <template v-else>Create</template>
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <!-- Dialog General-->
+            <Dialog v-model:open="AddFeesDialog">
+                <DialogContent
+                    class="w-[95vw] max-w-full overflow-hidden rounded-2xl bg-white shadow-xl sm:max-w-lg md:max-w-2xl lg:max-w-4xl dark:bg-gray-900"
+                >
+                    <!-- Header -->
+                    <DialogHeader class="border-b border-gray-200 px-4 py-3 sm:px-6 dark:border-gray-700">
+                        <DialogTitle class="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-100">
+                            Another Fees add in student quotation
+                        </DialogTitle>
+                        <DialogDescription class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Fill in the details below to add a new fees in quotation.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <!-- Form Body -->
+                    <div class="max-h-80 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
+                        <div>
+                            <div v-for="(row, index) in form.rows" :key="index" class="mb-4 rounded-xl border bg-gray-50 p-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-5">
+                                    <div>
+                                        <Label>Fee Type<span class="text-red-600">*</span></Label>
+                                        <Combobox v-model="row.fees">
+                                            <div class="relative">
+                                                <ComboboxInput
+                                                    class="w-full rounded-lg border-gray-300 bg-white py-2 pr-10 pl-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                                    placeholder="Search fees"
+                                                    @input="row.query = $event.target.value"
+                                                    :display-value="(c) => (c ? c.name : '')"
+                                                />
+                                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                                </ComboboxButton>
+                                                <ComboboxOptions
+                                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white py-1 text-sm shadow-lg"
+                                                >
+                                                    <div
+                                                        v-if="filteredFeesType(row.query).length === 0 && row.query !== ''"
+                                                        class="px-4 py-2 text-gray-500"
+                                                    >
+                                                        Nothing found.
+                                                    </div>
+                                                    <ComboboxOption
+                                                        v-for="fees in filteredFeesType(row.query)"
+                                                        :key="fees.id"
+                                                        :value="fees"
+                                                        class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
+                                                    >
+                                                        {{ fees.name }}
+                                                    </ComboboxOption>
+                                                </ComboboxOptions>
+                                            </div>
+                                        </Combobox>
+                                    </div>
+                                    <div>
+                                        <Label>Amount<span class="text-red-600">*</span></Label>
+                                        <Input v-model.number="row.ins_amount" class="w-full" type="number" placeholder="0.00" />
+                                    </div>
+                                    <div>
+                                        <Label>Qty<span class="text-red-600">*</span></Label>
+                                        <Input v-model.number="row.insqty" class="w-full" type="number" placeholder="0" />
+                                    </div>
+                                    <div>
+                                        <Label>Total Fee</Label>
+                                        <Input
+                                            v-model.number="row.totalfees"
+                                            :value="(row.ins_amount * row.insqty).toFixed(2)"
+                                            class="w-full"
+                                            type="number"
+                                            readonly
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Payment Status <span class="text-red-600">*</span></Label>
+                                        <Select v-model="row.pay_type">
+                                            <SelectTrigger class="w-full">
+                                                <SelectValue placeholder="Choose Payment Status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="Revenue">Revenue</SelectItem>
+                                                    <SelectItem value="Refundable">Refundable</SelectItem>
+                                                    <SelectItem value="Non Refundable">Non Refundable</SelectItem>
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                <!-- Delete Button -->
+                                <div class="mt-2 flex justify-end">
+                                    <Button variant="default" size="sm" @click="removeRow(index)" v-if="form.rows.length > 1"><Trash></Trash></Button>
+                                </div>
+                            </div>
+                            <!-- Add Fee Button & Net Total -->
+                            <div class="flex items-center justify-between border-t pt-4">
+                                <Button variant="outline" @click="addRow"><Plus></Plus> Fee</Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <DialogFooter
+                        class="flex flex-col-reverse justify-end gap-3 border-t border-gray-200 px-4 py-3 sm:flex-row sm:px-6 dark:border-gray-700"
+                    >
+                        <DialogClose as-child>
+                            <Button type="button" variant="secondary" class="w-full px-4 py-2 sm:w-auto">Cancel</Button>
+                        </DialogClose>
+                        <Button :disabled="form.processing" @click="saveAddedFees" class="w-full px-5 py-2 sm:w-auto">
+                            <template v-if="form.processing">Saving...</template>
+                            <template v-else>Save</template>
                         </Button>
                     </DialogFooter>
                 </DialogContent>

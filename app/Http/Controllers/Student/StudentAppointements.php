@@ -20,7 +20,7 @@ class StudentAppointements extends Controller
     {
         $student->load('assainuser');
         $perPage = $request->query('per_page', 10);
-        
+
         return Inertia::render('allpages/Agency/Student/appoinments', [
             'student' => $student,
             'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get(),
@@ -34,24 +34,28 @@ class StudentAppointements extends Controller
 
     public function store(Student $student, Request $request)
     {
-      
+        
         $request->validate([
             'apdate' => 'required|string',
             'discus' => 'required|string|max:1000',
         ]);
-        $datetime = Carbon::parse($request->apdate)->format('Y-m-d H:i:s');
+        $datetime = Carbon::createFromFormat(
+            'm/d/Y, h:i:s A',
+            $request->apdate
+        )->format('Y-m-d H:i:s');
+
         $student->update([
             'status'      => 1,
         ]);
 
         Notification::create([
-                'user_id' => Auth::id(),
-                'title' => 'Appoinment',
-                'message' => $request->discus,
-                'type' => 'info',
-                'action_url' => '/student/activities/'.$student->id.'/appoinments',
-                'read' => false
-            ]);
+            'user_id' => Auth::id(),
+            'title' => 'Appoinment',
+            'message' => $request->discus,
+            'type' => 'info',
+            'action_url' => '/student/activities/' . $student->id . '/appoinments',
+            'read' => false
+        ]);
         $created = StudentUtility::create([
             'name' => 'appoinments',
             'datetime' => $datetime,

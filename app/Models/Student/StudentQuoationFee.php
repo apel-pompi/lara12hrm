@@ -18,6 +18,8 @@ class StudentQuoationFee extends Model
         'quotation_hd_id',
         'fee_id',
         'amount',
+        'quaotamount',
+        'paytype',
         'user_id',
     ];
 

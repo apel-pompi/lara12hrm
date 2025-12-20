@@ -45,7 +45,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="w-full h-auto">
+  <div class="w-full h-full">
     <Bar
       :data="{
         labels: labels,

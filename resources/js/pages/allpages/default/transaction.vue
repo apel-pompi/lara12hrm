@@ -137,18 +137,7 @@ const onDelete = async (id: number) => {
     });
 };
 
-const search = () => {
-    const params: Record<string, any> = {};
 
-    router.get(route('transaction.index'), params, {
-        preserveState: false,
-        preserveScroll: true,
-    });
-};
-
-// const refresh = () => {
-//     router.get(route('transaction.index'), {}, { replace: true });
-// };
 
 const goToPage = (url: string | null) => {
     if (url) {
@@ -167,6 +156,10 @@ watch(
       form.trncode = 'QTN-';
     } else if (newVal === 'Invoice No') {
       form.trncode = 'INV-';
+    } else if (newVal === 'Amount Refund') {
+      form.trncode = 'SR--';
+    } else if (newVal === 'Amount Transfer') {
+      form.trncode = 'INT-';
     } else {
       form.trncode = '';
     }
@@ -263,6 +256,8 @@ watch(
                                         <SelectItem value="Money Received">Money Received</SelectItem>
                                         <SelectItem value="Quoatations No">Quoatations No</SelectItem>
                                         <SelectItem value="Invoice No">Invoice No</SelectItem>
+                                        <SelectItem value="Amount Refund">Amount Refund</SelectItem>
+                                        <SelectItem value="Amount Transfer">Amount Transfer</SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>

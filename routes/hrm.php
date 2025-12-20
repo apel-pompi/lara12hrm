@@ -14,6 +14,7 @@ use App\Http\Controllers\HRM\{
     HolidayDtController,
     PersonalInfoController,
     LeaveController,
+    AttendanceStatusController,
     HRreportsController
 
 };
@@ -128,7 +129,25 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::put('/{attendeduct}', 'update')->name('attendeduct.update');
             }
         );
-    
+    //Attendance Setting Route
+    Route::controller(AttendanceStatusController::class)
+        ->prefix('attendanceStatus')
+        ->group(
+            function () {
+
+                Route::get('/', 'index')->name('attendanceStatus.index');
+                Route::get('/create', 'create')->name('attendanceStatus.create');
+
+                Route::post('/store', 'store')->name('attendanceStatus.store');
+                               
+                Route::get('/{attendanceStatus}/edit', 'edit')->name('attendanceStatus.edit');
+                Route::put('/{attendanceStatus}', 'update')->name('attendanceStatus.update');
+                Route::put('/{attendanceStatus}/status', 'updateStatus')->name('attendanceStatus.updateStatus');
+
+                Route::get('/{attendanceStatus}', 'show')->name('attendanceStatus.show');
+                Route::delete('/show/{attendanceStatus}', 'destroy')->name('attendanceStatus.destroy');
+            }
+        );
     //Salary Type Setup
     Route::controller(SalaryTypeController::class)
         ->prefix('salarytype')

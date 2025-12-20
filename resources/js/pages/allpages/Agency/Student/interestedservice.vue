@@ -7,7 +7,7 @@ import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { router, useForm } from '@inertiajs/vue3';
-import VueDatePicker from '@vuepic/vue-datepicker';
+import VueDatePicker  from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import axios from 'axios';
 import { CircleDot, MoreVertical, Plus } from 'lucide-vue-next';

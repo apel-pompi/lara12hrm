@@ -32,7 +32,15 @@ import {
     Upload,
     User,
     UserCog,
-    BookOpenCheck
+    BookOpenCheck,
+    Flag,
+    CreditCard,
+    PanelRightClose,
+    Columns2,
+    Briefcase,
+    Wallet,
+    WalletMinimal,
+    Receipt
 } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
@@ -101,9 +109,14 @@ const HRMenu = {
                     icon: CalendarX2,
                 },
                 {
-                    title: 'Personal Info',
+                    title: 'Personnel info',
                     href: '/personalinfo',
                     icon: User,
+                },
+                {
+                    title: 'Generate Pay Slip',
+                    href: '/attendanceStatus',
+                    icon: Flag,
                 },
             ],
         },
@@ -131,12 +144,61 @@ const mainmenu = [
         title: 'Partners',
         icon: School,
     },
-    {
-        route: 'accounts.index',
-        title: 'Accounts',
-        icon: Calculator,
-    },
+    
 ];
+
+const InvoiceMenu = {
+    navInvoicemenu: [
+        {
+            title: 'Invoice List',
+            url: '#',
+            icon: Briefcase,
+            items: [
+                {
+                    route: 'invoicelist.AllInvoiceList',
+                    title: 'All Invoices',
+                    icon: Wallet,
+                },
+                {
+                    route: 'invoicelist.DueInvoiceList',
+                    title: 'Due Invoices',
+                    icon: WalletMinimal,
+                },
+                {
+                    route: 'invoicelist.MRList',
+                    title: 'Money Receipt',
+                    icon: Receipt,
+                },
+            ],
+        },
+    ],
+};
+const AccountsMenu = {
+    navAccountsmenu: [
+        {
+            title: 'Accounts',
+            url: '#',
+            icon: ClipboardPlus,
+            items: [
+                {
+                    route: 'vouhcerheader.credit',
+                    title: 'Credit Voucher',
+                    icon: CreditCard,
+                },
+                {
+                    route: 'vouhcerheader.debit',
+                    title: 'Debit voucher',
+                    icon: PanelRightClose,
+                },
+                {
+                    route: 'vouhcerheader.reverse',
+                    title: 'Reverse voucher',
+                    icon: Columns2,
+                },
+            ],
+        },
+    ],
+};
 
 const reportdata = {
     navReport: [
@@ -193,7 +255,12 @@ const reportdata = {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
-
+                    <SidebarContent>
+                        <NavMain :items="InvoiceMenu.navInvoicemenu" />
+                    </SidebarContent>
+                    <SidebarContent>
+                        <NavMain :items="AccountsMenu.navAccountsmenu" />
+                    </SidebarContent>
                     <SidebarContent>
                         <NavMain :items="reportdata.navReport" />
                     </SidebarContent>

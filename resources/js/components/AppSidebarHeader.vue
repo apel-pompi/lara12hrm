@@ -207,33 +207,33 @@ const handleClickOutside = (event: MouseEvent) => {
     }
 };
 
-const checkUnread = async () => {
-    const response = await fetch(route('notifications.unreadCount'), {
-        headers: {
-            Accept: 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-        credentials: 'include',
-    });
+// const checkUnread = async () => {
+//     const response = await fetch(route('notifications.unreadCount'), {
+//         headers: {
+//             Accept: 'application/json',
+//             'X-Requested-With': 'XMLHttpRequest',
+//         },
+//         credentials: 'include',
+//     });
 
-    const data = await response.json();
+//     const data = await response.json();
 
     
-    if (data.unread_count > unreadCount.value) {
-        await fetchNotifications();
-        showNotifications.value = true;
-    }
-};
+//     if (data.unread_count > unreadCount.value) {
+//         await fetchNotifications();
+//         showNotifications.value = true;
+//     }
+// };
 
 // Event listeners
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside);
-    setInterval(checkUnread, 15000);
-});
+// onMounted(() => {
+//     document.addEventListener('click', handleClickOutside);
+//     setInterval(checkUnread, 15000);
+// });
 
-onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
-});
+// onUnmounted(() => {
+//     document.removeEventListener('click', handleClickOutside);
+// });
 </script>
 <style scoped>
 
@@ -292,8 +292,8 @@ onUnmounted(() => {
             </div>
 
             <!-- Notifications -->
-            <div class="relative" ref="notificationsRef">
-                <button @click="toggleNotifications" class="relative rounded-lg p-2 text-gray-400 transition hover:bg-gray-800/60 hover:text-white">
+            <!-- <div class="relative" ref="notificationsRef"> -->
+                <!-- <button @click="toggleNotifications" class="relative rounded-lg p-2 text-gray-400 transition hover:bg-gray-800/60 hover:text-white">
                     <Bell class="h-5 w-5" />
 
                     <span
@@ -302,14 +302,14 @@ onUnmounted(() => {
                     >
                         {{ unreadCount > 9 ? '9+' : unreadCount }}
                     </span>
-                </button>
+                </button> -->
 
-                <div
+                <!-- <div
                     v-if="showNotifications"
                     class="animate-in fade-in-0 zoom-in-95 absolute top-11 right-0 z-50 w-80 overflow-hidden rounded-xl border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md"
-                >
+                > -->
                     <!-- Header -->
-                    <div class="flex items-center justify-between border-b border-gray-700 px-4 py-3">
+                    <!-- <div class="flex items-center justify-between border-b border-gray-700 px-4 py-3">
                         <h3 class="text-sm font-semibold text-white">Notifications</h3>
 
                         <div class="flex items-center gap-1.5">
@@ -328,10 +328,10 @@ onUnmounted(() => {
                                 <X class="h-4 w-4" />
                             </button>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Notifications List -->
-                    <div class="max-h-96 overflow-y-auto">
+                    <!-- <div class="max-h-96 overflow-y-auto">
                         <template v-if="notifications.length">
                             <div
                                 v-for="notification in notifications"
@@ -362,22 +362,22 @@ onUnmounted(() => {
                             <BellOff class="mx-auto h-7 w-7 opacity-50" />
                             <p class="mt-2 text-sm">No notifications</p>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Footer -->
-                    <div class="border-t border-gray-700 bg-gray-900/70 p-3">
+                    <!-- <div class="border-t border-gray-700 bg-gray-900/70 p-3">
                         <Link
                             :href="route('notifications.index')"
                             class="block w-full rounded py-2 text-center text-sm text-blue-400 transition hover:bg-blue-600/15 hover:text-blue-300"
                         >
                             View all notifications
                         </Link>
-                    </div>
-                </div>
-            </div>
+                    </div> -->
+                <!-- </div>
+            </div> -->
 
             <!-- Click Outside -->
-            <div v-if="showNotifications" class="fixed inset-0 z-40" @click="showNotifications = false"></div>
+            <!-- <div v-if="showNotifications" class="fixed inset-0 z-40" @click="showNotifications = false"></div> -->
 
             <NavUser />
         </div>

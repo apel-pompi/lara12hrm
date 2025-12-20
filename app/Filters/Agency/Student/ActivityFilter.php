@@ -4,6 +4,7 @@ namespace App\Filters\Agency\Student;
 use App\Filters\BaseFilter;
 use App\Filters\Components\Agency\AssaignUser;
 use App\Filters\Components\Agency\Country;
+use App\Filters\Components\Default\DateTime;
 use App\Filters\Components\Default\Email;
 use App\Filters\Components\Default\IDName;
 use App\Filters\Components\Default\Phone;
@@ -20,6 +21,7 @@ class ActivityFilter extends BaseFilter
             Country::class,
             AssaignUser::class,
             Status::class,
+            DateTime::class,
         ];
     }
 }

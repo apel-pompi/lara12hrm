@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/vue3';
 import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker from '@vuepic/vue-datepicker';
+import VueDatePicker  from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { Plus, SquarePen } from 'lucide-vue-next';
 import { ref, watch } from 'vue';

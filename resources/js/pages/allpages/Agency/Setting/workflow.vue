@@ -14,7 +14,7 @@ import Switch from '@/components/ui/switch/Switch.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { HousePlus, Plus, PlusCircle, SquarePen } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import draggable from 'vuedraggable';
+import draggable  from 'vuedraggable';
 
 export interface Workflow {
     id: number;

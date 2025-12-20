@@ -26,6 +26,8 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/onBoardRequest', 'onBoardRequest')->name('dashboard.onBoardRequest');
                 Route::get('/LeaveRequest', 'LeaveRequest')->name('dashboard.LeaveRequest');
                 Route::get('/QuotationRequest', 'QuotationRequest')->name('dashboard.QuotationRequest');
+                Route::get('/ReturnRequest', 'ReturnRequest')->name('dashboard.ReturnRequest');
+                Route::get('/Calender', 'Calender')->name('dashboard.Calender');
             }
         );
 

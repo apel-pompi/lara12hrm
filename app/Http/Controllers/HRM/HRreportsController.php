@@ -4,6 +4,7 @@ namespace App\Http\Controllers\HRM;
 
 use App\Http\Controllers\Controller;
 use App\Models\HRM\Attendance;
+use App\Models\HRM\AttendanceStatus;
 use App\Models\HRM\AttenDeduct;
 use App\Models\HRM\Branch;
 use App\Models\HRM\CompanyInfo;
@@ -49,7 +50,7 @@ class HRreportsController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-        
+
 
         $company = CompanyInfo::first();
         $sql = PersonalInfo::with(['branch', 'designation', 'department'])->where('id', $request->empid)->where('active', 1)->first();
@@ -73,14 +74,13 @@ class HRreportsController extends Controller
     {
         try {
             $this->authorize('hrReports.employee-attendance');
-
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-        
+
         return Inertia::render('allpages/reports/hrreports/employeeattendance', [
             'employee' => PersonalInfo::where('active', 1)->get(),
             'months' => collect($this->createMonth())
@@ -98,14 +98,13 @@ class HRreportsController extends Controller
     {
         try {
             $this->authorize('hrReports.employee-attendance-reports');
-
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-        
+
 
         $sql = PersonalInfo::with(['designation', 'department'])->where('empid', $request->empid)->where('active', 1)->first();
         $daysInMonth = date('t', mktime(0, 0, 0, $request->monthname, 1, $request->yearname));
@@ -197,6 +196,31 @@ class HRreportsController extends Controller
                     $statusname = 'Leave';
                 }
 
+                if ($workHours && preg_match('/^(\d{1,2}):(\d{2})$/', $workHours)) {
+
+                    // workhours HH:MM → seconds
+                    list($h, $m) = explode(':', $workHours);
+                    $workHoursInSeconds = ($h * 3600) + ($m * 60);
+
+                    // deduct is integer hour (1, 2, 3...)
+                    if (is_numeric($deduct)) {
+                        $deductSeconds = $deduct * 3600;
+                    } else {
+                        $deductSeconds = 0;
+                    }
+
+                    // calculate net seconds
+                    $netSeconds = max(0, $workHoursInSeconds - $deductSeconds);
+
+                    // convert back to HH:MM
+                    $nh = floor($netSeconds / 3600);
+                    $nm = floor(($netSeconds % 3600) / 60);
+
+                    $nethour = sprintf("%02d:%02d", $nh, $nm);
+                } else {
+
+                    $nethour = '---';
+                }
                 $reportData[] = [
                     'datename' => $displayDate,
                     'intime' => $in,
@@ -257,9 +281,19 @@ class HRreportsController extends Controller
         $dm = floor(($totalDeductSeconds % 3600) / 60);
         $totalDeductFormatted = sprintf("%02d:%02d", $dh, $dm);
         // Total Net Hours output
-        $netHours = floor($totalNetSeconds / 3600);
-        $netMinutes = floor(($totalNetSeconds % 3600) / 60);
-        $totalNetHoursFormatted = sprintf("%02d:%02d", $netHours, $netMinutes);
+        $absentSeconds = $absentCount * 8 * 3600;
+
+        $leaveSeconds = $leaveCount * 8 * 3600;
+
+        $finalNetSeconds = $totalNetSeconds  + $leaveSeconds - $absentSeconds;
+
+        if ($finalNetSeconds < 0) {
+            $finalNetSeconds = 0;
+        }
+        $fnH = floor($finalNetSeconds / 3600);
+        $fnM = floor(($finalNetSeconds % 3600) / 60);
+
+        $totalNetHoursFormatted = sprintf("%02d:%02d", $fnH, $fnM);
 
         $pdf = Pdf::loadView('exports.hrreports.employeeAttendance', [
             'employees' => $sql,
@@ -291,14 +325,13 @@ class HRreportsController extends Controller
     {
         try {
             $this->authorize('hrReports.daily-attendance');
-
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-        
+
 
         return Inertia::render('allpages/reports/hrreports/dailyattendance', [
             'employee' => PersonalInfo::where('active', 1)->get(),
@@ -310,7 +343,6 @@ class HRreportsController extends Controller
     {
         try {
             $this->authorize('hrReports.daily-attendance-reports');
-
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
@@ -318,7 +350,7 @@ class HRreportsController extends Controller
             ]);
         }
 
-        
+
         $sql = '';
         if ($request->empid) {
             $sql = PersonalInfo::with(['designation', 'department'])->where('branch_id', $request->branch_id)->where('id', $request->empid)->where('active', 1)->where(DB::raw("(date_format(joindate,'%Y-%m-%d'))"), '<=', $request->datename)->orderBy('id', 'ASC')->get();
@@ -356,7 +388,7 @@ class HRreportsController extends Controller
             }
 
             if ($outtimeRaw && $outtimeRaw->lt(Carbon::parse($request->datename . '15:00:00'))) {
-                
+
                 $statusname = 'Absent';
             }
 
@@ -394,14 +426,13 @@ class HRreportsController extends Controller
     {
         try {
             $this->authorize('hrReports.monthly-attendance');
-
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-        
+
         return Inertia::render('allpages/reports/hrreports/monthlyattendace', [
             'branch' => Branch::where('active', 1)->get(),
             'months' => collect($this->createMonth())
@@ -419,7 +450,6 @@ class HRreportsController extends Controller
     {
         try {
             $this->authorize('hrReports.monthly-attendance-reports');
-
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
@@ -429,33 +459,14 @@ class HRreportsController extends Controller
 
         $branch = Branch::where('id', $request->branch_id)->where('active', 1)->first();
         $yearMonth = $request->yearname . '-' . str_pad($request->monthname, 2, '0', STR_PAD_LEFT);
-        $sql = PersonalInfo::with(['designation'])
-            ->where('branch_id', $request->branch_id)
-            ->where('active', 1)
-            ->where(DB::raw("DATE_FORMAT(joindate, '%Y-%m')"), '<=', $yearMonth)
-            ->orderBy('id', 'ASC')
-            ->get();
-        $reportData = [];
-
-        foreach ($sql as  $value) {
-
-            //Status
-            $status = Attendance::getAttendanceStatus($value->empid, $request->datename);
-            $statusname = $status->TimeName ?? '---';
-
-
-            $reportData[] = [
-                'name' => $value->empname ?? '',
-                'desname' => $value->designation->desname ?? '',
-                'status' => $statusname,
-            ];
-        }
-
+        $sql = AttendanceStatus::with('employee.designation','employee.department')->where('branch_id',$request->branch_id)->where('yearname',$request->yearname)->where('monthname',$request->monthname)->get();
+        
+        //dd($sql);
         $pdf = Pdf::loadView('exports.hrreports.monthlyAttendance', [
             'branch' => $branch,
             'yearname' => Carbon::parse($request->yearname)->format('Y'),
             'monthname' => Carbon::createFromDate($request->yearname, $request->monthname, 1)->format('F'),
-            'employees' => $reportData,
+            'employees' => $sql,
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([

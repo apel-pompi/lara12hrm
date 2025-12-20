@@ -9,7 +9,11 @@ use App\Models\HRM\HolidayDt;
 use App\Models\HRM\Leave;
 use App\Models\HRM\PersonalInfo;
 use App\Models\Student\Student;
+use App\Models\Student\StudentInvoiceHD;
+use App\Models\Student\StudentQuotationHD;
+use App\Models\Student\StudentUtility;
 use App\Models\User;
+use App\Services\Agency\Student\AppoinmentsService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -109,6 +113,17 @@ class DashboardController extends Controller
                 'countLeave' => Leave::whereYear('fromdate', $current->year)->whereMonth('fromdate', $current->month)->where('status', 2)->count(),
                 'countQuotationApproval' => ApprovalRequest::where('remarks', 'quotation')->where('status', null)->count(),
                 'countOnBoardApproval' => ApprovalRequest::where('remarks', 'onBoard')->where('status', null)->count(),
+                'countOnRefund' => ApprovalRequest::where('remarks', 'Refund')->where('status', null)->count(),
+                'sumQuoat' => StudentQuotationHD::sum('totalamount'),
+                'sumInvoice' => StudentInvoiceHD::where('status', 'Confirmed')->where('sign', 1)->sum('netamount'),
+                'sumMR' => Student::selectRaw("COUNT(b.student_id) AS studentcount,SUM(b.netamount) AS netamount,b.student_id")
+                    ->leftJoin('student_invoice_hd as b', 'students.id', '=', 'b.student_id')
+                    ->whereNotNull('students.student_id')
+                    ->where('b.sign', '-1')
+                    ->whereRaw("LEFT(b.insnumber, 4) = 'MR--'")
+                    ->groupBy('b.student_id')
+                    ->get(),
+                'calander' => StudentUtility::with('student')->where('name','appoinments')->get(),
                 'presentCount' => $presentCount,
                 'lateCount' => $lateCount,
                 'absentCount' => $absentCount,
@@ -273,6 +288,17 @@ class DashboardController extends Controller
                 'countArchiveApproval' => ApprovalRequest::where('remarks', 'Archive')->where('user_id', Auth::id())->count(),
                 'countQuotationApproval' => ApprovalRequest::where('remarks', 'quotation')->where('user_id', Auth::id())->count(),
 
+                'sumQuoat' => StudentQuotationHD::where('user_id', Auth::id())->sum('totalamount'),
+                'sumInvoice' => StudentInvoiceHD::where('user_id', Auth::id())->where('status', 'Confirmed')->where('sign', 1)->sum('netamount'),
+                'sumMR' => Student::selectRaw("COUNT(b.student_id) AS studentcount,SUM(b.netamount) AS netamount,b.student_id")
+                    ->leftJoin('student_invoice_hd as b', 'students.id', '=', 'b.student_id')
+                    ->where('students.assain_user', Auth::id())
+                    ->whereNotNull('students.student_id')
+                    ->where('b.sign', '-1')
+                    ->whereRaw("LEFT(b.insnumber, 4) = 'MR--'")
+                    ->groupBy('b.student_id')
+                    ->get(),
+                'calander' => StudentUtility::with('student')->where('name','appoinments')->where('user_id',Auth::id())->get(),
                 'intimes'      => $in,
                 'outtimes'      => $out,
                 'statuses'      => $statusname,
@@ -420,6 +446,69 @@ class DashboardController extends Controller
                     )
                     ->orderBy('approval_requests.id', 'DESC')
                     ->paginate(20),
+                'isadmin' => false,
+            ]);
+        }
+    }
+
+    public function ReturnRequest()
+    {
+
+        $user = Auth::user();
+
+        $roles = $user->getRoleNames();
+        if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
+
+            return Inertia::render('allpages/Agency/Request/invoicereturn', [
+                'refund' => ApprovalRequest::with(['user', 'student'])
+                    ->leftJoin('student_invoice_hd as b', 'approval_requests.description', '=', 'b.id')
+                    ->where('approval_requests.remarks', 'Refund')
+                    ->select(
+                        'approval_requests.*',
+                        'b.insnumber',
+                        'b.insdate',
+                        'b.netamount'
+                    )
+                    ->orderBy('approval_requests.id', 'DESC')
+                    ->paginate(20),
+                'isadmin' => true,
+
+            ]);
+        } else {
+            return Inertia::render('allpages/Agency/Request/invoicereturn', [
+                'refund' => ApprovalRequest::with(['user', 'student'])
+                    ->leftJoin('student_invoice_hd as b', 'approval_requests.description', '=', 'b.id')
+                    ->where('approval_requests.remarks', 'Refund')
+                    ->select(
+                        'approval_requests.*',
+                        'b.insnumber',
+                        'b.insdate',
+                        'b.netamount'
+                    )
+                    ->orderBy('approval_requests.id', 'DESC')
+                    ->paginate(20),
+                'isadmin' => false,
+            ]);
+        }
+    }
+
+    public function Calender(Request $request, AppoinmentsService $appoinment)
+    {
+        $user = Auth::user();
+
+        $roles = $user->getRoleNames();
+        if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
+
+            return Inertia::render('allpages/default/calender', [
+                'appoinments' => $appoinment->get($request->query()),
+                'filters'   => $appoinment->get($request->query()),
+                'isadmin' => true,
+
+            ]);
+        } else {
+            return Inertia::render('allpages/default/calender', [
+                'appoinments' => $appoinment->get($request->query()),
+                'filters'   => $appoinment->get($request->query()),
                 'isadmin' => false,
             ]);
         }

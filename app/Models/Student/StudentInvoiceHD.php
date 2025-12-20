@@ -29,6 +29,7 @@ class StudentInvoiceHD extends Model
         'currency',
         'exchrate',
         'note',
+        'shortnote',
         'totalamt',
         'disc_rate',
         'disc_amt',

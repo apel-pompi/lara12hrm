@@ -62,9 +62,8 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('status', 3)->count(),
                 'countArchive' => Student::where('status', 4)->count(),
             ]);
-
         } else {
-            
+
             return Inertia::render('allpages/Agency/Student/student', [
                 'allsearch' => Student::with(['source'])->get(),
                 'allcountry' => Country::get(),
@@ -78,9 +77,7 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('assain_user', Auth::id())->where('status', 3)->count(),
                 'countArchive' => Student::where('assain_user', Auth::id())->where('status', 4)->count(),
             ]);
-            
         }
-
     }
 
     public function lead(Request $request, StudentLead $student)
@@ -113,9 +110,8 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('status', 3)->count(),
                 'countArchive' => Student::where('status', 4)->count(),
             ]);
+        } else {
 
-        }else {
-            
             return Inertia::render('allpages/Agency/Student/studentlead', [
                 'allsearch' => Student::with(['source'])->get(),
                 'allcountry' => Country::get(),
@@ -129,7 +125,6 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('assain_user', Auth::id())->where('status', 3)->count(),
                 'countArchive' => Student::where('assain_user', Auth::id())->where('status', 4)->count(),
             ]);
-            
         }
     }
 
@@ -163,9 +158,8 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('status', 3)->count(),
                 'countArchive' => Student::where('status', 4)->count(),
             ]);
+        } else {
 
-        }else {
-            
             return Inertia::render('allpages/Agency/Student/studentpending', [
                 'allsearch' => Student::with(['source'])->get(),
                 'allcountry' => Country::get(),
@@ -179,10 +173,7 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('assain_user', Auth::id())->where('status', 3)->count(),
                 'countArchive' => Student::where('assain_user', Auth::id())->where('status', 4)->count(),
             ]);
-            
         }
-
-        
     }
 
     public function prospect(Request $request, StudentProspect $student)
@@ -214,9 +205,8 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('status', 3)->count(),
                 'countArchive' => Student::where('status', 4)->count(),
             ]);
+        } else {
 
-        }else {
-            
             return Inertia::render('allpages/Agency/Student/studentprospect', [
                 'allsearch' => Student::with(['source'])->get(),
                 'allcountry' => Country::get(),
@@ -230,9 +220,7 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('assain_user', Auth::id())->where('status', 3)->count(),
                 'countArchive' => Student::where('assain_user', Auth::id())->where('status', 4)->count(),
             ]);
-            
         }
-       
     }
 
     public function onBoard(Request $request, StudentOnBoard $student)
@@ -246,7 +234,7 @@ class StudentController extends Controller
             ]);
         }
 
-        
+
         $perPage = $request->query('per_page', 10);
 
         $user = Auth::user();
@@ -265,9 +253,8 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('status', 3)->count(),
                 'countArchive' => Student::where('status', 4)->count(),
             ]);
+        } else {
 
-        }else {
-            
             return Inertia::render('allpages/Agency/Student/studentonboard', [
                 'allsearch' => Student::with(['source'])->get(),
                 'allcountry' => Country::get(),
@@ -281,10 +268,7 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('assain_user', Auth::id())->where('status', 3)->count(),
                 'countArchive' => Student::where('assain_user', Auth::id())->where('status', 4)->count(),
             ]);
-            
         }
-
-       
     }
 
     public function archive(Request $request, StudentArchive $student)
@@ -298,7 +282,7 @@ class StudentController extends Controller
             ]);
         }
 
-        
+
         $perPage = $request->query('per_page', 10);
 
         $user = Auth::user();
@@ -317,9 +301,8 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('status', 3)->count(),
                 'countArchive' => Student::where('status', 4)->count(),
             ]);
+        } else {
 
-        }else {
-            
             return Inertia::render('allpages/Agency/Student/studentarchive', [
                 'allsearch' => Student::with(['source'])->get(),
                 'allcountry' => Country::get(),
@@ -333,10 +316,7 @@ class StudentController extends Controller
                 'countonBoard' => Student::where('assain_user', Auth::id())->where('status', 3)->count(),
                 'countArchive' => Student::where('assain_user', Auth::id())->where('status', 4)->count(),
             ]);
-            
         }
-
-       
     }
     /**
      * Show the form for creating a new resource.
@@ -391,8 +371,16 @@ class StudentController extends Controller
         }
 
 
+        $exists = Student::where('phone', $validated['phone'])
+            ->where('dateofbirth', $validated['dateofbirth'])
+            ->exists();
 
-        // // Create Partner
+        if ($exists) {
+            return back()->withErrors([
+                'phone' => 'This phone number with date of birth already exists.',
+            ]);
+        }
+
         Student::create([
             // Basic Info
             'student_id'      => $validated['student_id'] ?? null,
@@ -453,7 +441,7 @@ class StudentController extends Controller
      */
     public function edit(Student $student)
     {
-        
+
         return response()->json([
             'success' => true,
             'student' => $student

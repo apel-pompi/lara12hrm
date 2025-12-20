@@ -46,6 +46,8 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/{quotation}/QuoattionView', 'QuoattionView')->name('approval.QuoattionView');
                 Route::put('/{quotation}/QuoattionConfirm', 'QuoattionConfirm')->name('approval.QuoattionConfirm');
                 Route::put('/{quotation}/QuoattionCancel', 'QuoattionCancel')->name('approval.QuoattionCancel');
+                Route::put('/{return}/ReturnConfirm', 'ReturnConfirm')->name('approval.ReturnConfirm');
+                Route::put('/{return}/ReturnCancel', 'ReturnCancel')->name('approval.ReturnCancel');
             }
         );
 });

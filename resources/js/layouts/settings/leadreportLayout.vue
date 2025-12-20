@@ -8,9 +8,17 @@ import { Link, usePage } from '@inertiajs/vue3';
 const sidebarNavItems: NavItem[] = [
     {
         title: 'Monthly Lead Report',
-        href: '/leadreports',
+        href: '/leadreports/',
     },
-        
+    {
+        title: 'Student Transaction',
+        href: '/leadreports/ledger',
+    },
+    // {
+    //     title: 'Student Revenue',
+    //     href: '/leadreports/revenue',
+    // },
+      
 ];
 
 const page = usePage<{

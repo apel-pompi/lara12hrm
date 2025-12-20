@@ -8,7 +8,7 @@ import PartnerLayout from '@/pages/allpages/Agency/Partner/partnerlayout.vue';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { router, useForm } from '@inertiajs/vue3';
-import { Plus, SquarePen, Trash } from 'lucide-vue-next';
+import { Plus, Trash } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 

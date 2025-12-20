@@ -70,25 +70,26 @@
         }
 
         /* ==== TABLE ==== */
-        .invoice-table {
+        .table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 8px;
+            font-size: 11px;
         }
 
-        .invoice-table th {
-            background-color: #999999;
-            color: #fff;
-            padding: 8px;
-            text-align: left;
+        .table th,
+        .table td {
+            border: 1px solid #d1d5db;
+            padding: 6px;
+            text-align: right;
         }
 
-        .invoice-table td {
-            border: 1px solid #bbbbbb;
-            padding: 8px;
+        .table th {
+            background: #f3f4f6;
+            font-weight: 600;
         }
 
-        .invoice-table tr:nth-child(even) {
+        .table tr:nth-child(even) {
             background-color: #f9f9f9;
         }
 
@@ -102,6 +103,12 @@
             font-size: 12px;
             margin: 2px 0;
             text-align: right;
+        }
+
+        .totals h3 {
+            font-size: 12px;
+            margin: 2px 0;
+            text-align: left;
         }
 
         .grand-total {
@@ -180,13 +187,13 @@
                 </td>
                 <td class="header-right">
                     <div class="title">
-                        MONEY RECEIPT<br>
+                        {{ substr($receipt->refe_code, 0, 4) == 'SR--' ? 'REFUND RECEIPT' : 'MONEY RECEIPT' }}
+                        <br>
                         <span style="font-size: 12px">Office Copy</span>
                     </div>
                 </td>
             </tr>
         </table>
-
         <!-- ===== INVOICE INFO ===== -->
         <table class="invoice-info">
             <tr>
@@ -204,20 +211,46 @@
         </table>
 
         <!-- ===== TABLE ===== -->
-        <table class="invoice-table">
+        <table class="table">
             <thead>
                 <tr>
-                    <th style="width:50px;text-align:center">SL.</th>
-                    <th style="text-align:center">Item Description</th>
-                    <th style="width:100px; text-align: right">Amount</th>
+                    <th>#</th>
+                    <th>Purticulars</th>
+                    <th>Amount</th>
+                    <th>Payment Type</th>
+                    <th>Remarks</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($receipt->mrdetails ?? [] as $key => $item)
+
+                @foreach ($dataArray as $key => $item)
                     <tr>
-                        <td style="text-align:center">{{ $key + 1 }}</td>
-                        <td>{{ $item->fees->name ?? 'N/A' }}</td>
-                        <td style="text-align: right">{{ number_format($item->amount ?? 0, 2) }}</td>
+                        <td>{{ $key + 1 }}</td>
+                        <td>{{ $item['feename'] ?? 'N/A' }}</td>
+                        <td>{{ number_format($item['amount'] ?? 0, 2) }}</td>
+                        <td>
+                            @if ($item['pay_type'] == 'Revenue')
+                                Non Refundable
+                            @else
+                                {{ $item['pay_type'] ?? 'N/A' }}
+                            @endif
+
+                        </td>
+                        <td>
+                            @if ($item['feename'] == 'File Opening Fee')
+                                At the beginning of process
+                            @elseif($item['feename'] == 'Application Fee')
+                                During process direct payment to University
+                            @elseif($item['feename'] == 'Visa Process Fee')
+                                After offer letter of services needed
+                            @elseif($item['feename'] == 'VISA Fee')
+                                After offer letter direct payment to VFS/Embassy
+                            @elseif($item['feename'] == 'Service Fee')
+                                After Visa
+                            @elseif($item['feename'] == 'Tuition Fee')
+                                Tuition fees are refundable if the visa application is refused**
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -228,7 +261,10 @@
             <p><strong>Sub Total:</strong> {{ number_format($receipt->totalamt ?? 0, 2) }}</p>
             <p><strong>Discount:</strong> {{ number_format($receipt->disc_amt ?? 0, 2) }}</p>
             <p class="grand-total">Total: {{ number_format($receipt->netamount ?? 0, 2) }}</p>
-            <p>in word: {{ $numberTransformer->toWords($receipt->netamount ?? 0) }} only</p>
+            <h3>in word: {{ $numberTransformer->toWords($receipt->netamount ?? 0) }} only</h3>
+            @if (!empty($receipt->shortnote))
+                <h3>Notes: {{ $receipt->shortnote }}</h3>
+            @endif
         </div>
         <p><strong>Payment Info:</strong></p>
         @switch($receipt->payterms)
@@ -243,6 +279,20 @@
                 <p>
                     Bank Name: {{ $receipt->bankname }}<br>
                     Cheque No: {{ $receipt->chequeno }}
+                </p>
+            @break
+
+            @case('Bkash')
+                <p>
+                    Bank Name: {{ $receipt->payterms }}<br>
+                    Transaction No: {{ $receipt->transno }}
+                </p>
+            @break
+
+            @case('Nagad')
+                <p>
+                    Bank Name: {{ $receipt->payterms }}<br>
+                    Transaction No: {{ $receipt->transno }}
                 </p>
             @break
 
@@ -420,7 +470,7 @@
     <p>
         I have read the above terms and conditions laid down by GLENDON EDU and accept the same.
     </p>
-   
+
     <div class="page-break"></div>
 
 
@@ -436,7 +486,8 @@
             </td>
             <td class="header-right">
                 <div class="title">
-                    MONEY RECEIPT<br>
+                    {{ substr($receipt->refe_code, 0, 4) == 'SR--' ? 'REFUND RECEIPT' : 'MONEY RECEIPT' }}
+                    <br>
                     <span style="font-size: 12px">Student Copy</span>
                 </div>
             </td>
@@ -460,20 +511,45 @@
     </table>
 
     <!-- ===== TABLE ===== -->
-    <table class="invoice-table">
+    <table class="table">
         <thead>
             <tr>
-                <th style="width:50px;text-align:center">SL.</th>
-                <th style="text-align:center">Item Description</th>
-                <th style="width:100px; text-align: right">Amount</th>
+                <th>#</th>
+                <th>Purticulars</th>
+                <th>Amount</th>
+                <th>Payment Type</th>
+                <th>Remarks</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($receipt->mrdetails ?? [] as $key => $item)
+            @foreach ($dataArray as $key => $item)
                 <tr>
-                    <td style="text-align:center">{{ intval($key) + 1 }}</td>
-                    <td>{{ $item->fees->name ?? 'N/A' }}</td>
-                    <td style="text-align: right">{{ number_format($item->amount ?? 0, 2) }}</td>
+                    <td>{{ $key + 1 }}</td>
+                    <td>{{ $item['feename'] ?? 'N/A' }}</td>
+                    <td>{{ number_format($item['amount'] ?? 0, 2) }}</td>
+                    <td>
+                        @if ($item['pay_type'] == 'Revenue')
+                            Non Refundable
+                        @else
+                            {{ $item['pay_type'] ?? 'N/A' }}
+                        @endif
+
+                    </td>
+                    <td>
+                        @if ($item['feename'] == 'File Opening Fee')
+                            At the beginning of process
+                        @elseif($item['feename'] == 'Application Fee')
+                            During process direct payment to University
+                        @elseif($item['feename'] == 'Visa Process Fee')
+                            After offer letter of services needed
+                        @elseif($item['feename'] == 'VISA Fee')
+                            After offer letter direct payment to VFS/Embassy
+                        @elseif($item['feename'] == 'Service Fee')
+                            After Visa
+                        @elseif($item['feename'] == 'Tuition Fee')
+                            Tuition fees are refundable if the visa application is refused**
+                        @endif
+                    </td>
                 </tr>
             @endforeach
         </tbody>
@@ -484,7 +560,10 @@
         <p><strong>Sub Total:</strong> {{ number_format($receipt->totalamt ?? 0, 2) }}</p>
         <p><strong>Discount:</strong> {{ number_format($receipt->disc_amt ?? 0, 2) }}</p>
         <p class="grand-total">Total: {{ number_format($receipt->netamount ?? 0, 2) }}</p>
-        <p>in word: {{ $numberTransformer->toWords($receipt->netamount ?? 0) }} only</p>
+        <h3>in word: {{ $numberTransformer->toWords($receipt->netamount ?? 0) }} only</h3>
+        @if (!empty($receipt->shortnote))
+            <h3>Notes: {{ $receipt->shortnote }}</h3>
+        @endif
     </div>
     <p><strong>Payment Info:</strong></p>
     @switch($receipt->payterms)
@@ -513,26 +592,26 @@
     <!-- ===== FOOTER ===== -->
 
 
-        <div class="footer">
-            <div class="footer-content">
-                <div class="footer-right" style="text-align:center;">
-                    <div style="border-top:1px solid #000; width:195px;"></div>
-                    <div style="font-size:12px;text-align:center">Student Signature</div>
-                </div>
-                <div class="footer-right" style="text-align:left;">
-                </div>
-                <div class="footer-right" style="text-align:right;">
-                    <div style="border-top:1px solid #000; width:195px;"></div>
-                    <div style="font-size:12px;text-align:center">Authorised Signature</div>
-                </div>
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-right" style="text-align:center;">
+                <div style="border-top:1px solid #000; width:195px;"></div>
+                <div style="font-size:12px;text-align:center">Student Signature</div>
             </div>
-
-            <div style="font-size:10px; text-align:center; line-height:14px;">
-                Glendon Edu, Chandiwala Mansion, Level-3, House-32, Road-11, Block-G, Banani, Dhaka 1213<br>
-                +880 9658 111 222 | glendonedu.com
+            <div class="footer-right" style="text-align:left;">
+            </div>
+            <div class="footer-right" style="text-align:right;">
+                <div style="border-top:1px solid #000; width:195px;"></div>
+                <div style="font-size:12px;text-align:center">Authorised Signature</div>
             </div>
         </div>
-        <div class="page-break"></div>
+
+        <div style="font-size:10px; text-align:center; line-height:14px;">
+            Glendon Edu, Chandiwala Mansion, Level-3, House-32, Road-11, Block-G, Banani, Dhaka 1213<br>
+            +880 9658 111 222 | glendonedu.com
+        </div>
+    </div>
+    <div class="page-break"></div>
 
 
 
@@ -670,7 +749,7 @@
     <p>
         I have read the above terms and conditions laid down by GLENDON EDU and accept the same.
     </p>
-    
+
     </div>
 </body>
 

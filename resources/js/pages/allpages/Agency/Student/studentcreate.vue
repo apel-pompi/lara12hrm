@@ -12,7 +12,7 @@ import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOption
 import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker from '@vuepic/vue-datepicker';
+import VueDatePicker  from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { CornerDownLeft, Save } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';

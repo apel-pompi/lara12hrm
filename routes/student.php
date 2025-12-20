@@ -175,7 +175,16 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
         ->group(
             function () {
                 Route::get('/', 'index')->name('studentAccounts.index');
+                Route::get('/return', 'return')->name('studentAccounts.return');
+
                 Route::get('/{quotation}/create', 'create')->name('studentAccounts.create');
+
+                Route::get('/{mrid}/fetchMR', 'fetchMR')->name('studentAccounts.fetchMR');
+                Route::post('/storeReturn', 'storeReturn')->name('studentAccounts.storeReturn');
+                Route::get('/{srid}/fetchSR', 'fetchSR')->name('studentAccounts.fetchSR');
+                Route::post('/{confirm}/returnCancel', 'returnCancel')->name('studentAccounts.returnCancel');
+                Route::post('/{confirm}/returnConfirm', 'returnConfirm')->name('studentAccounts.returnConfirm');
+
                 Route::post('/{quotation}/store', 'store')->name('studentAccounts.store');
                 Route::get('/{confirm}/onView', 'onView')->name('studentAccounts.onView');
                 Route::post('/{confirm}/onDelete', 'onDelete')->name('studentAccounts.onDelete');
@@ -190,6 +199,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
             function () {
                 Route::get('/', 'index')->name('studentConversations.index');
                 Route::post('/store', 'store')->name('studentConversations.store');
+                Route::get('/{conversation}/fetchData', 'fetchData')->name('studentConversations.fetchData');
             }
         );
     // Student Tasks
@@ -224,8 +234,15 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
         ->group(
             function () {
                 Route::get('/', 'index')->name('leadreports.index');
-                Route::get('/{year}/{month}', 'MonthlyLeadReport')->name('leadreports.MonthlyLeadReport');
-                Route::get('/emp/{year}/{month}/{employee?}', 'MonthlyEmpLeadReport')->name('leadreports.MonthlyEmpLeadReport');
+
+                Route::get('/ledger', 'studentLedger')->name('leadreports.studentLedger');
+                Route::get('/ledger/{student}', 'studentLedgerReport')->name('leadreports.studentLedgerReport');
+                
+                Route::get('/revenue', 'studentRevenue')->name('leadreports.studentRevenue');
+                Route::get('/revenue/{formdate}/{todate}/{isAdmin}/{employee?}', 'studentRevenueReport')->name('leadreports.studentRevenueReport');
+                
+                Route::get('/emp/{formdate}/{todate}/{isAdmin}/{employee?}', 'MonthlyEmpLeadReport')->name('leadreports.MonthlyEmpLeadReport');
+
             }
         );
     

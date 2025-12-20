@@ -4,7 +4,7 @@ import Textarea from '@/components/ui/textarea/Textarea.vue';
 import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { router, useForm } from '@inertiajs/vue3';
-import VueDatePicker from '@vuepic/vue-datepicker';
+import VueDatePicker  from '@vuepic/vue-datepicker'
 import { Loader2, Save } from 'lucide-vue-next';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { ref, watch } from 'vue';
@@ -55,11 +55,7 @@ const submit = () => {
         {
             preserveScroll: true,
             onSuccess: () => {
-                toast('Success', {
-                    description: 'Appoinment created successfully.',
-                });
-
-                // Reset + Refresh data smoothly
+               
                 setTimeout(() => {
                     form.reset();
                     router.visit(route('studentAppointements.index', { student: props.student.id }), {

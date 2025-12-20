@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import StudentAccountsLayout from '@/pages/allpages/Agency/Student/studentaccountsLayout.vue';
 import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { Eye, FileText, LucideEdit, LucideSave, LucideTrash2, Plus, ShieldCheck, X } from 'lucide-vue-next';
@@ -19,8 +20,15 @@ const props = defineProps<{
         totalamount: number;
         user: { id: number; name: string };
     }[];
+    quoatation_amount: number;
     services: { workflow: string; partner: string; branch_name: string; product: string }[];
+
     invoice: { id: number; insnumber: string; insdate: string; netamount: number; status: string };
+    invoice_amount: number;
+
+    mr: { id: number; insnumber: string; insdate: string; netamount: number; status: string };
+    mr_amount: number;
+
     application: { id: number };
 }>();
 
@@ -115,6 +123,7 @@ const selectedFees = ref<
         fee_id: number;
         feename: string;
         amount: number;
+        original_amount: number;
     }>
 >([]);
 
@@ -136,17 +145,11 @@ function editFee(fee: any) {
             fee_id: fee.fee_id,
             feename: fee.feename,
             amount: fee.amount,
+            original_amount: Number(fee.amount) || 0,
         });
     }
 }
-function validateAmount(fee: any) {
-    if (fee.amount <= 0 || isNaN(fee.amount)) {
-        fee.amount = 1;
-        toast('error', {
-            description: 'Amount cannot be 0 or negative. Automatically set to 1.',
-        });
-    }
-}
+
 
 function deleteFeeRow(index: number) {
     selectedFees.value.splice(index, 1);
@@ -160,9 +163,6 @@ const submitInvoice = () => {
     feesForm.selectedFees = selectedFees.value;
     feesForm.post(action, {
         onSuccess: () => {
-            toast('Success', {
-                description: 'Student Invoice created successfully',
-            });
             setTimeout(() => {
                 showDialogAdd.value = false;
                 form.reset();
@@ -177,11 +177,6 @@ const submitInvoice = () => {
             if (Object.keys(errors).length) {
                 const firstError = Object.values(errors)[0];
                 toast('Validation Error', { description: firstError });
-            }
-        },
-        onFinish: () => {
-            if (form.hasErrors && form.errors.message) {
-                toast('Error', { description: form.errors.message });
             }
         },
     });
@@ -215,7 +210,6 @@ const onView = async (invId: number) => {
             return;
         }
         const data = await res.json();
-        
 
         viewForm.stundent_fname = data.data.student.fname;
         viewForm.stundent_lname = data.data.student.lname;
@@ -256,7 +250,6 @@ const onDelete = async (invId: number) => {
             preserveState: true,
             onSuccess: () => {
                 invId = newStatus ? 1 : 0;
-                toast.success('Invoice delete successfully');
             },
             onError: (errors) => {
                 const firstError = Object.values(errors)[0];
@@ -283,7 +276,6 @@ const onConfirm = async (invId: number) => {
             preserveState: true,
             onSuccess: () => {
                 invId = newStatus ? 1 : 0;
-                toast.success('Invoice delete successfully');
             },
             onError: (errors) => {
                 const firstError = Object.values(errors)[0];
@@ -301,126 +293,188 @@ const onReport = async (invId: number) => {
 
     window.open(url, '_blank');
 };
+
+const onReportMr = async (invId: number) => {
+    const url = route('invoicelist.onReport', {
+        onReport: invId,
+    });
+
+    window.open(url, '_blank');
+};
 </script>
 
 <template>
     <StudentLayout :student="props.student" :studentService="studentService">
         <div class="space-y-4">
-            <div class="flex flex-col space-y-2 py-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-                <div class="text-sm font-semibold text-gray-800">Student Accounts</div>
-            </div>
+            <StudentAccountsLayout :student="props.student">
+                <div class="flex flex-col space-y-2 py-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                    <div class="text-sm font-semibold text-gray-800">Student Accounts</div>
+                </div>
 
-            <!-- Responsive Grid -->
-            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <!-- Quotations -->
-                <Card class="h-auto w-full border-green-300">
-                    <div class="overflow-x-auto text-sm">
-                        <h3 class="mb-2 ml-2 font-semibold">Quotations</h3>
-                        <Table class="min-w-full">
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Sl</TableHead>
-                                    <TableHead>Quoatations No</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Notes</TableHead>
-                                    <TableHead>By</TableHead>
-                                    <TableHead class="text-center">Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                <TableRow v-for="(qut, index) in props.quoatation" :key="qut.id">
-                                    <TableCell>{{ index + 1 }}</TableCell>
-                                    <TableCell>{{ qut.quotation_no }}</TableCell>
-                                    <TableCell>{{ qut.adddate }}</TableCell>
-                                    <TableCell>{{ qut.notes }}</TableCell>
-                                    <TableCell>{{ qut.user.name }}</TableCell>
-                                    <TableCell class="text-center">
-                                        <Button class="m-[2px]" variant="outline" size="sm" @click="showDailog(qut.id)"> <Plus /> Invoice </Button>
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </div>
-                </Card>
+                <!-- Responsive Grid -->
+                <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <!-- Quotations -->
+                    <Card class="h-auto w-full border-green-300">
+                        <div class="overflow-x-auto text-sm">
+                            <div class="mb-2 flex items-center justify-between px-2">
+                                <h3 class="font-semibold">Quotations</h3>
+                                <h3 class="font-semibold">{{ props.quoatation_amount }}</h3>
+                            </div>
+                            <Table class="min-w-full">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Sl</TableHead>
+                                        <TableHead>Quoatations No</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Notes</TableHead>
+                                        <TableHead>By</TableHead>
+                                        <TableHead class="text-center">Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow v-for="(qut, index) in props.quoatation" :key="qut.id">
+                                        <TableCell>{{ index + 1 }}</TableCell>
+                                        <TableCell>{{ qut.quotation_no }}</TableCell>
+                                        <TableCell>{{ qut.adddate }}</TableCell>
+                                        <TableCell>{{ qut.notes }}</TableCell>
+                                        <TableCell>{{ qut.user.name }}</TableCell>
+                                        <TableCell class="text-center">
+                                            <Button class="m-[2px]" variant="outline" size="sm" @click="showDailog(qut.id)">
+                                                <Plus /> Invoice
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </Card>
 
-                <!-- Invoices -->
-                <Card class="w-full border-green-300">
-                    <div class="overflow-x-auto text-sm">
-                        <h3 class="mb-2 ml-2 font-semibold">Invoices</h3>
-                        <Table class="min-w-full">
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Sl</TableHead>
-                                    <TableHead>Invoices No</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Net Amount</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead class="text-center">Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                <TableRow v-for="(inv, index) in props.invoice" :key="inv.id">
-                                    <TableCell>{{ index + 1 }}</TableCell>
-                                    <TableCell>{{ inv.insnumber }}</TableCell>
-                                    <TableCell>{{ inv.insdate }}</TableCell>
-                                    <TableCell>{{ inv.netamount }}</TableCell>
-                                    <TableCell>{{ inv.status }}</TableCell>
-                                    <TableCell class="text-center">
-                                        <div class="group relative inline-block">
-                                            <Button
-                                                v-if="inv.status == 'pending'"
-                                                class="m-[2px] cursor-pointer"
-                                                size="sm"
-                                                variant="outline"
-                                                @click="onView(inv.id)"
-                                                :disabled="form.processing"
-                                                ><Eye class="text-green-500"></Eye
-                                            ></Button>
-                                            <span
-                                                class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
-                                            >
-                                                View
-                                            </span>
-                                        </div>
-                                        <div class="group relative inline-block">
-                                            <Button
-                                                v-if="inv.status == 'pending'"
-                                                class="m-[2px] cursor-pointer"
-                                                size="sm"
-                                                variant="outline"
-                                                @click="onDelete(inv.id)"
-                                                :disabled="form.processing"
-                                                ><X class="text-red-500"></X
-                                            ></Button>
-                                            <span
-                                                class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
-                                            >
-                                                Cancel
-                                            </span>
-                                        </div>
-                                        <div class="group relative inline-block">
-                                            <Button
-                                                v-if="inv.status == 'pending'"
-                                                class="m-[2px] cursor-pointer"
-                                                size="sm"
-                                                variant="outline"
-                                                @click="onConfirm(inv.id)"
-                                                ><ShieldCheck></ShieldCheck
-                                            ></Button>
-                                            <span
-                                                class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
-                                            >
-                                                Approved
-                                            </span>
-                                        </div>
+                    <!-- Invoices -->
+                    <Card class="w-full border-green-300">
+                        <div class="overflow-x-auto text-sm">
+                            <div class="mb-2 flex items-center justify-between px-2">
+                                <h3 class="font-semibold">Invoices</h3>
+                                <h3 class="font-semibold">{{ props.invoice_amount }}</h3>
+                            </div>
+                            <Table class="min-w-full">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Sl</TableHead>
+                                        <TableHead>Invoices No</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Net Amount</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead class="text-center">Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow v-for="(inv, index) in props.invoice" :key="inv.id">
+                                        <TableCell>{{ index + 1 }}</TableCell>
+                                        <TableCell>{{ inv.insnumber }}</TableCell>
+                                        <TableCell>{{ inv.insdate }}</TableCell>
+                                        <TableCell>{{ inv.netamount }}</TableCell>
+                                        <TableCell>{{ inv.status }}</TableCell>
+                                        <TableCell class="text-center">
+                                            <div class="group relative inline-block">
+                                                <Button
+                                                    v-if="inv.status == 'pending'"
+                                                    class="m-[2px] cursor-pointer"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    @click="onView(inv.id)"
+                                                    :disabled="form.processing"
+                                                    ><Eye class="text-green-500"></Eye
+                                                ></Button>
+                                                <span
+                                                    class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
+                                                >
+                                                    View
+                                                </span>
+                                            </div>
+                                            <div class="group relative inline-block">
+                                                <Button
+                                                    v-if="inv.status == 'pending'"
+                                                    class="m-[2px] cursor-pointer"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    @click="onDelete(inv.id)"
+                                                    :disabled="form.processing"
+                                                    ><X class="text-red-500"></X
+                                                ></Button>
+                                                <span
+                                                    class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
+                                                >
+                                                    Cancel
+                                                </span>
+                                            </div>
+                                            <div class="group relative inline-block">
+                                                <Button
+                                                    v-if="inv.status == 'pending'"
+                                                    class="m-[2px] cursor-pointer"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    @click="onConfirm(inv.id)"
+                                                    ><ShieldCheck></ShieldCheck
+                                                ></Button>
+                                                <span
+                                                    class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
+                                                >
+                                                    Approved
+                                                </span>
+                                            </div>
 
+                                            <div class="group relative inline-block">
+                                                <Button
+                                                    v-if="inv.status === 'Confirmed' || inv.status === 'Delivered'"
+                                                    class="m-[2px] cursor-pointer"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    @click="onReport(inv.id)"
+                                                    ><FileText class="text-red-500"></FileText
+                                                ></Button>
+                                                <span
+                                                    class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
+                                                >
+                                                    Report
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </Card>
+                    <!-- Money Receipt -->
+                    <Card class="w-full border-green-300">
+                        <div class="overflow-x-auto text-sm">
+                            <div class="mb-2 flex items-center justify-between px-2">
+                                <h3 class="font-semibold">Money Receipt</h3>
+                                <h3 class="font-semibold">{{ props.mr_amount }}</h3>
+                            </div>
+                            <Table class="min-w-full">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Sl</TableHead>
+                                        <TableHead>M.R No</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Net Amount</TableHead>
+                                        <TableHead>Status</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow v-for="(inv, index) in props.mr" :key="inv.id">
+                                        <TableCell>{{ index + 1 }}</TableCell>
+                                        <TableCell>{{ inv.insnumber }}</TableCell>
+                                        <TableCell>{{ inv.insdate }}</TableCell>
+                                        <TableCell>{{ inv.netamount }}</TableCell>
+                                        <TableCell>{{ inv.status }}</TableCell>
                                         <div class="group relative inline-block">
                                             <Button
-                                                v-if="inv.status === 'Confirmed' || inv.status === 'Delivered'"
+                                                v-if="inv.status === 'Confirmed'"
                                                 class="m-[2px] cursor-pointer"
                                                 size="sm"
                                                 variant="outline"
-                                                @click="onReport(inv.id)"
+                                                @click="onReportMr(inv.id)"
                                                 ><FileText class="text-red-500"></FileText
                                             ></Button>
                                             <span
@@ -429,14 +483,13 @@ const onReport = async (invId: number) => {
                                                 Report
                                             </span>
                                         </div>
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </div>
-                </Card>
-            </div>
-
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </Card>
+                </div>
+            </StudentAccountsLayout>
             <!-- Dialog Invoice-->
             <Dialog v-model:open="showDialogAdd">
                 <DialogContent
@@ -526,9 +579,6 @@ const onReport = async (invId: number) => {
                                     <input
                                         type="number"
                                         v-model.number="fee.amount"
-                                        min="1"
-                                        step="any"
-                                        @input="validateAmount(fee)"
                                         class="mt-1 w-full rounded border border-gray-300 px-2 py-1 shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none md:w-32"
                                     />
                                 </div>
@@ -566,7 +616,6 @@ const onReport = async (invId: number) => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            <!-- Dialog Invoice View -->
             <!-- Dialog Quoatations-->
             <Dialog v-model:open="ViewDailog">
                 <DialogContent
@@ -611,7 +660,9 @@ const onReport = async (invId: number) => {
                             </div>
                             <div class="space-y-1">
                                 <p><span class="font-medium text-gray-700 dark:text-gray-200">Quotation No:</span> {{ viewForm.student_quoatno }}</p>
-                                <p><span class="font-medium text-gray-700 dark:text-gray-200">Quotation Date:</span> {{ viewForm.student_quoatdate }}</p>
+                                <p>
+                                    <span class="font-medium text-gray-700 dark:text-gray-200">Quotation Date:</span> {{ viewForm.student_quoatdate }}
+                                </p>
                                 <p><span class="font-medium text-gray-700 dark:text-gray-200">By:</span> {{ viewForm.student_quoatby }}</p>
                             </div>
                         </div>
@@ -619,7 +670,6 @@ const onReport = async (invId: number) => {
                         <!-- fees List -->
                         <div class="space-y-4">
                             <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-
                                 <!-- Fees Table -->
                                 <div class="overflow-x-auto">
                                     <table
@@ -651,7 +701,6 @@ const onReport = async (invId: number) => {
                                 </div>
                             </div>
                         </div>
-                       
                     </div>
 
                     <!-- Footer -->
@@ -661,7 +710,6 @@ const onReport = async (invId: number) => {
                         <DialogClose as-child>
                             <Button type="button" variant="secondary" class="w-full px-4 py-2 sm:w-auto">Cancel</Button>
                         </DialogClose>
-                       
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

@@ -57,4 +57,14 @@ class StudentConversations extends Controller
             return back()->with('error', 'Unable to storage');
         }
     }
+
+    public function fetchData($conversation)
+    {
+        $fechData = StudentUtility::with('user','student')->where('student_id',$conversation)->where('name','conversations')->get();
+        return response()->json([
+            'success' => true,
+            'data' => $fechData,
+        ]);
+        return back()->with('message', 'Conversation view successfully!');
+    }
 }

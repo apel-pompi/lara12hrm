@@ -70,25 +70,26 @@
         }
 
         /* ==== TABLE ==== */
-        .invoice-table {
+        .table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 8px;
+            font-size: 11px;
         }
 
-        .invoice-table th {
-            background-color: #999999;
-            color: #fff;
-            padding: 8px;
-            text-align: left;
+        .table th,
+        .table td {
+            border: 1px solid #d1d5db;
+            padding: 6px;
+            text-align: right;
         }
 
-        .invoice-table td {
-            border: 1px solid #bbbbbb;
-            padding: 8px;
+        .table th {
+            background: #f3f4f6;
+            font-weight: 600;
         }
 
-        .invoice-table tr:nth-child(even) {
+        .table tr:nth-child(even) {
             background-color: #f9f9f9;
         }
 
@@ -102,6 +103,12 @@
             font-size: 12px;
             margin: 2px 0;
             text-align: right;
+        }
+
+        .totals h3 {
+            font-size: 12px;
+            margin: 2px 0;
+            text-align: left;
         }
 
         .grand-total {
@@ -178,7 +185,9 @@
                     <div class="tagline">Bridging Dreams To Destinations</div>
                 </td>
                 <td class="header-right">
-                    <div class="title">INVOICE</div>
+                    <div class="title">
+                        {{ str_starts_with($invoiceHD->insnumber, 'SR--') ? 'REFUND INVOICE' : 'INVOICE' }}
+                    </div>
                 </td>
             </tr>
         </table>
@@ -189,31 +198,55 @@
                 <td width="60%">
                     <h4>Invoice To:</h4>
                     <strong>Student Name: </strong>{{ $student->fname }} {{ $student->lname }}<br>
-                        <strong>Student ID: </strong>{{ $student->student_id }}
+                    <strong>Student ID: </strong>{{ $student->student_id }}
                 </td>
                 <td style="text-align: right;">
                     <strong>Invoice #:</strong> {{ $invoiceHD->insnumber }}<br>
                     <strong>Date:</strong> {{ $invoiceHD->insdate }}<br>
-                    <strong>By:</strong> {{ $invoiceHD->username}}
+                    <strong>By:</strong> {{ $invoiceHD->username }}
                 </td>
             </tr>
         </table>
 
         <!-- ===== TABLE ===== -->
-        <table class="invoice-table">
+        <table class="table">
             <thead>
                 <tr>
-                    <th style="width:50px;text-align:center">SL.</th>
-                    <th style="text-align:center">Item Description</th>
-                    <th style="width:100px; text-align: right">Amount</th>
+                    <th>#</th>
+                    <th>Purticulars</th>
+                    <th>Amount</th>
+                    <th>Payment Type</th>
+                    <th>Remarks</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($invoiceDt ?? [] as $key => $item)
                     <tr>
-                        <td style="text-align:center">{{ $key + 1 }}</td>
-                        <td>{{ $item->name ?? 'Service' }}</td>
-                        <td style="text-align: right">{{ number_format($item->amount ?? 0, 2) }}</td>
+                        <td>{{ $key + 1 }}</td>
+                        <td>{{ $item['feename'] }}</td>
+                        <td>{{ number_format($item['totalamount'] ?? 0, 2) }}</td>
+                        <td>
+                            @if ($item['pay_type'] == 'Revenue')
+                                Non Refundable
+                            @else
+                                {{ $item['pay_type'] ?? 'N/A' }}
+                            @endif
+                        </td>
+                        <td>
+                            @if ($item['feename'] == 'File Opening Fee')
+                                At the beginning of process
+                            @elseif($item['feename'] == 'Application Fee')
+                                During process direct payment to University
+                            @elseif($item['feename'] == 'Visa Process Fee')
+                                After offer letter of services needed
+                            @elseif($item['feename'] == 'VISA Fee')
+                                After offer letter direct payment to VFS/Embassy
+                            @elseif($item['feename'] == 'Service Fee')
+                                After Visa
+                            @elseif($item['feename'] == 'Tuition Fee')
+                                Tuition fees are refundable if the visa application is refused**
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -223,31 +256,12 @@
         <div class="totals">
             <p><strong>Sub Total:</strong> {{ number_format($invoiceHD->netamount ?? 0, 2) }}</p>
             <p class="grand-total">Total: {{ number_format($invoiceHD->netamount ?? 0, 2) }}</p>
-            <p>in word: {{ $numberTransformer->toWords($invoiceHD->netamount ?? 0) }} only</p>
+            <h3>in word: {{ $numberTransformer->toWords($invoiceHD->netamount ?? 0) }} only</h3>
+            @if (!empty($invoiceHD->shortnote))
+                <h3>Notes: {{ $invoiceHD->shortnote }}</h3>
+            @endif
         </div>
-        <p><strong>Payment Info:</strong></p>
-        {{-- @switch($invoiceHD->payterms)
-            @case('Bank')
-                <p>
-                    Bank Name: {{ $invoiceHD->bankname }}<br>
-                    Branch Name: {{ $invoiceHD->bankbranch }}
-                </p>
-            @break
 
-            @case('Cheque')
-                <p>
-                    Bank Name: {{ $invoiceHD->bankname }}<br>
-                    Cheque No: {{ $invoiceHD->chequeno }}
-                </p>
-            @break
-
-            @case('Card')
-                <p>Transaction No: {{ $invoiceHD->transactionNo }}</p>
-            @break
-
-            @default
-                <p>Cash Received</p>
-        @endswitch --}}
 
         <!-- ===== FOOTER ===== -->
 

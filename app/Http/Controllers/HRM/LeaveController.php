@@ -9,6 +9,8 @@ use App\Http\Requests\Leave\UpdateLeaveRequest;
 use App\Models\HRM\CompanyInfo;
 use App\Models\HRM\Leaveplan;
 use App\Models\HRM\PersonalInfo;
+use App\Mail\LeaveStatusMail;
+use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -112,7 +114,7 @@ class LeaveController extends Controller
      */
     public function show(Leave $leave)
     {
-       
+
         try {
             $this->authorize('Leave.show');
         } catch (AuthorizationException $e) {
@@ -125,7 +127,7 @@ class LeaveController extends Controller
         if (!$leave) {
             return response()->json(['message' => 'Leave not found'], 404);
         }
-        $data = Leave::with(['leavePlan','employee','substituteEmployee','user'])->where('id',$leave->id)->first();
+        $data = Leave::with(['leavePlan', 'employee', 'substituteEmployee', 'user'])->where('id', $leave->id)->first();
         return response()->json($data);
     }
 
@@ -142,7 +144,7 @@ class LeaveController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-        
+
         return response()->json([
             'success' => true,
             'data' => $leave,
@@ -162,7 +164,7 @@ class LeaveController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-        
+
         $data = $request->validated();
         $data['user_id'] = Auth::id();
         $leave->update($data);
@@ -183,6 +185,17 @@ class LeaveController extends Controller
         $leave->update([
             'status' => 2
         ]);
+
+        $leaveData = [
+            'empname' => $leave->employee->empname,
+            'fromdate' => $leave->fromdate,
+            'todate' => $leave->todate,
+            'status' => 'Pending Approval',
+            'reason' => $leave->reason,
+        ];
+
+        Mail::to($leave->employee->email)->send(new LeaveStatusMail($leaveData));
+        return back()->with('success', 'Leave confirmed and email sent.');
     }
     /**
      * Remove the specified resource from storage.

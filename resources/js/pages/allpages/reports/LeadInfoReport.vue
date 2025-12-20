@@ -5,9 +5,12 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import AppLayout from '@/layouts/AppLayout.vue';
 import LeadReportLayout from '@/layouts/settings/leadreportLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-
+import { getLocalTimeZone, today } from '@internationalized/date';
+import VueDatePicker  from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 import { Head, useForm } from '@inertiajs/vue3';
 import { FileText } from 'lucide-vue-next';
+import { ref, watch } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'HR Reports', href: '/hrreports' }];
 
@@ -18,36 +21,47 @@ const props = defineProps<{
     isAdmin: number;
 }>();
 
+const formdate = ref<string | null>(null);
+const todate = ref<string | null>(null);
+const maxDate = today(getLocalTimeZone());
+
 const form = useForm({
     employee: '',
-    month: '',
-    year: '',
+    formdate: '',
+    todate: '',
 });
 
+watch(formdate, (newDate) => {
+    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
+        form.formdate = newDate.toISOString().split('T')[0];
+    }
+});
+
+watch(todate, (newDate) => {
+    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
+        form.todate = newDate.toISOString().split('T')[0];
+    }
+});
+
+
 const onReport = async () => {
-    if (form.year == '') {
-        alert('Year is not selected');
-        return;
-    }
-
-    if (form.month == '') {
-        alert('Month is not selected');
-        return;
-    }
-
-    if (props.isAdmin) {
-        const url = route("leadreports.MonthlyEmpLeadReport", {
-            year: form.year,
-            month: form.month,
-            employee: form.employee || null
-        });
-        window.open(url, '_blank');
-        return;
-    }
     
-    const url = route('leadreports.MonthlyLeadReport', {
-        year: form.year,
-        month: form.month,
+    if (form.formdate == '') {
+        alert('Form date not selected');
+        return;
+    }
+
+    if (form.todate == '') {
+        alert('To Date is not selected');
+        return;
+    }
+
+    const url = route('leadreports.MonthlyEmpLeadReport', {
+        formdate: form.formdate,
+        todate: form.todate,
+        isAdmin:props.isAdmin,
+        employee: form.employee || null
+        
     });
     window.open(url, '_blank');
     
@@ -79,34 +93,27 @@ const onReport = async () => {
                 <div v-else></div>
                 <!-- Input -->
                 <div class="space-y-2">
-                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Year</Label>
-                    <Select v-model="form.year">
-                        <SelectTrigger class="w-full">
-                            <SelectValue placeholder="Select Year" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem v-for="year in props.years" :key="year.id" :value="year.id">
-                                    {{ year.name }}
-                                </SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Form Date</Label>
+                    <VueDatePicker
+                        v-model="formdate"
+                        :max-date="maxDate"
+                        :format="'yyyy-MM-dd'"
+                        :enable-time-picker="false"
+                        placeholder="Form Date"
+                        auto-apply
+                    />
+                    
                 </div>
                 <div class="space-y-2">
-                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Month</Label>
-                    <Select v-model="form.month">
-                        <SelectTrigger class="w-full">
-                            <SelectValue placeholder="Select Month" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem v-for="month in props.months" :key="month.id" :value="month.id">
-                                    {{ month.name }}
-                                </SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">To Date</Label>
+                    <VueDatePicker
+                        v-model="todate"
+                        :max-date="maxDate"
+                        :format="'yyyy-MM-dd'"
+                        :enable-time-picker="false"
+                        placeholder="Form Date"
+                        auto-apply
+                    />
                 </div>
 
                 <!-- Submit -->

@@ -1,48 +1,41 @@
 <script setup lang="ts">
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Link } from '@inertiajs/vue3';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
 
 import {
-  SidebarGroup,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from '@/components/ui/sidebar'
+    SidebarGroup,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
+} from '@/components/ui/sidebar';
 
-import { ChevronRight, type LucideIcon } from 'lucide-vue-next'
+import { ChevronRight, type LucideIcon } from 'lucide-vue-next';
+
+type NavSubItem = {
+    title: string;
+    route?: string;
+    href?: string;
+    icon?: LucideIcon;
+};
+
+type NavItem = {
+    title: string;
+    icon?: LucideIcon;
+    items?: NavSubItem[];
+};
 
 defineProps<{
-  items: {
-    title: string
-    href: string
-    icon?: LucideIcon
-    isActive?: boolean
-    items?: {
-      title: string
-      href: string
-      icon?: LucideIcon
-    }[]
-  }[]
-}>()
-
+    items: NavItem[];
+}>();
 </script>
 
 <template>
     <SidebarGroup>
         <SidebarMenu>
-            <Collapsible
-                v-for="item in items"
-                :key="item.title"
-                as-child
-                class="group/collapsible"
-            >
+            <Collapsible v-for="item in items" :key="item.title" as-child class="group/collapsible">
                 <SidebarMenuItem>
                     <CollapsibleTrigger as-child>
                         <SidebarMenuButton :tooltip="item.title">
@@ -55,8 +48,12 @@ defineProps<{
                         <SidebarMenuSub>
                             <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
                                 <SidebarMenuSubButton as-child>
-                                    <Link :href="subItem.href" class="flex items-center gap-2">
-                                        <component :is="subItem.icon" v-if="subItem.icon" class="w-4 h-4" />
+                                    <Link v-if="subItem.route" :href="route(subItem.route)" class="flex items-center gap-2">
+                                        <component :is="subItem.icon" v-if="subItem.icon" class="h-4 w-4" />
+                                        <span>{{ subItem.title }}</span>
+                                    </Link>
+                                    <Link v-else-if="subItem.href" :href="subItem.href" class="flex items-center gap-2">
+                                        <component :is="subItem.icon" v-if="subItem.icon" class="h-4 w-4" />
                                         <span>{{ subItem.title }}</span>
                                     </Link>
                                 </SidebarMenuSubButton>

@@ -194,34 +194,33 @@
                 <th>Working Hours</th>
                 <th>Attend Hours</th>
                 <th>Deduct Hours</th>
-                <th>H.R Surplus</th>
-                <th>Net Hours</th>
                 <th>Absent</th>
                 <th>Leave</th>
-                <th>Deduct</th>
-                <th>Payable</th>
+                <th>Net Hours</th>
+                <th>H.R Surplus</th>
+                <th>Payable Hour</th>
+                <th>Salary</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($employees as $index => $emp)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td class="text-left">{{ $emp['name'] }}</td>
-                    <td>{{ $emp['desname'] }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="text-left">{{ $emp['employee']['empname'] }}</td>
+                    <td>{{ $emp['employee']['designation']['desname'] }}</td>
+                    <td>{{ $emp['workhour'] }}</td>
+                    <td>{{ $emp['totalhour'] }}</td>
+                    <td>{{ $emp['deducthour'] }}</td>
+                    <td>{{ $emp['absent'] }}</td>
+                    <td>{{ $emp['leave'] }}</td>
+                    <td>{{ $emp['nethour'] }}</td>
+                    <td>{{ $emp['hrsurplus'] }}</td>
+                    <td>{{ $emp['payablehour'] }}</td>
                     <td></td>
                 </tr>
             @endforeach
             <tr>
-                <th colspan="10" class="text-right">Grand Total</th>
-                <th></th>
+                <th colspan="11" class="text-right">Grand Total</th>
                 <th></th>
             </tr>
         </tbody>

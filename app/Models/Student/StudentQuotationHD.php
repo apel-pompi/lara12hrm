@@ -34,15 +34,7 @@ class StudentQuotationHD extends Model
     {
         return $this->belongsTo(Student::class, 'student_id');
     }
-    /**
-     * Get the deatils that owns the StudentQuotationHD
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function deatils(): HasMany
-    {
-        return $this->hasMany(StudentQuotation::class, 'quotation_hd_id');
-    }
+   
 
     /**
      * Get the quatFees that owns the StudentQuotationHD
@@ -63,15 +55,9 @@ class StudentQuotationHD extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // public static function getFees($quoat_id,$product_id){
-    //     $data = StudentQuoationFee::with('fee')->where('quotation_hd_id',$quoat_id)->where('product_id',$product_id)->get();
-    //     return $data;
-    // }
     public static function getFees($quoat_id){
-        $data = StudentQuoationFee::with(['fee','productfee'])
-                ->whereHas('productfee', function ($q) {
-                })
-                ->where('quotation_hd_id',$quoat_id)->get();
+        $data = StudentQuoationFee::with('fee','productfee')->where('quotation_hd_id',$quoat_id)->get();
         return $data;
     }
+    
 }

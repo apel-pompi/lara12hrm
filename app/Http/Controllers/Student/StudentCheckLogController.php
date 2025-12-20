@@ -62,6 +62,7 @@ class StudentCheckLogController extends Controller
                 'lastactivity' => null,
                 'user_id' => Auth::id()
             ]);
+            $student->update(['status' => 1]);
             return back()->with('success', 'check in successfully.');
         } else {
             return back()->with('error', 'Unable to check in');

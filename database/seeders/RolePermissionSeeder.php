@@ -328,7 +328,7 @@ class RolePermissionSeeder extends Seeder
                     
                 ],
             ],
-             //Attendance Deduct         
+            //Attendance Deduct         
             [
                 'group_name' => 'AttendanceDeduct',
                 'permissions' => [
@@ -338,6 +338,19 @@ class RolePermissionSeeder extends Seeder
                     'deduct.edit',
                     'deduct.update',
                     'deduct.destroy'
+                    
+                ],
+            ],
+            //Attendance Status         
+            [
+                'group_name' => 'Attendance Status',
+                'permissions' => [
+                    'attendStatus.index',
+                    'attendStatus.store',
+                    'attendStatus.show',
+                    'attendStatus.edit',
+                    'attendStatus.update',
+                    'attendStatus.destroy'
                     
                 ],
             ],
@@ -438,7 +451,8 @@ class RolePermissionSeeder extends Seeder
                 'group_name' => 'Lead Reports',
                 'permissions' => [
                     'leadReports.monthly-lead-info',
-                    'leadReports.yearly-lead-info',
+                    'leadReports.student-transaction',
+                    'leadReports.student-revenue',
                 ],
             ],
 
@@ -503,6 +517,8 @@ class RolePermissionSeeder extends Seeder
                 'group_name' => 'Student Accounts',
                 'permissions' => [
                     'StudIns.index',
+                    'StudIns.refund',
+                    'StudIns.transfer',
                     'StudIns.create',
                     'StudIns.store',
                     'StudIns.view',
@@ -614,6 +630,15 @@ class RolePermissionSeeder extends Seeder
                     'ChartOfAccount.update',
                     'ChartOfAccount.updateStatus',
                     'ChartOfAccount.destroy',
+                ],
+            ],
+             //Voucher Header
+            [
+                'group_name' => 'Accounts Voucher',
+                'permissions' => [
+                    'Vouhcerheader.credit',
+                    'Vouhcerheader.debit',
+                    'Vouhcerheader.reverse',
                 ],
             ],
             //Account Money Receipt

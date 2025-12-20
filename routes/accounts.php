@@ -6,7 +6,8 @@ use App\Http\Controllers\Accounts\{
     GroupTwoController,
     GroupThreeController,
     ChartOfAccountController,
-    AccountsController
+    MoneyReceiptController,
+    VouhcerheaderController,
 };
 use Illuminate\Support\Facades\Route;
 
@@ -93,20 +94,34 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::delete('/show/{chartOfAccount}', 'destroy')->name('chartOfAccount.destroy');
             }
         );
-    //Accounts Route
-    Route::controller(AccountsController::class)
-        ->prefix('accounts')
+    //Money Receipt Route
+    Route::controller(MoneyReceiptController::class)
+        ->prefix('invoicelist')
         ->group(
             function () {
-                Route::get('/', 'index')->name('accounts.index');
-                Route::get('/{insid}/createmr/{sid}', 'createMR')->name('accounts.createMR');
-                Route::post('/{insnumber}/storeMR/{student}', 'storeMR')->name('accounts.storeMR');
-                Route::get('/{confirm}/onView', 'onView')->name('accounts.onView');
-                Route::post('/{confirm}/onCancel', 'onCancel')->name('accounts.onCancel');
-                Route::post('/{confirm}/onConfirm', 'onConfirm')->name('accounts.onConfirm');
-                Route::get('/{onReport}/onReport', 'onReport')->name('accounts.onReport');
+                Route::get('/AllInvoiceList', 'AllInvoiceList')->name('invoicelist.AllInvoiceList');
+                Route::get('/DueInvoiceList', 'DueInvoiceList')->name('invoicelist.DueInvoiceList');
+                Route::get('/MRList', 'MRList')->name('invoicelist.MRList');
+                
+                Route::get('/{insid}/createmr/{sid}', 'createMR')->name('invoicelist.createMR');
+                Route::post('/{insnumber}/storeMR/{student}', 'storeMR')->name('invoicelist.storeMR');
+                Route::get('/{confirm}/onView', 'onView')->name('invoicelist.onView');
+                Route::post('/{confirm}/onCancel', 'onCancel')->name('invoicelist.onCancel');
+                Route::post('/{confirm}/onConfirm', 'onConfirm')->name('invoicelist.onConfirm');
+                Route::get('/{onReport}/onReport', 'onReport')->name('invoicelist.onReport');
             }
         );
-    
+
+     //Voucher header Route
+    Route::controller(VouhcerheaderController::class)
+        ->prefix('vouhcerheader')
+        ->group(
+            function () {
+                Route::get('/credit', 'credit')->name('vouhcerheader.credit');
+                Route::get('/debit', 'debitVoucher')->name('vouhcerheader.debit');
+                Route::get('/reverse', 'reverseVoucher')->name('vouhcerheader.reverse');
+                
+            }
+        );
     
 });

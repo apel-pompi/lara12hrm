@@ -9,7 +9,7 @@ class AppoinmentsService
 {
     public function get(array $queryParams = [])
     {
-        $queryBuilder = StudentUtility::with(['user'])
+        $queryBuilder = StudentUtility::with(['user','student'])
             ->where('name', 'appoinments')
             ->orderBy('id', 'DESC');
 

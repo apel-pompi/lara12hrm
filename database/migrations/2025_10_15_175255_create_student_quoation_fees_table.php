@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('fee_id')->constrained('fees')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->decimal('amount', 20, 2)->nullable();
+            $table->string('paytype')->nullable();
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();

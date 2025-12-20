@@ -9,6 +9,7 @@ use App\Http\Requests\ChartOfAccount\UpdateChartOfAccountRequest;
 use App\Models\Accounts\GroupOne;
 use App\Models\Accounts\GroupThree;
 use App\Models\Accounts\GroupTwo;
+use App\Services\Accounts\ChartOfAccountService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +23,7 @@ class ChartOfAccountController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request, ChartOfAccountService $chartOfAccountService)
     {
         try {
             $this->authorize('ChartOfAccount.index');
@@ -32,10 +33,15 @@ class ChartOfAccountController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
+        $perPage = $request->query('per_page', 10);
 
         return Inertia::render('allpages/accounts/setting/chartofaccount', [
-            'chartofaccount' => ChartOfAccount::with(['GroupOne', 'GroupTwo', 'GroupThree', 'user'])->paginate(10),
+            'filters'   => $chartOfAccountService->get($request->query()),
+            'chartofaccount' => $chartOfAccountService->get(array_merge($request->query(), ['per_page' => $perPage])),
             'groupone' => GroupOne::where('active', 1)->get(),
+            'grouptwo' => GroupTwo::where('active', 1)->get(),
+            'groupthree' => GroupThree::where('active', 1)->get(),
+            'others' => ChartOfAccount::get(),
         ]);
     }
 

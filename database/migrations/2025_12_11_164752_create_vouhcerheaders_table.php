@@ -11,16 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('student_quotations', function (Blueprint $table) {
+        Schema::create('vouhcerheaders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('quotation_hd_id')->constrained('student_quotation_h_d_s')
+            $table->string('vouchernumber')->unique();
+            $table->date('voucherdate');
+            $table->longText('referance')->nullable();
+            $table->year('yearname');
+            $table->integer('monthname');
+            $table->foreignId('branch_id')->constrained('branches')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('service_id')->constrained('student_in_services')
-                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->string('status')->nullable();
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
             $table->softDeletes();
+
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });
@@ -31,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('student_quotations');
+        Schema::dropIfExists('vouhcerheaders');
     }
 };

@@ -4,7 +4,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { Eye, Link, ShieldCheck, X } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -60,12 +60,6 @@ const onConfirm = async (id: number) => {
         preserveScroll: true,
         preserveState: false,
         onSuccess: () => {
-            const flash = usePage().props.flash;
-            if (flash.message) {
-                toast('Success', {
-                    description: flash.message,
-                });
-            }
         },
         onError: (errors) => {
             const firstError = Object.values(errors)[0];
@@ -82,12 +76,7 @@ const onDelete = async (id: number) => {
         preserveScroll: true,
         preserveState: false,
         onSuccess: () => {
-            const flash = usePage().props.flash;
-            if (flash.message) {
-                toast('Success', {
-                    description: flash.message,
-                });
-            }
+            
         },
         onError: (errors) => {
             const firstError = Object.values(errors)[0];
@@ -153,7 +142,7 @@ const onView = async (id: number) => {
             fees?.map((s: any) => ({
                 feename: s.fee.name,
                 amount: s.amount,
-                productfee: s.productfee.amount,
+                productfee: s.productfee?.amount ?? "Extra Adding",
             })) ?? [];
         ViewDailog.value = true;
     } catch (error) {

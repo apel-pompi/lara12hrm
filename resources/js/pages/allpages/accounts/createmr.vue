@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import Textarea from '@/components/ui/textarea/Textarea.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -13,8 +14,8 @@ import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Accounts',
-        href: '/accounts',
+        title: 'Money Receive',
+        href: '/invoicelist/DueInvoiceList',
     },
 ];
 
@@ -27,6 +28,7 @@ const props = defineProps<{
         totalamt: number;
         netamount: number;
     };
+    invoicemrSum:number;
     invoice: {
         id: number;
         insnumber: string;
@@ -43,6 +45,7 @@ const props = defineProps<{
     student: { id: number; fname: string; lname: string; student_id: number };
 }>();
 
+
 const showDialogCreate = ref(false);
 
 const showDailog = () => {
@@ -57,7 +60,9 @@ const selectedFees = ref<
         invoice_hd_id: number;
         fee_name: string;
         amount: number;
+        original_amount: number;
     }>
+    
 >([]);
 
 // Form for payment type and discount
@@ -70,6 +75,7 @@ const feesForm = useForm({
     transactionNo: '',
     discount: 0,
     netamount: 0,
+    shortnote:'',
 });
 
 // Add fee row to editable box
@@ -84,6 +90,7 @@ function addFeeRow(dt: any) {
             invoice_hd_id: dt.invoice_hd_id,
             fee_name: dt.fee.name,
             amount: Number(dt.amount) || 0,
+            original_amount: Number(dt.amount) || 0,
         });
     }
 }
@@ -98,6 +105,13 @@ function validateAmount(fee: any) {
         fee.amount = 1;
         toast('error', {
             description: 'Amount cannot be 0 or negative. Automatically set to 1.',
+        });
+    }
+
+    if (fee.amount > fee.original_amount) {
+        fee.amount = fee.original_amount;
+        toast('warning', {
+            description: `Cannot exceed original amount (${fee.original_amount}).`,
         });
     }
 }
@@ -182,14 +196,14 @@ const submitMR = () => {
     feesForm.netamount = totalAmount
     
     feesForm.post(
-        route('accounts.storeMR', {
+        route('invoicelist.storeMR', {
             insnumber: props.invoice.insnumber,
             student: props.student.student_id,
         }),
         {
             preserveState: true,
             onSuccess: () => {
-                toast('success', { description: 'Money receipt created successfully.' });
+                
                 feesForm.reset();
                 showDialogCreate.value = false;
             },
@@ -224,7 +238,7 @@ const viewForm = useForm({
 
 const onView = async (invId: number) => {
     try {
-        const url = route('accounts.onView', {
+        const url = route('invoicelist.onView', {
             confirm: invId,
         });
         const res = await fetch(url);
@@ -233,7 +247,7 @@ const onView = async (invId: number) => {
             return;
         }
         const data = await res.json();
-        console.log(data);
+
         viewForm.student_id = data.data.student.student_id;
         viewForm.stundent_fname = data.data.student.fname;
         viewForm.stundent_lname = data.data.student.lname;
@@ -267,7 +281,7 @@ const onCancel = async (invId: number) => {
     const newStatus = !Boolean(invId);
 
     router.post(
-        route('accounts.onCancel', {
+        route('invoicelist.onCancel', {
             confirm: invId,
         }),
         { id: invId },
@@ -275,7 +289,6 @@ const onCancel = async (invId: number) => {
             preserveState: true,
             onSuccess: () => {
                 invId = newStatus ? 1 : 0;
-                toast.success('Money receive cancel successfully');
             },
             onError: (errors) => {
                 const firstError = Object.values(errors)[0];
@@ -293,15 +306,15 @@ const onConfirm = async (invId: number) => {
     const newStatus = !Boolean(invId);
 
     router.post(
-        route('accounts.onConfirm', {
+        route('invoicelist.onConfirm', {
             confirm: invId,
         }),
         { id: invId },
         {
             preserveState: true,
             onSuccess: () => {
+                feesForm.reset();
                 invId = newStatus ? 1 : 0;
-                toast.success('Money receive create successfully');
             },
             onError: (errors) => {
                 const firstError = Object.values(errors)[0];
@@ -312,7 +325,7 @@ const onConfirm = async (invId: number) => {
 };
 
 const onReport = async (invId: number) => {
-    const url = route('accounts.onReport', {
+    const url = route('invoicelist.onReport', {
         onReport: invId,
     });
 
@@ -320,7 +333,7 @@ const onReport = async (invId: number) => {
 };
 
 const goToAccounts = () => {
-    router.visit('/accounts');
+    router.visit('/invoicelist/DueInvoiceList');
 };
 </script>
 
@@ -342,7 +355,12 @@ const goToAccounts = () => {
                         <!-- Header section -->
                         <div class="mb-2 flex items-center justify-between px-2">
                             <h3 class="font-semibold">Money Receive</h3>
-                            <Button variant="outline" size="sm" @click="showDailog()"> <Plus class="mr-1" /> Create </Button>
+                            <span v-if="props.invoice.netamount==props.invoicemrSum">
+                                Amount receive not pending
+                            </span>
+                            <span v-else>
+                                <Button variant="outline" size="sm" @click="showDailog()"> <Plus class="mr-1" /> Create </Button>
+                            </span>
                         </div>
 
                         <!-- Table -->
@@ -616,7 +634,15 @@ const goToAccounts = () => {
                                 />
                             </div>
                         </div>
-
+                        <!-- Note -->
+                            <div class="mt-4 grid gap-2">
+                                <Label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Note</Label>
+                                <Textarea
+                                    v-model="feesForm.shortnote"
+                                    placeholder="Write a short note about this money receive..."
+                                    class="focus:ring-opacity-50 rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                                />
+                            </div>
                         <!-- Grand Total -->
                         <div class="mt-6 flex items-center justify-between rounded-lg bg-blue-50 px-5 py-3 shadow-sm dark:bg-gray-700/40">
                             <p class="text-base font-semibold text-gray-700 dark:text-gray-200">Grand Total (After Discount)</p>

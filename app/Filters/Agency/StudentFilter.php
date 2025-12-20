@@ -5,6 +5,7 @@ use App\Filters\BaseFilter;
 use App\Filters\Components\Agency\AssaignUser;
 use App\Filters\Components\Agency\Country;
 use App\Filters\Components\Agency\Source;
+use App\Filters\Components\Agency\StudentID;
 use App\Filters\Components\Default\CreateAt;
 use App\Filters\Components\Default\Email;
 use App\Filters\Components\Default\IDName;
@@ -16,6 +17,7 @@ class StudentFilter extends BaseFilter
     protected function getFilters(): array
     {
         return [
+            StudentID::class,
             IDName::class,
             Phone::class,
             Email::class,

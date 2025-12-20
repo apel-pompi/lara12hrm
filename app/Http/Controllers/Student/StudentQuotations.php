@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\AgencySetting\Fees;
 use App\Models\Default\ApprovalRequest;
 use App\Models\Default\Transaction;
 use App\Models\HRM\CompanyInfo;
@@ -10,6 +11,7 @@ use App\Models\Product\Product;
 use App\Models\Student\Student;
 use App\Models\Student\StudentActivities;
 use App\Models\Student\StudentInService;
+use App\Models\Student\StudentInvoiceHD;
 use App\Models\Student\StudentQuoationFee;
 use App\Models\Student\StudentQuotation;
 use App\Models\Student\StudentQuotationHD;
@@ -69,7 +71,8 @@ class StudentQuotations extends Controller
                 ->groupBy('a.id', 'a.product_id', 'b.name', 'd.name', 'c.branch_name', 'f.name', 'a.status')
                 ->get(),
             'quoatation' => StudentQuotationHD::where('student_id', $student->id)->get(),
-            'roles' => $roles
+            'roles' => $roles,
+            'feestype' => Fees::where('active', 1)->get(),
         ]);
     }
 
@@ -98,7 +101,7 @@ class StudentQuotations extends Controller
         ]);
     }
 
-    
+
     private function GetInvoiceNO()
     {
         $transaction = Transaction::where('name', 'Quoatations No')
@@ -114,6 +117,7 @@ class StudentQuotations extends Controller
 
     public function store(Student $student, Request $request)
     {
+
         try {
             $this->authorize('StudQuoat.store');
         } catch (AuthorizationException $e) {
@@ -147,6 +151,8 @@ class StudentQuotations extends Controller
                         'quotation_hd_id' => $createHd->id,
                         'fee_id' => $value['feesid'],
                         'amount' => $value['amount'],
+                        'quaotamount' => $value['amount'],
+                        'paytype' => $value['pay_type'],
                         'user_id' => auth()->id()
                     ]);
                 }
@@ -179,7 +185,7 @@ class StudentQuotations extends Controller
                 ->where('b.deleted_at', null)
                 ->groupBy('a.totalamount', 'a.quotation_no')
                 ->first();
-                
+
             $total = $chkamount->amount;
             $totalnet = $request->grandTotal;
             if ($total == $totalnet) {
@@ -224,13 +230,12 @@ class StudentQuotations extends Controller
                 'message' => 'Quotation not found.'
             ]);
         }
-
+        $chkamoun_without_product = StudentQuotationHD::select('totalamount')->where('student_id', $student->id)->where('product_id', $product->id)->where('id', $request->status)->first();
 
         $total = $chkamount->totalamount;
         $totalnet = $chkamount->amount;
 
-
-        if ($total == $totalnet) {
+        if ($total == $totalnet && $totalnet == $chkamoun_without_product->totalamount) {
             if (auth()->user()->can('StudQuoat.confirm')) {
                 // Log activity
                 StudentActivities::create([
@@ -297,8 +302,8 @@ class StudentQuotations extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-        $chk = ApprovalRequest::where('reference_id',$student->id)->where('description',$request->status)->exists();
-        if($chk){
+        $chk = ApprovalRequest::where('reference_id', $student->id)->where('description', $request->status)->exists();
+        if ($chk) {
             return back()->with([
                 'error' => true,
                 'message' => 'Quotations cancel not working approval pending'
@@ -358,25 +363,31 @@ class StudentQuotations extends Controller
             ->where('a.student_id', $student->id)
             ->where('a.product_id', $product->id)
             ->first();
+
         $fees = DB::table('student_quotation_h_d_s as a')
             ->leftJoin('student_quoation_fees as b', 'a.id', '=', 'b.quotation_hd_id')
-            ->leftJoin('fees as c', 'b.fee_id', '=', 'c.id')
-            ->leftJoin('product_fees_hds as d', 'a.product_id', '=', 'd.product_id')
-            ->leftJoin('product_fees_dts as e', 'd.id', '=', 'e.fees_hd_id')
-            ->select(
-                'c.name',
-                'b.amount as quoatamount',
-                'e.totalamount as pamount',
-                'e.pay_type'
-            )
-            ->where('a.id', $quoatation->id)
-            ->where('a.student_id', $student->id)
-            ->where('a.product_id', $product->id)
-            ->where('d.deleted_at', null)
-            ->where('e.deleted_at', null)
-            ->where('a.active', 1)
-            ->whereColumn('b.fee_id', '=', 'e.fees_id')
+            ->leftJoin('student_invoice_hd as c', 'a.quotation_no', '=', 'c.refe_code')
+            ->leftJoin('student_invoices_dt as d', function ($join) {
+                $join->on('c.id', '=', 'd.invoice_hd_id')
+                    ->on('b.fee_id', '=', 'd.fees_id');
+            })
+            ->leftJoin('student_money_receipt_d_t_s as e', function ($join) {
+                $join->on('c.id', '=', 'e.insnumber_id')
+                    ->on('b.fee_id', '=', 'e.fees_id');
+            })
+            ->leftJoin('fees as f', 'b.fee_id', '=', 'f.id')
+            ->where('a.quotation_no', $quoatation->quotation_no)
+            ->groupBy('b.fee_id', 'b.amount', 'b.quaotamount', 'b.paytype', 'f.name')
+            ->selectRaw("
+                    f.name,
+                    b.amount,
+                    b.quaotamount,
+                    b.paytype,
+                    SUM(d.amount) as invoicetotal,
+                    (COALESCE(b.amount, 0) + COALESCE(SUM(d.amount), 0) + COALESCE(SUM(e.amount),0)) as totalamount
+                ")
             ->get();
+
 
         $numberToWords = new NumberToWords();
         $numberTransformer = $numberToWords->getNumberTransformer('en');
@@ -401,6 +412,7 @@ class StudentQuotations extends Controller
 
     public function exportPdfApproved(Student $student, Product $product, StudentQuotationHD $quoatation)
     {
+        
         try {
             $this->authorize('StudQuoat.ApprovedReport');
         } catch (AuthorizationException $e) {
@@ -437,24 +449,27 @@ class StudentQuotations extends Controller
             ->first();
         $fees = DB::table('student_quotation_h_d_s as a')
             ->leftJoin('student_quoation_fees as b', 'a.id', '=', 'b.quotation_hd_id')
-            ->leftJoin('fees as c', 'b.fee_id', '=', 'c.id')
-            ->leftJoin('product_fees_hds as d', 'a.product_id', '=', 'd.product_id')
-            ->leftJoin('product_fees_dts as e', 'd.id', '=', 'e.fees_hd_id')
-            ->select(
-                'c.name',
-                'b.amount as quoatamount',
-                'e.totalamount as pamount',
-                'e.pay_type'
-            )
-            ->where('a.id', $quoatation->id)
-            ->where('a.student_id', $student->id)
-            ->where('a.product_id', $product->id)
-            ->where('d.deleted_at', null)
-            ->where('e.deleted_at', null)
-            ->where('a.active', 0)
-            ->whereColumn('b.fee_id', '=', 'e.fees_id')
+            ->leftJoin('student_invoice_hd as c', 'a.quotation_no', '=', 'c.refe_code')
+            ->leftJoin('student_invoices_dt as d', function ($join) {
+                $join->on('c.id', '=', 'd.invoice_hd_id')
+                    ->on('b.fee_id', '=', 'd.fees_id');
+            })
+            ->leftJoin('student_money_receipt_d_t_s as e', function ($join) {
+                $join->on('c.id', '=', 'e.insnumber_id')
+                    ->on('b.fee_id', '=', 'e.fees_id');
+            })
+            ->leftJoin('fees as f', 'b.fee_id', '=', 'f.id')
+            ->where('a.quotation_no', $quoatation->quotation_no)
+            ->groupBy('b.fee_id', 'b.amount', 'b.quaotamount', 'b.paytype', 'f.name')
+            ->selectRaw("
+                    f.name,
+                    b.amount,
+                    b.quaotamount,
+                    b.paytype,
+                    SUM(d.amount) as invoicetotal,
+                    (COALESCE(b.amount, 0) + COALESCE(SUM(d.amount), 0) + COALESCE(SUM(e.amount),0)) as totalamount
+                ")
             ->get();
-
         $numberToWords = new NumberToWords();
         $numberTransformer = $numberToWords->getNumberTransformer('en');
         $pdf = Pdf::loadView('exports.studentQuatationApproval', [

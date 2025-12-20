@@ -290,13 +290,11 @@ const goToArchive = () => {
             <div class="flex items-center gap-2 py-4">
                 <Button variant="outline" size="sm" @click="goToStudentCreate"><Plus></Plus> Student Create </Button>
             </div>
-            <div class="flex items-center gap-2 py-4">
+            <div class="flex flex-wrap items-center gap-4 py-4">
                 <!-- Search start -->
-                <div class="grid gap-2">
+                <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedName">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
+                        <div class="relative w-full md:w-48">
                                 <ComboboxInput
                                     class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                     placeholder="Select name..."
@@ -306,7 +304,7 @@ const goToArchive = () => {
                                 <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                     <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                 </ComboboxButton>
-                            </div>
+                           
 
                             <!-- Options -->
                             <ComboboxOptions
@@ -335,9 +333,9 @@ const goToArchive = () => {
                         </div>
                     </Combobox>
                 </div>
-                <div class="grid gap-2">
+                <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedPhone">
-                        <div class="relative w-48">
+                        <div class="relative w-full md:w-48">
                             <ComboboxInput
                                 class="w-full rounded-md border px-3 py-2 text-sm"
                                 placeholder="Select Phone"
@@ -367,9 +365,9 @@ const goToArchive = () => {
                         </div>
                     </Combobox>
                 </div>
-                <div class="grid gap-2">
+                <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedCountry">
-                        <div class="relative w-48">
+                        <div class="relative w-full md:w-48">
                             <ComboboxInput
                                 class="w-full rounded-md border px-3 py-2 text-sm"
                                 placeholder="Select Country"
@@ -399,11 +397,9 @@ const goToArchive = () => {
                         </div>
                     </Combobox>
                 </div>
-                <div class="grid gap-2">
+                <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedSource">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
+                        <div class="relative w-full md:w-48">
                                 <ComboboxInput
                                     class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                     placeholder="Select source"
@@ -413,7 +409,7 @@ const goToArchive = () => {
                                 <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                     <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                 </ComboboxButton>
-                            </div>
+                          
 
                             <!-- Options -->
                             <ComboboxOptions
@@ -444,11 +440,9 @@ const goToArchive = () => {
                         </div>
                     </Combobox>
                 </div>
-                <div class="grid gap-2">
+                <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedAssain">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
+                        <div class="relative w-full md:w-48">
                                 <ComboboxInput
                                     class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                     placeholder="Select assain user"
@@ -458,7 +452,7 @@ const goToArchive = () => {
                                 <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                     <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                 </ComboboxButton>
-                            </div>
+                            
 
                             <!-- Options -->
                             <ComboboxOptions
@@ -492,11 +486,9 @@ const goToArchive = () => {
                         </div>
                     </Combobox>
                 </div>
-                <div class="grid gap-2">
+                <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedTime">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
+                        <div class="relative w-full md:w-48">
                                 <ComboboxInput
                                     class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                     placeholder="Select entry date"
@@ -506,7 +498,6 @@ const goToArchive = () => {
                                 <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                     <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                 </ComboboxButton>
-                            </div>
 
                             <!-- Options -->
                             <ComboboxOptions
@@ -539,11 +530,9 @@ const goToArchive = () => {
                     </Combobox>
                 </div>
                 
-                <div class="grid gap-2">
+                <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedStatus">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
+                        <div class="relative w-full md:w-48">
                                 <ComboboxInput
                                     class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                     placeholder="Select status..."
@@ -553,7 +542,7 @@ const goToArchive = () => {
                                 <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                     <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                 </ComboboxButton>
-                            </div>
+                            
 
                             <!-- Options -->
                             <ComboboxOptions
@@ -588,10 +577,10 @@ const goToArchive = () => {
                     </Combobox>
                 </div>
 
-                <div class="grid gap-2">
+                <div class="w-full sm:w-auto">
                     <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
                 </div>
-                <div class="grid gap-2">
+                <div class="w-full sm:w-auto">
                     <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
                 </div>
             </div>
@@ -603,8 +592,8 @@ const goToArchive = () => {
                 <Button class="bg-blue-500 text-white cursor-pointer" size="sm" @click="goToOnBoard">({{ props.countonBoard }})OnBoard</Button>
                 <Button class="bg-gray-500 text-white cursor-pointer" size="sm" @click="goToArchive">({{ props.countArchive }})Archive</Button>
             </div>
-            <div class="rounded-md border">
-                <Table>
+            <div class="rounded-md border overflow-x-auto">
+                <Table class="min-w-max">
                     <TableHeader>
                         <TableRow>
                             <TableHead>Name</TableHead>
@@ -663,7 +652,7 @@ const goToArchive = () => {
                 </Table>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
+            <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 py-4">
                 <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
                     <label for="per-page" class="text-gray-600">Show:</label>
                     <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">

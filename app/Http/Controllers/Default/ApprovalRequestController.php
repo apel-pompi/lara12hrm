@@ -8,6 +8,7 @@ use App\Models\HRM\Leave;
 use App\Models\Student\Student;
 use App\Models\Student\StudentActivities;
 use App\Models\Student\StudentInService;
+use App\Models\Student\StudentInvoiceHD;
 use App\Models\Student\StudentQuotationHD;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -183,6 +184,46 @@ class ApprovalRequestController extends Controller
 
         if ($quotHd) {
             return back()->with(['success' => true, 'message' => 'Quotation request cancel successfully.']);
+        }
+
+        return back()->with(['error' => true, 'message' => 'Invalid request']);
+    }
+
+    public function ReturnConfirm(Request $request)
+    {
+        
+        $data = ApprovalRequest::find($request->returnId);
+        $student_id = $data->reference_id;
+        $srid = $data->description;
+
+        $invHd = StudentInvoiceHD::where('student_id', $student_id)->where('id',$srid)
+            ->update(['status' => 'Confirmed']);
+
+            if ($invHd) {
+                $data->update(['status' => 1]);
+                StudentActivities::create([
+                    'student_id'    => $student_id,
+                    'title'         => "has approved student amount refund",
+                    'fristactivity' => null,
+                    'lastactivity'  => null,
+                    'user_id'       => Auth::id(),
+                ]);
+
+            return back()->with(['success' => true, 'message' => 'Invoice Return request confirm successfully.']);
+        }
+        
+
+        return back()->with(['error' => true, 'message' => 'Invalid request']);
+    }
+
+    public function ReturnCancel(Request $request)
+    {
+
+        $quotHd = StudentInvoiceHD::where('insnumber', $request->returnId)
+            ->update(['status' => 'Cancel']);
+
+        if ($quotHd) {
+            return back()->with(['success' => true, 'message' => 'Invoice Return cancel successfully.']);
         }
 
         return back()->with(['error' => true, 'message' => 'Invalid request']);

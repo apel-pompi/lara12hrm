@@ -203,20 +203,20 @@
 
             <tbody>
                 @php
-                    $totalAmount = 0;
+                    $netAmount = 0;
                 @endphp
                 @foreach ($fees as $key)
                     @php
-                        $totalAmount += $key->quoatamount;
+                        $netAmount += $key->quaotamount;
                     @endphp
                     <tr>
                         <td>{{ $key->name }}</td>
-                        <td>{{ number_format($key->quoatamount, 2) }}</td>
+                        <td>{{ number_format($key->quaotamount, 2) }}</td>
                         <td>
-                            @if ($key->pay_type == 'Revenue')
+                            @if ($key->paytype == 'Revenue')
                                 Non Refundable
                             @else
-                                {{$key->pay_type}}
+                                {{$key->paytype}}
                             @endif
                         </td>
                         <td>
@@ -239,7 +239,7 @@
                 <tr>
                     <td><strong>Grand Total</strong></td>
                     <td colspan="3" class="grand-total">
-                        {{ number_format($totalAmount, 2) }}
+                        {{ number_format($netAmount, 2) }}
                     </td>
                 </tr>
             </tbody>
@@ -247,7 +247,7 @@
 
     </div>
 
-    <p>in word: {{ $numberTransformer->toWords($totalAmount ?? 0) }} only</p>
+    <p>in word: {{ $numberTransformer->toWords($netAmount ?? 0) }} only</p>
     <!-- Note -->
     <div class="note">
         <strong>Note:</strong>

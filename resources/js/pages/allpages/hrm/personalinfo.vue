@@ -24,7 +24,7 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Switch from '@/components/ui/switch/Switch.vue';
 import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker from '@vuepic/vue-datepicker';
+import VueDatePicker  from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { toast } from 'vue-sonner';
 
@@ -78,7 +78,7 @@ export interface Paginated<T> {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Personal Information', href: '/personalinfo' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Personnel Information', href: '/personalinfo' }];
 
 const props = defineProps<{
     personalinfo: Paginated<PersonalInfo>;
@@ -165,7 +165,7 @@ const onShow = async (id: number) => {
     try {
         const res = await fetch(`/personalinfo/${id}`);
         if (!res.ok) {
-            toast.error('Server error while fetching personal info details.');
+            toast.error('Server error while fetching Personnel info details.');
             return;
         }
         const data = await res.json();
@@ -186,7 +186,7 @@ const onEdit = async (id: number) => {
         const res = await fetch(`/personalinfo/${id}/edit`);
 
         if (!res.ok) {
-            toast.error('Server error while fetching personal info details.');
+            toast.error('Server error while fetching Personnel info details.');
             return;
         }
 
@@ -225,7 +225,7 @@ const submit = () => {
             forceFormData: true,
             onSuccess: () => {
                 toast('Success', {
-                    description: 'Personal information updated successfully',
+                    description: 'Personnel information updated successfully',
                 });
 
                 setTimeout(() => {
@@ -248,7 +248,7 @@ const submit = () => {
         form.post(route('personalinfo.store'), {
             onSuccess: () => {
                 toast('Success', {
-                    description: 'Personal information store successfully',
+                    description: 'Personnel information store successfully',
                 });
 
                 setTimeout(() => {
@@ -273,13 +273,13 @@ const submit = () => {
 const deleteForm = useForm({});
 
 const onDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this personal info?')) return;
+    if (!confirm('Are you sure you want to delete this Personnel info?')) return;
 
     if (deleteForm.processing) return;
 
     deleteForm.delete(`/personalinfo/show/${id}`, {
         onSuccess: () => {
-            toast.success('Personal Info deleted successfully');
+            toast.success('Personnel Info deleted successfully');
         },
         onError: () => {
             toast.success('Somethings wrong !');
@@ -299,7 +299,7 @@ const toggleStatus = (personalinfos: PersonalInfo) => {
             preserveState: true,
             onSuccess: () => {
                 personalinfos.active = newStatus ? 1 : 0; // local update (number)
-                toast.success('Personal Info status update');
+                toast.success('Personnel Info status update');
             },
         },
     );
@@ -402,11 +402,11 @@ const goToPage = (url: string | null) => {
 </script>
 
 <template>
-    <Head title="Personal Information" />
+    <Head title="Personnel Information" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
             <div class="flex items-center gap-2 py-4">
-                <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Personal Info </Button>
+                <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Personnel Info </Button>
                 <!-- Search start -->
                 <div class="grid gap-2">
                     <Combobox v-model="selectedPersonID">

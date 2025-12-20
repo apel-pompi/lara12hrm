@@ -20,7 +20,7 @@ import SelectItem from '@/components/ui/select/SelectItem.vue';
 import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
 import SelectValue from '@/components/ui/select/SelectValue.vue';
 import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker from '@vuepic/vue-datepicker';
+import VueDatePicker  from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { toast } from 'vue-sonner';
 
@@ -72,7 +72,7 @@ interface FormErrors {
     fromdate: string;
     todate: string;
     requestdays: string;
-    approveddate:string;
+    approveddate: string;
     approveddays: string;
     substitute: string;
     contact_address: string;
@@ -92,7 +92,7 @@ const form = useForm({
     fromdate: '',
     todate: '',
     requestdays: '',
-    approveddate:'',
+    approveddate: '',
     approveddays: '',
     substitute: '',
     contact_address: '',
@@ -126,7 +126,7 @@ watch(
         if (form.empid && form.leaveplan_id) {
             await fetchLeave();
         }
-    }
+    },
 );
 
 const onEdit = async (id: number) => {
@@ -216,21 +216,25 @@ const exportPdf = (id: number) => {
 };
 
 watch(fromdate, (newDate) => {
-    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
-        form.fromdate = newDate.toISOString().split('T')[0];
+    if (newDate) {
+        form.fromdate = newDate;
+    }else{
+        form.fromdate = '';
     }
 });
 
 watch(todate, (newDate) => {
-    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
-        form.todate = newDate.toISOString().split('T')[0];
+    if (newDate) {
+        form.todate = newDate;
+    }else{
+        form.todate = '';
     }
 });
 
 watch([fromdate, todate], ([newFrom, newTo]) => {
     if (newFrom && newTo) {
-        const start = new Date(newFrom);
-        const end = new Date(newTo);
+        const start = new Date(newFrom + 'T00:00:00');
+        const end = new Date(newTo + 'T00:00:00');
         const diffTime = end.getTime() - start.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
@@ -393,26 +397,34 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
                                 :enable-time-picker="false"
                                 placeholder="From date"
                                 auto-apply
+                                model-type="format"
                             />
                             <span v-if="errors?.fromdate" class="text-sm text-red-600">{{ errors.fromdate }}</span>
                         </div>
                         <div class="grid gap-2">
                             <Label for="todate">To Date<span class="text-red-500">*</span></Label>
                             <VueDatePicker
-                                v-model="todate"
-                                :disabled="balanceLeave?.balance === 0"
-                                :format="'yyyy-MM-dd'"
-                                :enable-time-picker="false"
-                                placeholder="To date"
-                                auto-apply
-                            />
+    v-model="todate"
+    :disabled="balanceLeave?.balance === 0"
+    :format="'yyyy-MM-dd'"
+    :enable-time-picker="false"
+    placeholder="To date"
+    auto-apply
+    model-type="format" />
                             <span v-if="errors?.todate" class="text-sm text-red-600">{{ errors.todate }}</span>
                         </div>
                     </div>
                     <div class="grid gap-y-3">
                         <div class="grid gap-2">
                             <Label for="days">Total Days<span class="text-red-500">*</span></Label>
-                            <Input class="max-w-sm" placeholder="Total Days" id="empid" v-model="form.requestdays" autofocus :disabled="balanceLeave?.balance === 0"/>
+                            <Input
+                                class="max-w-sm"
+                                placeholder="Total Days"
+                                id="empid"
+                                v-model="form.requestdays"
+                                autofocus
+                                :disabled="balanceLeave?.balance === 0"
+                            />
                             <span v-if="errors?.requestdays" class="text-sm text-red-600">{{ errors.requestdays }}</span>
                         </div>
                         <div class="grid gap-2">
