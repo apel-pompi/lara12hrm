@@ -97,7 +97,7 @@ class TransactionController extends Controller
     public function updateStatus(Request $request, $transaction)
     {
         try {
-            $this->authorize('Trancaction.updateStatus');
+            $this->authorize('Trancaction.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

@@ -25,6 +25,7 @@ class StudentReportController extends Controller
     public function index()
     {
         $user = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
         try {
 
@@ -263,6 +264,7 @@ class StudentReportController extends Controller
     {
 
         $user = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
         try {
 
@@ -426,6 +428,7 @@ class StudentReportController extends Controller
     public function studentRevenue()
     {
         $user = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
         try {
 

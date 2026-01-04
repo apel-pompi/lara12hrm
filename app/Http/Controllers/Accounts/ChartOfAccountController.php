@@ -169,7 +169,7 @@ class ChartOfAccountController extends Controller
     public function updateStatus(Request $request, $chartOfAccount)
     {
         try {
-            $this->authorize('ChartOfAccount.updateStatus');
+            $this->authorize('ChartOfAccount.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

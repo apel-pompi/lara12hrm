@@ -10,6 +10,8 @@ use App\Http\Requests\Partner\UpdatePartnerRequest;
 use App\Models\AgencySetting\MasterCategory;
 use App\Models\AgencySetting\Workflow;
 use App\Models\Default\Country;
+use App\Models\Partner\PartnerTypeSetup;
+use App\Services\Agency\PartnerService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -22,7 +24,7 @@ class PartnerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request, PartnerService $partnerService)
     {
         try {
             $this->authorize('Partner.index');
@@ -33,9 +35,15 @@ class PartnerController extends Controller
             ]);
         }
 
+        $perPage = $request->query('per_page', 10);
 
         return Inertia::render('allpages/Agency/Partner/partners',[
-            'pertners' => Partner::with(['partnertype','state.country','city'])->get()
+            'filters'   => $partnerService->get($request->query()),
+            'pertners' => $partnerService->get(array_merge($request->query(), ['per_page' => $perPage])),
+            'allpartner' => Partner::where('active',1)->get(),
+            'workflow' => Workflow::where('active',1)->get(),
+            'partnertype' => PartnerTypeSetup::where('active',1)->get(),
+            'country' => Country::where('status',1)->get(['id','name']),
         ]);
     }
 

@@ -235,6 +235,15 @@ const onDelete = async (id: number) => {
     });
 };
 
+const GroupOne = ref(null);
+
+watch(GroupOne, (val) => {
+    if (val) {
+        form.groupone = val.groupone; // numeric/code
+        form.accounttype = val.description; // auto fill
+    }
+});
+
 const selectedGroupOne = ref(null);
 const queryGroupOne = ref('');
 const filteredGroupOne = computed(() => {
@@ -253,7 +262,7 @@ const filteredGroupTwo = computed(() => {
 
 const selectedGroupThree = ref(null);
 const queryGroupThree = ref('');
-const filteredGroupThree= computed(() => {
+const filteredGroupThree = computed(() => {
     if (queryGroupThree.value === '') return props.groupthree;
 
     return props.groupthree.filter((n) => n.description && n.description.toLowerCase().includes(queryGroupThree.value.toLowerCase()));
@@ -261,7 +270,7 @@ const filteredGroupThree= computed(() => {
 
 const selectedDescription = ref(null);
 const queryDescription = ref('');
-const filteredDescription= computed(() => {
+const filteredDescription = computed(() => {
     if (queryDescription.value === '') return props.others;
 
     return props.others.filter((n) => n.description && n.description.toLowerCase().includes(queryDescription.value.toLowerCase()));
@@ -271,29 +280,25 @@ const selectedUsages = ref(null);
 const queryUsages = ref('');
 
 const filteredUsages = computed(() => {
-    let list = props.others
+    let list = props.others;
     if (queryUsages.value.trim() !== '') {
-        const q = queryUsages.value.toLowerCase()
-        list = list.filter(item =>
-            item.accountusage?.toLowerCase().includes(q)
-        )
+        const q = queryUsages.value.toLowerCase();
+        list = list.filter((item) => item.accountusage?.toLowerCase().includes(q));
     }
-    return [...new Set(list.map(item => item.accountusage).filter(Boolean))]
-})
+    return [...new Set(list.map((item) => item.accountusage).filter(Boolean))];
+});
 
 const selectedAnalytic = ref(null);
 const queryAnalytic = ref('');
 
 const filteredAnalytic = computed(() => {
-    let list = props.others
+    let list = props.others;
     if (queryAnalytic.value.trim() !== '') {
-        const q = queryAnalytic.value.toLowerCase()
-        list = list.filter(item =>
-            item.analyticalcode?.toLowerCase().includes(q)
-        )
+        const q = queryAnalytic.value.toLowerCase();
+        list = list.filter((item) => item.analyticalcode?.toLowerCase().includes(q));
     }
-    return [...new Set(list.map(item => item.analyticalcode).filter(Boolean))]
-})
+    return [...new Set(list.map((item) => item.analyticalcode).filter(Boolean))];
+});
 
 const search = () => {
     const params: Record<string, any> = {};
@@ -478,7 +483,10 @@ const goToPage = (url: string | null) => {
                                 <ComboboxOptions
                                     class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
                                 >
-                                    <div v-if="filteredDescription.length === 0 && queryDescription !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                    <div
+                                        v-if="filteredDescription.length === 0 && queryDescription !== ''"
+                                        class="px-4 py-2 text-gray-500 select-none"
+                                    >
                                         Nothing found.
                                     </div>
 
@@ -592,7 +600,7 @@ const goToPage = (url: string | null) => {
                         <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
                     </div>
                 </div>
-                <div class="rounded-xl border overflow-hidden shadow-sm">
+                <div class="overflow-hidden rounded-xl border shadow-sm">
                     <Table class="w-full text-sm">
                         <TableHeader>
                             <TableRow>
@@ -609,7 +617,7 @@ const goToPage = (url: string | null) => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow  v-for="(chart, index) in data.data ?? []" :key="index" class="hover:bg-muted/50">
+                            <TableRow v-for="(chart, index) in data.data ?? []" :key="index" class="hover:bg-muted/50">
                                 <TableCell>{{ index + 1 }}</TableCell>
                                 <TableCell>{{ chart.group_one.description }}</TableCell>
                                 <TableCell>{{ chart.group_two.description }}</TableCell>
@@ -630,7 +638,7 @@ const goToPage = (url: string | null) => {
                     </Table>
                 </div>
 
-                <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 py-4">
+                <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
                     <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
                         <label for="per-page" class="text-gray-600">Show:</label>
                         <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
@@ -672,13 +680,13 @@ const goToPage = (url: string | null) => {
                         <!-- First Group -->
                         <div>
                             <Label for="groupone" class="text-sm font-medium">First Group<span class="text-red-500">*</span></Label>
-                            <Select v-model="form.groupone">
+                            <Select v-model="GroupOne">
                                 <SelectTrigger class="w-full">
                                     <SelectValue placeholder="Select Group One" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="one in props.groupone" :key="one.id" :value="one.groupone">
+                                        <SelectItem v-for="one in props.groupone" :key="one.id" :value="one">
                                             {{ one.description }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -740,19 +748,7 @@ const goToPage = (url: string | null) => {
                         <!-- Account Type -->
                         <div>
                             <Label for="accounttype" class="text-sm font-medium">Account Type<span class="text-red-500">*</span></Label>
-                            <Select v-model="form.accounttype">
-                                <SelectTrigger class="w-full">
-                                    <SelectValue placeholder="Select Account Type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="Asset">Asset</SelectItem>
-                                        <SelectItem value="Liability">Liability</SelectItem>
-                                        <SelectItem value="Income">Income</SelectItem>
-                                        <SelectItem value="Expenses">Expenses</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                            <Input type="text" id="accounttype" v-model="form.accounttype" placeholder="Enter Account Type" disabled class="mt-1 w-full" />
                             <p v-if="form.errors.accounttype" class="mt-1 text-sm text-red-600">{{ form.errors.accounttype }}</p>
                         </div>
 

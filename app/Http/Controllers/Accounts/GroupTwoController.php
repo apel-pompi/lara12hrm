@@ -20,7 +20,7 @@ class GroupTwoController extends Controller
      */
     public function store(StoreGroupTwoRequest $request)
     {
-
+        
         try {
             $this->authorize('GroupTwo.store');
         } catch (AuthorizationException $e) {
@@ -117,6 +117,7 @@ class GroupTwoController extends Controller
      */
     public function destroy(GroupTwo $groupTwo)
     {
+        
         try {
             $this->authorize('GroupTwo.destroy');
         } catch (AuthorizationException $e) {

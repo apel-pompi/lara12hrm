@@ -120,9 +120,7 @@ const filteredStudentID = computed(() => {
     return uniqueStudentIDs.filter((d) => d.student_id.toLowerCase().includes(queryStudentID.value.toLowerCase()));
 });
 
-const onCreateMR = async (invId: number, sid: number) => {
-    router.visit(route('accounts.createMR', { insid: invId, sid: sid }));
-};
+
 
 const goToPage = (url: string | null) => {
     if (url) {

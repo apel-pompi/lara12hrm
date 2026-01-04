@@ -11,20 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vouhcerheaders', function (Blueprint $table) {
+        Schema::create('apalcs', function (Blueprint $table) {
             $table->id();
             $table->string('vouchernumber')->unique();
+            $table->string('invnumber')->unique();
             $table->date('voucherdate');
-            $table->longText('referance')->nullable();
-            $table->year('yearname');
-            $table->integer('monthname');
-            $table->foreignId('branch_id')->constrained('branches')
-                ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->string('status')->nullable();
+            $table->string('currency')->nullable();
+            $table->string('exchagerate')->nullable();
+            $table->decimal('primeamt', 20, 3)->nullable();
+            $table->decimal('baseamt', 20, 3)->nullable();
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
-            $table->softDeletes();
 
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
@@ -36,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vouhcerheaders');
+        Schema::dropIfExists('apalcs');
     }
 };

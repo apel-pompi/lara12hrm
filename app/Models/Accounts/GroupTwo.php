@@ -43,8 +43,19 @@ class GroupTwo extends Model
      */
     public function GroupThree(): HasMany
     {
-        return $this->hasMany(GroupTwo::class, 'grouptwo', 'grouptwo');
+        return $this->hasMany(GroupThree::class, 'grouptwo', 'grouptwo');
     }
+
+    /**
+     * Get all of the chartOfAccounts for the GroupOne
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function chartOfAccounts(): HasMany
+    {
+        return $this->hasMany(ChartOfAccount::class, 'grouptwo', 'grouptwo');
+    }
+    
     /**
      * Get the user that owns the GroupOne
      *

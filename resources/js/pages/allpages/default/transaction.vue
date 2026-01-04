@@ -158,9 +158,23 @@ watch(
       form.trncode = 'INV-';
     } else if (newVal === 'Amount Refund') {
       form.trncode = 'SR--';
-    } else if (newVal === 'Amount Transfer') {
-      form.trncode = 'INT-';
-    } else {
+    } else if (newVal === 'Opening Blance') {
+      form.trncode = 'OB--';
+    } else if (newVal === 'Jurnal Voucher') {
+      form.trncode = 'JV--';
+    } else if (newVal === 'Payment Voucher') {
+      form.trncode = 'PAY-';
+    } else if (newVal === 'Receipt Voucher') {
+      form.trncode = 'RCV-';
+    } else if (newVal === 'Reverse Voucher') {
+      form.trncode = 'REV-';
+    } else if (newVal === 'Supplier No') {
+      form.trncode = 'SUP-';
+    } else if (newVal === 'Supplier Invoice') {
+      form.trncode = 'AP--';
+    } else if (newVal === 'Supplier Payment') {
+      form.trncode = 'APV-';
+    }  else {
       form.trncode = '';
     }
   }
@@ -245,7 +259,7 @@ watch(
                     <div class="grid grid-cols-1 gap-6 py-4 md:grid-cols-2">
                         <!-- Transaction Name -->
                         <div class="grid gap-2">
-                            <Label for="name" class="font-medium">Transaction Name</Label>
+                            <Label for="name" class="font-medium">Transaction Name<span class="text-red-500">*</span></Label>
                             <Select v-model="form.name">
                                 <SelectTrigger class="w-full">
                                     <SelectValue placeholder="Select Name" />
@@ -257,7 +271,14 @@ watch(
                                         <SelectItem value="Quoatations No">Quoatations No</SelectItem>
                                         <SelectItem value="Invoice No">Invoice No</SelectItem>
                                         <SelectItem value="Amount Refund">Amount Refund</SelectItem>
-                                        <SelectItem value="Amount Transfer">Amount Transfer</SelectItem>
+                                        <SelectItem value="Opening Blance">Opening Blance</SelectItem>
+                                        <SelectItem value="Jurnal Voucher">Jurnal Voucher</SelectItem>
+                                        <SelectItem value="Payment Voucher">Payment Voucher</SelectItem>
+                                        <SelectItem value="Receipt Voucher">Receipt Voucher</SelectItem>
+                                        <SelectItem value="Reverse Voucher">Reverse Voucher</SelectItem>
+                                        <SelectItem value="Supplier No">Supplier No</SelectItem>
+                                        <SelectItem value="Supplier Invoice">Supplier Invoice</SelectItem>
+                                        <SelectItem value="Supplier Payment">Supplier Payment</SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
@@ -268,7 +289,7 @@ watch(
 
                         <!-- Transaction Code -->
                         <div class="grid gap-2">
-                            <Label for="trncode" class="font-medium">Transaction Code</Label>
+                            <Label for="trncode" class="font-medium">Transaction Code<span class="text-red-500">*</span></Label>
                             <Input id="trncode" v-model="form.trncode" class="w-full" readonly autofocus />
                             <p v-if="form.errors.trncode" class="text-sm text-red-600">
                                 {{ form.errors.trncode }}
@@ -276,7 +297,7 @@ watch(
                         </div>
                         <!-- Last Number -->
                         <div class="grid gap-2">
-                            <Label for="lastnumber" class="font-medium">Last Number</Label>
+                            <Label for="lastnumber" class="font-medium">Last Number<span class="text-red-500">*</span></Label>
                             <Input id="lastnumber" v-model="form.lastnumber" class="w-full" placeholder="Input last number" autofocus />
                             <p v-if="form.errors.lastnumber" class="text-sm text-red-600">
                                 {{ form.errors.lastnumber }}
@@ -285,7 +306,7 @@ watch(
 
                         <!-- Increment -->
                         <div class="grid gap-2">
-                            <Label for="increment" class="font-medium">Increment</Label>
+                            <Label for="increment" class="font-medium">Increment<span class="text-red-500">*</span></Label>
                             <Input id="increment" v-model="form.increment" class="w-full" placeholder="Input Increment" autofocus />
                             <p v-if="form.errors.increment" class="text-sm text-red-600">
                                 {{ form.errors.increment }}

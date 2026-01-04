@@ -76,7 +76,7 @@ class RolePermissionSeeder extends Seeder
                     'general.show',
                     'general.edit',
                     'general.update',
-                    'general.updateStatus',
+                    'general.status',
                     'general.destroy',
                     
                 ],
@@ -87,7 +87,7 @@ class RolePermissionSeeder extends Seeder
                 'permissions' => [
                     'patnerSetting.index',
                     'patnerSetting.store',
-                    'patnerSetting.updateStatus',
+                    'patnerSetting.status',
                     'patnerSetting.destroy',
                     
                 ],
@@ -98,7 +98,7 @@ class RolePermissionSeeder extends Seeder
                 'permissions' => [
                     'productSetting.index',
                     'productSetting.store',
-                    'productSetting.updateStatus',
+                    'productSetting.status',
                     'productSetting.destroy',
                     
                 ],
@@ -111,7 +111,7 @@ class RolePermissionSeeder extends Seeder
                     'workflow.store',
                     'workflow.edit',
                     'workflow.update',
-                    'workflow.updateStatus',
+                    'workflow.status',
                     
                 ],
             ],
@@ -123,7 +123,7 @@ class RolePermissionSeeder extends Seeder
                     'workflowDocument.store',
                     'workflowDocument.edit',
                     'workflowDocument.update',
-                    'workflowDocument.updateStatus',
+                    'workflowDocument.status',
                     
                 ],
             ],
@@ -131,8 +131,8 @@ class RolePermissionSeeder extends Seeder
             [
                 'group_name' => 'Document Check List',
                 'permissions' => [
-                    'workflowDocumentCheck.index',
-                    'workflowDocumentCheck.store',
+                    'DocumentCheck.index',
+                    'DocumentCheck.store',
                     
                 ],
             ],
@@ -145,7 +145,7 @@ class RolePermissionSeeder extends Seeder
                     'partnerBranch.show',
                     'partnerBranch.edit',
                     'partnerBranch.update',
-                    'partnerBranch.updateStatus',
+                    'partnerBranch.status',
                     'partnerBranch.destroy',
                     
                 ],
@@ -159,7 +159,7 @@ class RolePermissionSeeder extends Seeder
                     'Academic.show',
                     'Academic.edit',
                     'Academic.update',
-                    'Academic.updateStatus',
+                    'Academic.status',
                     'Academic.destroy',
                     
                 ],
@@ -173,7 +173,7 @@ class RolePermissionSeeder extends Seeder
                     'StudentStage.show',
                     'StudentStage.edit',
                     'StudentStage.update',
-                    'StudentStage.updateStatus',
+                    'StudentStage.status',
                     'StudentStage.destroy',
                     
                 ],
@@ -187,7 +187,7 @@ class RolePermissionSeeder extends Seeder
                     'StudentSource.show',
                     'StudentSource.edit',
                     'StudentSource.update',
-                    'StudentSource.updateStatus',
+                    'StudentSource.status',
                     'StudentSource.destroy',
                     
                 ],
@@ -201,7 +201,7 @@ class RolePermissionSeeder extends Seeder
                     'Fees.show',
                     'Fees.edit',
                     'Fees.update',
-                    'Fees.updateStatus',
+                    'Fees.status',
                     'Fees.destroy',
                     
                 ],
@@ -215,7 +215,7 @@ class RolePermissionSeeder extends Seeder
                     'Installment.show',
                     'Installment.edit',
                     'Installment.update',
-                    'Installment.updateStatus',
+                    'Installment.status',
                     'Installment.destroy',
                     
                 ],
@@ -229,7 +229,7 @@ class RolePermissionSeeder extends Seeder
                     'Trancaction.show',
                     'Trancaction.edit',
                     'Trancaction.update',
-                    'Trancaction.updateStatus',
+                    'Trancaction.status',
                     'Trancaction.destroy',
                     
                 ],
@@ -243,7 +243,7 @@ class RolePermissionSeeder extends Seeder
                     'TrancactionNo.show',
                     'TrancactionNo.edit',
                     'TrancactionNo.update',
-                    'TrancactionNo.updateStatus',
+                    'TrancactionNo.status',
                     'TrancactionNo.destroy',
                     
                 ],
@@ -311,7 +311,7 @@ class RolePermissionSeeder extends Seeder
                     'worksetup.edit',
                     'worksetup.update',
                     'worksetup.destroy',
-                    'worksetup.updateStatus'
+                    'worksetup.status'
                     
                 ],
             ],
@@ -364,8 +364,7 @@ class RolePermissionSeeder extends Seeder
                     'salaryType.edit',
                     'salaryType.update',
                     'salaryType.destroy',
-                    'salaryType.updateStatus'
-                    
+                    'salaryType.status'
                 ],
             ],
             //Holiday Header          
@@ -374,12 +373,11 @@ class RolePermissionSeeder extends Seeder
                 'permissions' => [
                     'holiday.index',
                     'holiday.store',
-                    'holiday.updateStatus',
                     'holiday.show',
                     'holiday.edit',
                     'holiday.update',
                     'holiday.destroy',
-                    
+                    'holiday.status',
                 ],
             ],
             //Holiday Details          
@@ -391,7 +389,6 @@ class RolePermissionSeeder extends Seeder
                     'holidaydt.edit',
                     'holidaydt.update',
                     'holidaydt.destroy',
-                    
                 ],
             ],
            
@@ -405,7 +402,7 @@ class RolePermissionSeeder extends Seeder
                     'personal.edit',
                     'personal.update',
                     'personal.destroy',
-                    'personal.updateStatus',
+                    'personal.status',
                     
                 ],
             ],
@@ -538,7 +535,7 @@ class RolePermissionSeeder extends Seeder
                     'Partner.create',
                     'Partner.edit',
                     'Partner.update',
-                    'Partner.updateStatus',
+                    'Partner.status',
                     'Partner.destroy'
                     
                 ],
@@ -550,7 +547,7 @@ class RolePermissionSeeder extends Seeder
                 'permissions' => [
                     'Product.index',
                     'Product.store',
-                    'Product.updateStatus',
+                    'Product.status',
                     'Product.edit',
                     'Product.update',
                     'Product.destroy',
@@ -591,7 +588,7 @@ class RolePermissionSeeder extends Seeder
                     'GroupOne.show',
                     'GroupOne.edit',
                     'GroupOne.update',
-                    'GroupOne.updateStatus',
+                    'GroupOne.status',
                     'GroupOne.destroy',
                 ],
             ],
@@ -603,7 +600,7 @@ class RolePermissionSeeder extends Seeder
                     'GroupTwo.show',
                     'GroupTwo.edit',
                     'GroupTwo.update',
-                    'GroupTwo.updateStatus',
+                    'GroupTwo.status',
                     'GroupTwo.destroy',
                 ],
             ],
@@ -615,7 +612,7 @@ class RolePermissionSeeder extends Seeder
                     'GroupThree.show',
                     'GroupThree.edit',
                     'GroupThree.update',
-                    'GroupThree.updateStatus',
+                    'GroupThree.status',
                     'GroupThree.destroy',
                 ],
             ],
@@ -628,17 +625,137 @@ class RolePermissionSeeder extends Seeder
                     'ChartOfAccount.show',
                     'ChartOfAccount.edit',
                     'ChartOfAccount.update',
-                    'ChartOfAccount.updateStatus',
+                    'ChartOfAccount.status',
                     'ChartOfAccount.destroy',
                 ],
             ],
-             //Voucher Header
+            //AC To GL Setup
             [
-                'group_name' => 'Accounts Voucher',
+                'group_name' => 'ACToGL Setup',
                 'permissions' => [
-                    'Vouhcerheader.credit',
-                    'Vouhcerheader.debit',
-                    'Vouhcerheader.reverse',
+                    'ACToGL.index',
+                    'ACToGL.store',
+                    'ACToGL.show',
+                    'ACToGL.edit',
+                    'ACToGL.update',
+                    'ACToGL.status',
+                    'ACToGL.destroy',
+                    
+                ],
+            ],
+            //Supplier
+            [
+                'group_name' => 'Supplier',
+                'permissions' => [
+                    'Supplier.index',
+                    'Supplier.store',
+                    'Supplier.show',
+                    'Supplier.edit',
+                    'Supplier.update',
+                    'Supplier.status',
+                    'Supplier.destroy',
+                ],
+            ],
+            //Supplier Invocie
+            [
+                'group_name' => 'Supplier Invoice',
+                'permissions' => [
+                    'SupplierInvoice.index',
+                    'SupplierInvoice.store',
+                    'SupplierInvoice.show',
+                    'SupplierInvoice.edit',
+                    'SupplierInvoice.update',
+                    'SupplierInvoice.status',
+                    'SupplierInvoice.destroy',
+                    'SupplierInvoice.Confirm',
+                ],
+            ],
+             //Supplier Payable
+            [
+                'group_name' => 'Supplier Payable',
+                'permissions' => [
+                    'SupplierPayable.index',
+                    'SupplierPayable.store',
+                    'SupplierPayable.show',
+                    'SupplierPayable.edit',
+                    'SupplierPayable.update',
+                    'SupplierPayable.status',
+                    'SupplierPayable.destroy',
+                    'SupplierPayable.Confirm',
+                ],
+            ],
+             //Supplier Payment
+            [
+                'group_name' => 'Supplier Payment',
+                'permissions' => [
+                    'SupplierPayment.index',
+                    'SupplierPayment.store',
+                    'SupplierPayment.show',
+                    'SupplierPayment.edit',
+                    'SupplierPayment.update',
+                    'SupplierPayment.status',
+                    'SupplierPayment.destroy',
+                    'SupplierPayment.Confirm',
+                ],
+            ],
+             //All Voucher
+            [
+                'group_name' => 'All Voucher List',
+                'permissions' => [
+                    'voucher.allvoucher',
+                    'voucher.allvoucherUpdate',
+                    'voucher.allvoucherConfirm',
+                    'voucher.allvoucherBalance',
+                ],
+            ],
+             //Opening Balance
+            [
+                'group_name' => 'Opening Balance',
+                'permissions' => [
+                    'voucher.opening',
+                    'voucher.openingCreate',
+                    'voucher.openingUpdate',
+                    'voucher.openingConfirm',
+                ],
+            ],
+             //Jurnal Header
+            [
+                'group_name' => 'Jurnal Voucher',
+                'permissions' => [
+                    'voucher.jurnal',
+                    'voucher.jurnalCreate',
+                    'voucher.jurnalUpdate',
+                    'voucher.jurnalConfirm',
+                ],
+            ],
+             //Payment Header
+            [
+                'group_name' => 'Payment Voucher',
+                'permissions' => [
+                    'voucher.payment',
+                    'voucher.paymentCreate',
+                    'voucher.paymentUpdate',
+                    'voucher.paymentConfirm',
+                ],
+            ],
+             //Receipt Header
+            [
+                'group_name' => 'Receipt Voucher',
+                'permissions' => [
+                    'voucher.receipt',
+                    'voucher.receiptCreate',
+                    'voucher.receiptUpdate',
+                    'voucher.receiptConfirm',
+                ],
+            ],
+             //Reverse Header
+            [
+                'group_name' => 'Reverse Voucher',
+                'permissions' => [
+                    'voucher.reverse',
+                    'voucher.reverseCreate',
+                    'voucher.reverseUpdate',
+                    'voucher.reverseConfirm',
                 ],
             ],
             //Account Money Receipt

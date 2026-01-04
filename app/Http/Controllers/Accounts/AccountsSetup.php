@@ -34,7 +34,7 @@ class AccountsSetup extends Controller
 
     public function Grouptwo($GroupOne)
     {
-
+       
         try {
             $this->authorize('accsetting.GroupTwo');
         } catch (AuthorizationException $e) {
@@ -43,7 +43,7 @@ class AccountsSetup extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
+        
         $idcode = $GroupOne . '0' . +1;
 
         return Inertia::render('allpages/accounts/setting/grouptwo', [
@@ -57,6 +57,7 @@ class AccountsSetup extends Controller
 
     public function Groupthree($GroupOne, $GroupTwo)
     {
+
         try {
             $this->authorize('accsetting.GroupThree');
         } catch (AuthorizationException $e) {
@@ -65,6 +66,7 @@ class AccountsSetup extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
+        
         // GroupThree full info if exists
         $groupthree = GroupThree::with(['GroupOne', 'GroupTwo'])
             ->where('groupone', $GroupOne)

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Vouhcerheader;
+namespace App\Http\Requests\VoucherDetails;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateVouhcerheaderRequest extends FormRequest
+class StoreVoucherdetailRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,16 +21,16 @@ class UpdateVouhcerheaderRequest extends FormRequest
      */
     public function rules(): array
     {
-        $id = $this->route('vouhcerheader');
-        
         return [
-            'vouchernumber' => "required|string|unique:vouhcerheaders,vouchernumber,{$id}",
-            'voucherdate'   => 'required|date',
-            'referance'     => 'nullable|string',
-            'yearname'      => 'required|digits:4',
-            'monthname'     => 'required|integer|min:1|max:12',
+            'vouchernumber' => 'required|string',
+            'accountcode'   => 'required|string',
+            'subacccode'     => 'nullable|string',
+            'currency'     => 'nullable|string',
+            'exchagerate'     => 'nullable|decimal:20,3',
+            'primeamt'     => 'nullable|decimal:20,3',
+            'baseamt'     => 'nullable|decimal:20,3',
             'branch_id'     => 'required|exists:branches,id',
-            'status'        => 'nullable|string',
+            'notes'         => 'nullable|string',
             'user_id'       => 'required|exists:users,id',
         ];
     }

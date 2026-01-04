@@ -19,7 +19,6 @@ import {
 import {
     BadgeCent,
     Book,
-    Calculator,
     CalendarCog,
     CalendarX2,
     ClipboardCheck,
@@ -40,7 +39,10 @@ import {
     Briefcase,
     Wallet,
     WalletMinimal,
-    Receipt
+    Receipt,
+    RadioReceiver,
+    Handshake,
+    SquareStar
 } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
@@ -173,26 +175,68 @@ const InvoiceMenu = {
         },
     ],
 };
+
+const SupplierMenu = {
+    navSuppliermenu: [
+        {
+            title: 'Supplier',
+            url: '#',
+            icon: Handshake,
+            items: [
+                {
+                    route: 'suppliers.index',
+                    title: 'All Supplier',
+                    icon: SquareStar,
+                },
+                {
+                    route: 'suppliersInvoice.index',
+                    title: 'Supplier Invoices',
+                    icon: WalletMinimal,
+                },
+                {
+                    route: 'suppliersPayble.index',
+                    title: 'Supplier Payables',
+                    icon: Receipt,
+                },
+            ],
+        },
+    ],
+};
 const AccountsMenu = {
     navAccountsmenu: [
         {
-            title: 'Accounts',
+            title: 'Accounts Voucher',
             url: '#',
             icon: ClipboardPlus,
             items: [
                 {
-                    route: 'vouhcerheader.credit',
-                    title: 'Credit Voucher',
+                    route: 'voucherheader.opening',
+                    title: 'Opening Blance',
+                    icon: Columns2,
+                },
+                {
+                    route: 'voucherheader.jurnal',
+                    title: 'Jurnal Voucher',
                     icon: CreditCard,
                 },
                 {
-                    route: 'vouhcerheader.debit',
-                    title: 'Debit voucher',
+                    route: 'voucherheader.payment',
+                    title: 'Payment voucher',
                     icon: PanelRightClose,
                 },
                 {
-                    route: 'vouhcerheader.reverse',
+                    route: 'voucherheader.receipt',
+                    title: 'Receipt voucher',
+                    icon: RadioReceiver,
+                },
+                {
+                    route: 'voucherheader.reverse',
                     title: 'Reverse voucher',
+                    icon: Columns2,
+                },
+                {
+                    route: 'voucherheader.allvoucher',
+                    title: 'All Voucher',
                     icon: Columns2,
                 },
             ],
@@ -216,6 +260,11 @@ const reportdata = {
                     title: 'HR Reports',
                     href: '/hrreports',
                     icon: ClipboardCheck,
+                },
+                {
+                    title: 'Accounts Reports',
+                    href: '/accountsreport',
+                    icon: BadgeCent,
                 },
             ],
         },
@@ -257,6 +306,9 @@ const reportdata = {
                     </SidebarMenu>
                     <SidebarContent>
                         <NavMain :items="InvoiceMenu.navInvoicemenu" />
+                    </SidebarContent>
+                    <SidebarContent>
+                        <NavMain :items="SupplierMenu.navSuppliermenu" />
                     </SidebarContent>
                     <SidebarContent>
                         <NavMain :items="AccountsMenu.navAccountsmenu" />

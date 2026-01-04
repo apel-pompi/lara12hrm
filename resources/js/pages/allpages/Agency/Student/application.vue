@@ -6,7 +6,7 @@ import StudentLayout from '@/pages/allpages/Agency/Student/studentlayout.vue';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Link, router, useForm } from '@inertiajs/vue3';
-import { Eye, Plus, SquarePen, Trash } from 'lucide-vue-next';
+import { Eye, Trash } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Badge } from '@/components/ui/badge';

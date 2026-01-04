@@ -13,7 +13,7 @@ class GroupOne implements ComponentInterface
     {
         if (isset($content['params']['groupone'])) {
 
-            $content['builder']->where('groupone', $content['params']['groupone']);
+             $content['builder']->where('groupone', $content['params']['groupone']);
         }
         return $next($content);
     }

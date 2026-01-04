@@ -6,12 +6,13 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class GroupThree extends Model
 {
-    use HasFactory,SoftDeletes;
-    
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
         'groupone',
         'grouptwo',
@@ -40,6 +41,17 @@ class GroupThree extends Model
     {
         return $this->belongsTo(GroupTwo::class, 'grouptwo', 'grouptwo');
     }
+
+    /**
+     * Get all of the chartOfAccounts for the GroupOne
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function chartOfAccounts(): HasMany
+    {
+        return $this->hasMany(ChartOfAccount::class, 'groupthree', 'groupthree');
+    }
+
     /**
      * Get the user that owns the GroupOne
      *

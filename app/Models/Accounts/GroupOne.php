@@ -55,4 +55,6 @@ class GroupOne extends Model
     {
         return $this->hasMany(GroupTwo::class, 'groupone', 'groupone');
     }
+
+   
 }

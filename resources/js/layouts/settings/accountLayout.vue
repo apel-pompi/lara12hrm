@@ -15,6 +15,10 @@ const sidebarNavItems: NavItem[] = [
         title: "Chart of Account's",
         href: '/chartOfAccount',
     },
+    {
+        title: "AC To GL Setup",
+        href: '/actoglsetup',
+    },
 ];
 
 const page = usePage<{

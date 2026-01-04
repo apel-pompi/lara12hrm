@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ChartOfAccount extends Model
 {
-    use HasFactory,SoftDeletes;
-    
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
         'groupone',
         'grouptwo',
@@ -26,6 +26,7 @@ class ChartOfAccount extends Model
         'active',
     ];
 
+   
     /**
      * Get the GroupOne that owns the ChartOfAccount
      *
