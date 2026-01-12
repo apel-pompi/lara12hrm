@@ -13,7 +13,7 @@ import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOption
 import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { Plus, RefreshCcw, Search, SquarePen, Trash } from 'lucide-vue-next';
+import { Plus, SquarePen, Trash } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -47,6 +47,8 @@ const props = defineProps<{
     supplier: Array<{ id: number; subcode:string; name: string }>;
     branch: Array<{ id: number; branchname: string }>;
     accounts: Array<{ accountcode: string; description: string }>;
+    draccountcode: Array<{ accountcode: string; description: string }>;
+    craccountcode: Array<{ accountcode: string; description: string }>;
 }>();
 
 const data = props.actogl;
@@ -59,9 +61,9 @@ const selecteCrAcc = ref<{ accountcode: string; description: string } | null>(nu
 const queryCrAcc = ref('');
 
 const filteredCrAcc = computed(() => {
-    if (!queryCrAcc.value) return props.accounts;
+    if (!queryCrAcc.value) return props.craccountcode;
 
-    return props.accounts.filter(acc =>
+    return props.craccountcode.filter(acc =>
         acc.description
             ?.toLowerCase()
             .includes(queryCrAcc.value.toLowerCase())
@@ -74,9 +76,9 @@ const selecteDrAcc = ref<{ accountcode: string; description: string } | null>(nu
 const queryDrAcc = ref('');
 
 const filteredDrAcc = computed(() => {
-    if (!queryDrAcc.value) return props.accounts;
+    if (!queryDrAcc.value) return props.draccountcode;
 
-    return props.accounts.filter(acc =>
+    return props.draccountcode.filter(acc =>
         acc.description
             ?.toLowerCase()
             .includes(queryDrAcc.value.toLowerCase())
@@ -426,7 +428,41 @@ const onDelete = async (id: number) => {
                             </Select>
                             <p v-if="form.errors.code" class="mt-1 text-sm text-red-600">{{ form.errors.code }}</p>
                         </div>
-
+                        <div>
+                            <Label for="dracc" class="text-sm font-medium">Debit Account<span class="text-red-500">*</span></Label>
+                            <Combobox v-model="selecteDrAcc">
+                                <div class="relative">
+                                    <ComboboxInput
+                                        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                        placeholder="Select Account"
+                                        @input="queryDrAcc = $event.target.value"
+                                        :display-value="(c) => (c ? c.description : '')"
+                                    />
+                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                    </ComboboxButton>
+                                    <ComboboxOptions
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                                    >
+                                        <div
+                                            v-if="filteredDrAcc.length === 0 && queryDrAcc !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                        >
+                                            Nothing found.
+                                        </div>
+                                        <ComboboxOption
+                                            v-for="dracc in filteredDrAcc"
+                                            :key="dracc.accountcode"
+                                            :value="dracc"
+                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
+                                        >
+                                            {{ dracc.description }}
+                                        </ComboboxOption>
+                                    </ComboboxOptions>
+                                </div>
+                            </Combobox>
+                            <p v-if="form.errors.dracc" class="mt-1 text-sm text-red-600">{{ form.errors.dracc }}</p>
+                        </div>
                         <!-- Third Group -->
                         <div>
                             <Label for="cracc" class="text-sm font-medium">Credit Account<span class="text-red-500">*</span></Label>
@@ -463,41 +499,7 @@ const onDelete = async (id: number) => {
                             </Combobox>
                             <p v-if="form.errors.cracc" class="mt-1 text-sm text-red-600">{{ form.errors.cracc }}</p>
                         </div>
-                        <div>
-                            <Label for="dracc" class="text-sm font-medium">Debit Account<span class="text-red-500">*</span></Label>
-                            <Combobox v-model="selecteDrAcc">
-                                <div class="relative">
-                                    <ComboboxInput
-                                        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select Account"
-                                        @input="queryDrAcc = $event.target.value"
-                                        :display-value="(c) => (c ? c.description : '')"
-                                    />
-                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                    </ComboboxButton>
-                                    <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                    >
-                                        <div
-                                            v-if="filteredDrAcc.length === 0 && queryDrAcc !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
-                                            Nothing found.
-                                        </div>
-                                        <ComboboxOption
-                                            v-for="dracc in filteredDrAcc"
-                                            :key="dracc.accountcode"
-                                            :value="dracc"
-                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                        >
-                                            {{ dracc.description }}
-                                        </ComboboxOption>
-                                    </ComboboxOptions>
-                                </div>
-                            </Combobox>
-                            <p v-if="form.errors.dracc" class="mt-1 text-sm text-red-600">{{ form.errors.dracc }}</p>
-                        </div>
+                        
                         <!-- Account Code -->
                         <div>
                             <Label for="props" class="text-sm font-medium">Addition Type</Label>

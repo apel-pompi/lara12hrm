@@ -23,7 +23,7 @@ class StoreCodesParamRequest extends FormRequest
     {
         return [
             'type' => ['nullable', 'string', 'max:255'],
-            'code' => ['nullable', 'string', 'max:255', 'unique:codes_params,code'],
+            'code' => ['nullable', 'string', 'max:255'],
             'accdisc' => ['nullable', 'string', 'max:255'],
             'cracc' => ['nullable', 'string', 'max:255'],
             'dracc' => ['nullable', 'string', 'max:255'],

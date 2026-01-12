@@ -84,6 +84,7 @@ const showDailogCreate = () => {
     showDialog.value = true;
 };
 
+
 const grouptwoOptions = ref([]);
 
 const fetchTwo = async () => {
@@ -148,7 +149,6 @@ const onEdit = async (id: number) => {
         form.id = data.data.id;
         // Fetch group three options
         await fetchThree();
-
         form.groupthree = data.data.groupthree;
         isEditMode.value = true;
         showDialog.value = true;
@@ -781,12 +781,6 @@ const goToPage = (url: string | null) => {
                                     <SelectGroup>
                                         <SelectItem value="Cash">Cash</SelectItem>
                                         <SelectItem value="Non-Cash">Non-Cash</SelectItem>
-                                        <SelectItem value="Cheque">Cheque</SelectItem>
-                                        <SelectItem value="Bankers Draft">Bankers Draft</SelectItem>
-                                        <SelectItem value="Pay Order">Pay Order</SelectItem>
-                                        <SelectItem value="Letter of Credit">Letter of Credit</SelectItem>
-                                        <SelectItem value="Wire Transfer">Wire Transfer</SelectItem>
-                                        <SelectItem value="Others">Others</SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>

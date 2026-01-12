@@ -1,0 +1,6 @@
+[
+  { "groupone": 1, "description": "ASSET", "user_id": 1, "active": 1 },
+  { "groupone": 2, "description": "LIABILITIES", "user_id": 1, "active": 1 },
+  { "groupone": 3, "description": "REVENUES", "user_id": 1, "active": 1 },
+  { "groupone": 4, "description": "EXPENDITURES", "user_id": 1, "active": 1 }
+]

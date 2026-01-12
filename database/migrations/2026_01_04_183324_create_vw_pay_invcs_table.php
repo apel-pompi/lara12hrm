@@ -33,7 +33,7 @@ return new class extends Migration
             a.subacccode                    AS suppliercode,
             a.vouchernumber                 AS invicenumber,
             c.voucherdate                   AS date,
-            h.branchname                    AS branch,
+            c.branch_id                     AS branch_id,
             a.currency,
             a.exchagerate,
             a.primeamt,
@@ -43,8 +43,6 @@ return new class extends Migration
             ON a.subacccode = b.subcode
         INNER JOIN voucherheaders c
             ON c.vouchernumber = a.vouchernumber
-        INNER JOIN branches h
-            ON h.id = c.branch_id
         WHERE LEFT(a.vouchernumber, 4) = 'AP--'
 
         UNION ALL
@@ -54,18 +52,16 @@ return new class extends Migration
             e.subacccode                    AS suppliercode,
             d.invnumber                     AS invicenumber,
             f.voucherdate                   AS date,
-            h.branchname                    AS branch,
+            f.branch_id                    AS branch_id,
             d.currency,
             d.exchagerate,
             d.primeamt,
             d.baseamt                       AS amount
-        FROM apalcs d
+        FROM voucher_apalcs d
         INNER JOIN voucherdetails e
             ON d.vouchernumber = e.vouchernumber
         INNER JOIN voucherheaders f
             ON f.vouchernumber = e.vouchernumber
-        INNER JOIN branches h
-            ON h.id = f.branch_id
         INNER JOIN suppliers g
             ON e.subacccode = g.subcode;
         SQL;

@@ -198,6 +198,7 @@ const viewForm = useForm({
         amount: number;
     }[],
 });
+
 const onView = async (invId: number) => {
     try {
         const url = route('studentAccounts.onView', {
@@ -496,7 +497,7 @@ const onReportMr = async (invId: number) => {
                     class="flex max-h-[90vh] w-[95vw] max-w-full flex-col rounded-2xl bg-white shadow-xl sm:max-w-lg md:max-w-2xl lg:max-w-4xl dark:bg-gray-900"
                 >
                     <!-- Header -->
-                    <DialogHeader class="flex-shrink-0 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                    <DialogHeader class="shrink-0 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                         <DialogTitle class="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-100"> Create Student Invoice </DialogTitle>
                         <DialogDescription class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             Fill in the details below to create a new Invoice.
@@ -530,7 +531,7 @@ const onReportMr = async (invId: number) => {
                                 <!-- Fees Table -->
                                 <div class="overflow-x-auto">
                                     <table
-                                        class="w-full min-w-[500px] table-auto border-collapse border border-gray-200 text-sm dark:border-gray-700"
+                                        class="w-full table-auto border-collapse border border-gray-200 text-sm dark:border-gray-700"
                                     >
                                         <thead class="bg-gray-100 dark:bg-gray-700">
                                             <tr>

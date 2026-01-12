@@ -188,44 +188,7 @@ const submit = () => {
     });
 };
 
-const onEdit = async (id: number) => {
-    
-    try {
-        const response = await axios.get(route('voucherheader.allvoucherEdit', id));
-        const voucher = response.data;
-        
-        // Reset
-        form.reset();
-        form.clearErrors();
-        // Header fields
-        form.id = voucher.id;
-        form.referance = voucher.referance;
-        form.voucherdate = voucher.voucherdate;
-        form.notes = voucher.notes;
-        form.branch_id = voucher.branch_id;
-        vdate.value = new Date(voucher.voucherdate);
-        selecteBranch.value = voucher.branch;
-        const debitRow = voucher.voucherdt.find((d: any) => d.primeamt > 0);
-        const creditRow = voucher.voucherdt.find((d: any) => d.primeamt < 0);
-        if (debitRow) {
-            selectedDebit.value = debitRow.chart_o_f_account;
-            form.debitAcc = debitRow.accountcode;
-            form.debitAmt = debitRow.primeamt;
-        }
 
-        if (creditRow) {
-            selectedCredit.value = creditRow.chart_o_f_account;
-            form.creditAcc = creditRow.accountcode;
-            form.creditAmt = debitRow ? -Math.abs(creditRow.primeamt) : creditRow.primeamt;
-        }
-        isEditMode.value = true;
-        showDialog.value = true;
-    } catch (error) {
-        toast('Error', {
-            description: 'Unable to load voucher data',
-        });
-    }
-};
 
 const deleteForm = useForm({});
 
@@ -430,7 +393,7 @@ const refresh = () => {
                                 class="w-full rounded-md border px-3 py-2 text-sm"
                                 placeholder="Select Voucher Date"
                                 @input="queryDate = $event.target.value"
-                                :display-value="(c) => c?.voucherdate ?? ''"
+                                :display-value="(v) => v ?? ''"
                             />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
@@ -445,13 +408,13 @@ const refresh = () => {
 
                                 <ComboboxOption
                                     v-for="one in filteredDate"
-                                    :key="one.id"
+                                    :key="one"
                                     :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
                                     v-slot="{ selected }"
                                 >
                                     <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ one.voucherdate }}
+                                        {{ one }}
                                     </span>
                                     <span
                                         v-if="selected"
@@ -716,16 +679,7 @@ const refresh = () => {
                                         Confirm
                                     </span>
                                 </div>
-                                <div v-if="vhd.status !== 'Posted'" class="group relative inline-block">
-                                    <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onEdit(vhd.id)"
-                                        ><SquarePen class="text-indigo-500"></SquarePen
-                                    ></Button>
-                                    <span
-                                        class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
-                                    >
-                                        Edit
-                                    </span>
-                                </div>
+                                
                                 <div v-if="vhd.status == 'Posted'" class="group relative inline-block">
                                     <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onBalance(vhd.id)"
                                         ><BookCheck class="text-blue-500"></BookCheck
@@ -794,7 +748,7 @@ const refresh = () => {
                     <!-- Branch -->
                     <div>
                         <Label for="branch_id" class="text-sm font-medium">Select Branch<span class="text-red-500">*</span></Label>
-                        <Combobox v-model="selecteBranch">
+                        <Combobox v-model="selectedBranch">
                             <div class="relative">
                                 <ComboboxInput
                                     class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"

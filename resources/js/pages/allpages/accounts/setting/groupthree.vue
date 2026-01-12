@@ -276,7 +276,7 @@ const goToGroupTwo = () => {
                         <!-- Group Two -->
                         <div>
                             <Label for="grouptwo" class="text-sm font-medium">Group Two<span class="text-red-500">*</span></Label>
-                            <p>{{ props.groupInfo.description }}</p>
+                            <p>{{ props.groupInfo.group_two.description }}</p>
                         </div>
                         <!-- Code -->
                         <div>

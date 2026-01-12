@@ -10,6 +10,34 @@ const sidebarNavItems: NavItem[] = [
         title: "Chart of Account's",
         href: '/accountsreport',
     },
+    {
+        title: "Cash Book Statement",
+        href: '/accountsreport/CashBook',
+    },
+    {
+        title: "Cash Flow Statement",
+        href: '/accountsreport/CashFlow',
+    },
+    {
+        title: 'Account to General Ledger',
+        href: '/accountsreport/ActoGL',
+    },
+    {
+        title: 'Jurnal Transactions',
+        href: '/accountsreport/JurnalTransactions',
+    },
+    {
+        title: 'Trial Balance (Consolidated)',
+        href: '/accountsreport/trialbalanceconsolidated',
+    },
+    {
+        title: 'Trial Balance (Branch Wise)',
+        href: '/accountsreport/trialbalance',
+    },
+    {
+        title: 'Balance Sheet',
+        href: '/accountsreport/balancesheet',
+    },
 ];
 
 const page = usePage<{

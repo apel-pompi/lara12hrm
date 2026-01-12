@@ -1,0 +1,49 @@
+[
+  { "groupone": 1, "grouptwo": 101, "groupthree": "101-001", "description": "Office", "user_id": 1, "active": 1 },
+  { "groupone": 1, "grouptwo": 101, "groupthree": "101-002", "description": "Vehicle", "user_id": 1, "active": 1 },
+  { "groupone": 1, "grouptwo": 101, "groupthree": "101-003", "description": "IT Assets", "user_id": 1, "active": 1 },
+
+  { "groupone": 1, "grouptwo": 102, "groupthree": "102-001", "description": "Receivables", "user_id": 1, "active": 1 },
+  { "groupone": 1, "grouptwo": 102, "groupthree": "102-002", "description": "Advances & Deposits", "user_id": 1, "active": 1 },
+  { "groupone": 1, "grouptwo": 102, "groupthree": "102-003", "description": "Prepaid Expenses", "user_id": 1, "active": 1 },
+
+  { "groupone": 1, "grouptwo": 103, "groupthree": "103-001", "description": "Office Assets Depreciation", "user_id": 1, "active": 1 },
+
+  { "groupone": 1, "grouptwo": 104, "groupthree": "104-001", "description": "Bank", "user_id": 1, "active": 1 },
+  { "groupone": 1, "grouptwo": 104, "groupthree": "104-002", "description": "Cash", "user_id": 1, "active": 1 },
+
+
+  { "groupone": 2, "grouptwo": 201, "groupthree": "201-001", "description": "Accounts Payable", "user_id": 1, "active": 1 },
+  { "groupone": 2, "grouptwo": 201, "groupthree": "201-002", "description": "Student Advance", "user_id": 1, "active": 1 },
+  { "groupone": 2, "grouptwo": 201, "groupthree": "201-003", "description": "Accrued Expenses", "user_id": 1, "active": 1 },
+  { "groupone": 2, "grouptwo": 201, "groupthree": "201-004", "description": "Taxes & Statutory Payable", "user_id": 1, "active": 1 },
+
+  { "groupone": 2, "grouptwo": 202, "groupthree": "202-001", "description": "Bank Loan", "user_id": 1, "active": 1 },
+  { "groupone": 2, "grouptwo": 202, "groupthree": "202-002", "description": "Director Loan", "user_id": 1, "active": 1 },
+
+  { "groupone": 2, "grouptwo": 203, "groupthree": "203-001", "description": "Bank OD / CC", "user_id": 1, "active": 1 },
+  { "groupone": 2, "grouptwo": 203, "groupthree": "203-002", "description": "T.KING", "user_id": 1, "active": 1 },
+  { "groupone": 2, "grouptwo": 203, "groupthree": "203-003", "description": "SHIGA", "user_id": 1, "active": 1 },
+  { "groupone": 2, "grouptwo": 203, "groupthree": "203-004", "description": "Agent & Commission Payable", "user_id": 1, "active": 1 },
+
+  { "groupone": 2, "grouptwo": 204, "groupthree": "204-001", "description": "Owner’s Fund", "user_id": 1, "active": 1 },
+  { "groupone": 2, "grouptwo": 204, "groupthree": "204-002", "description": "Reserves", "user_id": 1, "active": 1 },
+
+  { "groupone": 3, "grouptwo": 301, "groupthree": "301-001", "description": "Student Service Revenue", "user_id": 1, "active": 1 },
+  { "groupone": 3, "grouptwo": 301, "groupthree": "301-002", "description": "Test & Traning Revenue", "user_id": 1, "active": 1 },
+  { "groupone": 3, "grouptwo": 301, "groupthree": "301-003", "description": "Commisition Revenue", "user_id": 1, "active": 1 },
+  { "groupone": 3, "grouptwo": 301, "groupthree": "301-004", "description": "Other operational revenue", "user_id": 1, "active": 1 },
+
+  { "groupone": 3, "grouptwo": 302, "groupthree": "302-001", "description": "Revenues from Supplier Discount", "user_id": 1, "active": 1 },
+  { "groupone": 3, "grouptwo": 302, "groupthree": "302-002", "description": "Revenue from Penalty, Various charge & others", "user_id": 1, "active": 1 },
+  { "groupone": 3, "grouptwo": 302, "groupthree": "302-003", "description": "Revenues from other non operational activities", "user_id": 1, "active": 1 },
+  { "groupone": 3, "grouptwo": 302, "groupthree": "302-004", "description": "Revenues from interest, dividends & derivatives", "user_id": 1, "active": 1 },
+  { "groupone": 3, "grouptwo": 302, "groupthree": "302-005", "description": "Revenues from patents & royalties", "user_id": 1, "active": 1 },
+
+  { "groupone": 4, "grouptwo": 401, "groupthree": "401-001", "description": "Other financial expenditures", "user_id": 1, "active": 1 },
+  { "groupone": 4, "grouptwo": 401, "groupthree": "401-002", "description": "Interest", "user_id": 1, "active": 1 },
+  { "groupone": 4, "grouptwo": 401, "groupthree": "401-003", "description": "Impairments", "user_id": 1, "active": 1 },
+  { "groupone": 4, "grouptwo": 401, "groupthree": "401-004", "description": "Exchange gain / loss", "user_id": 1, "active": 1 },
+  { "groupone": 4, "grouptwo": 401, "groupthree": "401-005", "description": "Bank & transfer charges", "user_id": 1, "active": 1 }
+  
+]

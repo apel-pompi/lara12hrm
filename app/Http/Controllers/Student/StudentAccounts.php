@@ -206,7 +206,7 @@ class StudentAccounts extends Controller
             'sign' => '1',
             'status' => 'pending',
             'refe_code' => $request->refe_code,
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
         ]);
 
         $numericPart = (int) preg_replace('/[^0-9]/', '', $invoiceNo);
@@ -414,7 +414,7 @@ class StudentAccounts extends Controller
             'sign' => '1',
             'status' => 'pending',
             'refe_code' => $quotation->quotation_no,
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
         ]);
 
         $numericPart = (int) preg_replace('/[^0-9]/', '', $invoiceNo);

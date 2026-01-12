@@ -164,12 +164,9 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
         ->group(
             function () {
                 Route::get('/', 'index')->name('suppliersPayble.index');
+                Route::get('/{supplier_payment}/{supplier_name}/{group_three_description}/{branch_id}', 'FetchPayment')->name('suppliersPayble.FetchPayment');
                 Route::post('/store', 'store')->name('suppliersPayble.store');
-                Route::get('/{supplier_payment}', 'show')->name('suppliersPayble.show');
-                Route::delete('/show/{supplier_payment}', 'destroy')->name('suppliersPayble.destroy');
-                Route::get('/{supplier_payment}/edit', 'edit')->name('suppliersPayble.edit');
-                Route::put('/{supplier_payment}', 'update')->name('suppliersPayble.update');
-                Route::put('/{supplier_payment}/status', 'Confirm')->name('suppliersPayble.Confirm');
+                Route::get('/manage', 'managePayable')->name('suppliersPayble.manage');
             }
         );
      //Voucher header Route
@@ -177,10 +174,8 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
         ->prefix('voucherheader')
         ->group(
             function () {
-                // Jurnal Voucher Route
+                // All Voucher Route
                 Route::get('/allvoucher', 'allVoucher')->name('voucherheader.allvoucher');
-                Route::get('/{allvoucher}/edit', 'allvoucherEdit')->name('voucherheader.allvoucherEdit');
-                Route::put('/{allvoucher}', 'allvoucherUpdate')->name('voucherheader.allvoucherUpdate');
                 Route::put('/{allvoucher}/status', 'allvoucherConfirm')->name('voucherheader.allvoucherConfirm');
                 Route::put('/{allvoucher}/balance', 'allvoucherBalance')->name('voucherheader.allvoucherBalance');
                 // Opening Voucher Route
@@ -226,6 +221,22 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
             function () {
                 Route::get('/', 'index')->name('accountsreport.index');
                 Route::get('/chartOfAccountReport', 'chartOfAccountReport')->name('accountsreport.chartOfAccountReport');
+                Route::get('/CashBook', 'CashBook')->name('accountsreport.CashBook');
+                Route::get('/CashBookReport', 'CashBookReport')->name('accountsreport.CashBookReport');
+                Route::get('/CashFlow', 'CashFlow')->name('accountsreport.CashFlow');
+                Route::get('/CashFlowReport', 'CashFlowReport')->name('accountsreport.CashFlowReport');
+                Route::get('/ActoGL', 'ActoGL')->name('accountsreport.ActoGL');
+                Route::get('/ActoGLReport', 'ActoGLReport')->name('accountsreport.ActoGLReport');
+                Route::get('/JurnalTransactions', 'JurnalTransactions')->name('accountsreport.JurnalTransactions');
+                Route::get('/JurnalTransactionsReport', 'JurnalTransactionsReport')->name('accountsreport.JurnalTransactionsReport');
+                Route::get('/trialbalanceconsolidated', 'TrialBalanceConsolidated')->name('accountsreport.trialbalanceconsolidated');
+                Route::get('/trialbalanceconsolidatedreport', 'TrialBalanceConsolidatedReport')->name('accountsreport.trialbalanceconsolidatedreport');
+
+                Route::get('/trialbalance', 'TrialBalance')->name('accountsreport.trialbalance');
+                Route::get('/trialbalancereport', 'TrialBalanceReport')->name('accountsreport.trialbalancereport');
+
+                Route::get('/balancesheet', 'BalanceSheet')->name('accountsreport.balancesheet');
+                Route::get('/balancesheetreport', 'BalanceSheetReport')->name('accountsreport.balancesheetreport');
             }
         );
 });

@@ -1,23 +1,17 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import Textarea from '@/components/ui/textarea/Textarea.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { router, useForm, usePage } from '@inertiajs/vue3';
-import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker from '@vuepic/vue-datepicker';
+import { router, } from '@inertiajs/vue3';
 import '@vuepic/vue-datepicker/dist/main.css';
-import axios from 'axios';
-import { FileText, Plus, RefreshCcw, Search, ShieldCheck, SquarePen } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
-import { toast } from 'vue-sonner';
+import { FileText, RefreshCcw, Search,  } from 'lucide-vue-next';
+import { computed, ref,  } from 'vue';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Supplier Invoice', href: '/suppliersInvoice' }];
+
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Supplier Payable', href: '/suppliersPayble' }];
 
 export interface Paginated<T> {
     data: T[];
@@ -30,44 +24,25 @@ export interface Paginated<T> {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
-export interface SupplierInvoice {
+export interface SupplierPayment {
     vouchernumber: string;
+    accountcode: string;
     voucherdate: string;
-    referance: string;
     yearname: number;
     monthname: number;
+    primeamt: number;
     status: string;
-    branch: {
-        id: number;
-        branchname: string;
-    };
-    user: {
-        name: string;
-    };
+    voucherdt:{ primeamt: number; subacccode: {name: string;} };
 }
 
 const props = defineProps<{
-    supplier_invoice: Paginated<SupplierInvoice>;
-    filters: { name?: string };
+    payment: Paginated<SupplierPayment>;
     branch: Array<{ id: number; branchname: string }>;
-    supplier: Array<{ subcode: string; name: string }>;
-    accountcode: Array<{ accountcode: string; description: string }>;
-    allvoucher: Array<{ vouchernumber: string; voucherdate: string; referance: string; yearname: number; monthname: number; status: string }>;
+    supplier: Array<{ id: number; name: string }>;
 }>();
 
-const data = props.supplier_invoice;
+const data = props.payment;
 
-const vdate = ref<string | null>(null);
-
-const maxDate = today(getLocalTimeZone());
-
-const selectedBranch = ref(null);
-const queryBranch = ref('');
-const filteredBranch = computed(() => {
-    if (queryBranch.value === '') return props.branch;
-
-    return props.branch.filter((n) => n.branchname && n.branchname.toLowerCase().includes(queryBranch.value.toLowerCase()));
-});
 
 const selectedSupplier = ref(null);
 const querySupplier = ref('');
@@ -77,191 +52,32 @@ const filteredSupplier = computed(() => {
     return props.supplier.filter((n) => n.name && n.name.toLowerCase().includes(querySupplier.value.toLowerCase()));
 });
 
-
-
-
-const showDialog = ref(false);
-const isEditMode = ref(false);
-
-const form = useForm({
-    id: null as number | null,
-    vouchernumber: '',
-    voucherdate: '',
-    referance: '',
-    branch_id: '',
-    notes: '',
-    subcode: '',
-    invAmt: '',
-});
-
-watch(vdate, (newDate) => {
-    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
-        form.voucherdate = newDate.toISOString().split('T')[0];
-    }
-});
-const showDailogCreate = () => {
-    form.reset();
-    form.id = null;
-    isEditMode.value = false;
-    showDialog.value = true;
-};
-
-const submit = () => {
-    const action = isEditMode.value && form.id ? route('suppliersInvoice.update', form.id) : route('suppliersInvoice.store');
-    const method = isEditMode.value ? 'put' : 'post';
-
-    if (!form.referance) {
-        toast('Validation Error', {
-            description: 'Please write referance',
-        });
-        return;
-    }
-    if (!selectedBranch.value?.id) {
-        toast('Validation Error', {
-            description: 'Please select a branch',
-        });
-        return;
-    }
-
-    if (!vdate.value) {
-        toast('Validation Error', {
-            description: 'Please select voucher date',
-        });
-        return;
-    }
-    
-    if (!selectedSupplier.value?.name) {
-        toast('Validation Error', {
-            description: 'Please select a supplier',
-        });
-        return;
-    }
-
-    if (!form.invAmt) {
-        toast('Validation Error', {
-            description: 'Please input invoice amount',
-        });
-        return;
-    }
-
-    
-
-    if (!form.notes) {
-        toast('Validation Error', {
-            description: 'Please write notes',
-        });
-        return;
-    }
-
-    form.branch_id = selectedBranch.value.id;
-    form.subcode = selectedSupplier.value.subcode;
-    form[method](action, {
-        onSuccess: () => {
-            setTimeout(() => {
-                form.reset();
-                showDialog.value = false;
-                router.visit(route('suppliersInvoice.index'), {
-                    preserveScroll: true,
-                    preserveState: false,
-                });
-            }, 200);
-            form.reset();
-            showDialog.value = false;
-        },
-
-        onError: (errors) => {
-            const firstError = Object.values(errors)[0];
-            const flash = usePage().props.flash;
-            if (flash?.error) {
-                toast('error', {
-                    description: flash.error + firstError,
-                });
-            }
-        },
-    });
-};
-
-const onEdit = async (supplier_invocie: number) => {
-    
-    try {
-        const response = await axios.get(route('suppliersInvoice.edit', supplier_invocie));
-        const voucher = response.data;
-        
-        // Reset
-        form.reset();
-        form.clearErrors();
-        // Header fields
-        form.id = voucher.id;
-        form.referance = voucher.referance;
-        form.voucherdate = voucher.voucherdate;
-        form.notes = voucher.notes;
-        form.branch_id = voucher.branch_id;
-        vdate.value = new Date(voucher.voucherdate);
-        selectedBranch.value = voucher.branch;
-        const debitRow = voucher.voucherdt.find((d: any) => d.primeamt > 0);
-        const creditRow = voucher.voucherdt.find((d: any) => d.primeamt < 0);
-        if (debitRow) {
-            selectedSupplier.value = creditRow.subacccode;
-            form.invAmt = debitRow.primeamt;
-        }
-
-       
-        isEditMode.value = true;
-        showDialog.value = true;
-    } catch (error) {
-        toast('Error', {
-            description: 'Unable to load voucher data',
-        });
-    }
-};
-
-const deleteForm = useForm({});
-
-const onConfirm = async (supplier_invocie: number) => {
-    if (!confirm('Are you sure you want to confirm this this invoice')) return;
-
-    if (deleteForm.processing) return;
-
-    deleteForm.put(`/suppliersInvoice/${supplier_invocie}/status`, {
-        onSuccess: () => {},
-        onError: () => {
-            toast.success('Somethings wrong !');
-        },
-        preserveScroll: true,
-        preserveState: false,
-    });
-};
-
-const goToPage = (url: string | null) => {
-    if (url) {
-        router.get(url, {}, { preserveState: false, replace: true });
-    }
-};
-
-const onReport = async (vhd: number) => {
-    const url = route('voucherheader.singleReport', {
-        voucherID: vhd,
-    });
-
-    window.open(url, '_blank');
-};
-
 const selectedVoucher = ref(null);
 const queryVoucher = ref('');
 const filteredVoucher = computed(() => {
-    if (queryVoucher.value === '') return props.allvoucher;
+    if (queryVoucher.value === '') return props.payment.data;
 
-    return props.allvoucher.filter((n) => n.vouchernumber && n.vouchernumber.toLowerCase().includes(queryVoucher.value.toLowerCase()));
+    return props.payment.data.filter((n) => n.vouchernumber && n.vouchernumber.toLowerCase().includes(queryVoucher.value.toLowerCase()));
+});
+
+const selectedBranch = ref(null);
+const queryBranch = ref('');
+const filteredBranch = computed(() => {
+    if (queryBranch.value === '') return props.branch;
+
+    return props.branch.filter((n) => n.branchname && n.branchname.toLowerCase().includes(queryBranch.value.toLowerCase()));
 });
 
 const selectedDate = ref(null);
 const queryDate = ref('');
+
+
 const filteredDate = computed(() => {
     const filtered = queryDate.value
-        ? props.allvoucher.filter(v =>
+        ? props.payment.data.filter(v =>
             v.voucherdate?.toLowerCase().includes(queryDate.value.toLowerCase())
         )
-        : props.allvoucher;
+        : props.payment.data;
 
     // unique date list
     const map = new Map();
@@ -274,34 +90,12 @@ const filteredDate = computed(() => {
     return Array.from(map.values());
 });
 
-
-
-const selectedRef = ref(null);
-const queryRef = ref('');
-const filteredRef = computed(() => {
-    const filtered = queryRef.value
-        ? props.allvoucher.filter(v =>
-            v.referance?.toLowerCase().includes(queryRef.value.toLowerCase())
-        )
-        : props.allvoucher;
-
-    // unique referance list
-    const map = new Map();
-    filtered.forEach(v => {
-        if (v.referance && !map.has(v.referance)) {
-            map.set(v.referance, v.referance);
-        }
-    });
-
-    return Array.from(map.values());
-});
-
 const selectedYear = ref(null);
 const queryYear = ref('');
 
 const filteredYear = computed(() => {
     // filter vouchers based on queryYear
-    const filtered = queryYear.value ? props.allvoucher.filter((v) => v.yearname?.includes(queryYear.value)) : props.allvoucher;
+    const filtered = queryYear.value ? props.payment.data.filter((v) => v.yearname?.includes(queryYear.value)) : props.payment.data;
 
     // return unique year names
     return [...new Set(filtered.map((v) => v.yearname).filter(Boolean))];
@@ -312,7 +106,7 @@ const queryMonth = ref('');
 
 const filteredMonth = computed(() => {
     // filter vouchers based on queryMonth
-    const filtered = queryMonth.value ? props.allvoucher.filter((v) => v.monthname?.includes(queryMonth.value)) : props.allvoucher;
+    const filtered = queryMonth.value ? props.payment.data.filter((v) => v.monthname?.includes(queryMonth.value)) : props.payment.data;
 
     // return unique month names
     return [...new Set(filtered.map((v) => v.monthname).filter(Boolean))];
@@ -322,10 +116,10 @@ const selectedStatus = ref(null);
 const queryStatus = ref('');
 const filteredStatus = computed(() => {
     const filtered = queryStatus.value
-        ? props.allvoucher.filter(v =>
+        ? props.payment.data.filter(v =>
             v.status?.toLowerCase().includes(queryStatus.value.toLowerCase())
         )
-        : props.allvoucher;
+        : props.payment.data;
 
     // unique status list
     const map = new Map();
@@ -338,45 +132,107 @@ const filteredStatus = computed(() => {
     return Array.from(map.values());
 });
 
-
 const search = () => {
     const params: Record<string, any> = {};
-
+    if (selectedSupplier.value) params.subacccode = selectedSupplier.value.subcode;
     if (selectedVoucher.value) params.vouchernumber = selectedVoucher.value.vouchernumber;
-    if (selectedDate.value) params.voucherdate = selectedDate.value.voucherdate;
+    if (selectedDate.value) params.voucherdate = selectedDate.value;
     if (selectedBranch.value) params.branch_id = selectedBranch.value.id;
-    if (selectedRef.value) params.referance = selectedRef.value;
     if (selectedYear.value) params.yearname = selectedYear.value;
     if (selectedMonth.value) params.monthname = selectedMonth.value;
     if (selectedStatus.value) params.status = selectedStatus.value;
-
-    router.get(route('suppliersInvoice.index'), params, {
+    console.log('Search params:', params);
+    router.get(route('suppliersPayble.manage'), params, {
         preserveState: false,
         preserveScroll: true,
     });
 };
 
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
+};
+
 const refresh = () => {
-    router.get(route('suppliersInvoice.index'), {}, { replace: true });
+    router.get(route('suppliersPayble.manage'), {}, { replace: true });
+};
+
+
+const manage = () => {
+    router.visit(route('suppliersPayble.index'), {
+        preserveScroll: true,
+        preserveState: true,
+    });
+};
+
+const onReport = async (vhd: number) => {
+    const url = route('voucherheader.singleReport', {
+        voucherID: vhd,
+    });
+
+    window.open(url, '_blank');
 };
 </script>
 
 <template>
-    <Head title="Supplier Invoice" />
+    <Head title="Supplier Payable" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative flex-1 border px-4 md:min-h-min">
-            <div class="flex items-center gap-2 py-4">
-                <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
-                    ><Plus></Plus> Create Invoice
-                </Button>
-            </div>
             <div class="flex flex-wrap items-center gap-4 py-4">
+                <div class="w-full sm:w-1/2 lg:w-auto">
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="manage"
+                        ><Plus></Plus> Supplier Payable
+                    </Button>
+                </div>
+                
+                <div class="w-full sm:w-1/2 lg:w-auto">
+                    <Combobox v-model="selectedSupplier">
+                        <div class="relative w-full md:w-48">
+                            <ComboboxInput
+                                class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Select Supplier"
+                                @input="querySupplier = $event.target.value"
+                                :display-value="(c) => c?.name ?? ''"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                            >
+                                <div v-if="filteredSupplier.length === 0 && querySupplier !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="one in filteredSupplier"
+                                    :key="one.id"
+                                    :value="one"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ one.name }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                </div>
                 <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedVoucher">
                         <div class="relative w-full md:w-48">
                             <ComboboxInput
                                 class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Voucher No"
+                                placeholder="Select voucher"
                                 @input="queryVoucher = $event.target.value"
                                 :display-value="(c) => c?.vouchernumber ?? ''"
                             />
@@ -400,47 +256,6 @@ const refresh = () => {
                                 >
                                     <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                         {{ one.vouchernumber }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="w-full sm:w-1/2 lg:w-auto">
-                    <Combobox v-model="selectedDate">
-                        <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Voucher Date"
-                                @input="queryDate = $event.target.value"
-                                :display-value="(v) => v ?? ''"
-                            />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                            </ComboboxButton>
-
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div v-if="filteredDate.length === 0 && queryDate !== ''" class="px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="one in filteredDate"
-                                    :key="one"
-                                    :value="one"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ one }}
                                     </span>
                                     <span
                                         v-if="selected"
@@ -495,12 +310,12 @@ const refresh = () => {
                     </Combobox>
                 </div>
                 <div class="w-full sm:w-1/2 lg:w-auto">
-                    <Combobox v-model="selectedRef">
+                    <Combobox v-model="selectedDate">
                         <div class="relative w-full md:w-48">
                             <ComboboxInput
                                 class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Referance"
-                                @input="queryRef = $event.target.value"
+                                placeholder="Select date"
+                                @input="queryDate = $event.target.value"
                                 :display-value="(v) => v ?? ''"
                             />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
@@ -510,19 +325,19 @@ const refresh = () => {
                             <ComboboxOptions
                                 class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
                             >
-                                <div v-if="filteredRef.length === 0 && queryRef !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                <div v-if="filteredDate.length === 0 && queryDate !== ''" class="px-4 py-2 text-gray-500 select-none">
                                     Nothing found.
                                 </div>
 
                                 <ComboboxOption
-                                    v-for="ref in filteredRef"
-                                    :key="ref"
-                                    :value="ref"
+                                    v-for="one in filteredDate"
+                                    :key="one"
+                                    :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
                                     v-slot="{ selected }"
                                 >
                                     <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ ref }}
+                                        {{ one }}
                                     </span>
                                     <span
                                         v-if="selected"
@@ -581,7 +396,7 @@ const refresh = () => {
                         <div class="relative w-full md:w-48">
                             <ComboboxInput
                                 class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Month"
+                                placeholder="Select Period"
                                 @input="queryMonth = $event.target.value"
                                 :display-value="(v) => v ?? ''"
                             />
@@ -658,6 +473,7 @@ const refresh = () => {
                         </div>
                     </Combobox>
                 </div>
+
                 <div class="w-full sm:w-auto">
                     <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
                 </div>
@@ -670,56 +486,29 @@ const refresh = () => {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Sl</TableHead>
-                            <TableHead>Voucher No</TableHead>
-                            <TableHead>Date</TableHead>
+                            <TableHead>Supplier Name</TableHead>
+                            <TableHead>Voucher Number</TableHead>
                             <TableHead>Branch</TableHead>
-                            <TableHead>Reference</TableHead>
+                            <TableHead>Date</TableHead>
                             <TableHead>Year</TableHead>
                             <TableHead>Period</TableHead>
-                            <TableHead>Created By</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead class="text-center">Action</TableHead>
-                            <TableHead>Reports</TableHead>
+                            <TableHead class="text-center">Report</TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody v-for="(vhd, index) in data.data" :key="index">
+                    <TableBody v-for="(supplier, index) in data.data" :key="index">
                         <TableRow>
                             <TableCell>{{ index + 1 }}</TableCell>
-                            <TableCell>{{ vhd.vouchernumber }}</TableCell>
-                            <TableCell>{{ vhd.voucherdate }}</TableCell>
-                            <TableCell>{{ vhd.branch.branchname }}</TableCell>
-                            <TableCell>{{ vhd.referance }}</TableCell>
-                            <TableCell>{{ vhd.yearname }}</TableCell>
-                            <TableCell>{{ vhd.monthname }}</TableCell>
-                            <TableCell>{{ vhd.user.name }}</TableCell>
-                            <TableCell>{{ vhd.status }}</TableCell>
-
+                            <TableCell>{{ supplier.voucherdt?.[0]?.subacccode?.name }}</TableCell>
+                            <TableCell>{{ supplier?.vouchernumber }}</TableCell>
+                            <TableCell>{{ supplier?.branch.branchname }}</TableCell>
+                            <TableCell>{{ supplier?.voucherdate }}</TableCell>
+                            <TableCell>{{ supplier?.yearname }}</TableCell>
+                            <TableCell>{{ supplier?.monthname }}</TableCell>
+                            <TableCell>{{ supplier?.status }}</TableCell>
                             <TableCell class="text-center">
-                                <div v-if="vhd.status == 'Balanced'" class="group relative inline-block">
-                                    <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onConfirm(vhd.id)"
-                                        ><ShieldCheck class="text-green-500"></ShieldCheck
-                                    ></Button>
-                                    <span
-                                        class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
-                                    >
-                                        Confirm
-                                    </span>
-                                </div>
-                                <div v-if="vhd.status !== 'Posted'" class="group relative inline-block">
-                                    <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onEdit(vhd.id)"
-                                        ><SquarePen class="text-indigo-500"></SquarePen
-                                    ></Button>
-                                    <span
-                                        class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
-                                    >
-                                        Edit
-                                    </span>
-                                </div>
-                            </TableCell>
-
-                            <TableCell>
                                 <div class="group relative inline-block">
-                                    <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onReport(vhd.id)"
+                                    <Button class="m-0.5 cursor-pointer" size="sm" variant="outline" @click="onReport(supplier.id)"
                                         ><FileText class="text-red-500"></FileText
                                     ></Button>
                                     <span
@@ -751,151 +540,6 @@ const refresh = () => {
                 </div>
             </div>
         </div>
-        <Dialog v-model:open="showDialog">
-            <DialogContent class="max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900">
-                <!-- Header -->
-                <DialogHeader class="space-y-1 border-b pb-4">
-                    <DialogTitle class="text-xl font-semibold tracking-wide">
-                        {{ isEditMode ? 'Edit Supplier Invoice' : 'Create Supplier Invoice' }}
-                    </DialogTitle>
-                    <DialogDescription class="text-sm text-gray-500">
-                        {{ isEditMode ? 'Modify the information and click Update.' : 'Fill out the form to add a new Supplier Invoice.' }}
-                    </DialogDescription>
-                </DialogHeader>
-                <!-- Body -->
-                <!-- Referance -->
-                <div>
-                    <Label for="referance" class="text-sm font-medium">Referance <span class="text-red-500">*</span></Label>
-                    <Textarea v-model="form.referance" class="mt-1 w-full" placeholder="write your voucher referance"></Textarea>
-                    <p v-if="form.errors.referance" class="mt-1 text-sm text-red-600">{{ form.errors.referance }}</p>
-                </div>
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <!-- Branch -->
-                    <div>
-                        <Label for="branch_id" class="text-sm font-medium">Select Branch<span class="text-red-500">*</span></Label>
-                        <Combobox v-model="selectedBranch">
-                            <div class="relative">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select Branch"
-                                    @input="queryBranch = $event.target.value"
-                                    :display-value="(c) => (c ? c.branchname : '')"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                >
-                                    <div
-                                        v-if="filteredBranch.length === 0 && queryBranch !== ''"
-                                        class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                    >
-                                        Nothing found.
-                                    </div>
-                                    <ComboboxOption
-                                        v-for="branch in filteredBranch"
-                                        :key="branch.id"
-                                        :value="branch"
-                                        class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                    >
-                                        {{ branch.branchname }}
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-
-                        <p v-if="form.errors.branch_id" class="mt-1 text-sm text-red-600">{{ form.errors.branch_id }}</p>
-                    </div>
-
-                    <!-- Voucher Date -->
-                    <div>
-                        <Label for="voucherdate" class="text-sm font-medium">Select Date<span class="text-red-500">*</span></Label>
-                        <VueDatePicker
-                            v-model="vdate"
-                            :max-date="maxDate"
-                            :format="'yyyy-MM-dd'"
-                            :enable-time-picker="false"
-                            placeholder="Select Date"
-                            auto-apply
-                        />
-                        <p v-if="form.errors.voucherdate" class="mt-1 text-sm text-red-600">{{ form.errors.voucherdate }}</p>
-                    </div>
-                    <!-- Debit Account -->
-                    <div>
-                        <Label for="subcode" class="text-sm font-medium">Supplier Name<span class="text-red-500">*</span></Label>
-                        <Combobox v-model="selectedSupplier">
-                            <div class="relative">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select supplier..."
-                                    :display-value="(supplier) => supplier?.name ?? ''"
-                                    @input="querySupplier = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-
-                                <!-- Options -->
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                >
-                                    <div
-                                        v-if="filteredSupplier.length === 0 && querySupplier !== ''"
-                                        class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                    >
-                                        Nothing found.
-                                    </div>
-
-                                    <ComboboxOption
-                                        v-for="n in filteredSupplier"
-                                        :key="n.id"
-                                        :value="n"
-                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                        v-slot="{ selected }"
-                                    >
-                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.name }}</span>
-                                        <span
-                                            v-if="selected"
-                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                        >
-                                            <CheckIcon class="h-5 w-5" />
-                                        </span>
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-
-                        <p v-if="form.errors.subcode" class="mt-1 text-sm text-red-600">{{ form.errors.subcode }}</p>
-                    </div>
-                    <!-- Invoice Amount -->
-                    <div>
-                        <Label for="invAmt" class="text-sm font-medium">Invoice Amount<span class="text-red-500">*</span></Label>
-                        <Input type="text" id="invAmt" v-model="form.invAmt" placeholder="Enter Invoice Amount" class="mt-1 w-full" />
-                        <p v-if="form.errors.invAmt" class="mt-1 text-sm text-red-600">{{ form.errors.invAmt }}</p>
-                    </div>
-                    
-                </div>
-
-                <!-- Notes -->
-                <div>
-                    <Label for="notes" class="text-sm font-medium">Notes <span class="text-red-500">*</span></Label>
-                    <Textarea v-model="form.notes" class="mt-1 w-full" placeholder="write voucher notes"></Textarea>
-                    <p v-if="form.errors.notes" class="mt-1 text-sm text-red-600">{{ form.errors.notes }}</p>
-                </div>
-
-                <!-- Footer -->
-                <DialogFooter class="mt-8 flex justify-end gap-3 border-t pt-4">
-                    <DialogClose as-child>
-                        <Button variant="secondary">Cancel</Button>
-                    </DialogClose>
-
-                    <Button :disabled="form.processing" @click="submit">
-                        <template v-if="form.processing">Saving...</template>
-                        <template v-else>{{ isEditMode ? 'Update' : 'Save' }}</template>
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        
     </AppLayout>
 </template>

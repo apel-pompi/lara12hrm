@@ -18,7 +18,7 @@ const props = defineProps<{
     accounts: Record<string, Account[]>;
 }>();
 
-console.log(props.accounts);
+
 const form = useForm({
     accounttype: '',
 });

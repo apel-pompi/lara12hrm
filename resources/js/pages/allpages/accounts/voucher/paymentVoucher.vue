@@ -50,7 +50,8 @@ const props = defineProps<{
     voucherheader: Paginated<VoucherHeader>;
     filters: { name?: string };
     branch: Array<{ id: number; branchname: string }>;
-    accountcode: Array<{ accountcode: string; description: string }>;
+    draccountcode: Array<{ accountcode: string; description: string }>;
+    craccountcode: Array<{ accountcode: string; description: string }>;
     allvoucher: Array<{ vouchernumber: string; voucherdate: string; referance: string; yearname: number; monthname: number; status: string }>;
 }>();
 
@@ -71,17 +72,17 @@ const filteredBranch = computed(() => {
 const selectedDebit = ref(null);
 const queryDebit = ref('');
 const filteredDebit = computed(() => {
-    if (queryDebit.value === '') return props.accountcode;
+    if (queryDebit.value === '') return props.draccountcode;
 
-    return props.accountcode.filter((n) => n.description && n.description.toLowerCase().includes(queryDebit.value.toLowerCase()));
+    return props.draccountcode.filter((n) => n.description && n.description.toLowerCase().includes(queryDebit.value.toLowerCase()));
 });
 
 const selectedCredit = ref(null);
 const queryCredit = ref('');
 const filteredCredit = computed(() => {
-    if (queryCredit.value === '') return props.accountcode;
+    if (queryCredit.value === '') return props.craccountcode;
 
-    return props.accountcode.filter((n) => n.description && n.description.toLowerCase().includes(queryCredit.value.toLowerCase()));
+    return props.craccountcode.filter((n) => n.description && n.description.toLowerCase().includes(queryCredit.value.toLowerCase()));
 });
 
 const showDialog = ref(false);
@@ -207,7 +208,7 @@ const onEdit = async (id: number) => {
         form.notes = voucher.notes;
         form.branch_id = voucher.branch_id;
         vdate.value = new Date(voucher.voucherdate);
-        selecteBranch.value = voucher.branch;
+        selectedBranch.value = voucher.branch;
         const debitRow = voucher.voucherdt.find((d: any) => d.primeamt > 0);
         const creditRow = voucher.voucherdt.find((d: any) => d.primeamt < 0);
         if (debitRow) {
@@ -272,9 +273,21 @@ const filteredVoucher = computed(() => {
 const selectedDate = ref(null);
 const queryDate = ref('');
 const filteredDate = computed(() => {
-    if (queryDate.value === '') return props.allvoucher;
+    const filtered = queryDate.value
+        ? props.allvoucher.filter(v =>
+            v.voucherdate?.toLowerCase().includes(queryDate.value.toLowerCase())
+        )
+        : props.allvoucher;
 
-    return props.allvoucher.filter((n) => n.voucherdate && n.voucherdate.toLowerCase().includes(queryDate.value.toLowerCase()));
+    // unique date list
+    const map = new Map();
+    filtered.forEach(v => {
+        if (v.voucherdate && !map.has(v.voucherdate)) {
+            map.set(v.voucherdate, v.voucherdate);
+        }
+    });
+
+    return Array.from(map.values());
 });
 
 
@@ -422,7 +435,7 @@ const refresh = () => {
                                 class="w-full rounded-md border px-3 py-2 text-sm"
                                 placeholder="Select Voucher Date"
                                 @input="queryDate = $event.target.value"
-                                :display-value="(c) => c?.voucherdate ?? ''"
+                                :display-value="(v) => v ?? ''"
                             />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
@@ -437,13 +450,13 @@ const refresh = () => {
 
                                 <ComboboxOption
                                     v-for="one in filteredDate"
-                                    :key="one.id"
+                                    :key="one"
                                     :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
                                     v-slot="{ selected }"
                                 >
                                     <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ one.voucherdate }}
+                                        {{ one }}
                                     </span>
                                     <span
                                         v-if="selected"
@@ -776,7 +789,7 @@ const refresh = () => {
                     <!-- Branch -->
                     <div>
                         <Label for="branch_id" class="text-sm font-medium">Select Branch<span class="text-red-500">*</span></Label>
-                        <Combobox v-model="selecteBranch">
+                        <Combobox v-model="selectedBranch">
                             <div class="relative">
                                 <ComboboxInput
                                     class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"

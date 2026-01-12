@@ -138,7 +138,7 @@ class GroupThreeController extends Controller
     public function updateStatus(Request $request, $groupThree)
     {
         try {
-            $this->authorize('GroupThree.updateStatus');
+            $this->authorize('GroupThree.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

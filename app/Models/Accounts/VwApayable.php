@@ -7,11 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class VwUnPaidInv extends Model
+class VwApayable extends Model
 {
-     use HasFactory;
-
-    protected $table = 'vw_unpaidinv';
+    use HasFactory;
+    protected $table = 'vw_apayable';
     public $timestamps = false;
 
     protected $fillable = [
@@ -21,10 +20,10 @@ class VwUnPaidInv extends Model
         'accountcode',
         'description',
         'contact_person',
-        'payable'
+        'payableamt'
     ];
 
-    /**
+     /**
      * Get the ChartOFAccount that owns the VwUnPaidInv
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -33,7 +32,7 @@ class VwUnPaidInv extends Model
     {
         return $this->belongsTo(ChartOfAccount::class, 'accountcode', 'accountcode');
     }
-
+    
     /**
      * Get the branch that owns the VwUnPaidInv
      *

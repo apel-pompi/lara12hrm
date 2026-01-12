@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Accounts\Voucherheader;
 use App\Http\Requests\Voucherheader\StoreVoucherheaderRequest;
 use App\Models\Accounts\ChartOfAccount;
+use App\Models\Accounts\VoucherApalc;
 use App\Models\Accounts\Voucherdetail;
 use App\Models\Default\Transaction;
 use App\Models\HRM\Branch;
@@ -50,7 +51,11 @@ class VoucherheaderController extends Controller
             'voucherheader' => $jurnal_voucher->get(array_merge($request->query(), ['per_page' => $perPage])),
             'branch' => Branch::all(),
             'allvoucher' => Voucherheader::whereRaw("LEFT(vouchernumber, 4) = 'JV--'")->get(),
-            'accountcode' => ChartOfAccount::where('active', '1')->where('accountusage', '<>', 'Ledger')->get(),
+            'accountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'REVENUES', 'LIABILITIES', 'EXPENDITURE'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Non-Cash')->get(),
+
+            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'EXPENDITURE'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Non-Cash')->get(),
+
+            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Non-Cash')->get(),
         ]);
     }
 
@@ -270,14 +275,14 @@ class VoucherheaderController extends Controller
 
     public function singleReport(Voucherheader $voucherID)
     {
-        // try {
-        //     $this->authorize('voucher.jurnalReport');
-        // } catch (AuthorizationException $e) {
-        //     return back()->with([
-        //         'error' => true,
-        //         'message' => 'You are not authorized to access this page.'
-        //     ]);
-        // }
+        try {
+            $this->authorize('voucher.singleReport');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
         $company = CompanyInfo::firstOrFail();
 
         $voucher = Voucherheader::with(['voucherdt.ChartOFAccount', 'branch'])->where('id', $voucherID->id)->first();
@@ -337,7 +342,12 @@ class VoucherheaderController extends Controller
             'voucherheader' => $payment_voucher->get(array_merge($request->query(), ['per_page' => $perPage])),
             'branch' => Branch::all(),
             'allvoucher' => Voucherheader::whereRaw("LEFT(vouchernumber, 4) = 'PAY-'")->get(),
-            'accountcode' => ChartOfAccount::where('active', '1')->where('accountusage', '=', 'Ledger')->get(),
+            'accountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'EXPENDITURE'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Non-Cash', 'Cash'])->get(),
+
+            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'LIABILITIES', 'EXPENDITURE'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Non-Cash')->get(),
+
+            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Cash')->get(),
+
         ]);
     }
 
@@ -585,7 +595,11 @@ class VoucherheaderController extends Controller
             'voucherheader' => $receipt_voucher->get(array_merge($request->query(), ['per_page' => $perPage])),
             'branch' => Branch::all(),
             'allvoucher' => Voucherheader::whereRaw("LEFT(vouchernumber, 4) = 'RCV-'")->get(),
-            'accountcode' => ChartOfAccount::where('active', '1')->where('accountusage', '<>', 'Ledger')->get(),
+
+            'draccountcode' => ChartOfAccount::where('active', '1')->where('accounttype','ASSET')->where('accountusage', 'Ledger')->where('analyticalcode', 'Cash')->get(),
+
+            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Non-Cash')->get(),
+
         ]);
     }
 
@@ -820,7 +834,11 @@ class VoucherheaderController extends Controller
             'voucherheader' => $reverse_voucher->get(array_merge($request->query(), ['per_page' => $perPage])),
             'branch' => Branch::all(),
             'allvoucher' => Voucherheader::whereRaw("LEFT(vouchernumber, 4) = 'REV-'")->get(),
-            'accountcode' => ChartOfAccount::where('active', '1')->where('accountusage', '<>', 'Ledger')->get(),
+
+            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'EXPENDITURE', 'REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Cash', 'Non-Cash'])->get(),
+            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'EXPENDITURE', 'REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Cash', 'Non-Cash'])->get(),
+
+            
         ]);
     }
 
@@ -1057,6 +1075,11 @@ class VoucherheaderController extends Controller
             'branch' => Branch::all(),
             'allvoucher' => Voucherheader::whereRaw("LEFT(vouchernumber, 4) = 'OB--'")->get(),
             'accountcode' => ChartOfAccount::where('active', '1')->where('accountusage', '<>', 'Ledger')->get(),
+
+            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Cash')->get(),
+
+            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['LIABILITIES'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Cash')->get(),
+
         ]);
     }
 
@@ -1283,107 +1306,6 @@ class VoucherheaderController extends Controller
         ]);
     }
 
-    public function allvoucherEdit(Voucherheader $allvoucher)
-    {
-
-        return Voucherheader::with(['voucherdt.ChartOFAccount', 'branch'])->findOrFail($allvoucher->id);
-    }
-
-    public function allvoucherUpdate(Request $request, $allvoucher)
-    {
-        try {
-            $this->authorize('voucher.allvoucherUpdate');
-        } catch (AuthorizationException $e) {
-            return back()->with([
-                'error' => true,
-                'message' => 'You are not authorized to access this page.'
-            ]);
-        }
-        $request->validate([
-            'voucherdate' => 'required|date',
-            'referance'   => 'required|string',
-            'branch_id'   => 'required|exists:branches,id',
-            'debitAcc'    => 'required|string',
-            'debitAmt'    => 'required|numeric|min:0',
-            'creditAcc'   => 'required|string',
-            'creditAmt'   => 'required|numeric',
-            'notes'       => 'required|string',
-        ]);
-
-        DB::transaction(function () use ($request, $allvoucher) {
-            $voucher = Voucherheader::findOrFail($allvoucher);
-            $voucherDate = Carbon::parse($request->voucherdate);
-            $voucher->update([
-                'voucherdate' => $request->voucherdate,
-                'referance'   => $request->referance,
-                'yearname'    => $voucherDate->year,
-                'monthname'   => $voucherDate->month,
-                'branch_id'   => $request->branch_id,
-                'notes'       => $request->notes,
-            ]);
-            $details = Voucherdetail::where(
-                'vouchernumber',
-                $voucher->vouchernumber
-            )->get();
-            $debitDetail  = $details->firstWhere(fn($d) => $d->primeamt > 0);
-            $creditDetail = $details->firstWhere(fn($d) => $d->primeamt < 0);
-            // Debit 
-            if ($debitDetail) {
-                // UPDATE
-                $debitDetail->update([
-                    'accountcode' => $request->debitAcc,
-                    'primeamt'    => abs($request->debitAmt),
-                    'baseamt'     => abs($request->debitAmt),
-                    'branch_id'   => $request->branch_id,
-                    'notes'       => $request->notes,
-                    'user_id'     => Auth::id(),
-                ]);
-            } else {
-                // CREATE
-                Voucherdetail::create([
-                    'vouchernumber' => $voucher->vouchernumber,
-                    'accountcode'   => $request->debitAcc,
-                    'currency'      => 'BDT',
-                    'exchagerate'   => '1.000',
-                    'primeamt'      => abs($request->debitAmt),
-                    'baseamt'       => abs($request->debitAmt),
-                    'branch_id'     => $request->branch_id,
-                    'notes'         => $request->notes,
-                    'user_id'       => Auth::id(),
-                ]);
-            }
-            // Credit 
-            if ($creditDetail) {
-                // UPDATE
-                $creditDetail->update([
-                    'accountcode' => $request->creditAcc,
-                    'primeamt'    => -abs($request->creditAmt),
-                    'baseamt'     => -abs($request->creditAmt),
-                    'branch_id'   => $request->branch_id,
-                    'notes'       => $request->notes,
-                    'user_id'     => Auth::id(),
-                ]);
-            } else {
-                // CREATE
-                Voucherdetail::create([
-                    'vouchernumber' => $voucher->vouchernumber,
-                    'accountcode'   => $request->creditAcc,
-                    'currency'      => 'BDT',
-                    'exchagerate'   => '1.000',
-                    'primeamt'      => -abs($request->creditAmt),
-                    'baseamt'       => -abs($request->creditAmt),
-                    'branch_id'     => $request->branch_id,
-                    'notes'         => $request->notes,
-                    'user_id'       => Auth::id(),
-                ]);
-            }
-        });
-
-        return back()->with([
-            'success' => true,
-            'message' => 'Voucher Blance updated successfully',
-        ]);
-    }
 
     public function allvoucherConfirm(Voucherheader $allvoucher)
     {
@@ -1426,13 +1348,23 @@ class VoucherheaderController extends Controller
         $this->authorize('voucher.allvoucherBalance');
 
         DB::transaction(function () use ($allvoucher) {
-
-            VoucherBalance::where('vouchernumber', $allvoucher->vouchernumber)
-                ->forceDelete();
-
-            $allvoucher->update([
-                'status' => 'Balanced'
-            ]);
+            if (substr($allvoucher->vouchernumber, 0, 4) == 'APV-') {
+                VoucherApalc::where('vouchernumber', $allvoucher->vouchernumber)
+                    ->forceDelete();
+                VoucherBalance::where('vouchernumber', $allvoucher->vouchernumber)
+                    ->forceDelete();
+                Voucherdetail::where('vouchernumber', $allvoucher->vouchernumber)
+                    ->forceDelete();
+                $allvoucher->update([
+                    'status' => null
+                ]);
+            } else {
+                VoucherBalance::where('vouchernumber', $allvoucher->vouchernumber)
+                    ->forceDelete();
+                $allvoucher->update([
+                    'status' => 'Balanced'
+                ]);
+            }
         });
 
         return back()->with([

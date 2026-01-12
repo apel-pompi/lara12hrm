@@ -676,28 +676,10 @@ class RolePermissionSeeder extends Seeder
                 'permissions' => [
                     'SupplierPayable.index',
                     'SupplierPayable.store',
-                    'SupplierPayable.show',
-                    'SupplierPayable.edit',
-                    'SupplierPayable.update',
-                    'SupplierPayable.status',
-                    'SupplierPayable.destroy',
-                    'SupplierPayable.Confirm',
+                    'SupplierPayable.managePayable',
                 ],
             ],
-             //Supplier Payment
-            [
-                'group_name' => 'Supplier Payment',
-                'permissions' => [
-                    'SupplierPayment.index',
-                    'SupplierPayment.store',
-                    'SupplierPayment.show',
-                    'SupplierPayment.edit',
-                    'SupplierPayment.update',
-                    'SupplierPayment.status',
-                    'SupplierPayment.destroy',
-                    'SupplierPayment.Confirm',
-                ],
-            ],
+            
              //All Voucher
             [
                 'group_name' => 'All Voucher List',
@@ -706,6 +688,7 @@ class RolePermissionSeeder extends Seeder
                     'voucher.allvoucherUpdate',
                     'voucher.allvoucherConfirm',
                     'voucher.allvoucherBalance',
+                    'voucher.singleReport'
                 ],
             ],
              //Opening Balance
@@ -771,6 +754,21 @@ class RolePermissionSeeder extends Seeder
                     'Accounts.ReportMR',
                 ],
             ],
+            //Accounts Reports
+            [
+                'group_name' => 'Accounts Reports',
+                'permissions' => [
+                    'accountsreport.index',
+                    'accountsreport.chartOfAccountReport',
+                    'accountsreport.ActoGL',
+                    'accountsreport.CashBook',
+                    'accountsreport.CashFlow',
+                    'accountsreport.JurnalTransactions',
+                    'accountsreport.trialbalanceconsolidated',
+                    'accountsreport.trialbalance',
+                    'accountsreport.balancesheet',
+                ],
+            ],            
             //HR Reports
             [
                 'group_name' => 'HR Reports',

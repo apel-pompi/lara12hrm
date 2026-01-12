@@ -1,0 +1,324 @@
+[
+  {
+    "groupone": 1,
+    "grouptwo": 101,
+    "groupthree": "101-001",
+    "accountcode": "101-001-001",
+    "description": "Office Furniture & Fixtures",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 101,
+    "groupthree": "101-001",
+    "accountcode": "101-001-002",
+    "description": "Office Equipments",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 101,
+    "groupthree": "101-001",
+    "accountcode": "101-001-003",
+    "description": "Computer & Laptops",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 101,
+    "groupthree": "101-001",
+    "accountcode": "101-001-004",
+    "description": "Office Decoration & Partition",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 101,
+    "groupthree": "101-002",
+    "accountcode": "101-002-001",
+    "description": "Motor Car & Vehicle",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 101,
+    "groupthree": "101-002",
+    "accountcode": "101-002-002",
+    "description": "Motorcycle & Scooter",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 101,
+    "groupthree": "101-003",
+    "accountcode": "101-003-001",
+    "description": "Office Equipments IT",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 101,
+    "groupthree": "101-003",
+    "accountcode": "101-003-002",
+    "description": "Software License",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 102,
+    "groupthree": "102-001",
+    "accountcode": "102-001-001",
+    "description": "Accounts Receivable – Students",
+    "accounttype": "ASSET",
+    "accountusage": "AR",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 102,
+    "groupthree": "102-002",
+    "accountcode": "102-002-001",
+    "description": "Employee Advance",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 102,
+    "groupthree": "102-002",
+    "accountcode": "102-002-002",
+    "description": "Supplier Advance",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 102,
+    "groupthree": "102-002",
+    "accountcode": "102-002-003",
+    "description": "Security Deposit",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 102,
+    "groupthree": "102-003",
+    "accountcode": "102-003-001",
+    "description": "Prepaid Office Rent Expense",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 102,
+    "groupthree": "102-003",
+    "accountcode": "102-003-002",
+    "description": "Prepaid Internet & Utilities Expense",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Cash",
+    "user_id": 1,
+    "active": 1
+  },
+
+  {
+    "groupone": 1,
+    "grouptwo": 103,
+    "groupthree": "103-001",
+    "accountcode": "103-001-001",
+    "description": "Accumulated Depreciation – Furniture & Fixtures",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 103,
+    "groupthree": "103-001",
+    "accountcode": "103-001-002",
+    "description": "Accumulated Depreciation – Equipments",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 103,
+    "groupthree": "103-001",
+    "accountcode": "103-001-003",
+    "description": "Accumulated Depreciation – Computer & Laptops",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 104,
+    "groupthree": "104-001",
+    "accountcode": "104-001-001",
+    "description": "DBBL Bank Account",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 104,
+    "groupthree": "104-001",
+    "accountcode": "104-001-002",
+    "description": "City Bank Account",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 104,
+    "groupthree": "104-001",
+    "accountcode": "104-001-003",
+    "description": "Brack Bank Account",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 104,
+    "groupthree": "104-002",
+    "accountcode": "104-002-001",
+    "description": "Cash in Hand",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Cash",
+    "user_id": 1,
+    "active": 1
+  },
+  {
+    "groupone": 1,
+    "grouptwo": 104,
+    "groupthree": "104-002",
+    "accountcode": "104-002-002",
+    "description": "Petty Cash",
+    "accounttype": "ASSET",
+    "accountusage": "Ledger",
+    "analyticalcode": "Cash",
+    "user_id": 1,
+    "active": 1
+  },
+    {
+        "groupone": 2,
+        "grouptwo": 201,
+        "groupthree": "201-001",
+        "accountcode": "201-001-001",
+        "description": "Account payable domestic suppliers",
+        "accounttype": "LIABILITIES",
+        "accountusage": "AP",
+        "analyticalcode": "Non-Cash",
+        "user_id": 1,
+        "active": 1
+    },
+    {
+        "groupone": 2,
+        "grouptwo": 201,
+        "groupthree": "201-001",
+        "accountcode": "201-001-002",
+        "description": "Account payable International suppliers",
+        "accounttype": "LIABILITIES",
+        "accountusage": "AP",
+        "analyticalcode": "Non-Cash",
+        "user_id": 1,
+        "active": 1
+    },
+    {
+        "groupone": 2,
+        "grouptwo": 201,
+        "groupthree": "201-001",
+        "accountcode": "201-001-003",
+        "description": "Account payable wholesale suppliers ",
+        "accounttype": "LIABILITIES",
+        "accountusage": "AP",
+        "analyticalcode": "Non-Cash",
+        "user_id": 1,
+        "active": 1
+    },
+  
+
+
+
+
+
+
+
+    
+  {
+    "groupone": 4,
+    "grouptwo": 402,
+    "groupthree": "402-005",
+    "accountcode": "402-005-001",
+    "description": "Gross Salary",
+    "accounttype": "EXPENDITURE",
+    "accountusage": "Ledger",
+    "analyticalcode": "Non-Cash",
+    "user_id": 1,
+    "active": 1
+  }
+]

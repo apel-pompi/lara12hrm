@@ -140,7 +140,7 @@ class StudentQuotations extends Controller
                 'notes' => $request->note,
                 'status' => 0,
                 'adddate' => date('y-m-d'),
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'active' => 0,
             ]);
             if ($createHd) {
@@ -153,7 +153,7 @@ class StudentQuotations extends Controller
                         'amount' => $value['amount'],
                         'quaotamount' => $value['amount'],
                         'paytype' => $value['pay_type'],
-                        'user_id' => auth()->id()
+                        'user_id' => Auth::id()
                     ]);
                 }
             }

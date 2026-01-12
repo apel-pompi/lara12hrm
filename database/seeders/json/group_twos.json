@@ -1,0 +1,18 @@
+[
+  { "groupone": 1, "grouptwo": 101, "description": "FIXED ASSETS", "user_id": 1, "active": 1 },
+  { "groupone": 1, "grouptwo": 102, "description": "CURRENT ASSETS", "user_id": 1, "active": 1 },
+  { "groupone": 1, "grouptwo": 103, "description": "DEPRECIATION", "user_id": 1, "active": 1 },
+  { "groupone": 1, "grouptwo": 104, "description": "CASH & BANK", "user_id": 1, "active": 1 },
+
+  { "groupone": 2, "grouptwo": 201, "description": "CURRENT LIABILITIES", "user_id": 1, "active": 1 },
+  { "groupone": 2, "grouptwo": 202, "description": "LONG TERM LIABILITIES", "user_id": 1, "active": 1 },
+  { "groupone": 2, "grouptwo": 203, "description": "SHORT TERM LIABILITIES", "user_id": 1, "active": 1 },
+  { "groupone": 2, "grouptwo": 204, "description": "FUNDS", "user_id": 1, "active": 1 },
+
+  { "groupone": 3, "grouptwo": 301, "description": "OPERATIONAL REVENUES", "user_id": 1, "active": 1 },
+  { "groupone": 3, "grouptwo": 302, "description": "MISCELLANEOUS REVENUES", "user_id": 1, "active": 1 },
+
+  { "groupone": 4, "grouptwo": 401, "description": "FINANCIAL EXPENSES", "user_id": 1, "active": 1 },
+  { "groupone": 4, "grouptwo": 402, "description": "SG&A EXPENDITURES", "user_id": 1, "active": 1 },
+  { "groupone": 4, "grouptwo": 403, "description": "COST OF GOODS SOLD", "user_id": 1, "active": 1 }
+]

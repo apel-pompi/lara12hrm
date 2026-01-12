@@ -28,33 +28,26 @@ return new class extends Migration
     private function viewSql(): string
     {
         return <<<SQL
-        CREATE VIEW vw_unpaidinv AS
+        CREATE OR REPLACE VIEW vw_unpaidinv AS
         SELECT
-            a.subacccode                         AS suppliercode,
-            b.name                               AS suppliername,
-            e.branchname                         AS branch,
-            a.accountcode,
-            d.description,
-            b.contact_person,
-            ABS(SUM(a.primeamt))                 AS payable
-        FROM voucherdetails a
-        INNER JOIN suppliers b
-            ON a.subacccode = b.subcode
-        INNER JOIN voucherheaders c
-            ON c.vouchernumber = a.vouchernumber
-        INNER JOIN branches e
-            ON e.id = c.branch_id
-        INNER JOIN chart_of_accounts d
-            ON d.accountcode = a.accountcode
-        WHERE c.status = 'Posted'
+            vw_payinvc.suppliercode       AS suppliercode,
+            vw_payinvc.invicenumber       AS invoicenumber,
+            vw_payinvc.date               AS date,
+            vw_payinvc.branch_id          AS branch_id,
+            vw_payinvc.currency           AS currency,
+            vw_payinvc.exchagerate        AS exchagerate,
+            ABS(SUM(vw_payinvc.amount))   AS primeamt,
+            ABS(SUM(vw_payinvc.primeamt)) AS amount
+        FROM vw_payinvc
         GROUP BY
-            a.subacccode,
-            b.name,
-            e.branchname,
-            a.accountcode,
-            d.description,
-            b.contact_person,
-            c.branch_id;
+            vw_payinvc.suppliercode,
+            vw_payinvc.invicenumber,
+            vw_payinvc.date,
+            vw_payinvc.branch_id,
+            vw_payinvc.currency,
+            vw_payinvc.exchagerate
+        HAVING
+            ABS(SUM(vw_payinvc.primeamt)) > 0;
         SQL;
     }
 };

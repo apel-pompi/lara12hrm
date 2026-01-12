@@ -197,7 +197,7 @@ class MoneyReceiptController extends Controller
             'sign' => '-1',
             'status' => 'Open',
             'refe_code' => $insnumber,
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
         ]);
         foreach ($request->fees as $fee) {
             StudentMoneyReceiptDT::create([

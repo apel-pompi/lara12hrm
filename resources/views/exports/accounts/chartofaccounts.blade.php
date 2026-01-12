@@ -103,24 +103,25 @@
             <tr>
                 <th width="15%">Code</th>
                 <th width="45%">Description</th>
-                <th width="20%">Usage</th>
-                <th width="20%" class="text-center">Status</th>
+                <th width="10%">Usage</th>
+                <th width="20%">Cash Nature</th>
+                <th width="10%" class="text-center">Status</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($accounts as $groupOne)
                 <tr class="level-1">
-                    <td colspan="4">{{ $groupOne->groupone }} — {{ $groupOne->description }}</td>
+                    <td colspan="5">{{ $groupOne->groupone }} — {{ $groupOne->description }}</td>
                 </tr>
 
                 @foreach ($groupOne->GroupTwo as $groupTwo)
                     <tr class="level-2">
-                        <td colspan="4">{{ $groupTwo->grouptwo }} — {{ $groupTwo->description }}</td>
+                        <td colspan="5">{{ $groupTwo->grouptwo }} — {{ $groupTwo->description }}</td>
                     </tr>
 
                     @foreach ($groupTwo->GroupThree as $groupThree)
                         <tr class="level-3">
-                            <td colspan="4">{{ $groupThree->groupthree }} — {{ $groupThree->description }}</td>
+                            <td colspan="5">{{ $groupThree->groupthree }} — {{ $groupThree->description }}</td>
                         </tr>
 
                         @foreach ($groupThree->chartOfAccounts as $chart)
@@ -128,6 +129,7 @@
                                 <td>{{ $chart->accountcode }}</td>
                                 <td>{{ $chart->description }}</td>
                                 <td>{{ $chart->accountusage }}</td>
+                                <td>{{ $chart->analyticalcode }}</td>
                                 <td class="text-center">
                                     <span class="{{ $chart->active ? 'status-active' : 'status-inactive' }}">
                                         {{ $chart->active ? 'Active' : 'Inactive' }}
