@@ -29,10 +29,10 @@ class AcademicController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/Agency/Setting/academic',[
             'academicFilter' => Academic::with('user')->orderBy('id', 'desc')->get(),
-            'academic' => $academicService->get($request->query()),
+            'academic' => $academicService->get(array_merge($request->query(), ['per_page' => $perPage])),
             'filters'   => $academicService->get($request->query()),
         ]);
     }

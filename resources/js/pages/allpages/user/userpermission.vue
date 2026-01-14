@@ -4,20 +4,32 @@ import { Input } from '@/components/ui/input';
 import Label from '@/components/ui/label/Label.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import UserLayout from '@/layouts/settings/userLayout.vue';
-
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import Badge from '@/components/ui/badge/Badge.vue';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, RefreshCcw, Search, Trash, Undo2, Eye } from 'lucide-vue-next';
 
-import { Plus,Eye, Trash, Undo2 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'User Permission', href: '/userpermission' }];
+
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    per_page: number;
+    to: number | null;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
 
 export interface Users {
     id: number;
@@ -28,14 +40,9 @@ export interface Users {
 }
 
 const props = defineProps<{
-    users: Array<{
-        id: number;
-        name: string;
-        username: string;
-        email: string;
-        banned_at: string;
-        roles: { name: string }[];
-    }>;
+    users: Paginated<Users>;
+    filters: { name?: string };
+    alluser:{id:number;name:string;username:string;email:string}[];
     roles: any[];
 }>();
 
@@ -54,7 +61,6 @@ interface FormErrors {
 
 const showDialog = ref(false);
 const isEditMode = ref(false);
-const showDialogOpen = ref(false);
 const errors = ref<FormErrors>();
 
 const form = useForm({
@@ -74,24 +80,6 @@ const showDailogCreate = () => {
     showDialog.value = true;
 };
 
-const onShow = async (id: number) => {
-    try {
-        const res = await fetch(`/userpermission/${id}`);
-
-        if (!res.ok) {
-            toast.error('Server error while fetching userpermission details.');
-            return;
-        }
-        const data = await res.json();
-        Object.assign(form, data);
-        form.id = data.id;
-        isEditMode.value = false;
-        showDialog.value = false;
-        showDialogOpen.value = true;
-    } catch (error) {
-        toast.error('userpermission show not necessary !' + error);
-    }
-};
 
 const onEdit = async (id: number) => {
     try {
@@ -181,16 +169,201 @@ const onReturn = async (id: number) => {
         preserveState: false,
     });
 };
+
+
+const selectedName = ref(null);
+const queryName = ref('');
+const filteredName = computed(() => {
+    if (queryName.value === '') return props.alluser;
+
+    return props.alluser.filter((n) => n.name && n.name.toLowerCase().includes(queryName.value.toLowerCase()));
+});
+
+const selectedUserName = ref(null);
+const queryUserName = ref('');
+const filteredUserName= computed(() => {
+    if (queryUserName.value === '') return props.alluser;
+
+    return props.alluser.filter((n) => n.username && n.username.toLowerCase().includes(queryUserName.value.toLowerCase()));
+});
+
+const selectedEmail = ref(null);
+const queryEmail = ref('');
+const filteredEmail= computed(() => {
+    if (queryEmail.value === '') return props.alluser;
+
+    return props.alluser.filter((n) => n.email && n.email.toLowerCase().includes(queryEmail.value.toLowerCase()));
+});
+
+const search = () => {
+    const params: Record<string, any> = {};
+
+    if (selectedName.value) params.name = selectedName.value.name;
+    if (selectedUserName.value) params.username = selectedUserName.value.username;
+    if (selectedEmail.value) params.email = selectedEmail.value.email;
+
+    router.get(route('userpermission.index'), params, {
+        preserveState: false,
+        preserveScroll: true,
+    });
+};
+
+
+const refresh = () => {
+    router.get(route('userpermission.index'), {}, { replace: true });
+};
+
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('userpermission.index'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
+};
 </script>
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="User Permission" />
         <UserLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create </Button>
                 </div>
-                <div class="rounded-md border">
+                <div class="flex flex-wrap items-center gap-4 py-4">
+                    <div class="w-full sm:w-1/2 lg:w-auto">
+                        <Combobox v-model="selectedName">
+                            <div class="relative w-full md:w-48">
+                                <ComboboxInput
+                                    class="w-full rounded-md border px-3 py-2 text-sm"
+                                    placeholder="Select Name"
+                                    @input="queryName = $event.target.value"
+                                    :display-value="(c) => c?.name ?? ''"
+                                />
+                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                </ComboboxButton>
+
+                                <ComboboxOptions
+                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                                >
+                                    <div v-if="filteredName.length === 0 && queryName !== ''" class="text-gray-500 select-none">
+                                        Nothing found.
+                                    </div>
+
+                                    <ComboboxOption
+                                        v-for="one in filteredName"
+                                        :key="one.id"
+                                        :value="one"
+                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pl-10 select-none"
+                                        v-slot="{ selected }"
+                                    >
+                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                            {{ one.name }}
+                                        </span>
+                                        <span
+                                            v-if="selected"
+                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                        >
+                                            <CheckIcon class="h-5 w-5" />
+                                        </span>
+                                    </ComboboxOption>
+                                </ComboboxOptions>
+                            </div>
+                        </Combobox>
+                    </div>
+                    <div class="w-full sm:w-1/2 lg:w-auto">
+                        <Combobox v-model="selectedUserName">
+                            <div class="relative w-full md:w-48">
+                                <ComboboxInput
+                                    class="w-full rounded-md border px-3 py-2 text-sm"
+                                    placeholder="Select User Name"
+                                    @input="queryUserName = $event.target.value"
+                                    :display-value="(c) => c?.username ?? ''"
+                                />
+                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                </ComboboxButton>
+
+                                <ComboboxOptions
+                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                                >
+                                    <div v-if="filteredUserName.length === 0 && queryUserName !== ''" class="text-gray-500 select-none">
+                                        Nothing found.
+                                    </div>
+
+                                    <ComboboxOption
+                                        v-for="one in filteredUserName"
+                                        :key="one.id"
+                                        :value="one"
+                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pl-10 select-none"
+                                        v-slot="{ selected }"
+                                    >
+                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                            {{ one.username }}
+                                        </span>
+                                        <span
+                                            v-if="selected"
+                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                        >
+                                            <CheckIcon class="h-5 w-5" />
+                                        </span>
+                                    </ComboboxOption>
+                                </ComboboxOptions>
+                            </div>
+                        </Combobox>
+                    </div>
+                    <div class="w-full sm:w-1/2 lg:w-auto">
+                        <Combobox v-model="selectedEmail">
+                            <div class="relative w-full md:w-48">
+                                <ComboboxInput
+                                    class="w-full rounded-md border px-3 py-2 text-sm"
+                                    placeholder="Select Email"
+                                    @input="queryEmail = $event.target.value"
+                                    :display-value="(c) => c?.email ?? ''"
+                                />
+                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                </ComboboxButton>
+
+                                <ComboboxOptions
+                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                                >
+                                    <div v-if="filteredEmail.length === 0 && queryEmail !== ''" class="text-gray-500 select-none">
+                                        Nothing found.
+                                    </div>
+
+                                    <ComboboxOption
+                                        v-for="one in filteredEmail"
+                                        :key="one.id"
+                                        :value="one"
+                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pl-10 select-none"
+                                        v-slot="{ selected }"
+                                    >
+                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                            {{ one.email }}
+                                        </span>
+                                        <span
+                                            v-if="selected"
+                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                        >
+                                            <CheckIcon class="h-5 w-5" />
+                                        </span>
+                                    </ComboboxOption>
+                                </ComboboxOptions>
+                            </div>
+                        </Combobox>
+                    </div>
+                    <div class="w-full sm:w-auto">
+                        <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
+                    </div>
+                    <div class="w-full sm:w-auto">
+                        <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+                    </div>
+                </div>
+                <div class="overflow-hidden rounded-xl border shadow-sm">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -203,7 +376,7 @@ const onReturn = async (id: number) => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="(trn, index) in data" :key="trn.id ?? index">
+                            <TableRow v-for="(trn, index) in data.data" :key="trn.id ?? index">
                                 <TableCell>{{ trn.name }}</TableCell>
                                 <TableCell>{{ trn.username }}</TableCell>
                                 <TableCell>{{ trn.email }}</TableCell>
@@ -213,14 +386,14 @@ const onReturn = async (id: number) => {
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <span v-if="trn.banned_at">Banned</span>
+                                    <span v-if="trn.banned_at"><Badge size="sm" class="flex flex-wrap gap-2 bg-red-500">Banned</Badge></span>
                                     <span v-else><Badge variant="outline" size="sm" class="flex flex-wrap gap-2">Active</Badge></span>
                                 </TableCell>
 
                                 <TableCell class="text-right flex justify-center gap-2">
                                     
                                     <div class="group relative">
-                                        <Button @click="onEdit(trn.id)" class="m-[2px] cursor-pointer" variant="outline" size="sm">
+                                        <Button @click="onEdit(trn.id)" class="cursor-pointer" variant="outline" size="sm">
                                             <Eye />
                                         </Button>
                                         <span
@@ -230,8 +403,8 @@ const onReturn = async (id: number) => {
                                         </span>
                                     </div>
                                     <div class="group relative" v-if="trn.banned_at">
-                                        <Button @click="onReturn(trn.id)" class="m-[2px] cursor-pointer" variant="outline" size="sm">
-                                            <Undo2/>
+                                        <Button @click="onReturn(trn.id)" class="cursor-pointer bg-red-500" size="sm">
+                                            <Undo2 class="text-white"/>
                                         </Button>
                                         <span
                                             class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
@@ -240,7 +413,7 @@ const onReturn = async (id: number) => {
                                         </span>
                                     </div>
                                     <div class="group relative" v-else>
-                                        <Button @click="onDelete(trn.id)" class="m-[2px] cursor-pointer" variant="outline" size="sm">
+                                        <Button @click="onDelete(trn.id)" class="cursor-pointer" variant="outline" size="sm">
                                             <Trash />
                                         </Button>
                                         <span
@@ -255,14 +428,32 @@ const onReturn = async (id: number) => {
                     </Table>
                 </div>
 
-                <div class="flex items-center justify-end space-x-2 py-4">
-                    <div class="text-muted-foreground flex-1 text-sm"></div>
-                    <div class="space-x-2"></div>
+                <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                    <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                        <label for="per-page" class="text-gray-600">Show:</label>
+                        <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                        </select>
+                        <span>Showing {{ users.from }} to {{ users.to }} of {{ users.total }} results</span>
+                    </div>
+                    <div class="space-x-2">
+                        <Button
+                            v-for="(link, index) in data.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            variant="outline"
+                            size="sm"
+                            :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                            @click="goToPage(link.url)"
+                        >
+                            <span v-html="link.label"></span>
+                        </Button>
+                    </div>
                 </div>
             </div>
             <!-- Enhanced User Dialog Component -->
             <Dialog v-model:open="showDialog">
-                <DialogContent class="max-w-[950px] overflow-hidden rounded-2xl p-0 shadow-xl">
+                <DialogContent class="max-w-237.5 overflow-hidden rounded-2xl p-0 shadow-xl">
                     <!-- Header with gradient background -->
                     <DialogHeader class="border-b px-6 pt-6 pb-4">
                         <DialogTitle class="text-2xl font-semibold">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\AgencySetting;
 use App\Http\Controllers\Controller;
 use App\Models\AgencySetting\Workflow;
 use App\Models\AgencySetting\WorkflowStage;
+use App\Services\Agency\Setting\WorkflowService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class WorkflowController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request, WorkflowService $workflow)
     {
         try {
             $this->authorize('workflow.index');
@@ -28,9 +29,11 @@ class WorkflowController extends Controller
             ]);
         }
 
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/Agency/Setting/workflow', [
-            'workflow' => Workflow::with(['user'])->orderBy('id', 'desc')->get()
+            'filters'   => $workflow->get($request->query()),
+            'workflow' => $workflow->get(array_merge($request->query(), ['per_page' => $perPage])),
+            'allworkflow' => Workflow::all()
         ]);
     }
 

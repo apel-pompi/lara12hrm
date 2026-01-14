@@ -194,19 +194,19 @@ watch(
 
 // Switch toggle handler
 const toggleStatus = (holidayhd: HolidayHd) => {
-  const newStatus = !Boolean(holidayhd.active); // boolean
-  router.put(
-    route('holidayhd.updateStatus', holidayhd.id),
-    { active: newStatus ? 1 : 0 }, // server expects number
-    {
-      preserveState: true,
-      onSuccess: () => {
-        holidayhd.active = newStatus ? 1 : 0 // local update (number)
-        toast.success('Holiday status update');
-      }
-    }
-  )
-}
+    const newStatus = !Boolean(holidayhd.active); // boolean
+    router.put(
+        route('holidayhd.updateStatus', holidayhd.id),
+        { active: newStatus ? 1 : 0 }, // server expects number
+        {
+            preserveState: true,
+            onSuccess: () => {
+                holidayhd.active = newStatus ? 1 : 0; // local update (number)
+                toast.success('Holiday status update');
+            },
+        },
+    );
+};
 
 const searchForm = ref({
     branch_id: props.filters.branch_id || '',
@@ -230,21 +230,26 @@ const refresh = () => {
     router.get(route('holidayHd.index'), {}, { replace: true });
 };
 
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('holidayHd.index'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
 const goToPage = (url: string | null) => {
     if (url) {
-        router.get(url, {}, { preserveState: true, replace: true });
+        router.get(url, {}, { preserveState: false, replace: true });
     }
 };
 
 const getMonthName = (m) => {
-  return new Date(0, m - 1).toLocaleString("en-US", { month: "long" });
+    return new Date(0, m - 1).toLocaleString('en-US', { month: 'long' });
 };
 </script>
 
 <template>
     <Head title="Holiday" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
             <div class="flex items-center gap-2 py-4">
                 <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Holiday </Button>
                 <!-- Search start -->
@@ -316,24 +321,33 @@ const getMonthName = (m) => {
                             <TableCell>{{ holidayhd.branch?.branchname }}</TableCell>
                             <TableCell>{{ holidayhd.yearname }}</TableCell>
                             <TableCell>{{ getMonthName(holidayhd.monthname) }}</TableCell>
-                            <TableCell><a :href="`/holidaydt/${holidayhd.id}/create/`" class="text-blue-600 hover:text-blue-800 underline font-medium">{{ holidayhd.holidays }}</a></TableCell>
+                            <TableCell
+                                ><a :href="`/holidaydt/${holidayhd.id}/create/`" class="font-medium text-blue-600 underline hover:text-blue-800">{{
+                                    holidayhd.holidays
+                                }}</a></TableCell
+                            >
                             <TableCell>{{ holidayhd.holiworking }}</TableCell>
                             <TableCell>
-                                <Switch v-model="holidayhd.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(holidayhd)">
-                                </Switch>
+                                <Switch v-model="holidayhd.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(holidayhd)"> </Switch>
                             </TableCell>
                             <TableCell class="text-right">
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onShow(holidayhd.id)"><Eye></Eye></Button>
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(holidayhd.id)"><SquarePen></SquarePen></Button>
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(holidayhd.id)"><Trash></Trash></Button>
+                                <Button size="sm" variant="outline" @click="onShow(holidayhd.id)"><Eye></Eye></Button>
+                                <Button size="sm" variant="outline" @click="onEdit(holidayhd.id)"><SquarePen></SquarePen></Button>
+                                <Button size="sm" variant="outline" @click="onDelete(holidayhd.id)"><Trash></Trash></Button>
                             </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
+            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                    <label for="per-page" class="text-gray-600">Show:</label>
+                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                    </select>
+                    <span>Showing {{ holidayHd.from }} to {{ holidayHd.to }} of {{ holidayHd.total }} results</span>
+                </div>
                 <div class="space-x-2">
                     <Button
                         v-for="(link, index) in data.links"

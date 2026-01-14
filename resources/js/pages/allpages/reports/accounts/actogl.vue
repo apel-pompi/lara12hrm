@@ -66,14 +66,41 @@ watch(edate, (newDate) => {
 });
 
 const onReport = async () => {
+
+    // ===== VALIDATION =====
+    if (!selectedAccount.value || !selectedAccount.value.accountcode) {
+        alert('Account is not selected');
+        return;
+    }
+
+    if (!form.startdate) {
+        alert('Start Date is not selected');
+        return;
+    }
+
+    if (!form.enddate) {
+        alert('End Date is not selected');
+        return;
+    }
+
+    if (new Date(form.startdate) > new Date(form.enddate)) {
+        alert('Start Date cannot be greater than End Date');
+        return;
+    }
+
+    // ===== BUILD URL =====
     const url = route('accountsreport.ActoGLReport', {
-        branch_id: selectedBranch.value ? selectedBranch.value.id : '',
-        account: selectedAccount.value ? selectedAccount.value.accountcode : '',
-        startdate: form.startdate || null,
-        enddate: form.enddate || null,
+        branch_id: selectedBranch.value ? selectedBranch.value.id : null,
+        account: selectedAccount.value.accountcode,
+        startdate: form.startdate,
+        enddate: form.enddate,
     });
+
+    // ===== OPEN REPORT =====
     window.open(url, '_blank');
 };
+
+
 </script>
 
 <template>

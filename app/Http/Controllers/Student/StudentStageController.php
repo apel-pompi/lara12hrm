@@ -30,10 +30,10 @@ class StudentStageController extends Controller
             ]);
         }
 
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/Agency/Setting/studentstage', [
             'searchName' => StudentStage::select('name')->get(),
-            'studentStage' => $studentStageService->get($request->query()),
+            'studentStage' => $studentStageService->get(array_merge($request->query(), ['per_page' => $perPage])),
             'filters'   => $studentStageService->get($request->query()),
         ]);
     }

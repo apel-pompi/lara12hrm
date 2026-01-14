@@ -31,11 +31,11 @@ class HolidayHdController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/hrm/holidayHd', [
             
             'filters'   => $holydayHdService->get($request->query()),
-            'holidayHd'   => $holydayHdService->get($request->query()),
+            'holidayHd'   => $holydayHdService->get(array_merge($request->query(), ['per_page' => $perPage])),
             'branch' => Branch::where('active', 1)->get(),
             'year' => $this->createYear(),
             'month' => $this->createMonth(),

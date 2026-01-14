@@ -24,7 +24,7 @@ const form = useForm({
 });
 
 const onReport = async () => {
-
+    
     const url = route('accountsreport.chartOfAccountReport', {
         accounttype: form.accounttype || null,
     });

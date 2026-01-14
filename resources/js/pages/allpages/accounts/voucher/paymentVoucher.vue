@@ -248,11 +248,7 @@ const onConfirm = async (payment: number) => {
     });
 };
 
-const goToPage = (url: string | null) => {
-    if (url) {
-        router.get(url, {}, { preserveState: false, replace: true });
-    }
-};
+
 
 const onReport = async (vhd: number) => {
     const url = route('voucherheader.singleReport', {
@@ -374,6 +370,17 @@ const search = () => {
 
 const refresh = () => {
     router.get(route('voucherheader.payment'), {}, { replace: true });
+};
+
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('voucherheader.payment'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
 };
 </script>
 
@@ -712,7 +719,7 @@ const refresh = () => {
 
                             <TableCell class="text-center">
                                 <div v-if="vhd.status == 'Balanced'" class="group relative inline-block">
-                                    <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onConfirm(vhd.id)"
+                                    <Button class="cursor-pointer" size="sm" variant="outline" @click="onConfirm(vhd.id)"
                                         ><ShieldCheck class="text-green-500"></ShieldCheck
                                     ></Button>
                                     <span
@@ -722,7 +729,7 @@ const refresh = () => {
                                     </span>
                                 </div>
                                 <div v-if="vhd.status !== 'Posted'" class="group relative inline-block">
-                                    <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onEdit(vhd.id)"
+                                    <Button class="cursor-pointer" size="sm" variant="outline" @click="onEdit(vhd.id)"
                                         ><SquarePen class="text-indigo-500"></SquarePen
                                     ></Button>
                                     <span
@@ -735,7 +742,7 @@ const refresh = () => {
 
                             <TableCell>
                                 <div class="group relative inline-block">
-                                    <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onReport(vhd.id)"
+                                    <Button class="cursor-pointer" size="sm" variant="outline" @click="onReport(vhd.id)"
                                         ><FileText class="text-red-500"></FileText
                                     ></Button>
                                     <span
@@ -750,8 +757,14 @@ const refresh = () => {
                 </Table>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
+            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                    <label for="per-page" class="text-gray-600">Show:</label>
+                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                    </select>
+                    <span>Showing {{ voucherheader.from }} to {{ voucherheader.to }} of {{ voucherheader.total }} results</span>
+                </div>
                 <div class="space-x-2">
                     <Button
                         v-for="(link, index) in data.links"

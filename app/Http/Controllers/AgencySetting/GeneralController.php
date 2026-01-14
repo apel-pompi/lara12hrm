@@ -27,12 +27,11 @@ class GeneralController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/Agency/Setting/generalmaster', [
-
             'masterFillter' => MasterCategory::with('user')->orderBy('id', 'desc')->get(),
-            'mastercategory' => $generalMaster->get($request->query()),
             'filters'   => $generalMaster->get($request->query()),
+            'mastercategory' => $generalMaster->get(array_merge($request->query(), ['per_page' => $perPage])),
         ]);
     }
 

@@ -136,6 +136,11 @@ const refresh = () => {
     router.get(route('partner.index'), {}, { replace: true });
 };
 
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('partner.index'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
 const goToPage = (url: string | null) => {
     if (url) {
         router.get(url, {}, { preserveState: false, replace: true });
@@ -147,7 +152,7 @@ const goToPage = (url: string | null) => {
 <template>
     <Head title="Partner" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
             <div class="flex items-center justify-start space-x-2 py-4">
                 <div class="flex items-center gap-2 py-4">
                     <Button variant="outline" size="sm" @click="goToPartnerCreate"><Plus></Plus> Create Partner </Button>
@@ -336,7 +341,6 @@ const goToPage = (url: string | null) => {
                             <TableHead>State</TableHead>
                             <TableHead>City</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead class="text-center">Action</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -375,16 +379,19 @@ const goToPage = (url: string | null) => {
                             <TableCell>
                                 <Switch v-model="partner.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(partner)"> </Switch>
                             </TableCell>
-                            <TableCell class="text-right">
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(partner.id)"><Trash></Trash></Button>
-                            </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
+            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                    <label for="per-page" class="text-gray-600">Show:</label>
+                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                    </select>
+                    <span>Showing {{ pertners.from }} to {{ pertners.to }} of {{ pertners.total }} results</span>
+                </div>
                 <div class="space-x-2">
                     <Button
                         v-for="(link, index) in data.links"

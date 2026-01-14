@@ -23,7 +23,7 @@ const sidebarNavItems: NavItem[] = [
         href: '/accountsreport/ActoGL',
     },
     {
-        title: 'Jurnal Transactions',
+        title: 'Journal Transactions',
         href: '/accountsreport/JurnalTransactions',
     },
     {
@@ -37,6 +37,10 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Balance Sheet',
         href: '/accountsreport/balancesheet',
+    },
+    {
+        title: 'Profit Loss',
+        href: '/accountsreport/profitloss',
     },
 ];
 

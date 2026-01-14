@@ -30,10 +30,10 @@ class InstallmentController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/Agency/Setting/installment',[
             'installmentFilter' => Installment::with('user')->orderBy('id', 'desc')->get(),
-            'installment' => $installmentService->get($request->query()),
+            'installment' => $installmentService->get(array_merge($request->query(), ['per_page' => $perPage])),
             'filters'   => $installmentService->get($request->query()),
         ]);
     }

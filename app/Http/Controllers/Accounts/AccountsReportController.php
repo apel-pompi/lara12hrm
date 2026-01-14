@@ -16,6 +16,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use PhpParser\Node\Expr\Cast\Void_;
 
 class AccountsReportController extends Controller
 {
@@ -674,7 +675,7 @@ class AccountsReportController extends Controller
         return $pdf->stream("TrialBalance-Reports.pdf");
     }
 
-    
+
     public function BalanceSheet()
     {
         try {
@@ -701,14 +702,74 @@ class AccountsReportController extends Controller
 
     public function BalanceSheetReport(Request $request)
     {
+        
         $company = CompanyInfo::firstOrFail();
         $branch = Branch::where('id', $request->branch_id)->first();
-
+        
+        if($request->type=='Summary'){
+            $sql = DB::select("
+                SELECT 
+                    b.accounttype,
+                    b.grouptwo_name,
+                    SUM(a.baseamt) AS balance
+                FROM voucher_balances a
+                JOIN vw_chartofaccs b ON a.accountcode = b.accountcode
+                WHERE b.accounttype IN ('ASSET','LIABILITIES')
+                AND a.yearname = ?
+                AND a.monthname <= ?
+                AND a.status = 'Post'
+                " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
+                GROUP BY b.accounttype, b.grouptwo_name
+                ORDER BY b.groupone_code, b.grouptwo_code
+            ", $request->filled('branch_id')
+                ? [$request->yearname, $request->monthname, $request->branch_id]
+                : [$request->yearname, $request->monthname]
+            );
+        }else{
+            $sql = DB::select("
+                SELECT 
+                    b.accounttype,
+                    b.grouptwo_name,
+                    b.accountcode,
+                    b.ledger_name,
+                    IFNULL(SUM(a.baseamt),0) AS balance
+                FROM vw_chartofaccs b
+                LEFT JOIN voucher_balances a 
+                    ON a.accountcode = b.accountcode
+                    AND a.yearname = ?
+                    AND a.monthname <= ?
+                    AND a.status = 'Post'
+                    " . ($request->filled('branch_id') ? " AND a.branch_id = ? " : "") . "
+                WHERE b.accounttype IN ('ASSET','LIABILITIES')
+                GROUP BY 
+                    b.accounttype,
+                    b.accountcode,
+                    b.ledger_name,
+                    b.groupone_code,
+                    b.grouptwo_name
+                    HAVING balance <> 0
+                ORDER BY 
+                    b.groupone_code,
+                    b.grouptwo_code,
+                    b.accountcode
+            ", array_filter([
+                $request->yearname,
+                $request->monthname,
+                $request->branch_id ?? null
+            ]));
+        }
+        $groupedAssets = collect($sql)->groupBy('accounttype')
+                            ->map(function ($items) {
+                                return $items->groupBy('grouptwo_name');
+                            });
+       
+        
         $pdf = PDF::loadView('exports.accounts.balancesheet', [
             'company' => $company,
             'branch' => $branch,
             'monthname' => $request->monthname,
             'yearname' => $request->yearname,
+            'groupedAssets' => $groupedAssets
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([
@@ -721,6 +782,111 @@ class AccountsReportController extends Controller
         return $pdf->stream("BalanceSheet-Reports.pdf");
     }
 
+    public function ProfitLoss()
+    {
+        try {
+            $this->authorize('accountsreport.profitloss');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
+        return Inertia::render('allpages/reports/accounts/profitloss', [
+            'branch' => Branch::where('active', 1)->get(),
+            'months' => collect($this->createMonth())
+                ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
+                ->values()
+                ->toArray(),
+            'years' => collect($this->createYear())
+                ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
+                ->values()
+                ->toArray(),
+        ]);
+    }
+
+    public function ProfitLossReport(Request $request)
+    {
+        
+        $company = CompanyInfo::firstOrFail();
+        $branch = Branch::where('id', $request->branch_id)->first();
+        
+        if($request->type=='Summary'){
+            $sql = DB::select("
+                SELECT 
+                    b.accounttype,
+                    b.grouptwo_name,
+                    SUM(a.baseamt) AS balance
+                FROM voucher_balances a
+                JOIN vw_chartofaccs b ON a.accountcode = b.accountcode
+                WHERE b.accounttype IN ('REVENUES','EXPENDITURES')
+                AND a.yearname = ?
+                AND a.monthname <= ?
+                AND a.status = 'Post'
+                " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
+                GROUP BY b.accounttype, b.grouptwo_name
+                ORDER BY b.groupone_code, b.grouptwo_code
+            ", $request->filled('branch_id')
+                ? [$request->yearname, $request->monthname, $request->branch_id]
+                : [$request->yearname, $request->monthname]
+            );
+        }else{
+            $sql = DB::select("
+                SELECT 
+                    b.accounttype,
+                    b.grouptwo_name,
+                    b.accountcode,
+                    b.ledger_name,
+                    IFNULL(SUM(a.baseamt),0) AS balance
+                FROM vw_chartofaccs b
+                LEFT JOIN voucher_balances a 
+                    ON a.accountcode = b.accountcode
+                    AND a.yearname = ?
+                    AND a.monthname <= ?
+                    AND a.status = 'Post'
+                    " . ($request->filled('branch_id') ? " AND a.branch_id = ? " : "") . "
+                WHERE b.accounttype IN ('REVENUES','EXPENDITURES')
+                GROUP BY 
+                    b.accounttype,
+                    b.accountcode,
+                    b.ledger_name,
+                    b.groupone_code,
+                    b.grouptwo_name
+                    HAVING balance <> 0
+                ORDER BY 
+                    b.groupone_code,
+                    b.grouptwo_code,
+                    b.accountcode
+            ", array_filter([
+                $request->yearname,
+                $request->monthname,
+                $request->branch_id ?? null
+            ]));
+        }
+        $groupedAssets = collect($sql)->groupBy('accounttype')
+                            ->map(function ($items) {
+                                return $items->groupBy('grouptwo_name');
+                            });
+       
+        
+        $pdf = PDF::loadView('exports.accounts.profitloss', [
+            'company' => $company,
+            'branch' => $branch,
+            'monthname' => $request->monthname,
+            'yearname' => $request->yearname,
+            'groupedAssets' => $groupedAssets
+        ])
+            ->setPaper('a4', 'landscape')
+            ->setOption([
+                'margin-top'    => 5,
+                'margin-right'  => 5,
+                'margin-bottom' => 5,
+                'margin-left'   => 5,
+            ]);;
+
+        return $pdf->stream("BalanceSheet-Reports.pdf");
+    }
 
     public function createMonth()
     {

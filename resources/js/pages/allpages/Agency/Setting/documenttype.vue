@@ -3,17 +3,29 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import AgencyLayout from '@/layouts/settings/agencyLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Switch from '@/components/ui/switch/Switch.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CornerDownLeft, Plus, SquarePen } from 'lucide-vue-next';
+import { CornerDownLeft, Plus, SquarePen, RefreshCcw, Search, } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
+
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    per_page: number;
+    to: number | null;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
 
 export interface DocumentType {
     id: number;
@@ -27,7 +39,9 @@ export interface DocumentType {
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Documetn Type', href: '/documenttype' }];
 
 const props = defineProps<{
-    documenttype: DocumentType[];
+    documenttype: Paginated<DocumentType>;
+    filters: { docname: string };
+    alldocument:{id:number;docname:string}[]
 }>();
 
 const data = props.documenttype;
@@ -120,16 +134,109 @@ const toggleStatus = (documenttype: DocumentType) => {
 const goToWorkflow = () => {
     router.visit('/workflow');
 };
+
+
+// Combobox states
+const selecteName = ref(null); // name
+const queryName = ref('');
+
+// Filtered lists
+const filteredName = computed(() => (queryName.value === '' ? props.alldocument : props.alldocument.filter((n) => n.docname)));
+
+const search = () => {
+    const params: Record<string, any> = {};
+
+    if (selecteName.value) params.docname = selecteName.value.docname;
+
+    router.get(route('documenttype.index'), params, {
+        preserveState: false,
+        preserveScroll: true,
+    });
+};
+
+const refresh = () => {
+    router.get(route('documenttype.index'), {}, { replace: true });
+};
+
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('documenttype.index'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
+};
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Document Type" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToWorkflow"><CornerDownLeft></CornerDownLeft>Back Workflows </Button>
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Document Type </Button>
+                    <!-- Search Box -->
+                        <div class="flex w-full items-center gap-2 sm:w-auto">
+                            <Combobox v-model="selecteName" class="w-full sm:w-56">
+                                <div class="relative w-full">
+                                    <!-- Input -->
+                                    <div class="relative">
+                                        <ComboboxInput
+                                            class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                            placeholder="search name..."
+                                            :display-value="(n) => n?.docname"
+                                            @input="queryName = $event.target.value"
+                                        />
+                                        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                        </ComboboxButton>
+                                    </div>
+
+                                    <!-- Options -->
+                                    <ComboboxOptions
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                                    >
+                                        <div
+                                            v-if="filteredName.length === 0 && queryName !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                        >
+                                            Nothing found.
+                                        </div>
+
+                                        <ComboboxOption
+                                            v-for="n in filteredName"
+                                            :key="n.id"
+                                            :value="n"
+                                            class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                            v-slot="{ selected }"
+                                        >
+                                            <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                                {{ n.docname }}
+                                            </span>
+                                            <span
+                                                v-if="selected"
+                                                class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                            >
+                                                <CheckIcon class="h-5 w-5" />
+                                            </span>
+                                        </ComboboxOption>
+                                    </ComboboxOptions>
+                                </div>
+                            </Combobox>
+                        </div>
+
+                        <!-- Search + Refresh -->
+                        <div class="flex gap-2">
+                            <Button class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="search">
+                                <Search class="mr-1 h-4 w-4" /> Search
+                            </Button>
+                            <Button variant="outline" size="sm" @click="refresh" class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-600">
+                                <RefreshCcw class="mr-1 h-4 w-4" /> Refresh
+                            </Button>
+                        </div>
                 </div>
                 <div class="rounded-md border">
                     <Table>
@@ -144,7 +251,7 @@ const goToWorkflow = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="(documenttype, index) in data" :key="documenttype.id ?? index">
+                            <TableRow v-for="(documenttype, index) in data.data" :key="documenttype.id ?? index">
                                 <TableCell>{{ documenttype.docname }}</TableCell>
                                 <TableCell>{{ documenttype.adddate }}</TableCell>
                                 <TableCell>{{ documenttype.totaluse }}</TableCell>
@@ -164,14 +271,32 @@ const goToWorkflow = () => {
                     </Table>
                 </div>
 
-                <div class="flex items-center justify-end space-x-2 py-4">
-                    <div class="text-muted-foreground flex-1 text-sm"></div>
-                    <div class="space-x-2"></div>
+                <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                    <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                        <label for="per-page" class="text-gray-600">Show:</label>
+                        <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                        </select>
+                        <span>Showing {{ documenttype.from }} to {{ documenttype.to }} of {{ documenttype.total }} results</span>
+                    </div>
+                    <div class="space-x-2">
+                        <Button
+                            v-for="(link, index) in data.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            variant="outline"
+                            size="sm"
+                            :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                            @click="goToPage(link.url)"
+                        >
+                            <span v-html="link.label"></span>
+                        </Button>
+                    </div>
                 </div>
             </div>
             <!-- Dialog -->
             <Dialog v-model:open="showDialog">
-                <DialogContent class="max-w-[825px]">
+                <DialogContent class="max-w-206.25">
                     <!-- Header -->
                     <DialogHeader>
                         <DialogTitle>

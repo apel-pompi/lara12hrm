@@ -120,14 +120,6 @@ const filteredStudentID = computed(() => {
     return uniqueStudentIDs.filter((d) => d.student_id.toLowerCase().includes(queryStudentID.value.toLowerCase()));
 });
 
-
-
-const goToPage = (url: string | null) => {
-    if (url) {
-        router.get(url, {}, { preserveState: false, replace: true });
-    }
-};
-
 const search = () => {
     const params: Record<string, any> = {};
     if (selectedName.value) params.fname = selectedName.value.fname;
@@ -145,6 +137,17 @@ const search = () => {
 
 const refresh = () => {
     router.get(route('invoicelist.MRList'), {}, { replace: true });
+};
+
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('invoicelist.MRList'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
 };
 
 const onReport = async (invId: number) => {
@@ -468,8 +471,14 @@ const onReport = async (invId: number) => {
                 </Table>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
+            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                    <label for="per-page" class="text-gray-600">Show:</label>
+                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                    </select>
+                    <span>Showing {{ invoice.from }} to {{ invoice.to }} of {{ invoice.total }} results</span>
+                </div>
                 <div class="space-x-2">
                     <Button
                         v-for="(link, index) in data.links"

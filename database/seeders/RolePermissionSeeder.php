@@ -767,6 +767,7 @@ class RolePermissionSeeder extends Seeder
                     'accountsreport.trialbalanceconsolidated',
                     'accountsreport.trialbalance',
                     'accountsreport.balancesheet',
+                    'accountsreport.profitloss'
                 ],
             ],            
             //HR Reports

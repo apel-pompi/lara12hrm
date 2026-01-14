@@ -216,7 +216,7 @@ const AccountsMenu = {
                 },
                 {
                     route: 'voucherheader.jurnal',
-                    title: 'Jurnal Voucher',
+                    title: 'Journal Voucher',
                     icon: CreditCard,
                 },
                 {

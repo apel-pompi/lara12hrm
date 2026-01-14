@@ -10,6 +10,7 @@ use App\Models\HRM\CompanyInfo;
 use App\Models\HRM\Leaveplan;
 use App\Models\HRM\PersonalInfo;
 use App\Mail\LeaveStatusMail;
+use App\Services\LevaveService;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -17,6 +18,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class LeaveController extends Controller
@@ -25,7 +27,7 @@ class LeaveController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request, LevaveService $levaveService)
     {
         try {
             $this->authorize('Leave.index');
@@ -43,29 +45,24 @@ class LeaveController extends Controller
 
 
         $roles = $user->getRoleNames();
-        if ($roles->contains('superadmin') or $roles->contains('Admin') or $roles->contains('Manager')) {
-            $leaves = Leave::with(['employee', 'substituteEmployee', 'leavePlan'])
-                ->where('user_id', Auth::id())
-                ->orderBy('fromdate', 'desc')
-                ->get();
-            $employee = PersonalInfo::where('active', 1)->orderBy('id', 'desc')->get();
-            $substitute = PersonalInfo::where('active', 1)->orderBy('id', 'desc')->get();
-        } else {
-            $leaves = Leave::with(['employee', 'substituteEmployee', 'leavePlan'])
-                ->whereHas('employee', function ($q) use ($user) {
-                    $q->where('empname', $user->name);
-                })
-                ->orderBy('fromdate', 'desc')
-                ->get();
-            $employee = PersonalInfo::where('empname', $user->name)->where('active', 1)->orderBy('id', 'desc')->get();
-            $substitute = PersonalInfo::where('active', 1)->orderBy('id', 'desc')->get();
+
+        $perPage = $request->query('per_page', 10);
+
+        $leaves = $levaveService->get(
+            array_merge($request->query(), ['per_page' => $perPage])
+        );
+        $employeeQuery = PersonalInfo::where('active', 1)->latest();
+
+        if (! $roles->intersect(['superadmin', 'Admin', 'Manager'])->isNotEmpty()) {
+            $employeeQuery->where('empname', $user->name);
         }
 
         return Inertia::render('allpages/hrm/leave', [
             'leaves' => $leaves,
+            'filters'   => $levaveService->get($request->query()),
             'leaveplan' => $leaveplan,
-            'employee' => $employee,
-            'substitute' => $substitute
+            'employee'  => PersonalInfo::where('active', 1)->get(),
+            'substitute'=> PersonalInfo::where('active', 1)->latest()->get(),
         ]);
     }
 

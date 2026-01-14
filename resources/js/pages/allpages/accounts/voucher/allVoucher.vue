@@ -12,8 +12,7 @@ import { router, useForm, usePage } from '@inertiajs/vue3';
 import { getLocalTimeZone, today } from '@internationalized/date';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
-import axios from 'axios';
-import { FileText, BookCheck, RefreshCcw, Search, ShieldCheck, SquarePen } from 'lucide-vue-next';
+import { FileText, BookCheck, RefreshCcw, Search, ShieldCheck } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -222,11 +221,7 @@ const onBalance = async(allvoucher:number) => {
     });
 }
 
-const goToPage = (url: string | null) => {
-    if (url) {
-        router.get(url, {}, { preserveState: false, replace: true });
-    }
-};
+
 
 const onReport = async (vhd: number) => {
     const url = route('voucherheader.singleReport', {
@@ -336,6 +331,17 @@ const search = () => {
 
 const refresh = () => {
     router.get(route('voucherheader.allvoucher'), {}, { replace: true });
+};
+
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('voucherheader.allvoucher'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
 };
 </script>
 
@@ -709,8 +715,14 @@ const refresh = () => {
                 </Table>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
+            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                    <label for="per-page" class="text-gray-600">Show:</label>
+                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                    </select>
+                    <span>Showing {{ voucherheader.from }} to {{ voucherheader.to }} of {{ voucherheader.total }} results</span>
+                </div>
                 <div class="space-x-2">
                     <Button
                         v-for="(link, index) in data.links"

@@ -2,15 +2,13 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-
-import { FileText, Plus, ShieldCheck, SquarePen, X } from 'lucide-vue-next';
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Select from '@/components/ui/select/Select.vue';
@@ -19,9 +17,12 @@ import SelectGroup from '@/components/ui/select/SelectGroup.vue';
 import SelectItem from '@/components/ui/select/SelectItem.vue';
 import SelectTrigger from '@/components/ui/select/SelectTrigger.vue';
 import SelectValue from '@/components/ui/select/SelectValue.vue';
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker  from '@vuepic/vue-datepicker';
+import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
+import { FileText, Plus, RefreshCcw, Search, ShieldCheck, SquarePen, X } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
 export interface LeavePlan {
@@ -51,14 +52,27 @@ export interface Leave {
     status: string;
 }
 
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    per_page: number;
+    to: number | null;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Leave', href: '/leave' }];
 
 const props = defineProps<{
-    leaves: Leave[];
+    leaves: Paginated<Leave>;
+    filters: { name: string };
     leaveplan: LeavePlan[];
     employee: Employee[];
     substitute: Substitute[];
 }>();
+
 
 const data = props.leaves;
 
@@ -218,7 +232,7 @@ const exportPdf = (id: number) => {
 watch(fromdate, (newDate) => {
     if (newDate) {
         form.fromdate = newDate;
-    }else{
+    } else {
         form.fromdate = '';
     }
 });
@@ -226,7 +240,7 @@ watch(fromdate, (newDate) => {
 watch(todate, (newDate) => {
     if (newDate) {
         form.todate = newDate;
-    }else{
+    } else {
         form.todate = '';
     }
 });
@@ -243,15 +257,394 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
         form.requestdays = '0';
     }
 });
+
+// Combobox states
+const selectedLeaveName = ref(null); // name
+const queryLeaveName = ref('');
+
+// Filtered lists
+const filteredLeaveName = computed(() => (queryLeaveName.value === '' ? props.leaveplan : props.leaveplan.filter((n) => n.leavename)));
+
+const selectedEmployee = ref(null);
+const queryEmployee = ref('');
+
+
+const filteredEmployee = computed(() => {
+    const filtered = queryEmployee.value
+        ? props.employee.filter(v =>
+            v.empname?.toLowerCase().includes(queryEmployee.value.toLowerCase())
+        )
+        : props.employee;
+
+    // unique by empname but keep full object
+    const map = new Map();
+
+    filtered.forEach(v => {
+        if (v.empname && !map.has(v.empname)) {
+            map.set(v.empname, v);
+        }
+    });
+
+    return Array.from(map.values());
+});
+
+
+const selectedFormDate = ref(null);
+const queryFormDate = ref('');
+const filteredFormDate = computed(() => {
+    const filtered = queryFormDate.value
+        ? data.data.filter(v =>
+            v.fromdate?.toLowerCase().includes(queryFormDate.value.toLowerCase())
+        )
+        : data.data;
+
+    // unique by fromdate but keep full object
+    const map = new Map();
+
+    filtered.forEach(v => {
+        if (v.fromdate && !map.has(v.fromdate)) {
+            map.set(v.fromdate, v);
+        }
+    });
+
+    return Array.from(map.values());
+});
+
+
+
+const selectedToDate = ref(null);
+const queryToDate = ref('');
+const filteredToDate = computed(() => {
+    const filtered = queryToDate.value
+        ? data.data.filter(v =>
+            v.todate?.toLowerCase().includes(queryToDate.value.toLowerCase())
+        )
+        : data.data;
+
+    // unique by fromdate but keep full object
+    const map = new Map();
+
+    filtered.forEach(v => {
+        if (v.todate && !map.has(v.todate)) {
+            map.set(v.todate, v);
+        }
+    });
+
+    return Array.from(map.values());
+});
+
+const selectedSubstitute = ref(null);
+const querySubstitute = ref('');
+
+
+const filteredSubstitute = computed(() => {
+    const filtered = querySubstitute.value
+        ? props.employee.filter(v =>
+            v.empname?.toLowerCase().includes(querySubstitute.value.toLowerCase())
+        )
+        : props.employee;
+
+    // unique by empname but keep full object
+    const map = new Map();
+
+    filtered.forEach(v => {
+        if (v.empname && !map.has(v.empname)) {
+            map.set(v.empname, v);
+        }
+    });
+
+    return Array.from(map.values());
+});
+
+const search = () => {
+    const params: Record<string, any> = {};
+
+    if (selectedLeaveName.value) params.leavename = selectedLeaveName.value.leavename;
+    if (selectedEmployee.value) params.empname = selectedEmployee.value.empname;
+    if (selectedFormDate.value) params.fromdate = selectedFormDate.value.fromdate;
+    if (selectedToDate.value) params.todate = selectedToDate.value.todate;
+    if (selectedSubstitute.value) params.subemp = selectedSubstitute.value.empname;
+
+    router.get(route('leave.index'), params, {
+        preserveState: false,
+        preserveScroll: true,
+    });
+};
+
+const refresh = () => {
+    router.get(route('leave.index'), {}, { replace: true });
+};
+
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('leave.index'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
+};
 </script>
 
 <template>
     <Head title="Leave Paln" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
             <div class="flex items-center gap-2 py-4">
                 <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Leave Request </Button>
+                <div class="grid gap-2">
+                    <Combobox v-model="selectedLeaveName">
+                        <div class="relative w-48">
+                            <!-- Input -->
+                            <div class="relative w-full">
+                                <ComboboxInput
+                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                    placeholder="Select name..."
+                                    :display-value="(n) => n?.leavename"
+                                    @input="queryLeaveName = $event.target.value"
+                                />
+                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                </ComboboxButton>
+                            </div>
+
+                            <!-- Options -->
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            >
+                                <div
+                                    v-if="filteredLeaveName.length === 0 && queryLeaveName !== ''"
+                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                >
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="n in filteredLeaveName"
+                                    :key="n.id"
+                                    :value="n"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ n.leavename }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                </div>
+                <div class="grid gap-2">
+                    <Combobox v-model="selectedEmployee">
+                        <div class="relative w-48">
+                            <!-- Input -->
+                            <div class="relative w-full">
+                                <ComboboxInput
+                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                    placeholder="Select name..."
+                                    :display-value="(n) => n?.empname"
+                                    @input="queryEmployee = $event.target.value"
+                                />
+                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                </ComboboxButton>
+                            </div>
+
+                            <!-- Options -->
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            >
+                                <div
+                                    v-if="filteredEmployee.length === 0 && queryEmployee !== ''"
+                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                >
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="n in filteredEmployee"
+                                    :key="n.id"
+                                    :value="n"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ n.empname }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                </div>
+                <div class="grid gap-2">
+                    <Combobox v-model="selectedFormDate">
+                        <div class="relative w-48">
+                            <!-- Input -->
+                            <div class="relative w-full">
+                                <ComboboxInput
+                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                    placeholder="Select fromdate..."
+                                    :display-value="(n) => n?.fromdate"
+                                    @input="queryFormDate = $event.target.value"
+                                />
+                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                </ComboboxButton>
+                            </div>
+
+                            <!-- Options -->
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            >
+                                <div
+                                    v-if="filteredFormDate.length === 0 && queryFormDate !== ''"
+                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                >
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="n in filteredFormDate"
+                                    :key="n.id"
+                                    :value="n"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ n.fromdate }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                </div>
+                <div class="grid gap-2">
+                    <Combobox v-model="selectedToDate">
+                        <div class="relative w-48">
+                            <!-- Input -->
+                            <div class="relative w-full">
+                                <ComboboxInput
+                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                    placeholder="Select todate..."
+                                    :display-value="(n) => n?.todate"
+                                    @input="queryToDate = $event.target.value"
+                                />
+                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                </ComboboxButton>
+                            </div>
+
+                            <!-- Options -->
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            >
+                                <div
+                                    v-if="filteredToDate.length === 0 && queryToDate !== ''"
+                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                >
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="n in filteredToDate"
+                                    :key="n.id"
+                                    :value="n"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ n.todate }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                </div>
+                <div class="grid gap-2">
+                    <Combobox v-model="selectedSubstitute">
+                        <div class="relative w-48">
+                            <!-- Input -->
+                            <div class="relative w-full">
+                                <ComboboxInput
+                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                    placeholder="Select substitute..."
+                                    :display-value="(n) => n?.empname"
+                                    @input="querySubstitute = $event.target.value"
+                                />
+                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                </ComboboxButton>
+                            </div>
+
+                            <!-- Options -->
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            >
+                                <div
+                                    v-if="filteredSubstitute.length === 0 && querySubstitute !== ''"
+                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                >
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="n in filteredSubstitute"
+                                    :key="n.id"
+                                    :value="n"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ n.empname }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                </div>
+                <div class="grid gap-2">
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="search"
+                        ><Search></Search> Search
+                    </Button>
+                </div>
+                <div class="grid gap-2">
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="refresh"
+                        ><RefreshCcw></RefreshCcw> Refresh
+                    </Button>
+                </div>
             </div>
+
             <div class="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -269,7 +662,7 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow v-for="(leave, index) in data" :key="leave.id ?? index">
+                        <TableRow v-for="(leave, index) in data.data" :key="leave.id ?? index">
                             <TableCell>{{ leave.leave_plan.leavename }}</TableCell>
                             <TableCell>{{ leave.employee.empname }}</TableCell>
                             <TableCell>{{ leave.fromdate }}</TableCell>
@@ -334,14 +727,32 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
                 </Table>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm"></div>
-                <div class="space-x-2"></div>
+            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                    <label for="per-page" class="text-gray-600">Show:</label>
+                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                    </select>
+                    <span>Showing {{ leaves.from }} to {{ leaves.to }} of {{ leaves.total }} results</span>
+                </div>
+                <div class="space-x-2">
+                    <Button
+                        v-for="(link, index) in data.links"
+                        :key="index"
+                        :disabled="!link.url"
+                        variant="outline"
+                        size="sm"
+                        :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                        @click="goToPage(link.url)"
+                    >
+                        <span v-html="link.label"></span>
+                    </Button>
+                </div>
             </div>
         </div>
         <!-- Dialog -->
         <Dialog v-model:open="showDialog">
-            <DialogContent class="max-w-[825px]">
+            <DialogContent class="max-w-206.25">
                 <DialogHeader>
                     <DialogTitle>{{ isEditMode ? 'Edit Leave Request' : 'Create Leave Request' }}</DialogTitle>
                     <DialogDescription> Make changes to your leave request here. Click save when you're done. </DialogDescription>
@@ -404,13 +815,14 @@ watch([fromdate, todate], ([newFrom, newTo]) => {
                         <div class="grid gap-2">
                             <Label for="todate">To Date<span class="text-red-500">*</span></Label>
                             <VueDatePicker
-    v-model="todate"
-    :disabled="balanceLeave?.balance === 0"
-    :format="'yyyy-MM-dd'"
-    :enable-time-picker="false"
-    placeholder="To date"
-    auto-apply
-    model-type="format" />
+                                v-model="todate"
+                                :disabled="balanceLeave?.balance === 0"
+                                :format="'yyyy-MM-dd'"
+                                :enable-time-picker="false"
+                                placeholder="To date"
+                                auto-apply
+                                model-type="format"
+                            />
                             <span v-if="errors?.todate" class="text-sm text-red-600">{{ errors.todate }}</span>
                         </div>
                     </div>

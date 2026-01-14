@@ -160,7 +160,7 @@ watch(
       form.trncode = 'SR--';
     } else if (newVal === 'Opening Blance') {
       form.trncode = 'OB--';
-    } else if (newVal === 'Jurnal Voucher') {
+    } else if (newVal === 'Journal Voucher') {
       form.trncode = 'JV--';
     } else if (newVal === 'Payment Voucher') {
       form.trncode = 'PAY-';
@@ -185,7 +185,7 @@ watch(
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Student Source" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
                     <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create </Button>
                 </div>
@@ -214,7 +214,7 @@ watch(
                                 </TableCell>
 
                                 <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(trn.id)"><Trash></Trash></Button>
+                                    <Button  size="sm" variant="outline" @click="onDelete(trn.id)"><Trash></Trash></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -272,7 +272,7 @@ watch(
                                         <SelectItem value="Invoice No">Invoice No</SelectItem>
                                         <SelectItem value="Amount Refund">Amount Refund</SelectItem>
                                         <SelectItem value="Opening Blance">Opening Blance</SelectItem>
-                                        <SelectItem value="Jurnal Voucher">Jurnal Voucher</SelectItem>
+                                        <SelectItem value="Journal Voucher">Journal Voucher</SelectItem>
                                         <SelectItem value="Payment Voucher">Payment Voucher</SelectItem>
                                         <SelectItem value="Receipt Voucher">Receipt Voucher</SelectItem>
                                         <SelectItem value="Reverse Voucher">Reverse Voucher</SelectItem>

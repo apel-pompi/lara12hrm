@@ -6,13 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\HRM\PersonalInfo;
 use App\Http\Requests\PersonalInfo\StorePersonalInfoRequest;
 use App\Models\HRM\Branch;
-use App\Models\Default\gDrive;
 use App\Models\HRM\Department;
 use App\Models\HRM\Designation;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
-use GuzzleHttp\Client;
 use App\Services\PersonalInfoService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -36,9 +33,9 @@ class PersonalInfoController extends Controller
             ]);
         }
 
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/hrm/personalinfo', [
-            'personalinfo' => $personalInfoService->get($request->query()),
+            'personalinfo' => $personalInfoService->get(array_merge($request->query(), ['per_page' => $perPage])),
             'filters'   => $personalInfoService->get($request->query()),
             'branch' => Branch::where('active', 1)->get(),
             'department' => Department::where('active', 1)->get(),

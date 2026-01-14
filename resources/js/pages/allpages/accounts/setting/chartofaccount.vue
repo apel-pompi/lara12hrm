@@ -337,7 +337,7 @@ const goToPage = (url: string | null) => {
         <Head title="Accounts Setting" />
 
         <AccountsLayout :breadcrumbs="breadcrumbs">
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
                         ><Plus></Plus> Create

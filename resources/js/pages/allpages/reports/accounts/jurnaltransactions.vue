@@ -62,6 +62,16 @@ watch(edate, (newDate) => {
 });
 
 const onReport = async () => {
+    if (!form.startdate) {
+        alert('Start Date is not selected');
+        return;
+    }
+
+    if (!form.enddate) {
+        alert('End Date is not selected');
+        return;
+    }
+    
     const url = route('accountsreport.JurnalTransactionsReport', {
         branch_id: selectedBranch.value ? selectedBranch.value.id : '',
         transaction_id: selectedTransaction.value ? selectedTransaction.value.trncode : '',

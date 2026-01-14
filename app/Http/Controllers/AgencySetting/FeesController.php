@@ -29,10 +29,10 @@ class FeesController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/Agency/Setting/fees',[
             'feesFilter' => Fees::with('user')->orderBy('id', 'desc')->get(),
-            'fees' => $feesService->get($request->query()),
+            'fees' => $feesService->get(array_merge($request->query(), ['per_page' => $perPage])),
             'filters'   => $feesService->get($request->query()),
         ]);
     }

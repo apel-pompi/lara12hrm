@@ -3,18 +3,30 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import AgencyLayout from '@/layouts/settings/agencyLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Switch from '@/components/ui/switch/Switch.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { HousePlus, Plus, PlusCircle, SquarePen } from 'lucide-vue-next';
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
+import { HousePlus, Plus, PlusCircle, RefreshCcw, Search, SquarePen } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import draggable  from 'vuedraggable';
+import draggable from 'vuedraggable';
+
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    per_page: number;
+    to: number | null;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
 
 export interface Workflow {
     id: number;
@@ -25,7 +37,9 @@ export interface Workflow {
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Workflows', href: '/workflow' }];
 
 const props = defineProps<{
-    workflow: Workflow[];
+    workflow: Paginated<Workflow>;
+    filters: { name?: string };
+    allworkflow: { id: number; name: string }[];
 }>();
 
 const data = props.workflow;
@@ -154,19 +168,106 @@ const goToDocumentList = (id: number) => {
 const goToDocumentType = () => {
     router.visit('/documenttype');
 };
+
+const selectedName = ref(null);
+const queryName = ref('');
+const filteredName = computed(() => {
+    if (queryName.value === '') return props.allworkflow;
+
+    return props.allworkflow.filter((n) => n.name && n.name.toLowerCase().includes(queryName.value.toLowerCase()));
+});
+
+const search = () => {
+    const params: Record<string, any> = {};
+
+    if (selectedName.value) params.name = selectedName.value.name;
+
+    router.get(route('workflow.index'), params, {
+        preserveState: false,
+        preserveScroll: true,
+    });
+};
+
+const refresh = () => {
+    router.get(route('workflow.index'), {}, { replace: true });
+};
+
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('workflow.index'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
+};
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Workflows" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center justify-end space-x-2 py-4">
-                    <div class="flex-1 text-sm">
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Workflows </Button>
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
+                <div class="flex items-center justify-between py-4">
+                    
+                    <div class="flex flex-wrap items-center gap-4">
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
+                        ><Plus></Plus> Workflows
+                    </Button>
+                        <div class="w-full sm:w-1/2 lg:w-auto">
+                            <Combobox v-model="selectedName">
+                                <div class="relative w-full md:w-48">
+                                    <ComboboxInput
+                                        class="w-full rounded-md border px-3 py-2 text-sm"
+                                        placeholder="Select Name"
+                                        @input="queryName = $event.target.value"
+                                        :display-value="(c) => c?.name ?? ''"
+                                    />
+                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                    </ComboboxButton>
+
+                                    <ComboboxOptions
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                                    >
+                                        <div v-if="filteredName.length === 0 && queryName !== ''" class="text-gray-500 select-none">
+                                            Nothing found.
+                                        </div>
+
+                                        <ComboboxOption
+                                            v-for="one in filteredName"
+                                            :key="one.id"
+                                            :value="one"
+                                            class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pl-10 select-none"
+                                            v-slot="{ selected }"
+                                        >
+                                            <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                                {{ one.name }}
+                                            </span>
+                                            <span
+                                                v-if="selected"
+                                                class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                            >
+                                                <CheckIcon class="h-5 w-5" />
+                                            </span>
+                                        </ComboboxOption>
+                                    </ComboboxOptions>
+                                </div>
+                            </Combobox>
+                        </div>
+                        <div class="w-full sm:w-auto">
+                            <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
+                        </div>
+                        <div class="w-full sm:w-auto">
+                            <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+                        </div>
                     </div>
-                    <div class="space-x-2">
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToDocumentType"><HousePlus></HousePlus> Document Type </Button>
+
+                    <div>
+                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToDocumentType"
+                            ><HousePlus></HousePlus> Document Type
+                        </Button>
                     </div>
                 </div>
                 <div class="rounded-md border">
@@ -181,7 +282,7 @@ const goToDocumentType = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="(workflow, index) in data" :key="workflow.id ?? index">
+                            <TableRow v-for="(workflow, index) in data.data" :key="workflow.id ?? index">
                                 <TableCell>{{ workflow.name }}</TableCell>
                                 <TableCell></TableCell>
                                 <TableCell>{{ workflow.user.name }}</TableCell>
@@ -190,24 +291,40 @@ const goToDocumentType = () => {
                                     </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(workflow.id)"><SquarePen></SquarePen></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="goToDocumentList(workflow.id)"
-                                        ><PlusCircle></PlusCircle
-                                    ></Button>
+                                    <Button size="sm" variant="outline" @click="onEdit(workflow.id)"><SquarePen></SquarePen></Button>
+                                    <Button size="sm" variant="outline" @click="goToDocumentList(workflow.id)"><PlusCircle></PlusCircle></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </div>
 
-                <div class="flex items-center justify-end space-x-2 py-4">
-                    <div class="text-muted-foreground flex-1 text-sm"></div>
-                    <div class="space-x-2"></div>
+                <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                    <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                        <label for="per-page" class="text-gray-600">Show:</label>
+                        <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                        </select>
+                        <span>Showing {{ workflow.from }} to {{ workflow.to }} of {{ workflow.total }} results</span>
+                    </div>
+                    <div class="space-x-2">
+                        <Button
+                            v-for="(link, index) in data.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            variant="outline"
+                            size="sm"
+                            :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                            @click="goToPage(link.url)"
+                        >
+                            <span v-html="link.label"></span>
+                        </Button>
+                    </div>
                 </div>
             </div>
             <!-- Dialog -->
             <Dialog v-model:open="showDialog">
-                <DialogContent class="max-w-[825px]">
+                <DialogContent class="max-w-206.25">
                     <DialogHeader>
                         <DialogTitle>{{ isEditMode ? 'Edit Workflows' : 'Create Workflows' }}</DialogTitle>
                         <DialogDescription> Make changes to your workflows here. Click save when you're done. </DialogDescription>

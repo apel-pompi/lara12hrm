@@ -57,4 +57,14 @@ class VoucherBalance extends Model
     {
         return $this->belongsTo(Branch::class, 'branch_id', 'id');
     }
+
+     /**
+     * Get the vwchartofacc that owns the Voucherdetail
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function vwchartofacc(): BelongsTo
+    {
+        return $this->belongsTo(VwChartofacc::class, 'accountcode', 'accountcode');
+    }
 }

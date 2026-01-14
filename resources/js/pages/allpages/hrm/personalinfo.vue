@@ -392,12 +392,16 @@ const refresh = () => {
     router.get(route('personalinfo.index'), {}, { replace: true });
 };
 
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('personalinfo.index'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
 const goToPage = (url: string | null) => {
     if (url) {
         router.get(url, {}, { preserveState: false, replace: true });
     }
 };
-
 
 </script>
 
@@ -716,17 +720,23 @@ const goToPage = (url: string | null) => {
                                 <Switch v-model="personal.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(personal)"> </Switch>
                             </TableCell>
                             <TableCell class="text-right">
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onShow(personal.id)"><Eye></Eye></Button>
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(personal.id)"><SquarePen></SquarePen></Button>
-                                <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(personal.id)"><Trash></Trash></Button>
+                                <Button size="sm" variant="outline" @click="onShow(personal.id)"><Eye></Eye></Button>
+                                <Button size="sm" variant="outline" @click="onEdit(personal.id)"><SquarePen></SquarePen></Button>
+                                <Button size="sm" variant="outline" @click="onDelete(personal.id)"><Trash></Trash></Button>
                             </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
+            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                    <label for="per-page" class="text-gray-600">Show:</label>
+                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                    </select>
+                    <span>Showing {{ personalinfo.from }} to {{ personalinfo.to }} of {{ personalinfo.total }} results</span>
+                </div>
                 <div class="space-x-2">
                     <Button
                         v-for="(link, index) in data.links"

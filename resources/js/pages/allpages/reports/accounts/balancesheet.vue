@@ -22,6 +22,7 @@ const form = useForm({
     branch_id: '',
     yearname: '',
     monthname: '',
+    type: '',
 });
 
 const selectedBranch = ref(null);
@@ -34,15 +35,35 @@ const filteredBranch = computed(() => {
 
 
 
-
 const onReport = async () => {
+    // ===== VALIDATION =====
+    if (!form.yearname) {
+        alert('Year is not selected');
+        return;
+    }
+
+    if (!form.monthname) {
+        alert('Month is not selected');
+        return;
+    }
+
+    if (!form.type) {
+        alert('Type is not selected');
+        return;
+    }
+
+    // ===== BUILD URL =====
     const url = route('accountsreport.balancesheetreport', {
-        branch_id: selectedBranch.value ? selectedBranch.value.id : '',
-        yearname: form.yearname || null,
-        monthname: form.monthname || null,
+        branch_id: selectedBranch.value ? selectedBranch.value.id : null,
+        yearname: form.yearname,
+        monthname: form.monthname,
+        type: form.type,
     });
+
+    // ===== OPEN REPORT =====
     window.open(url, '_blank');
 };
+
 </script>
 
 <template>
@@ -118,6 +139,19 @@ const onReport = async () => {
                                 <SelectItem v-for="month in props.months" :key="month.id" :value="month.id">
                                     {{ month.name }}
                                 </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="space-y-2">
+                    <Select v-model="form.type">
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="Select Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem value="Summary">Summary</SelectItem>
+                                <SelectItem value="Details">Details</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

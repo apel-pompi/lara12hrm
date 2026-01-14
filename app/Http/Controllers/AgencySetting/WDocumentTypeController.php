@@ -4,6 +4,7 @@ namespace App\Http\Controllers\AgencySetting;
 
 use App\Http\Controllers\Controller;
 use App\Models\AgencySetting\WDocumentType;
+use App\Services\Agency\Setting\DocumentTypeService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ class WDocumentTypeController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index()
+    public function index(Request $request, DocumentTypeService $documenttype)
     {
         try {
             $this->authorize('workflowDocument.index');
@@ -24,9 +25,11 @@ class WDocumentTypeController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/Agency/Setting/documenttype', [
-            'documenttype' => WDocumentType::with(['user'])->orderBy('id', 'desc')->get()
+            'alldocument' => WDocumentType::with(['user'])->orderBy('id', 'desc')->get(),
+            'filters'   => $documenttype->get($request->query()),
+            'documenttype' => $documenttype->get(array_merge($request->query(), ['per_page' => $perPage])),
         ]);
     }
 

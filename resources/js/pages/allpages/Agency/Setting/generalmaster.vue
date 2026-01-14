@@ -177,6 +177,11 @@ const refresh = () => {
     router.get(route('general.index'), {}, { replace: true });
 };
 
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('general.index'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
 const goToPage = (url: string | null) => {
     if (url) {
         router.get(url, {}, { preserveState: false, replace: true });
@@ -188,7 +193,7 @@ const goToPage = (url: string | null) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Master Setup" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
                 <div class="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
                     <!-- Left actions -->
                     <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
@@ -287,16 +292,22 @@ const goToPage = (url: string | null) => {
                                 </TableCell>
                                 <TableCell>{{ master.user.name }}</TableCell>
                                 <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(master.id)"><SquarePen></SquarePen></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(master.id)"><Trash></Trash></Button>
+                                    <Button size="sm" variant="outline" @click="onEdit(master.id)"><SquarePen></SquarePen></Button>
+                                    <Button  size="sm" variant="outline" @click="onDelete(master.id)"><Trash></Trash></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </div>
 
-                <div class="flex items-center justify-end space-x-2 py-4">
-                    <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
+                <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                    <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                        <label for="per-page" class="text-gray-600">Show:</label>
+                        <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                        </select>
+                        <span>Showing {{ mastercategory.from }} to {{ mastercategory.to }} of {{ mastercategory.total }} results</span>
+                    </div>
                     <div class="space-x-2">
                         <Button
                             v-for="(link, index) in data.links"

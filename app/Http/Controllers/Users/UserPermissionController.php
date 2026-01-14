@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Users;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\User\UserPermissionService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class UserPermissionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request, UserPermissionService $userPermission)
     {
         try {
             $this->authorize('user.index');
@@ -27,21 +28,12 @@ class UserPermissionController extends Controller
             ]);
         }
 
-
-        $users = User::with('roles')->orderBy('id', 'desc')->get()->map(function ($user) {
-            return [
-                'id' => $user->id,
-                'name' => $user->name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'banned_at' => $user->banned_at,
-                'roles' => $user->roles->map(fn($role) => ['name' => $role->name]),
-            ];
-        });
         $roles = Role::orderBy('id', 'desc')->get();
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/user/userpermission', [
-            'users' => $users,
+            'filters'   => $userPermission->get($request->query()),
+            'users' => $userPermission->get(array_merge($request->query(), ['per_page' => $perPage])),
+            'alluser' => User::all(),
             'roles' => $roles,
         ]);
     }

@@ -237,6 +237,9 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
 
                 Route::get('/balancesheet', 'BalanceSheet')->name('accountsreport.balancesheet');
                 Route::get('/balancesheetreport', 'BalanceSheetReport')->name('accountsreport.balancesheetreport');
+                
+                Route::get('/profitloss', 'ProfitLoss')->name('accountsreport.ProfitLoss');
+                Route::get('/profitlossreport', 'ProfitLossReport')->name('accountsreport.ProfitLossreport');
             }
         );
 });

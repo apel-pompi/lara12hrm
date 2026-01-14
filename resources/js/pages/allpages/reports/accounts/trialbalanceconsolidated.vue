@@ -53,6 +53,16 @@ watch(edate, (newDate) => {
 });
 
 const onReport = async () => {
+    if (!form.startdate) {
+        alert('Start Date is not selected');
+        return;
+    }
+
+    if (!form.enddate) {
+        alert('End Date is not selected');
+        return;
+    }
+    
     const url = route('accountsreport.trialbalanceconsolidatedreport', {
         branch_id: selectedBranch.value ? selectedBranch.value.id : '',
         startdate: form.startdate || null,

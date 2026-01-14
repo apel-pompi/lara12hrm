@@ -30,10 +30,10 @@ class StudentSourceController extends Controller
             ]);
         }
 
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/Agency/Setting/studentsource', [
             'searchName' => StudentSource::select('name')->get(),
-            'studentSource' => $studentSourceService->get($request->query()),
+            'studentSource' => $studentSourceService->get(array_merge($request->query(), ['per_page' => $perPage])),
             'filters'   => $studentSourceService->get($request->query()),
         ]);
     }
