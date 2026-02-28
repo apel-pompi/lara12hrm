@@ -13,18 +13,16 @@ return new class extends Migration
     {
         Schema::create('group_twos', function (Blueprint $table) {
             $table->id();
-            $table->integer('groupone');
-
-            $table->integer('grouptwo')->unique();
+            
+            $table->foreignId('groupone')->constrained('group_ones')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->integer('code')->unique();
             $table->string('description')->unique();
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->integer('active');
             $table->timestamps();
             $table->softDeletes();
-
-            $table->foreign('groupone')->references('groupone')
-                ->on('group_ones')->cascadeOnUpdate()->cascadeOnDelete();
 
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';

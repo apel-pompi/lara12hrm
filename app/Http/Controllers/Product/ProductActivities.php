@@ -206,7 +206,7 @@ class ProductActivities extends Controller
             'testTypes.*.speaking' => 'nullable|numeric',
             'testTypes.*.overall' => 'nullable|numeric',
         ]);
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         foreach ($request->testTypes as $test) {
             EnglishTest::updateOrCreate(
@@ -254,7 +254,7 @@ class ProductActivities extends Controller
             'othersTypes.*.name' => 'required|string|in:SAT I,SAT II,GRE,GMAT',
             'othersTypes.*.scores' => 'nullable|numeric',
         ]);
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         foreach ($request->othersTypes as $test) {
             OthersTest::updateOrCreate(

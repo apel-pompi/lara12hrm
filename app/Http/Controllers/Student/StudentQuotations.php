@@ -41,6 +41,7 @@ class StudentQuotations extends Controller
 
 
         $user = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
 
 

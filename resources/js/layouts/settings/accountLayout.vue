@@ -7,16 +7,16 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: "Account's Group",
+        title: "Account Groups",
         href: '/accountssetting',
     },
     
     {
-        title: "Chart of Account's",
+        title: "Chart of Accounts",
         href: '/chartOfAccount',
     },
     {
-        title: "AC To GL Setup",
+        title: "Ac to GL Mapping",
         href: '/actoglsetup',
     },
 ];

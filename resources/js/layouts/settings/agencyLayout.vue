@@ -7,35 +7,35 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'General Setup',
+        title: 'System Configuration',
         href: '/general',
     },
     {
-        title: 'Workflows',
+        title: 'Workflow Management',
         href: '/workflow',
     },
     {
-        title: 'Academic',
+        title: 'Academic Structure',
         href: '/academics',
     },
     {
-        title: 'Student Stage',
+        title: 'Student Lifecycle Stages',
         href: '/studentStage',
     },
     {
-        title: 'Student Source',
+        title: 'Student Acquisition Sources',
         href: '/studentSource',
     },
     {
-        title: 'Fees',
+        title: 'Fee Management',
         href: '/fees',
     },
     {
-        title: 'Installment',
+        title: 'Installment Plans',
         href: '/installment',
     },
     {
-        title: 'Transaction Number',
+        title: 'Transaction Numbering',
         href: '/transaction',
     },
 ];

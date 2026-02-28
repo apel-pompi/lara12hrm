@@ -88,4 +88,14 @@ class Student extends Model
     {
         return $this->belongsTo(Country::class, 'descountry_id');
     }
+
+    /**
+     * Get the service that owns the StudentInvoiceHD
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(StudentInService::class,'id','student_id');
+    }
 }

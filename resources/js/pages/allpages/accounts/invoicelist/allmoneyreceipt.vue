@@ -5,9 +5,10 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { Head, router } from '@inertiajs/vue3';
-import { FileText, RefreshCcw, Search } from 'lucide-vue-next';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { FileText, RefreshCcw, Search, ShieldCheck } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -120,6 +121,18 @@ const filteredStudentID = computed(() => {
     return uniqueStudentIDs.filter((d) => d.student_id.toLowerCase().includes(queryStudentID.value.toLowerCase()));
 });
 
+const selectedStatus = ref(null);
+const queryStatus = ref('');
+const filteredStatus = computed(() => {
+    const status = data.data.map((i) => ({ status: i.status })).filter((i) => i.status);
+
+    const uniqueRefCodes = status.filter((d, index, self) => index === self.findIndex((t) => t.status === d.status));
+
+    if (!queryStatus.value) return uniqueRefCodes;
+
+    return uniqueRefCodes.filter((d) => d.status.toLowerCase().includes(queryStatus.value.toLowerCase()));
+});
+
 const search = () => {
     const params: Record<string, any> = {};
     if (selectedName.value) params.fname = selectedName.value.fname;
@@ -129,6 +142,8 @@ const search = () => {
     if (selectedStudentID.value) params.student_id = selectedStudentID.value.student_id;
     if (selectedInvoice.value) params.refe_code = selectedInvoice.value.refe_code;
     if (selectedMr.value) params.insnumber = selectedMr.value.insnumber;
+    if (selectedStatus.value) params.status = selectedStatus.value;
+    
     router.get(route('invoicelist.MRList'), params, {
         preserveState: false,
         preserveScroll: true,
@@ -156,6 +171,35 @@ const onReport = async (invId: number) => {
     });
 
     window.open(url, '_blank');
+};
+
+
+const deleteForm = useForm({});
+
+const onConfirm = async (invId: number) => {
+    if (!confirm('Are you sure you want to confirm this money receive?')) return;
+
+    if (deleteForm.processing) return;
+
+    const newStatus = !Boolean(invId);
+
+    router.post(
+        route('invoicelist.onConfirm', {
+            confirm: invId,
+        }),
+        { id: invId },
+        {
+            preserveScroll: true,
+            preserveState: false,
+            onSuccess: () => {
+                invId = newStatus ? 1 : 0;
+            },
+            onError: (errors) => {
+                const firstError = Object.values(errors)[0];
+                toast.error(firstError as string);
+            },
+        },
+    );
 };
 </script>
 
@@ -417,6 +461,49 @@ const onReport = async (invId: number) => {
                         </div>
                     </Combobox>
                 </div>
+                <div class="w-full sm:w-1/2 lg:w-auto">
+                    <Combobox v-model="selectedStatus">
+                        <div class="relative w-full md:w-48">
+                            <ComboboxInput
+                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                placeholder="Select status..."
+                                :display-value="(status) => status?.status ?? ''"
+                                @input="queryPhone = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+
+                            <!-- Options -->
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            >
+                                <div
+                                    v-if="filteredStatus.length === 0 && queryStatus !== ''"
+                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                >
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="n in filteredStatus"
+                                    :key="n.status"
+                                    :value="n"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.status }}</span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                </div>
                 <div class="grid gap-2">
                     <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
                 </div>
@@ -435,7 +522,8 @@ const onReport = async (invId: number) => {
                             <TableHead>Student ID</TableHead>
                             <TableHead>Student Name</TableHead>
                             <TableHead>Phone</TableHead>
-                            <TableHead>Received Amount</TableHead>
+                            <TableHead>Receivable</TableHead>
+                            <TableHead>Status</TableHead>
                             <TableHead>Action</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -449,15 +537,31 @@ const onReport = async (invId: number) => {
                             <TableCell>{{ inv.student.fname }} {{ inv.student.lname }}</TableCell>
                             <TableCell>{{ inv.student.phone }}</TableCell>
                             <TableCell>{{ inv.netamount }}</TableCell>
+                            <TableCell>{{ inv.status }}</TableCell>
                             <TableCell>
                                 <div class="group relative inline-block">
                                     <Button
                                         v-if="inv.status === 'Confirmed'"
-                                        class="m-[2px] cursor-pointer"
+                                        class="cursor-pointer"
                                         size="sm"
                                         variant="outline"
                                         @click="onReport(inv.id)"
                                         ><FileText class="text-red-500"></FileText
+                                    ></Button>
+                                    <span
+                                        class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
+                                    >
+                                        Report
+                                    </span>
+                                </div>
+                                <div class="group relative inline-block">
+                                    <Button
+                                        v-if="inv.status === 'Open'"
+                                        class="cursor-pointer"
+                                        size="sm"
+                                        variant="outline"
+                                        @click="onConfirm(inv.id)"
+                                        ><ShieldCheck class="text-green-500"></ShieldCheck
                                     ></Button>
                                     <span
                                         class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"

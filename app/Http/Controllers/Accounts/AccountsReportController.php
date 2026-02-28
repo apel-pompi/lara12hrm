@@ -56,7 +56,9 @@ class AccountsReportController extends Controller
         $accountType = $request->input('accounttype');
 
         $groupOne = GroupOne::with([
-            'GroupTwo.GroupThree.chartOfAccounts'
+            'GroupTwo.GroupThree.chartOfAccounts' => function ($q) {
+                $q->orderBy('accountcode', 'asc');
+            }
         ])
             ->where('active', 1)
             ->when($accountType, function ($q) use ($accountType) {
@@ -70,6 +72,7 @@ class AccountsReportController extends Controller
                     ->isNotEmpty();
             })
             ->values();
+
 
 
         $pdf = PDF::loadView('exports.accounts.chartofaccounts', [
@@ -702,12 +705,13 @@ class AccountsReportController extends Controller
 
     public function BalanceSheetReport(Request $request)
     {
-        
+
         $company = CompanyInfo::firstOrFail();
         $branch = Branch::where('id', $request->branch_id)->first();
-        
-        if($request->type=='Summary'){
-            $sql = DB::select("
+
+        if ($request->type == 'Summary') {
+            $sql = DB::select(
+                "
                 SELECT 
                     b.accounttype,
                     b.grouptwo_name,
@@ -721,11 +725,12 @@ class AccountsReportController extends Controller
                 " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
                 GROUP BY b.accounttype, b.grouptwo_name
                 ORDER BY b.groupone_code, b.grouptwo_code
-            ", $request->filled('branch_id')
-                ? [$request->yearname, $request->monthname, $request->branch_id]
-                : [$request->yearname, $request->monthname]
+            ",
+                $request->filled('branch_id')
+                    ? [$request->yearname, $request->monthname, $request->branch_id]
+                    : [$request->yearname, $request->monthname]
             );
-        }else{
+        } else {
             $sql = DB::select("
                 SELECT 
                     b.accounttype,
@@ -759,11 +764,11 @@ class AccountsReportController extends Controller
             ]));
         }
         $groupedAssets = collect($sql)->groupBy('accounttype')
-                            ->map(function ($items) {
-                                return $items->groupBy('grouptwo_name');
-                            });
-       
-        
+            ->map(function ($items) {
+                return $items->groupBy('grouptwo_name');
+            });
+
+
         $pdf = PDF::loadView('exports.accounts.balancesheet', [
             'company' => $company,
             'branch' => $branch,
@@ -808,12 +813,13 @@ class AccountsReportController extends Controller
 
     public function ProfitLossReport(Request $request)
     {
-        
+
         $company = CompanyInfo::firstOrFail();
         $branch = Branch::where('id', $request->branch_id)->first();
-        
-        if($request->type=='Summary'){
-            $sql = DB::select("
+
+        if ($request->type == 'Summary') {
+            $sql = DB::select(
+                "
                 SELECT 
                     b.accounttype,
                     b.grouptwo_name,
@@ -827,11 +833,12 @@ class AccountsReportController extends Controller
                 " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
                 GROUP BY b.accounttype, b.grouptwo_name
                 ORDER BY b.groupone_code, b.grouptwo_code
-            ", $request->filled('branch_id')
-                ? [$request->yearname, $request->monthname, $request->branch_id]
-                : [$request->yearname, $request->monthname]
+            ",
+                $request->filled('branch_id')
+                    ? [$request->yearname, $request->monthname, $request->branch_id]
+                    : [$request->yearname, $request->monthname]
             );
-        }else{
+        } else {
             $sql = DB::select("
                 SELECT 
                     b.accounttype,
@@ -865,11 +872,11 @@ class AccountsReportController extends Controller
             ]));
         }
         $groupedAssets = collect($sql)->groupBy('accounttype')
-                            ->map(function ($items) {
-                                return $items->groupBy('grouptwo_name');
-                            });
-       
-        
+            ->map(function ($items) {
+                return $items->groupBy('grouptwo_name');
+            });
+
+
         $pdf = PDF::loadView('exports.accounts.profitloss', [
             'company' => $company,
             'branch' => $branch,

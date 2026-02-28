@@ -8,35 +8,35 @@ import { Link, usePage } from '@inertiajs/vue3';
 const sidebarNavItems: NavItem[] = [
     
     {
-        title: 'Branch Setting',
+        title: 'Branch Management',
         href: '/branch',
     },
     {
-        title: 'Department',
+        title: 'Department Management',
         href: '/department',
     },
     {
-        title: 'Designation',
+        title: 'Designation Management',
         href: '/designation',
     },
     {
-        title: 'Leave Plan',
+        title: 'Leave Policy Management',
         href: '/leaveplan',
     },
     {
-        title: 'Work Hour Setup',
+        title: 'Work Hour Configuration',
         href: '/workhour',
     },
     {
-        title: 'Attendance Setting',
+        title: 'Attendance Configuration',
         href: '/attensetting',
     },
     {
-        title: 'Attendance Deduct',
+        title: 'Attendance Deduction Rules',
         href: '/attendeduct',
     },
     {
-        title: 'Salary Type Setup',
+        title: 'Salary Structure Setup',
         href: '/salarytype',
     }
 ];

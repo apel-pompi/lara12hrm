@@ -64,6 +64,18 @@ const onConversation = async (studentId: number, id: number) => {
     }
 };
 
+
+
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(
+        route('dashboard.calendar'),
+        { per_page: perPage.value },
+        { preserveState: false, replace: true }
+    );
+};
+
 const goToPage = (url: string | null) => {
     if (url) {
         router.get(url, {}, { preserveState: false, replace: true });
@@ -74,7 +86,7 @@ const goToPage = (url: string | null) => {
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Student Appoinments" />
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
             <div class="mt-5 rounded-md border">
                 <Table>
                     <TableHeader>
@@ -98,7 +110,7 @@ const goToPage = (url: string | null) => {
                             <TableCell>{{ app.user.name }}</TableCell>
                             <TableCell class="text-center">
                                 <div class="group relative inline-block">
-                                    <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onConversation(app.student_id, app.id)"
+                                    <Button class="cursor-pointer" size="sm" variant="outline" @click="onConversation(app.student_id, app.id)"
                                         ><Eye class="text-green-500"
                                     /></Button>
                                     <span
@@ -113,8 +125,14 @@ const goToPage = (url: string | null) => {
                 </Table>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
+            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                    <label for="per-page" class="text-gray-600">Show:</label>
+                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                    </select>
+                    <span>Showing {{ appoinments.from }} to {{ appoinments.to }} of {{ appoinments.total }} results</span>
+                </div>
                 <div class="space-x-2">
                     <Button
                         v-for="(link, index) in data.links"

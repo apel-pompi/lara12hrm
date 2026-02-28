@@ -22,7 +22,7 @@ class StoreGroupOneRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'groupone' => ['required', 'integer', 'unique:group_ones,groupone'],
+            'code' => ['required', 'integer', 'unique:group_ones,code'],
             'description' => ['required', 'string', 'max:255', 'unique:group_ones,description'],
             'active' => ['nullable', 'integer', 'in:0,1'], // or just integer
         ];

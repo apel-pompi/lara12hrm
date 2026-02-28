@@ -23,13 +23,13 @@ class UpdateGroupThreeRequest extends FormRequest
     {
         $groupThreeId = $this->route('groupThree')->id;
         return [
-            'groupone' => ['required', 'exists:group_ones,groupone'],
-            'grouptwo' => ['required', 'exists:group_twos,grouptwo'],
-            'groupthree' => [
+            'groupone' => ['required', 'exists:group_ones,id'],
+            'grouptwo' => ['required', 'exists:group_twos,id'],
+            'code' => [
                 'required',
                 'string',
                 'max:255',
-                'unique:group_threes,groupthree,' . $groupThreeId
+                'unique:group_threes,code,' . $groupThreeId
             ],
             'description' => [
                 'required',

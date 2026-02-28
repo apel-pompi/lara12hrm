@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Accounts;
 
 use App\Http\Controllers\Controller;
+use App\Models\Accounts\CodesParam;
+use App\Models\Accounts\Voucherdetail;
+use App\Models\Accounts\Voucherheader;
 use App\Models\Default\Transaction;
 use App\Models\HRM\CompanyInfo;
 use App\Models\Student\Student;
@@ -16,6 +19,7 @@ use App\Services\Accounts\AllInvoiceService;
 use App\Services\Accounts\AllMoneyReceiptService;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
@@ -62,7 +66,7 @@ class MoneyReceiptController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-        
+
         $perPage = $request->integer('per_page', 10);
         $invoices = $alldueInvoice->get(
             array_merge($request->query(), ['per_page' => $perPage])
@@ -70,9 +74,16 @@ class MoneyReceiptController extends Controller
         return Inertia::render('allpages/accounts/invoicelist/dueinvoicelist', [
             'filters'     => $request->only(['insnumber', 'insdate', 'fname', 'lname', 'phone']),
             'invoice'     => $invoices,
-            'allstudent'  => StudentInvoiceHD::with('student')
+            'allinvoice' => StudentInvoiceHD::with('student')
+                ->withSum('details', 'amount')
                 ->where('status', 'Confirmed')
                 ->whereIn(DB::raw("LEFT(insnumber, 4)"), ['INV-', 'SR--'])
+                ->whereHas(
+                    'student',
+                    fn($q) =>
+                    $q->whereNotNull('student_id')
+                )
+                ->having('details_sum_amount', '>', 0)
                 ->get(),
         ]);
     }
@@ -94,7 +105,7 @@ class MoneyReceiptController extends Controller
         );
 
         return Inertia::render('allpages/accounts/invoicelist/allmoneyreceipt', [
-            'filters'     => $request->only(['insnumber', 'insdate', 'fname', 'lname', 'phone']),
+            'filters'     => $request->only(['insnumber', 'insdate', 'fname', 'lname', 'phone','status']),
             'invoice'     => $moneyreceipt,
         ]);
     }
@@ -147,8 +158,8 @@ class MoneyReceiptController extends Controller
 
     public function storeMR($insnumber, $student, Request $request)
     {
-        
-        try {   
+
+        try {
             $this->authorize('Accounts.storeMR');
         } catch (AuthorizationException $e) {
             return back()->with([
@@ -252,14 +263,13 @@ class MoneyReceiptController extends Controller
             return back()->with(['error' => true, 'message' => 'Invalid request']);
         }
 
-        $invoice = StudentInvoiceHD::with(['user'])->where('insnumber',$confirm->refe_code)->first();
-        $money_reecive = StudentInvoiceHD::with(['student.country','mrdetails.fees'])->where('id',$confirm->id)->first();
+        $invoice = StudentInvoiceHD::with(['user'])->where('insnumber', $confirm->refe_code)->first();
+        $money_reecive = StudentInvoiceHD::with(['student.country', 'mrdetails.fees'])->where('id', $confirm->id)->first();
         return response()->json([
             'success' => true,
             'data' => $money_reecive,
             'invoice' => $invoice
         ]);
-
     }
 
     public function onCancel(StudentInvoiceHD $confirm)
@@ -297,7 +307,7 @@ class MoneyReceiptController extends Controller
 
         $invoice_amount = StudentInvoiceHD::where('insnumber', $confirm->refe_code)->first(['netamount', 'status']);
         if ($mramount == $invoice_amount->netamount) {
-            $invoice_amount->update(['status' => 'Delivered']);
+            $invoice_amount->update(['status' => 'Confirmed']);
         }
 
         StudentActivities::create([
@@ -311,8 +321,10 @@ class MoneyReceiptController extends Controller
         return back()->with(['success' => true, 'message' => 'Money receive confirmed successfully']);
     }
 
+
     public function onConfirm(StudentInvoiceHD $confirm)
     {
+
         try {
             $this->authorize('Accounts.ConfirmMR');
         } catch (AuthorizationException $e) {
@@ -321,35 +333,99 @@ class MoneyReceiptController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
+        if ($confirm->status !== 'Open') {
+            return back()->with([
+                'error' => true,
+                'message' => 'Only open money receipt can be confirmed'
+            ]);
+        }
+        $codePharams = CodesParam::where('type', 'Student Advance')->select('dracc', 'cracc', 'branch_id')->first();
+        if (! $codePharams || ! $codePharams->dracc || ! $codePharams->cracc) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Accounting setup missing for Student Advance'
+            ]);
+        }
+        $getstudent_id = Student::where('id', $confirm->student_id)->select('student_id')->first();
+        $voucherDate = Carbon::parse($confirm->insdate);
 
-
-        if (!$confirm) {
-            return back()->with(['error' => true, 'message' => 'Invalid request']);
+        $credit_account = '';
+        $debit_account = '';
+        $debit_note = '';
+        $credit_note = '';
+        if ($confirm->note == 'REFUND') {
+            $credit_account = $codePharams->cracc;
+            $debit_account = $codePharams->dracc;
+            $debit_note = 'Accounts Liabilities';
+            $credit_note = 'Cash/Bank';
+        } else {
+            $credit_account = $codePharams->dracc;
+            $debit_account = $codePharams->cracc;
+            //notes
+            $debit_note = 'Cash/Bank';
+            $credit_note = 'Accounts Liabilities';
         }
 
-        $invoice = StudentInvoiceHD::find($confirm->id);
+        DB::transaction(function () use ($confirm, $codePharams, $voucherDate, $getstudent_id, $credit_account, $debit_account,$debit_note,$credit_note) {
+            Voucherheader::create([
+                'vouchernumber' => $confirm->insnumber,
+                'voucherdate'   => $confirm->insdate,
+                'referance'     => 'This Voucher for Point of Sales ( '.$getstudent_id->student_id.' )',
+                'yearname'      => $voucherDate->year,
+                'monthname'     => $voucherDate->month,
+                'branch_id'     => $codePharams->branch_id,
+                'notes'         => 'This is Money Receipt',
+                'user_id'       => Auth::id(),
+            ]);
+            Voucherdetail::insert([
+                [
+                    'vouchernumber' => $confirm->insnumber,
+                    'accountcode'   => $credit_account,
+                    'subacccode'    => $getstudent_id->student_id,
+                    'currency'      => 'BDT',
+                    'exchagerate'   => '1.000',
+                    'primeamt'      => $confirm->netamount,
+                    'baseamt'       => $confirm->netamount,
+                    'branch_id'     => $codePharams->branch_id,
+                    'notes'         => $credit_note,
+                    'user_id'       => Auth::id(),
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ],
+                [
+                    'vouchernumber' => $confirm->insnumber,
+                    'accountcode'   => $debit_account,
+                    'subacccode'    => $getstudent_id->student_id,
+                    'currency'      => 'BDT',
+                    'exchagerate'   => '1.000',
+                    'primeamt'      => abs($confirm->netamount) * -1,
+                    'baseamt'       => abs($confirm->netamount) * -1,
+                    'branch_id'     => $codePharams->branch_id,
+                    'notes'         => $debit_note,
+                    'user_id'       => Auth::id(),
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ]
+            ]);
+        });
+        $confirm->update(['status' => 'Confirmed']);
 
-        if (!$invoice) {
-            return back()->with(['error' => true, 'message' => 'Invoice not found']);
-        }
-
-        if ($invoice->status !== 'Open') {
-            return back()->with(['error' => true, 'message' => 'Only open receive can be confirmed']);
-        }
-
-        $invoice->update(['status' => 'Confirmed']);
+        DB::statement(
+            'CALL sp_am_voucherpost(?, ?)',
+            [$confirm->insnumber, Auth::id()]
+        );
 
         $stud = Student::where('id', $confirm->student_id)->first();
         $stud->update(['status' => 3]);
 
-        $mramount = StudentInvoiceHD::where('refe_code', $confirm->refe_code)
-            ->where('sign', '-1')
+        $received  = StudentInvoiceHD::where('refe_code', $confirm->refe_code)
+            ->where('sign', -1)
             ->where('status', '<>', 'Cancel')
             ->sum(DB::raw('disc_amt + netamount'));
 
-        $invoice_amount = StudentInvoiceHD::where('insnumber', $confirm->refe_code)->first(['netamount', 'status']);
-        if ($mramount == $invoice_amount->netamount) {
-            $invoice_amount->update(['status' => 'Delivered']);
+        $invoice = StudentInvoiceHD::where('insnumber', $confirm->refe_code)->first();
+        if ($invoice && $received >= $invoice->netamount) {
+            $invoice->update(['status' => 'Confirmed']);
         }
 
         StudentActivities::create([
@@ -366,7 +442,7 @@ class MoneyReceiptController extends Controller
 
     public function onReport(StudentInvoiceHD $onReport)
     {
-       
+
 
         try {
             $this->authorize('Accounts.ReportMR');
@@ -382,7 +458,7 @@ class MoneyReceiptController extends Controller
         $student = Student::with(['country'])->where('id', $onReport->student_id)->first();
 
         $receipt = StudentInvoiceHD::with(['mrdetails.fees', 'user'])->where('id', $onReport->id)->first();
-        
+
         if (!$receipt) {
             abort(404, 'Invoice not found');
         }
@@ -397,7 +473,7 @@ class MoneyReceiptController extends Controller
             ];
         }
 
-    
+
         $numberToWords = new NumberToWords();
         $numberTransformer = $numberToWords->getNumberTransformer('en');
 
@@ -427,24 +503,24 @@ class MoneyReceiptController extends Controller
         return $pdf->stream("MoneyReceipt{$receipt->insnumber}.pdf");
     }
 
-    protected function getPaytype($insnumber,$fees_id)
+    protected function getPaytype($insnumber, $fees_id)
     {
-        
-        if(substr($insnumber, 0, 4) == 'INV-'){
-        $result = DB::table('student_invoice_hd AS a')
 
-            ->leftJoin('student_quotation_h_d_s AS b', 'a.refe_code', '=', 'b.quotation_no')
-            ->leftJoin('product_fees_hds AS c', 'b.product_id', '=', 'c.product_id')
-            ->leftJoin('product_fees_dts AS d', 'c.id', '=', 'd.fees_hd_id')
-            ->select('d.pay_type')
-            ->where('a.insnumber', $insnumber)
-            ->whereColumn('a.student_id', 'b.student_id')
-            ->where('d.fees_id', $fees_id)
-            ->whereNull('a.deleted_at')
-            ->first();
-        $payType = $result ? $result->pay_type : null;
-        return $payType;
-        }elseif(substr($insnumber, 0, 4) == 'SR--'){
+        if (substr($insnumber, 0, 4) == 'INV-') {
+            $result = DB::table('student_invoice_hd AS a')
+
+                ->leftJoin('student_quotation_h_d_s AS b', 'a.refe_code', '=', 'b.quotation_no')
+                ->leftJoin('product_fees_hds AS c', 'b.product_id', '=', 'c.product_id')
+                ->leftJoin('product_fees_dts AS d', 'c.id', '=', 'd.fees_hd_id')
+                ->select('d.pay_type')
+                ->where('a.insnumber', $insnumber)
+                ->whereColumn('a.student_id', 'b.student_id')
+                ->where('d.fees_id', $fees_id)
+                ->whereNull('a.deleted_at')
+                ->first();
+            $payType = $result ? $result->pay_type : null;
+            return $payType;
+        } elseif (substr($insnumber, 0, 4) == 'SR--') {
             $getins  = StudentInvoiceHD::where('refe_code', $insnumber)->first();
             $getmr = StudentInvoiceHD::where('insnumber', $getins->refe_code)->first();
             $getquot = StudentInvoiceHD::where('insnumber', $getmr->refe_code)->first();

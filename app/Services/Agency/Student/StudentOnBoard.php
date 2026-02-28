@@ -12,8 +12,8 @@ class StudentOnBoard
     {
         $user = Auth::user();
         $roles = $user->getRoleNames();
-        $queryBuilder = ModelsStudent::with(['user', 'assainuser', 'source', 'country'])->where('status',3)
-            ->orderBy('id', 'DESC');
+        $queryBuilder = ModelsStudent::with(['user:id,name', 'assainuser:id,name', 'source:id,name', 'country:id,name'])->where('status',3)
+            ->orderBy('student_id', 'DESC');
 
         if (! $roles->intersect(['superadmin', 'Admin', 'Manager'])->count()) {
             $queryBuilder->where('assain_user', Auth::id());

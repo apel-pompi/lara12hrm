@@ -10,7 +10,7 @@ import { Head, router, useForm } from '@inertiajs/vue3';
 import { FileText, RefreshCcw } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Student Transaction', href: '/leadreports/ledger' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Student Ladger', href: '/leadreports/ledger' }];
 
 const props = defineProps<{
     student: { id: number; student_id: string;phone:string; };
@@ -83,11 +83,11 @@ const onRefresh = () => {
 </script> 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Student Transaction Reports" />
+        <Head title="Student Ladger" />
         <LeadReportLayout>
             <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
                 <!-- Title -->
-                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Student Transaction</h2>
+                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Student Ladger</h2>
                 <div>
                     <div class="space-y-2">
                         <div class="w-full lg:w-auto">

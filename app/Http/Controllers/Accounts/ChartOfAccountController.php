@@ -51,6 +51,7 @@ class ChartOfAccountController extends Controller
      */
     public function store(StoreChartOfAccountRequest $request)
     {
+      
         try {
             $this->authorize('ChartOfAccount.store');
         } catch (AuthorizationException $e) {
@@ -219,6 +220,7 @@ class ChartOfAccountController extends Controller
 
     public function generateCode($groupthree)
     {
+       $threecode = GroupThree::where('id',$groupthree)->first();
         $last = ChartOfAccount::where('groupthree', $groupthree)
             ->select(DB::raw("MAX(RIGHT(accountcode, 3)) as last_code"))
             ->first();
@@ -229,7 +231,7 @@ class ChartOfAccountController extends Controller
         $nextFormatted = str_pad($next, 3, '0', STR_PAD_LEFT);
 
         return response()->json([
-            'accountcode' => $groupthree . '-' . $nextFormatted
+            'accountcode' => $threecode->code . '-' . $nextFormatted
         ]);
     }
 }

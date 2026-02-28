@@ -1,137 +1,158 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark'=> ($appearance ?? 'system') == 'dark'])>
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Student Transaction</title>
+    <title>Student Transaction Ledger</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
     <style>
         * {
-            font-family: 'DejaVu Sans', sans-serif !important;
+            font-family: 'Inter', 'DejaVu Sans', sans-serif;
         }
 
         body {
             font-size: 12px;
             color: #111827;
-            margin: 10px;
+            margin: 12px;
         }
 
-        .header-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
+        /* ===== HEADER ===== */
+        .report-header {
+            border-bottom: 2px solid #111827;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
         }
 
-        .header-table td {
-            vertical-align: top;
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .title-box {
-            border: 1px solid #000;
-            padding: 8px 20px;
-            display: inline-block;
+        .company-logo img {
+            max-width: 100px;
+        }
+
+        .report-title h1 {
+            margin: 0;
+            font-size: 18px;
             font-weight: 700;
-            font-size: 20px;
+            letter-spacing: 1px;
+            text-align: center;
         }
 
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-            background: #f9fafb;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        .info-table th {
-            width: 200px;
-            text-align: left;
-            background: #f3f4f6;
-            padding: 6px 10px;
-            font-weight: 600;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .info-table td {
-            padding: 6px 10px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: #fff;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        .grid strong {
+        .report-meta {
+            font-size: 11px;
+            text-align: right;
             color: #374151;
         }
 
-        .table {
+        /* ===== STUDENT INFO ===== */
+        .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 8px;
-            font-size: 11px;
+            margin-bottom: 14px;
+            background: #f9fafb;
         }
 
-        .table th,
-        .table td {
-            border: 1px solid #d1d5db;
-            padding: 6px;
-            text-align: right;
-        }
-
-        .table th {
+        .info-table th {
+            text-align: left;
+            width: 180px;
+            padding: 6px 8px;
             background: #f3f4f6;
             font-weight: 600;
         }
 
-        .total {
-            text-align: right;
-            font-weight: bold;
-            margin-top: 8px;
+        .info-table td {
+            padding: 6px 8px;
         }
 
+        /* ===== LEDGER TABLE ===== */
+        .trial-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11.5px;
+        }
 
+        .trial-table th {
+            padding: 8px;
+            text-align: right;
+            border-bottom: 2px solid #111827;
+            font-weight: 600;
+            background: #fafafa;
+        }
 
-        .grand-total {
+        .trial-table th:nth-child(1),
+        .trial-table th:nth-child(2),
+        .trial-table th:nth-child(3),
+        .trial-table td:nth-child(1),
+        
+        .trial-table td:nth-child(2),
+        .trial-table td:nth-child(3) {
             text-align: left;
-            font-weight: bold;
-            color: #1e3a8a;
+        }
+        .trial-table td {
+            padding: 7px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: right;
+        }
+
+        .account-name {
+            padding-left: 4px;
+        }
+
+        /* ===== TOTAL ROW ===== */
+        .total-row td {
+            font-weight: 700;
+            border-top: 2px solid #111827;
+            background: #f3f4f6;
+            text-align: right;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            width: 100%;
+            margin-top: 40px;
+            font-size: 10px;
+        }
+
+        .sign {
+            width: 33%;
+            text-align: center;
+            padding-top: 35px;
+        }
+
+        .sign span {
+            display: block;
+            border-top: 1px solid #000;
+            margin-top: 5px;
         }
     </style>
 </head>
 
 <body>
     <!-- Header -->
-    <table class="header-table">
-        <tr>
-            <!-- LEFT -->
-            <td style="width: 20%; text-align: left;">
-                <img src="{{ public_path('storage/company/' . $company->companylogo) }}" alt="logo" width="120">
-            </td>
+    <div class="report-header">
+        <div class="header-row">
+            <!-- LEFT: Logo & Company -->
+            <div class="header-col company-logo">
+                <img src="{{ public_path('storage/company/' . $company->companylogo) }}" alt="Company Logo">
+            </div>
 
-            <!-- CENTER -->
-            <td style="width: 55%; text-align: center;">
-                <div class="title-box">Student Transaction</div>
-            </td>
+            <!-- CENTER: Report Title -->
+            <div class="header-col report-title">
+                <h1>Student Ledger</h1>
+            </div>
 
-            <!-- RIGHT -->
-            <td style="width: 25%;">
-
-            </td>
-        </tr>
-    </table>
+            <!-- RIGHT: Meta Info -->
+            <div class="header-col report-meta">
+                <p><strong>Date:</strong> {{ now()->format('d M Y') }}</p>
+                <p><strong>Generated By:</strong> {{ auth()->user()->name ?? 'System' }}</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Student Info -->
     <table class="info-table">
@@ -156,260 +177,69 @@
             <td>{{ $student->country->name ?? '-' }}</td>
         </tr>
     </table>
+    <!-- TRIAL BALANCE TABLE -->
+    <table class="trial-table">
+        <thead>
+            <tr>
+                <th width="10%">Sl</th>
+                <th width="15%">Date</th>
+                <th width="45%">Particulars</th>
+                <th width="15%">Debit (BDT)</th>
+                <th width="15%">Credit (BDT)</th>
+            </tr>
+        </thead>
 
-    <!-- Quotation Details -->
-    @foreach ($service as $ser)
-        <div class="card">
-            <div style="display:table;width:100%">
-                <div style="display: table-cell;text-align:left">
-                    <strong>Workflow:</strong>
-                    {{ $ser->workflow->name }}<br>
-                    <strong>Partner:</strong>
-                    {{ $ser->partnerBranch->partner->name }}<br>
-                    <small>{{ $ser->partnerbranch->branch_name }}</small><br>
-                    <strong>Product:</strong>
-                    {{ $ser->product->name }}
-                </div>
-                <div style="display: table-cell;text-align:right; vertical-align: middle">
-                    <strong>Product Fee:</strong>
-                    {{ number_format($ser->productfees->netamount, 2) }} <strong>( {{ $ser->productfees->name }}
-                        )</strong>
-                </div>
-
-            </div>
+        <tbody>
             @php
-                // Filter quotations for this specific product
-                $quotationsForProduct = $quotationFeesHd->where('product_id', $ser->product_id);
+            $sl = 1;
+            $totalDebit = 0;
+            $totalCredit = 0;
             @endphp
-            @if ($quotationsForProduct->count() > 0)
-                <table class="table mt-2">
-                    <thead>
-                        <tr>
-                            <th>Quotation No</th>
-                            <th>Quotation Date</th>
-                            <th>Amount</th>
-                            <th>Quotation By</th>
-                        </tr>
-                    </thead>
+            @foreach ($data as $student)
 
-                    <tbody>
-                        @foreach ($quotationsForProduct as $qhd)
-                            <tr>
-                                <td style="border:0px solid">{{ $qhd->quotation_no }}</td>
-                                <td style="border:0px solid">{{ $qhd->adddate }}</td>
-                                <td style="border:0px solid">{{ number_format($qhd->totalamount, 2) }}</td>
-                                <td style="border:0px solid">{{ $qhd->user->name }}</td>
-                            </tr>
-                            @php
-                                // Filter fees for this specific quotation
-                                $quotFeesDt = $quotationFeesDt->where('quotation_id', $qhd->id);
-                                $netAmount = $quotFeesDt->sum('totalamount');
-                            @endphp
-                            <tr>
-                                <td colspan="4">
-                                    @if ($quotFeesDt->count() > 0)
-                                        <table class="table mt-2">
-                                            <thead>
-                                                <tr>
-                                                    <th>Purticulars</th>
-                                                    <th>Amount</th>
-                                                    <th>Payment Type</th>
-                                                    <th>Remarks</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($quotFeesDt as $qdt)
-                                                    <tr>
-                                                        <td>{{ $qdt->name }}</td>
-                                                        <td>{{ number_format($qdt->totalamount, 2) }}</td>
-                                                        <td>{{ $qdt->paytype }}</td>
-                                                        <td>
-                                                            @if ($qdt->name == 'File Opening Fee')
-                                                                At the beginning of process
-                                                            @elseif($qdt->name == 'Application Fee')
-                                                                During process direct payment to University
-                                                            @elseif($qdt->name == 'Visa Process Fee')
-                                                                After offer letter of services needed
-                                                            @elseif($qdt->name == 'VISA Fee')
-                                                                After offer letter direct payment to VFS/Embassy
-                                                            @elseif($qdt->name == 'Service Fee')
-                                                                After Visa
-                                                            @elseif($qdt->name == 'Tuition Fee')
-                                                                Tuition fees are refundable if the visa application is
-                                                                refused**
-                                                            @else
-                                                                ---
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                                <tr>
-                                                    <td><strong>Grand Total</strong></td>
-                                                    <td colspan="3" class="grand-total">
-                                                        {{ number_format($netAmount, 2) }}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <th colspan="4">in word:
-                                                        {{ $numberTransformer->toWords($netAmount ?? 0) }} only</th>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    @else
-                                        <p>No purticulars found for this quotation .</p>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
+            <tr>
+                <td>{{ $sl++ }}</td>
+                <td>{{ $student['mrdate']}}</td>
+                <td class="account-name">{{ $student['feesname'] }}
+                    <small style="color:#6b7280;">({{ $student['mrno'] }})</small>
+                </td>
+                <td>
+                    @if ($student['primeamt'] > 0)
+                    @php $totalDebit += abs($student['primeamt']); @endphp
+                    {{ $student['primeamt'] }}
+                    @endif
+                </td>
+                <td>
+                    @if ($student['primeamt'] < 0)
+                        @php $totalCredit +=abs($student['primeamt']); @endphp
+                        {{ abs($student['primeamt']) }}
+                        @endif
+                        </td>
+            </tr>
+            @endforeach
 
-                    </tbody>
-                </table>
-            @else
-                <p>No quotation found for this product.</p>
-            @endif
 
-        </div>
-    @endforeach
+            <!-- TOTAL -->
+            <tr class="total-row">
+                <td colspan="3">TOTAL</td>
+                <td><strong>{{ number_format($totalDebit, 2) }}</strong></td>
+                <td><strong>{{ number_format($totalCredit, 2) }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
 
-    <!-- Invoice Details -->
-    @if ($invoicesGrouped->count() > 0)
-        @foreach ($invoicesGrouped as $invoiceId => $invoiceItems)
-            @php
-                $firstItem = $invoiceItems->first();
-                $invoiceTotal = $invoiceItems->sum('total_amount');
+    <!-- FOOTER -->
+    <table class="footer">
+        <tr>
+            <td class="sign"><span>Prepared By</span></td>
+            <td class="sign"><span>Checked By</span></td>
+            <td class="sign"><span>Approved By</span></td>
+        </tr>
+    </table>
 
-            @endphp
-            <div class="card">
-                <div style="display:table;width:100%">
-                    <div style="display: table-cell;text-align:left">
-                        <strong>Invoice No:</strong>
-                        {{ $firstItem->invoice_no }}<br>
-                        <strong>Invoice Date:</strong>
-                        {{ $firstItem->invoice_date }}<br>
-                        <strong>Discount Amount:</strong>
-                        {{ number_format($firstItem->disc_amt, 2) }}
-                        <br>
-                        <strong>Invoice Amount:</strong>
-                        {{ number_format($invoiceTotal, 2) }}
-                    </div>
-                    <div style="display: table-cell;text-align:right; vertical-align: middle">
-                        <strong>Quoation Ref:</strong>
-                        {{ $firstItem->refe_code }}
-                    </div>
 
-                </div>
 
-                <table class="table mt-2">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Purticulars</th>
-                            <th>Invoice Amount</th>
-                            <th>Receve Amount</th>
-                        </tr>
-                    </thead>
 
-                    <tbody>
-                        @php $i = 1; @endphp
-                        @foreach ($invoiceItems as $item)
-                       
-                            <tr>
-                                <td>{{ $i++ }}</td>
-                                <td>{{ $item->fee_name }}</td>
-                                <td>{{ number_format($item->total_amount, 2) }}</td>
-                                <td>{{ number_format($item->receipt_amount, 2) }}</td>
-                            </tr>
-                        @endforeach
-                        <tr>
-                            <td><strong>Grand Total</strong></td>
-                            <td colspan="2" class="grand-total">
-                                {{ number_format($invoiceTotal, 2) }}
-                            </td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <th colspan="3">in word:
-                                {{ $numberTransformer->toWords($invoiceTotal ?? 0) }} only</th>
-                            <th></th>
-                        </tr>
-                    </tbody>
-                </table>
-
-            </div>
-        @endforeach
-    @else
-        <div class="student-card text-center">
-            <div class="info-value">No invoice records found</div>
-        </div>
-    @endif
-    <!-- Invoice Return Details -->
-    @if ($invoicesReturnGrouped->count() > 0)
-        @foreach ($invoicesReturnGrouped as $invoiceId => $invoiceItems)
-            @php
-                $firstItem = $invoiceItems->first();
-                $invoiceTotal = $invoiceItems->sum('total_amount');
-
-            @endphp
-            <div class="card">
-                <div style="display:table;width:100%">
-                    <div style="display: table-cell;text-align:left">
-                        <strong>Refund Invoice No:</strong>
-                        {{ $firstItem->invoice_no }}<br>
-                        <strong>Invoice Date:</strong>
-                        {{ $firstItem->invoice_date }}<br>
-                        <strong>Discount Amount:</strong>
-                        {{ number_format($firstItem->disc_amt, 2) }}
-                        <br>
-                        <strong>Invoice Amount:</strong>
-                        {{ number_format($invoiceTotal, 2) }}
-                    </div>
-                    <div style="display: table-cell;text-align:right; vertical-align: middle">
-                        <strong>M.R Ref:</strong>
-                        {{ $firstItem->refe_code }}
-                    </div>
-
-                </div>
-
-                <table class="table mt-2">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Purticulars</th>
-                            <th>Invoice Amount</th>
-                            <th>Receve Amount</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @php $i = 1; @endphp
-                        @foreach ($invoiceItems as $item)
-                       
-                            <tr>
-                                <td>{{ $i++ }}</td>
-                                <td>{{ $item->fee_name }}</td>
-                                <td>{{ number_format($item->total_amount, 2) }}</td>
-                                <td>{{ number_format($item->receipt_amount, 2) }}</td>
-                            </tr>
-                        @endforeach
-                        <tr>
-                            <td><strong>Grand Total</strong></td>
-                            <td colspan="2" class="grand-total">
-                                {{ number_format($invoiceTotal, 2) }}
-                            </td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <th colspan="3">in word:
-                                {{ $numberTransformer->toWords($invoiceTotal ?? 0) }} only</th>
-                            <th></th>
-                        </tr>
-                    </tbody>
-                </table>
-
-            </div>
-        @endforeach
-   
-    @endif
 </body>
 
 </html>

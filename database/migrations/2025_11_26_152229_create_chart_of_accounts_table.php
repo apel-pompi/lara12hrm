@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('chart_of_accounts', function (Blueprint $table) {
             $table->id();
-            $table->integer('groupone');
-            $table->integer('grouptwo');
-            $table->string('groupthree');
+            $table->foreignId('groupone')->constrained('group_ones')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('grouptwo')->constrained('group_twos')
+                ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('groupthree')->constrained('group_threes')
+                ->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('accountcode')->unique();
             $table->string('description')->unique();
             $table->string('accounttype',50);
@@ -26,24 +29,7 @@ return new class extends Migration
             $table->integer('active');
             $table->timestamps();
             $table->softDeletes();
-            $table->foreign('groupone')
-                ->references('groupone')
-                ->on('group_ones')
-                ->cascadeOnUpdate()
-                ->cascadeOnDelete();
-
-            $table->foreign('grouptwo')
-                ->references('grouptwo')
-                ->on('group_twos')
-                ->cascadeOnUpdate()
-                ->cascadeOnDelete();
-
-            $table->foreign('groupthree')
-                ->references('groupthree')
-                ->on('group_threes')
-                ->cascadeOnUpdate()
-                ->cascadeOnDelete();
-
+            
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
         });

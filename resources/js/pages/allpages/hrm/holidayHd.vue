@@ -365,7 +365,7 @@ const getMonthName = (m) => {
         </div>
         <!-- Dialog -->
         <Dialog v-model:open="showDialog">
-            <DialogContent class="max-w-[825px]">
+            <DialogContent class="max-w-206.25">
                 <DialogHeader>
                     <DialogTitle>{{ isEditMode ? 'Edit Holiday' : 'Create Holiday' }}</DialogTitle>
                     <DialogDescription> Make changes to your profile here. Click save when you're done. </DialogDescription>

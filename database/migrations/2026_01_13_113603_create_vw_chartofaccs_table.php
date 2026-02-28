@@ -30,25 +30,24 @@ return new class extends Migration
             a.analyticalcode,
             a.active,
 
-            b.groupone AS groupone_code,
-            b.description AS groupone_name,
+            g1.code        AS groupone_code,
+            g1.description AS groupone_name,
 
-            c.grouptwo AS grouptwo_code,
-            c.description AS grouptwo_name,
+            g2.code        AS grouptwo_code,
+            g2.description AS grouptwo_name,
 
-            d.groupthree AS groupthree_code,
-            d.description AS groupthree_name
+            g3.code        AS groupthree_code,
+            g3.description AS groupthree_name
 
         FROM chart_of_accounts a
-        LEFT JOIN group_ones b 
-            ON a.groupone = b.groupone
-        LEFT JOIN group_twos c 
-            ON a.groupone = c.groupone 
-            AND a.grouptwo = c.grouptwo
-        LEFT JOIN group_threes d 
-            ON a.groupone = d.groupone 
-            AND a.grouptwo = d.grouptwo 
-            AND a.groupthree = d.groupthree;
+        LEFT JOIN group_ones g1 
+            ON a.groupone = g1.id
+
+        LEFT JOIN group_twos g2 
+            ON a.grouptwo = g2.id
+
+        LEFT JOIN group_threes g3 
+            ON a.groupthree = g3.id;
         SQL;
     }
 };

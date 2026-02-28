@@ -449,7 +449,9 @@ class RolePermissionSeeder extends Seeder
                 'permissions' => [
                     'leadReports.monthly-lead-info',
                     'leadReports.student-transaction',
+                    'leadReports.student-ladger',
                     'leadReports.student-revenue',
+                    'leadReports.student-refund',
                 ],
             ],
 

@@ -69,6 +69,13 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/{student}/edit', 'edit')->name('student.edit');
                 Route::put('/{student}/update', 'update')->name('student.update');
                 Route::delete('/show/{student}', 'destroy')->name('student.destroy');
+
+                Route::get('/search', 'Search')->name('student.search');
+                Route::get('/SearchPending', 'SearchPending')->name('student.SearchPending');
+                Route::get('/SearchLead', 'SearchLead')->name('student.SearchLead');
+                Route::get('/SearchProspect', 'SearchProspect')->name('student.SearchProspect');
+                Route::get('/SearchOnBoard', 'SearchOnBoard')->name('student.SearchOnBoard');
+                Route::get('/SearchArchive', 'SearchArchive')->name('student.SearchArchive');
             }
         );
 
@@ -235,14 +242,19 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
             function () {
                 Route::get('/', 'index')->name('leadreports.index');
 
-                Route::get('/ledger', 'studentLedger')->name('leadreports.studentLedger');
-                Route::get('/ledger/{student}', 'studentLedgerReport')->name('leadreports.studentLedgerReport');
+                Route::get('/transaction', 'studentTransaction')->name('leadreports.studentTransaction');
+                Route::get('/transaction/{student}', 'studentTransactionReport')->name('leadreports.studentTransactionReport');
                 
                 Route::get('/revenue', 'studentRevenue')->name('leadreports.studentRevenue');
                 Route::get('/revenue/{formdate}/{todate}/{isAdmin}/{employee?}', 'studentRevenueReport')->name('leadreports.studentRevenueReport');
+
+                Route::get('/refund', 'studentRefund')->name('leadreports.studentRefund');
+                Route::get('/refund/{formdate}/{todate}/{isAdmin}/{employee?}', 'studentRefundReport')->name('leadreports.studentRefundReport');
                 
                 Route::get('/emp/{formdate}/{todate}/{isAdmin}/{employee?}', 'MonthlyEmpLeadReport')->name('leadreports.MonthlyEmpLeadReport');
 
+                Route::get('/ledger', 'studentLedger')->name('leadreports.studentLedger');
+                Route::get('/ledger/{student}', 'studentLedgerReport')->name('leadreports.studentLedgerReport');
             }
         );
     

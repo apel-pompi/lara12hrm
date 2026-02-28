@@ -2,6 +2,7 @@
 
 namespace App\Models\Student;
 
+use App\Models\Accounts\Voucherdetail;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -76,5 +77,15 @@ class StudentInvoiceHD extends Model
     public function mrdetails(): HasMany
     {
         return $this->hasMany(StudentMoneyReceiptDT::class, 'mrnumber_id','id');
+    }
+
+    /**
+     * Get the voucherDetails that owns the StudentInvoiceHD
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function voucherDetails(): HasMany
+    {
+        return $this->hasMany(Voucherdetail::class, 'vouchernumber','insnumber');
     }
 }

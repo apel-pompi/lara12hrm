@@ -260,7 +260,7 @@ class StudentReportController extends Controller
         return $pdf->stream("MonthlyEmpLeadReport.pdf");
     }
 
-    public function studentLedger()
+    public function studentTransaction()
     {
 
         $user = Auth::user();
@@ -278,12 +278,12 @@ class StudentReportController extends Controller
         }
         if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
 
-            return Inertia::render('allpages/reports/studentLedger', [
+            return Inertia::render('allpages/reports/studentTransaction', [
                 'student' => Student::where('student_id', '<>', null)->get(),
             ]);
         } else {
 
-            return Inertia::render('allpages/reports/studentLedger', [
+            return Inertia::render('allpages/reports/studentTransaction', [
 
                 'student' => Student::where('student_id', '<>', null)->where('assain_user', Auth::id())->get(),
             ]);
@@ -291,7 +291,7 @@ class StudentReportController extends Controller
     }
 
 
-    public function studentLedgerReport($student)
+    public function studentTransactionReport($student)
     {
 
         $data = Student::find($student);
@@ -394,6 +394,92 @@ class StudentReportController extends Controller
         return $pdf->stream("studentledger.pdf");
     }
 
+    public function studentLedger()
+    {
+
+        $user = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
+        $roles = $user->getRoleNames();
+        try {
+
+            $this->authorize('leadReports.student-ladger');
+        } catch (AuthorizationException $e) {
+
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+        if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
+
+            return Inertia::render('allpages/reports/studentLedger', [
+                'student' => Student::where('student_id', '<>', null)->get(),
+            ]);
+        } else {
+
+            return Inertia::render('allpages/reports/studentLedger', [
+
+                'student' => Student::where('student_id', '<>', null)->where('assain_user', Auth::id())->get(),
+            ]);
+        }
+    }
+
+    public function studentLedgerReport($student)
+    {
+
+        $data = Student::find($student);
+
+        $data->load('country');
+        $company = CompanyInfo::firstOrFail();
+        $query = StudentInvoiceHD::with([
+            'mrdetails.fees',
+            'voucherDetails' => function ($q) {
+                $q->where('notes', 'Cash/Bank');
+            }
+        ])
+            ->where('student_id', $data->id)
+            ->whereRaw("LEFT(insnumber, 4) = 'MR--'")
+            ->where('status', 'Confirmed')
+            ->whereHas('voucherDetails', function ($q) {
+                $q->where('notes', 'Cash/Bank');
+            })
+            ->get();
+
+        $values = [];
+        foreach ($query as $invoice) {
+            $mrdate = $invoice->insdate;
+            $mrno = $invoice->insnumber;
+            $primeamt = optional($invoice->voucherDetails->first())->primeamt;
+            foreach ($invoice->mrdetails as $mr) {
+                $values[] = [
+                    'mrdate' => $mrdate ?? '',
+                    'feesname' => $mr->fees->name ?? '',
+                    'mrno' => $mrno ?? '',
+                    'primeamt' => $primeamt,
+                ];
+            }
+        }
+       
+
+        $numberToWords = new NumberToWords();
+        $numberTransformer = $numberToWords->getNumberTransformer('en');
+        $pdf = PDF::loadView('exports.studentledger', [
+            'student' => $data,
+            'company' => $company,
+            'data'    => $values,
+            'numberTransformer' => $numberTransformer
+        ])
+            ->setPaper('a4', 'portrait')
+            ->setOption([
+                'margin-top'    => 5,
+                'margin-right'  => 5,
+                'margin-bottom' => 5,
+                'margin-left'   => 5,
+            ]);;
+
+        return $pdf->stream("studentLedger.pdf");
+    }
+
     protected function getQuoation($quoat)
     {
         $quoation = DB::table('student_quotation_h_d_s as a')
@@ -458,12 +544,74 @@ class StudentReportController extends Controller
     public function studentRevenueReport($formdate, $todate, $isAdmin, $employee = null)
     {
 
+        $query = StudentInvoiceHD::with(['student.service.workflow'])
+            ->where('status', 'Confirmed')
+            ->whereBetween('insdate', [$formdate, $todate]);
+        if (! $isAdmin && $employee) {
+            $query->whereHas('student', function ($q) use ($employee) {
+                $q->where('assain_user', $employee->id);
+            });
+        }
+        $records = $query->get();
+        $grouped = $records->groupBy('student_id');
+
+        $totalStudents = 0;
+        $totalInvoiced = 0;
+        $totalReceived = 0;
+        foreach ($grouped as $studentId => $rows) {
+            $invoice = $rows->filter(
+                fn($r) =>
+                str_starts_with($r->insnumber, 'INV-') && $r->sign == 1
+            )->sum('netamount');
+
+            $receive = $rows->filter(
+                fn($r) =>
+                str_starts_with($r->insnumber, 'MR--') && $r->sign == -1 && $r->note <> 'REFUND'
+            )->sum('netamount');
+
+            if ($invoice == 0 || $receive == 0) {
+                continue;
+            }
+
+            $totalStudents++;
+            $totalInvoiced += $invoice;
+            $totalReceived += $receive;
+        }
+        $totalDue = $totalInvoiced - $totalReceived;
+
+        $company = CompanyInfo::firstOrFail();
+
+        $authUser = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $authUser */
+        $roles = $authUser->getRoleNames();
+
+        $personalinfo = null;
+        $targetUserId = null;
+        if ($roles->intersect(['superadmin', 'Admin', 'Manager'])->isNotEmpty()) {
+            if ($employee) {
+                $targetUserId = $employee;
+            }
+        } else {
+            $targetUserId = $authUser->id;
+        }
+
+        if ($targetUserId) {
+            $targetUserName = User::where('id', $targetUserId)->value('name');
+            $personalinfo = PersonalInfo::with('designation')->where('empname', $targetUserName)->first();
+        }
+
 
         $numberToWords = new NumberToWords();
         $numberTransformer = $numberToWords->getNumberTransformer('en');
 
         $pdf = PDF::loadView('exports.studentRevenue', [
-
+            'company' => $company,
+            'personalinfo' => $personalinfo,
+            'totalStudents' => $totalStudents,
+            'totalInvoiced' => $totalInvoiced,
+            'totalReceived' => $totalReceived,
+            'totalDue' => $totalDue,
+            'grouped' => $grouped,
             'numberTransformer' => $numberTransformer
         ])
             ->setPaper('a4', 'portrait')
@@ -477,6 +625,118 @@ class StudentReportController extends Controller
         return $pdf->stream("studentRevenue.pdf");
     }
 
+    public function studentRefund()
+    {
+        $user = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
+        $roles = $user->getRoleNames();
+        try {
+
+            $this->authorize('leadReports.student-refund');
+        } catch (AuthorizationException $e) {
+
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
+        if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
+
+            return Inertia::render('allpages/reports/studentRefund', [
+                'UsersWithRoles' => User::with('roles')->get(),
+                'isAdmin' => true,
+            ]);
+        } else {
+
+            return Inertia::render('allpages/reports/studentRefund', [
+                'isAdmin' => false,
+            ]);
+        }
+    }
+
+    public function studentRefundReport($formdate, $todate, $isAdmin, $employee = null)
+    {
+
+        $query = StudentInvoiceHD::with(['student.service.workflow'])
+            ->where('status', 'Confirmed')
+            ->whereBetween('insdate', [$formdate, $todate]);
+        if (! $isAdmin && $employee) {
+            $query->whereHas('student', function ($q) use ($employee) {
+                $q->where('assain_user', $employee->id);
+            });
+        }
+        $records = $query->get();
+        $grouped = $records->groupBy('student_id');
+
+        $totalStudents = 0;
+        $totalInvoiced = 0;
+        $totalReceived = 0;
+        foreach ($grouped as $studentId => $rows) {
+            $invoice = $rows->filter(
+                fn($r) =>
+                str_starts_with($r->insnumber, 'SR--') && $r->sign == 1
+            )->sum('netamount');
+
+            $receive = $rows->filter(
+                fn($r) =>
+                str_starts_with($r->insnumber, 'MR--') && $r->sign == -1 && $r->note == 'REFUND'
+            )->sum('netamount');
+
+            if ($invoice == 0 || $receive == 0) {
+                continue;
+            }
+
+            $totalStudents++;
+            $totalInvoiced += $invoice;
+            $totalReceived += $receive;
+        }
+        $totalDue = $totalInvoiced - $totalReceived;
+
+        $company = CompanyInfo::firstOrFail();
+
+        $authUser = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $authUser */
+        $roles = $authUser->getRoleNames();
+
+        $personalinfo = null;
+        $targetUserId = null;
+        if ($roles->intersect(['superadmin', 'Admin', 'Manager'])->isNotEmpty()) {
+            if ($employee) {
+                $targetUserId = $employee;
+            }
+        } else {
+            $targetUserId = $authUser->id;
+        }
+
+        if ($targetUserId) {
+            $targetUserName = User::where('id', $targetUserId)->value('name');
+            $personalinfo = PersonalInfo::with('designation')->where('empname', $targetUserName)->first();
+        }
+
+        $numberToWords = new NumberToWords();
+        $numberTransformer = $numberToWords->getNumberTransformer('en');
+
+        $pdf = PDF::loadView('exports.studentRefund', [
+            'company' => $company,
+            'personalinfo' => $personalinfo,
+            'totalStudents' => $totalStudents,
+            'totalInvoiced' => $totalInvoiced,
+            'totalReceived' => $totalReceived,
+            'totalDue' => $totalDue,
+            'grouped' => $grouped,
+            'numberTransformer' => $numberTransformer
+        ])
+            ->setPaper('a4', 'portrait')
+            ->setOption([
+                'margin-top'    => 5,
+                'margin-right'  => 5,
+                'margin-bottom' => 5,
+                'margin-left'   => 5,
+            ]);;
+
+        return $pdf->stream("studentRefund.pdf");
+    }
 
     public function createMonth()
     {

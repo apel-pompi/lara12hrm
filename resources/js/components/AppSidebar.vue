@@ -19,30 +19,31 @@ import {
 import {
     BadgeCent,
     Book,
+    BookOpenCheck,
+    Briefcase,
     CalendarCog,
     CalendarX2,
     ClipboardCheck,
     ClipboardPlus,
+    Columns2,
+    CreditCard,
     FileCog,
+    Flag,
+    Handshake,
+    LayoutDashboard,
     MessageCircleOff,
     MonitorCog,
+    PanelRightClose,
+    RadioReceiver,
+    Receipt,
     School,
     Settings,
+    SquareStar,
     Upload,
     User,
     UserCog,
-    BookOpenCheck,
-    Flag,
-    CreditCard,
-    PanelRightClose,
-    Columns2,
-    Briefcase,
     Wallet,
     WalletMinimal,
-    Receipt,
-    RadioReceiver,
-    Handshake,
-    SquareStar
 } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
@@ -61,219 +62,108 @@ const year = new Date().getFullYear();
 const page = usePage<{ auth: Auth }>();
 const company = page.props.auth.company?.[0];
 
-const data = {
-    navMain: [
-        {
-            title: 'Master Setup',
-            url: '#',
-            icon: Settings,
-            items: [
-                {
-                    title: 'Users Setting',
-                    href: '/roles',
-                    icon: UserCog,
-                },
-                {
-                    title: 'General Setting',
-                    href: '/settings/profile',
-                    icon: FileCog,
-                },
-                {
-                    title: 'CRM Setting',
-                    href: '/general',
-                    icon: MonitorCog,
-                },
-                {
-                    title: 'HRM Setting',
-                    href: '/companyinfo',
-                    icon: CalendarCog,
-                },
-                {
-                    title: 'Accounts Setting',
-                    href: '/accountssetting',
-                    icon: BadgeCent,
-                },
-            ],
-        },
-    ],
-};
-
-const HRMenu = {
-    navHRmenu: [
-        {
-            title: 'HRM',
-            url: '#',
-            icon: ClipboardPlus,
-            items: [
-                {
-                    title: 'Holiday',
-                    href: '/holidayHd',
-                    icon: CalendarX2,
-                },
-                {
-                    title: 'Personnel info',
-                    href: '/personalinfo',
-                    icon: User,
-                },
-                {
-                    title: 'Generate Pay Slip',
-                    href: '/attendanceStatus',
-                    icon: Flag,
-                },
-            ],
-        },
-    ],
-};
-
-const mainmenu = [
+/* ---------------- OVERVIEW ---------------- */
+const overview = [
     {
-        route: 'leave.index',
-        title: 'Leave Request',
-        icon: MessageCircleOff,
+        route: 'dashboard',
+        title: 'Overview',
+        icon: LayoutDashboard,
     },
-    {
-        route: 'imports.showImportForm',
-        title: 'Upload Lead',
-        icon: Upload,
-    },
-    {
-        route: 'student.index',
-        title: 'Student',
-        icon: Book,
-    },
-    {
-        route: 'partner.index',
-        title: 'Partners',
-        icon: School,
-    },
-    
 ];
 
-const InvoiceMenu = {
-    navInvoicemenu: [
-        {
-            title: 'Invoice List',
-            url: '#',
-            icon: Briefcase,
-            items: [
-                {
-                    route: 'invoicelist.AllInvoiceList',
-                    title: 'All Invoices',
-                    icon: Wallet,
-                },
-                {
-                    route: 'invoicelist.DueInvoiceList',
-                    title: 'Due Invoices',
-                    icon: WalletMinimal,
-                },
-                {
-                    route: 'invoicelist.MRList',
-                    title: 'Money Receipt',
-                    icon: Receipt,
-                },
-            ],
-        },
-    ],
-};
+/* ---------------- SYSTEM ADMIN ---------------- */
+const systemAdmin = [
+    {
+        title: 'System Administration',
+        icon: Settings,
+        items: [
+            { title: 'User Management', href: '/roles', icon: UserCog },
+            { title: 'General Settings', href: '/settings/profile', icon: FileCog },
+            { title: 'CRM Configuration', href: '/general', icon: MonitorCog },
+            { title: 'HR Configuration', href: '/companyinfo', icon: CalendarCog },
+            { title: 'Accounting Configuration', href: '/accountssetting', icon: BadgeCent },
+        ],
+    },
+];
 
-const SupplierMenu = {
-    navSuppliermenu: [
-        {
-            title: 'Supplier',
-            url: '#',
-            icon: Handshake,
-            items: [
-                {
-                    route: 'suppliers.index',
-                    title: 'All Supplier',
-                    icon: SquareStar,
-                },
-                {
-                    route: 'suppliersInvoice.index',
-                    title: 'Supplier Invoices',
-                    icon: WalletMinimal,
-                },
-                {
-                    route: 'suppliersPayble.index',
-                    title: 'Supplier Payables',
-                    icon: Receipt,
-                },
-            ],
-        },
-    ],
-};
-const AccountsMenu = {
-    navAccountsmenu: [
-        {
-            title: 'Accounts Voucher',
-            url: '#',
-            icon: ClipboardPlus,
-            items: [
-                {
-                    route: 'voucherheader.opening',
-                    title: 'Opening Blance',
-                    icon: Columns2,
-                },
-                {
-                    route: 'voucherheader.jurnal',
-                    title: 'Journal Voucher',
-                    icon: CreditCard,
-                },
-                {
-                    route: 'voucherheader.payment',
-                    title: 'Payment voucher',
-                    icon: PanelRightClose,
-                },
-                {
-                    route: 'voucherheader.receipt',
-                    title: 'Receipt voucher',
-                    icon: RadioReceiver,
-                },
-                {
-                    route: 'voucherheader.reverse',
-                    title: 'Reverse voucher',
-                    icon: Columns2,
-                },
-                {
-                    route: 'voucherheader.allvoucher',
-                    title: 'All Voucher',
-                    icon: Columns2,
-                },
-            ],
-        },
-    ],
-};
+/* ---------------- HR ---------------- */
+const hrMenu = [
+    {
+        title: 'Human Resources',
+        icon: ClipboardPlus,
+        items: [
+            { title: 'Holiday Calendar', href: '/holidayHd', icon: CalendarX2 },
+            { title: 'Employee Directory', href: '/personalinfo', icon: User },
+            { title: 'Payroll Processing', href: '/attendanceStatus', icon: Flag },
+        ],
+    },
+];
 
-const reportdata = {
-    navReport: [
-        {
-            title: 'Reports',
-            url: '#',
-            icon: ClipboardCheck,
-            items: [
-                {
-                    title: 'Lead Reports',
-                    href: '/leadreports',
-                    icon: BookOpenCheck,
-                },
-                {
-                    title: 'HR Reports',
-                    href: '/hrreports',
-                    icon: ClipboardCheck,
-                },
-                {
-                    title: 'Accounts Reports',
-                    href: '/accountsreport',
-                    icon: BadgeCent,
-                },
-            ],
-        },
-    ],
-};
+/* ---------------- MAIN ---------------- */
+const mainMenu = [
+    { route: 'leave.index', title: 'Leave Management', icon: MessageCircleOff },
+    { route: 'imports.showImportForm', title: 'Lead Import', icon: Upload },
+    { route: 'student.index', title: 'Students', icon: Book },
+    { route: 'partner.index', title: 'Business Partners', icon: School },
+];
+
+/* ---------------- INVOICE ---------------- */
+const invoiceMenu = [
+    {
+        title: 'Billing & Invoicing',
+        icon: Briefcase,
+        items: [
+            { route: 'invoicelist.AllInvoiceList', title: 'All Invoices', icon: Wallet },
+            { route: 'invoicelist.DueInvoiceList', title: 'Outstanding Invoices', icon: WalletMinimal },
+            { route: 'invoicelist.MRList', title: 'Payment Receipts', icon: Receipt },
+        ],
+    },
+];
+
+/* ---------------- SUPPLIER ---------------- */
+const supplierMenu = [
+    {
+        title: 'Supplier Management',
+        icon: Handshake,
+        items: [
+            { route: 'suppliers.index', title: 'Supplier Directory', icon: SquareStar },
+            { route: 'suppliersInvoice.index', title: 'Supplier Invoices', icon: WalletMinimal },
+            { route: 'suppliersPayble.index', title: 'Accounts Payable', icon: Receipt },
+        ],
+    },
+];
+/* ---------------- ACCOUNTS ---------------- */
+const accountsMenu = [
+    {
+        title: 'Financial Transactions',
+        icon: ClipboardPlus,
+        items: [
+            { route: 'voucherheader.opening', title: 'Opening Balances', icon: Columns2 },
+            { route: 'voucherheader.jurnal', title: 'Journal Entries', icon: CreditCard },
+            { route: 'voucherheader.payment', title: 'Payment Vouchers', icon: PanelRightClose },
+            { route: 'voucherheader.receipt', title: 'Receipt Vouchers', icon: RadioReceiver },
+            { route: 'voucherheader.reverse', title: 'Reversal Entries', icon: Columns2 },
+            { route: 'voucherheader.allvoucher', title: 'All Transactions', icon: Columns2 },
+        ],
+    },
+];
+/* ---------------- REPORTS ---------------- */
+const reportMenu = [
+    {
+        title: 'Reports & Analytics',
+        icon: ClipboardCheck,
+        items: [
+            { title: 'Sales Reports', href: '/leadreports', icon: BookOpenCheck },
+            { title: 'HR Analytics', href: '/hrreports', icon: ClipboardCheck },
+            { title: 'Financial Reports', href: '/accountsreport', icon: BadgeCent },
+        ],
+    },
+];
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset" v-bind="props">
+    <Sidebar variant="inset" v-bind="props">
+        <!-- HEADER -->
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
@@ -285,18 +175,14 @@ const reportdata = {
                 </SidebarMenuItem>
             </SidebarMenu>
         </SidebarHeader>
+        <!-- CONTENT -->
         <SidebarContent>
             <SidebarGroup>
                 <SidebarGroupContent>
-                    <SidebarContent>
-                        <NavMain :items="data.navMain" />
-                    </SidebarContent>
-                    <SidebarContent>
-                        <NavMain :items="HRMenu.navHRmenu" />
-                    </SidebarContent>
+                    <!-- Overview -->
                     <SidebarMenu>
-                        <SidebarMenuItem v-for="item in mainmenu" :key="item.title">
-                            <SidebarMenuButton asChild>
+                        <SidebarMenuItem v-for="item in overview" :key="item.title">
+                            <SidebarMenuButton as-child>
                                 <Link :href="route(item.route)" class="ps-4">
                                     <component :is="item.icon" />
                                     <span>{{ item.title }}</span>
@@ -304,24 +190,31 @@ const reportdata = {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
-                    <SidebarContent>
-                        <NavMain :items="InvoiceMenu.navInvoicemenu" />
-                    </SidebarContent>
-                    <SidebarContent>
-                        <NavMain :items="SupplierMenu.navSuppliermenu" />
-                    </SidebarContent>
-                    <SidebarContent>
-                        <NavMain :items="AccountsMenu.navAccountsmenu" />
-                    </SidebarContent>
-                    <SidebarContent>
-                        <NavMain :items="reportdata.navReport" />
-                    </SidebarContent>
+
+                    <NavMain :items="systemAdmin" />
+                    <NavMain :items="hrMenu" />
+
+                    <!-- Main -->
+                    <SidebarMenu>
+                        <SidebarMenuItem v-for="item in mainMenu" :key="item.title">
+                            <SidebarMenuButton as-child>
+                                <Link :href="route(item.route)" class="ps-4">
+                                    <component :is="item.icon" />
+                                    <span>{{ item.title }}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+
+                    <NavMain :items="invoiceMenu" />
+                    <NavMain :items="supplierMenu" />
+                    <NavMain :items="accountsMenu" />
+                    <NavMain :items="reportMenu" />
                 </SidebarGroupContent>
             </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter class="border-sidebar-border/70 border-t p-3 text-center text-xs text-gray-500">
-            © {{ year }} {{ company?.companyname }}
-        </SidebarFooter>
+        <!-- FOOTER -->
+        <SidebarFooter class="border-t p-3 text-center text-xs text-gray-500"> © {{ year }} {{ company?.companyname }} </SidebarFooter>
     </Sidebar>
     <slot />
 </template>

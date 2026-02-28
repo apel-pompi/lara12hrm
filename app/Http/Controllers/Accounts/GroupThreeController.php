@@ -66,6 +66,7 @@ class GroupThreeController extends Controller
      */
     public function edit(GroupThree $groupThree)
     {
+      
         try {
             $this->authorize('GroupThree.edit');
 

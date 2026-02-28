@@ -40,9 +40,9 @@ export interface ChartOfAccount {
     description: string;
     accountusage: string;
     analyticalcode: string;
-    groupone: { groupone: number; description: string };
-    grouptwo: { grouptwo: number; description: string };
-    groupthree: { groupthree: string; description: string };
+    groupone: { code: number; description: string };
+    grouptwo: { code: number; description: string };
+    groupthree: { code: string; description: string };
     active: number;
     user: {
         id: number;
@@ -53,9 +53,9 @@ export interface ChartOfAccount {
 const props = defineProps<{
     chartofaccount: Paginated<ChartOfAccount>;
     filters: { name?: string };
-    groupone: { groupone: number; description: string };
-    grouptwo: { grouptwo: number; description: string };
-    groupthree: { groupthree: number; description: string };
+    groupone: { code: number; description: string };
+    grouptwo: { code: number; description: string };
+    groupthree: { code: string; description: string };
     others: [];
 }>();
 
@@ -91,6 +91,7 @@ const fetchTwo = async () => {
     if (!form.groupone) return; // groupone code
     const res = await fetch(`/chartOfAccount/getGroupTwo/${form.groupone}`);
     const data = await res.json();
+    
     grouptwoOptions.value = data.data;
 };
 
@@ -108,6 +109,7 @@ const fetchThree = async () => {
 
     const res = await fetch(`/chartOfAccount/getGroupThree/${form.groupone}/${form.grouptwo}`);
     const data = await res.json();
+    console.log(data)
     groupthreeOptions.value = data.data;
 };
 
@@ -147,6 +149,7 @@ const onEdit = async (id: number) => {
         const data = await res.json();
         Object.assign(form, data.data);
         form.id = data.data.id;
+        
         // Fetch group three options
         await fetchThree();
         form.groupthree = data.data.groupthree;
@@ -238,8 +241,9 @@ const onDelete = async (id: number) => {
 const GroupOne = ref(null);
 
 watch(GroupOne, (val) => {
+
     if (val) {
-        form.groupone = val.groupone; // numeric/code
+        form.groupone = val.id; // numeric/code
         form.accounttype = val.description; // auto fill
     }
 });
@@ -303,9 +307,9 @@ const filteredAnalytic = computed(() => {
 const search = () => {
     const params: Record<string, any> = {};
 
-    if (selectedGroupOne.value) params.groupone = selectedGroupOne.value.groupone;
-    if (selectedGroupTwo.value) params.grouptwo = selectedGroupTwo.value.grouptwo;
-    if (selectedGroupThree.value) params.groupthree = selectedGroupThree.value.groupthree;
+    if (selectedGroupOne.value) params.groupone = selectedGroupOne.value.id;
+    if (selectedGroupTwo.value) params.grouptwo = selectedGroupTwo.value.id;
+    if (selectedGroupThree.value) params.groupthree = selectedGroupThree.value.id;
     if (selectedDescription.value) params.description = selectedDescription.value.description;
     if (selectedUsages.value) params.accountusage = selectedUsages.value;
     if (selectedAnalytic.value) params.analyticalcode = selectedAnalytic.value;
@@ -630,8 +634,8 @@ const goToPage = (url: string | null) => {
                                     <Switch v-model="chart.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(chart)"> </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(chart.id)"><SquarePen></SquarePen></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(chart.id)"><Trash></Trash></Button>
+                                    <Button size="sm" variant="outline" @click="onEdit(chart.id)"><SquarePen></SquarePen></Button>
+                                    <Button size="sm" variant="outline" @click="onDelete(chart.id)"><Trash></Trash></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -704,7 +708,7 @@ const goToPage = (url: string | null) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="two in grouptwoOptions" :key="two.id" :value="two.grouptwo">
+                                        <SelectItem v-for="two in grouptwoOptions" :key="two.id" :value="two.id">
                                             {{ two.description }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -722,7 +726,7 @@ const goToPage = (url: string | null) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="three in groupthreeOptions" :key="three.id" :value="three.groupthree">
+                                        <SelectItem v-for="three in groupthreeOptions" :key="three.id" :value="three.id">
                                             {{ three.description }}
                                         </SelectItem>
                                     </SelectGroup>

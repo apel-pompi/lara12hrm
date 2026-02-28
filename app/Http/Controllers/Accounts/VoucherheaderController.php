@@ -13,6 +13,7 @@ use App\Models\Default\Transaction;
 use App\Models\HRM\Branch;
 use App\Models\HRM\CompanyInfo;
 use App\Models\Accounts\VoucherBalance;
+use App\Models\Student\StudentInvoiceHD;
 use App\Services\Accounts\jurnalVoucherService;
 use App\Services\Accounts\paymentVoucherService;
 use App\Services\Accounts\receiptVoucherService;
@@ -1358,6 +1359,15 @@ class VoucherheaderController extends Controller
                 $allvoucher->update([
                     'status' => null
                 ]);
+            } elseif(substr($allvoucher->vouchernumber, 0, 4) == 'MR--'){
+                VoucherBalance::where('vouchernumber', $allvoucher->vouchernumber)
+                    ->forceDelete();
+                Voucherheader::where('vouchernumber', $allvoucher->vouchernumber)
+                    ->forceDelete();
+                Voucherdetail::where('vouchernumber', $allvoucher->vouchernumber)
+                    ->forceDelete();
+                $invoice = StudentInvoiceHD::where('insnumber', $allvoucher->vouchernumber)->first();
+                $invoice->update(['status' => 'Open']);
             } else {
                 VoucherBalance::where('vouchernumber', $allvoucher->vouchernumber)
                     ->forceDelete();
