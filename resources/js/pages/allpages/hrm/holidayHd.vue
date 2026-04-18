@@ -250,14 +250,26 @@ const getMonthName = (m) => {
     <Head title="Holiday" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-            <div class="flex items-center gap-2 py-4">
-                <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Holiday </Button>
-                <!-- Search start -->
-                <div class="grid gap-2">
+            <!-- Responsive Header + Search Section -->
+
+            <!-- Filters -->
+            <div class="grid grid-cols-1 p-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-5 justify-between items-center">
+                <Button
+                    variant="default"
+                    size="sm"
+                    @click="showDailogCreate"
+                    class="w-full rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 lg:w-auto"
+                >
+                    <Plus class="h-4 w-4" />
+                    Create
+                </Button>
+                <!-- Branch -->
+                <div>
                     <Select v-model="searchForm.branch_id">
-                        <SelectTrigger class="w-full">
+                        <SelectTrigger class="w-full rounded-xl border-gray-300">
                             <SelectValue placeholder="Select Branch" />
                         </SelectTrigger>
+
                         <SelectContent>
                             <SelectGroup>
                                 <SelectItem v-for="branches in branch" :key="branches.id" :value="branches.id">
@@ -267,11 +279,14 @@ const getMonthName = (m) => {
                         </SelectContent>
                     </Select>
                 </div>
-                <div class="grid gap-2">
+
+                <!-- Year -->
+                <div>
                     <Select v-model="searchForm.yearname">
-                        <SelectTrigger class="w-full">
+                        <SelectTrigger class="w-full rounded-xl border-gray-300">
                             <SelectValue placeholder="Select Year" />
                         </SelectTrigger>
+
                         <SelectContent>
                             <SelectGroup>
                                 <SelectItem v-for="years in year" :key="years" :value="years">
@@ -281,11 +296,14 @@ const getMonthName = (m) => {
                         </SelectContent>
                     </Select>
                 </div>
-                <div class="grid gap-2">
+
+                <!-- Month -->
+                <div>
                     <Select v-model="searchForm.monthname">
-                        <SelectTrigger class="w-full">
+                        <SelectTrigger class="w-full rounded-xl border-gray-300">
                             <SelectValue placeholder="Select Month" />
                         </SelectTrigger>
+
                         <SelectContent>
                             <SelectGroup>
                                 <SelectItem v-for="(label, key) in month" :key="key" :value="key">
@@ -295,77 +313,160 @@ const getMonthName = (m) => {
                         </SelectContent>
                     </Select>
                 </div>
-                <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
+
+                <div>
+                    <!-- Search -->
+                    <Button variant="outline" size="sm" @click="search" class="rounded-xl border-indigo-300 hover:bg-indigo-50">
+                        <Search class="mr-2 h-4 w-4" />
+                        Search
+                    </Button>
+
+                    <!-- Refresh -->
+                    <Button variant="outline" size="sm" @click="refresh" class="rounded-xl border-gray-300 hover:bg-gray-100">
+                        <RefreshCcw class="mr-2 h-4 w-4" />
+                        Refresh
+                    </Button>
                 </div>
-                <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
-                </div>
-                <!-- Search start -->
-            </div>
-            <div class="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Branch Name</TableHead>
-                            <TableHead>Holi Year</TableHead>
-                            <TableHead>Holi Month</TableHead>
-                            <TableHead>Holi Days</TableHead>
-                            <TableHead>Working Days</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead class="text-center">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(holidayhd, index) in data.data" :key="holidayhd.id ?? index">
-                            <TableCell>{{ holidayhd.branch?.branchname }}</TableCell>
-                            <TableCell>{{ holidayhd.yearname }}</TableCell>
-                            <TableCell>{{ getMonthName(holidayhd.monthname) }}</TableCell>
-                            <TableCell
-                                ><a :href="`/holidaydt/${holidayhd.id}/create/`" class="font-medium text-blue-600 underline hover:text-blue-800">{{
-                                    holidayhd.holidays
-                                }}</a></TableCell
-                            >
-                            <TableCell>{{ holidayhd.holiworking }}</TableCell>
-                            <TableCell>
-                                <Switch v-model="holidayhd.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(holidayhd)"> </Switch>
-                            </TableCell>
-                            <TableCell class="text-right">
-                                <Button size="sm" variant="outline" @click="onShow(holidayhd.id)"><Eye></Eye></Button>
-                                <Button size="sm" variant="outline" @click="onEdit(holidayhd.id)"><SquarePen></SquarePen></Button>
-                                <Button size="sm" variant="outline" @click="onDelete(holidayhd.id)"><Trash></Trash></Button>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
             </div>
 
-            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
-                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
-                    <label for="per-page" class="text-gray-600">Show:</label>
-                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
-                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
-                    </select>
-                    <span>Showing {{ holidayHd.from }} to {{ holidayHd.to }} of {{ holidayHd.total }} results</span>
+            <!-- Modern Responsive Holiday Table -->
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <Table class="min-w-full">
+                        <TableHeader>
+                            <TableRow class="bg-gray-50">
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Branch Name</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Year</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Month</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Holiday Days</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Working Days</TableHead>
+                                <TableHead class="px-4 py-3 text-center font-semibold text-gray-700">Status</TableHead>
+                                <TableHead class="px-4 py-3 text-center font-semibold text-gray-700">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+
+                        <TableBody>
+                            <TableRow
+                                v-for="(holidayhd, index) in data.data"
+                                :key="holidayhd.id ?? index"
+                                class="border-t transition hover:bg-gray-50"
+                            >
+                                <!-- Branch -->
+                                <TableCell class="px-4 py-3 font-medium whitespace-nowrap text-gray-800">
+                                    {{ holidayhd.branch?.branchname }}
+                                </TableCell>
+
+                                <!-- Year -->
+                                <TableCell class="px-4 py-3 text-gray-600">
+                                    {{ holidayhd.yearname }}
+                                </TableCell>
+
+                                <!-- Month -->
+                                <TableCell class="px-4 py-3 text-gray-600">
+                                    {{ getMonthName(holidayhd.monthname) }}
+                                </TableCell>
+
+                                <!-- Holiday Days -->
+                                <TableCell class="px-4 py-3">
+                                    <a
+                                        :href="`/holidaydt/${holidayhd.id}/create/`"
+                                        class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 hover:bg-blue-200"
+                                    >
+                                        {{ holidayhd.holidays }} Days
+                                    </a>
+                                </TableCell>
+
+                                <!-- Working -->
+                                <TableCell class="px-4 py-3 font-medium text-green-700">
+                                    {{ holidayhd.holiworking }}
+                                </TableCell>
+
+                                <!-- Status -->
+                                <TableCell class="px-4 py-3 text-center">
+                                    <Switch v-model="holidayhd.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(holidayhd)" />
+                                </TableCell>
+
+                                <!-- Action -->
+                                <TableCell class="px-4 py-3">
+                                    <div class="flex justify-center gap-2">
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            class="h-8 w-8 text-blue-600 hover:bg-blue-100"
+                                            @click="onShow(holidayhd.id)"
+                                        >
+                                            <Eye class="h-4 w-4" />
+                                        </Button>
+
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            class="h-8 w-8 text-amber-600 hover:bg-amber-100"
+                                            @click="onEdit(holidayhd.id)"
+                                        >
+                                            <SquarePen class="h-4 w-4" />
+                                        </Button>
+
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            class="h-8 w-8 text-red-600 hover:bg-red-100"
+                                            @click="onDelete(holidayhd.id)"
+                                        >
+                                            <Trash class="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
                 </div>
-                <div class="space-x-2">
-                    <Button
-                        v-for="(link, index) in data.links"
-                        :key="index"
-                        :disabled="!link.url"
-                        variant="outline"
-                        size="sm"
-                        :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
-                        @click="goToPage(link.url)"
-                    >
-                        <span v-html="link.label"></span>
-                    </Button>
+
+                <!-- Footer Pagination -->
+                <div class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
+                    <!-- Left -->
+                    <div class="flex flex-col gap-2 text-sm text-gray-600 sm:flex-row sm:items-center">
+                        <div class="flex items-center gap-2">
+                            <label>Show</label>
+
+                            <select
+                                v-model="perPage"
+                                @change="changePerPage"
+                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
+                            >
+                                <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
+                                    {{ size }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <span> Showing {{ holidayHd.from }} to {{ holidayHd.to }} of {{ holidayHd.total }} results </span>
+                    </div>
+
+                    <!-- Right -->
+                    <div class="flex flex-wrap justify-center gap-2 md:justify-end">
+                        <Button
+                            v-for="(link, index) in data.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            size="sm"
+                            variant="outline"
+                            @click="goToPage(link.url)"
+                            :class="[
+                                link.active ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-gray-700',
+                                !link.url ? 'cursor-not-allowed opacity-50' : '',
+                            ]"
+                        >
+                            <span v-html="link.label"></span>
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- Dialog -->
         <Dialog v-model:open="showDialog">
-            <DialogContent class="max-w-[825px]">
+            <DialogContent class="max-w-206.25">
                 <DialogHeader>
                     <DialogTitle>{{ isEditMode ? 'Edit Holiday' : 'Create Holiday' }}</DialogTitle>
                     <DialogDescription> Make changes to your profile here. Click save when you're done. </DialogDescription>

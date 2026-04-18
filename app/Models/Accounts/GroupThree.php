@@ -16,7 +16,7 @@ class GroupThree extends Model
     protected $fillable = [
         'groupone',
         'grouptwo',
-        'groupthree',
+        'code',
         'description',
         'user_id',
         'active',
@@ -29,7 +29,7 @@ class GroupThree extends Model
      */
     public function GroupOne(): BelongsTo
     {
-        return $this->belongsTo(GroupOne::class, 'groupone', 'groupone');
+        return $this->belongsTo(GroupOne::class, 'groupone');
     }
 
     /**
@@ -39,7 +39,7 @@ class GroupThree extends Model
      */
     public function GroupTwo(): BelongsTo
     {
-        return $this->belongsTo(GroupTwo::class, 'grouptwo', 'grouptwo');
+        return $this->belongsTo(GroupTwo::class, 'grouptwo');
     }
 
     /**
@@ -49,7 +49,7 @@ class GroupThree extends Model
      */
     public function chartOfAccounts(): HasMany
     {
-        return $this->hasMany(ChartOfAccount::class, 'groupthree', 'groupthree');
+        return $this->hasMany(ChartOfAccount::class, 'groupthree');
     }
 
     /**

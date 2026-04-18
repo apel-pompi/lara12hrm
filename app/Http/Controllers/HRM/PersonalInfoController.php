@@ -85,7 +85,7 @@ class PersonalInfoController extends Controller
     public function updateStatus(Request $request, $PersonalInfo)
     {
         try {
-            $this->authorize('personal.updateStatus');
+            $this->authorize('personal.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

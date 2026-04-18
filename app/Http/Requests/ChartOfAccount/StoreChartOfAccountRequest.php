@@ -22,9 +22,9 @@ class StoreChartOfAccountRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'groupone' => ['required', 'integer', 'exists:group_ones,groupone'],
-            'grouptwo' => ['required', 'integer', 'exists:group_twos,grouptwo'],
-            'groupthree' => ['required', 'string', 'exists:group_threes,groupthree'],
+            'groupone' => ['required', 'integer', 'exists:group_ones,id'],
+            'grouptwo' => ['required', 'integer', 'exists:group_twos,id'],
+            'groupthree' => ['required', 'integer', 'exists:group_threes,id'],
             'accountcode' => ['required', 'string', 'max:255', 'unique:chart_of_accounts,accountcode'],
             'description' => ['required', 'string', 'max:255', 'unique:chart_of_accounts,description'],
             'accounttype' => ['required', 'string', 'max:50'],

@@ -14,7 +14,7 @@ import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Plus, SquarePen, Trash } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -23,7 +23,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/actoglsetup',
     },
 ];
-
 
 export interface ACtoGLSetup {
     type: string;
@@ -44,9 +43,8 @@ export interface ACtoGLSetup {
 
 const props = defineProps<{
     actogl: Array<ACtoGLSetup>;
-    supplier: Array<{ id: number; subcode:string; name: string }>;
+    supplier: Array<{ id: number; subcode: string; name: string }>;
     branch: Array<{ id: number; branchname: string }>;
-    accounts: Array<{ accountcode: string; description: string }>;
     draccountcode: Array<{ accountcode: string; description: string }>;
     craccountcode: Array<{ accountcode: string; description: string }>;
 }>();
@@ -63,14 +61,8 @@ const queryCrAcc = ref('');
 const filteredCrAcc = computed(() => {
     if (!queryCrAcc.value) return props.craccountcode;
 
-    return props.craccountcode.filter(acc =>
-        acc.description
-            ?.toLowerCase()
-            .includes(queryCrAcc.value.toLowerCase())
-    );
+    return props.craccountcode.filter((acc) => acc.description?.toLowerCase().includes(queryCrAcc.value.toLowerCase()));
 });
-
-
 
 const selecteDrAcc = ref<{ accountcode: string; description: string } | null>(null);
 const queryDrAcc = ref('');
@@ -78,28 +70,16 @@ const queryDrAcc = ref('');
 const filteredDrAcc = computed(() => {
     if (!queryDrAcc.value) return props.draccountcode;
 
-    return props.draccountcode.filter(acc =>
-        acc.description
-            ?.toLowerCase()
-            .includes(queryDrAcc.value.toLowerCase())
-    );
+    return props.draccountcode.filter((acc) => acc.description?.toLowerCase().includes(queryDrAcc.value.toLowerCase()));
 });
-
-
 
 const selecteTaxAcc = ref<{ accountcode: string; description: string } | null>(null);
 const queryTaxAcc = ref('');
 const filteredTaxAcc = computed(() => {
-    if (!queryTaxAcc.value) return props.accounts;
+    if (!queryTaxAcc.value) return props.craccountcode;
 
-    return props.accounts.filter(acc =>
-        acc.description
-            ?.toLowerCase()
-            .includes(queryTaxAcc.value.toLowerCase())
-    );
+    return props.craccountcode.filter((acc) => acc.description?.toLowerCase().includes(queryTaxAcc.value.toLowerCase()));
 });
-
-
 
 const showDialog = ref(false);
 const isEditMode = ref(false);
@@ -109,11 +89,11 @@ const form = useForm({
     type: '',
     code: '',
     accdisc: '',
-    cracc: null as number | null,
-    dracc: null as number | null,
+    cracc: '',
+    dracc: '',
     props: '',
     percent: null as number | null,
-    acctax: null as number | null,
+    acctax: '',
     branch_id: null as number | null,
     active: '0',
 });
@@ -127,32 +107,35 @@ const showDailogCreate = () => {
 
 const onEdit = async (id: number) => {
     try {
-        
         const { data } = await axios.get(`/actoglsetup/${id}/edit`);
-        console.log(data)
+       
         Object.assign(form, data.data);
         form.id = data.data.id;
-        selecteBranch.value = props.branch.find(
-            (b) => b.id === data.data.branch_id
-        ) ?? null;
+        selecteBranch.value = props.branch.find((b) => b.id === data.data.branch_id) ?? null;
 
-        selecteCrAcc.value = props.accounts.find(
-            (a) => a.accountcode === data.data.cracc
-        ) ?? null;
+        selecteCrAcc.value = props.craccountcode.find((a) => a.accountcode === data.data.cracc) ?? null;
 
-        selecteDrAcc.value = props.accounts.find(
-            (a) => a.accountcode === data.data.dracc
-        ) ?? null;
+        selecteDrAcc.value = props.draccountcode.find((a) => a.accountcode === data.data.dracc) ?? null;
 
-        selecteTaxAcc.value = props.accounts.find(
-            (a) => a.accountcode === data.data.acctax
-        ) ?? null;
+        selecteTaxAcc.value = props.craccountcode.find((a) => a.accountcode === data.data.acctax) ?? null;
         isEditMode.value = true;
         showDialog.value = true;
     } catch (error) {
         console.error('Fetch error:', error);
     }
 };
+
+watch(
+    () => form.type,
+    (newType) => {
+        if (newType === 'Student Advance') {
+            form.accdisc = null;
+            form.code = null;
+            form.acctax = null;
+            form.percent = null;
+        }
+    },
+);
 
 const submit = () => {
     const action = isEditMode.value && form.id ? route('actoglsetup.update', form.id) : route('actoglsetup.store');
@@ -170,18 +153,20 @@ const submit = () => {
         });
         return;
     }
-    if (!form.code) {
-        toast('Validation Error', {
-            description: 'Please select a code',
-        });
-        return;
-    }
+    if (form.type !== 'Student Advance') {
+        if (!form.accdisc) {
+            toast('Validation Error', {
+                description: 'Please select an account name',
+            });
+            return;
+        }
 
-    if (!form.accdisc) {
-        toast('Validation Error', {
-            description: 'Please select a account name',
-        });
-        return;
+        if (!form.code) {
+            toast('Validation Error', {
+                description: 'Please select a code',
+            });
+            return;
+        }
     }
 
     form.cracc = selecteCrAcc.value?.accountcode ?? null;
@@ -262,8 +247,6 @@ const onDelete = async (id: number) => {
         preserveState: false,
     });
 };
-
-
 </script>
 
 <template>
@@ -271,15 +254,13 @@ const onDelete = async (id: number) => {
         <Head title="AC to GL Setup" />
 
         <AccountsLayout :breadcrumbs="breadcrumbs">
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
                         ><Plus></Plus> Create
                     </Button>
                 </div>
-                <div class="flex flex-wrap items-center gap-4 py-4">
-                    
-                </div>
+                <div class="flex flex-wrap items-center gap-4 py-4"></div>
                 <div class="overflow-hidden rounded-xl border shadow-sm">
                     <Table class="w-full text-sm">
                         <TableHeader>
@@ -301,7 +282,7 @@ const onDelete = async (id: number) => {
                             <TableRow v-for="(chart, index) in data ?? []" :key="index" class="hover:bg-muted/50">
                                 <TableCell>{{ index + 1 }}</TableCell>
                                 <TableCell>{{ chart.branch.branchname }}</TableCell>
-                                <TableCell>{{ chart.type}}</TableCell>
+                                <TableCell>{{ chart.type }}</TableCell>
                                 <TableCell>{{ chart.code }}</TableCell>
                                 <TableCell>{{ chart.accdisc }}</TableCell>
                                 <TableCell>{{ chart.craccount?.description ?? '' }}</TableCell>
@@ -313,8 +294,8 @@ const onDelete = async (id: number) => {
                                     <Switch v-model="chart.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(chart)"> </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(chart.id)"><SquarePen></SquarePen></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(chart.id)"><Trash></Trash></Button>
+                                    <Button size="sm" variant="outline" @click="onEdit(chart.id)"><SquarePen></SquarePen></Button>
+                                    <Button size="sm" variant="outline" @click="onDelete(chart.id)"><Trash></Trash></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -325,9 +306,7 @@ const onDelete = async (id: number) => {
                     <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
                         <label for="per-page" class="text-gray-600"></label>
                     </div>
-                    <div class="space-x-2">
-                        
-                    </div>
+                    <div class="space-x-2"></div>
                 </div>
             </div>
 
@@ -391,13 +370,14 @@ const onDelete = async (id: number) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
+                                        <SelectItem value="Student Advance">Student</SelectItem>
                                         <SelectItem value="Supplier">Supplier</SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
                             <p v-if="form.errors.type" class="mt-1 text-sm text-red-600">{{ form.errors.type }}</p>
                         </div>
-                        <div>
+                        <div v-if="form.type !== 'Student Advance'">
                             <Label for="accdisc" class="text-sm font-medium">Account Name<span class="text-red-500">*</span></Label>
                             <Select v-model="form.accdisc">
                                 <SelectTrigger class="w-full">
@@ -412,7 +392,7 @@ const onDelete = async (id: number) => {
                             <p v-if="form.errors.accdisc" class="mt-1 text-sm text-red-600">{{ form.errors.accdisc }}</p>
                         </div>
                         <!-- Second Group -->
-                        <div>
+                        <div v-if="form.type !== 'Student Advance'">
                             <Label for="code" class="text-sm font-medium">Code<span class="text-red-500">*</span></Label>
                             <Select v-model="form.code">
                                 <SelectTrigger class="w-full">
@@ -499,9 +479,9 @@ const onDelete = async (id: number) => {
                             </Combobox>
                             <p v-if="form.errors.cracc" class="mt-1 text-sm text-red-600">{{ form.errors.cracc }}</p>
                         </div>
-                        
+
                         <!-- Account Code -->
-                        <div>
+                        <div v-if="form.type !== 'Student Advance'">
                             <Label for="props" class="text-sm font-medium">Addition Type</Label>
                             <Select v-model="form.props">
                                 <SelectTrigger class="w-full">
@@ -518,14 +498,14 @@ const onDelete = async (id: number) => {
                         </div>
 
                         <!-- Description -->
-                        <div>
+                        <div v-if="form.type !== 'Student Advance'">
                             <Label for="percent" class="text-sm font-medium">Percent</Label>
                             <Input type="text" id="percent" v-model="form.percent" placeholder="Enter Percent" class="mt-1 w-full" />
                             <p v-if="form.errors.percent" class="mt-1 text-sm text-red-600">{{ form.errors.percent }}</p>
                         </div>
 
                         <!-- Account Type -->
-                        <div>
+                        <div v-if="form.type !== 'Student Advance'">
                             <Label for="acctax" class="text-sm font-medium">Tax Account</Label>
                             <Combobox v-model="selecteTaxAcc">
                                 <div class="relative">

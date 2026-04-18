@@ -29,11 +29,11 @@ class TransactionController extends Controller
             ]);
         }
 
-
+        $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/default/transaction',[
-            'tranaction' => $transaction->get($request->query()),
+            'transactionFilter' => Transaction::with('user')->orderBy('id', 'desc')->get(),
+            'transaction' => $transaction->get(array_merge($request->query(), ['per_page' => $perPage])),
             'filters'   => $transaction->get($request->query()),
-            
         ]);
     }
 

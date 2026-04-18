@@ -12,7 +12,7 @@ class StudentArchive
     {
         $user = Auth::user();
         $roles = $user->getRoleNames();
-        $queryBuilder = ModelsStudent::with(['user', 'assainuser', 'source', 'country'])->where('status',4)
+        $queryBuilder = ModelsStudent::with(['user:id,name', 'assainuser:id,name', 'source:id,name', 'country:id,name'])->where('status',4)
             ->orderBy('id', 'DESC');
 
         if (! $roles->intersect(['superadmin', 'Admin', 'Manager'])->count()) {

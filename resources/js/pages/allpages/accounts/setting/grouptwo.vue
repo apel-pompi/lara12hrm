@@ -33,7 +33,7 @@ export interface Paginated<T> {
 
 export interface GroupTwo {
     groupone: { id: number; description: string };
-    grouptwo: number;
+    code: number;
     description: string;
     active: number;
     user: {
@@ -43,7 +43,7 @@ export interface GroupTwo {
 }
 
 const props = defineProps<{
-    groupone: { groupone: number; description: string };
+    groupone: { code: number; description: string };
     code: number;
     grouptwo: Paginated<GroupTwo>;
 }>();
@@ -55,8 +55,8 @@ const isEditMode = ref(false);
 
 const form = useForm({
     id: null as number | null,
-    groupone: '',
-    grouptwo: '',
+    groupone: null as number | null,
+    code: null as number | null,
     description: '',
     active: '0',
 });
@@ -64,8 +64,8 @@ const form = useForm({
 const showDailogCreate = () => {
     form.reset();
     form.id = null;
-    form.groupone = props.groupone.groupone;
-    form.grouptwo = props.code.twocode;
+    form.groupone = props.groupone.code;
+    form.code = props.code.twocode;
     isEditMode.value = false;
     showDialog.value = true;
 };
@@ -99,7 +99,7 @@ const submit = () => {
             setTimeout(() => {
                 form.reset();
                 showDialog.value = false;
-                router.visit(route('accsetting.GroupTwo', props.groupone.groupone), {
+                router.visit(route('accsetting.GroupTwo', props.groupone.code), {
                     preserveScroll: true,
                     preserveState: false,
                 });
@@ -182,7 +182,7 @@ function openGroupThree(two) {
     router.get(
         route('accsetting.GroupThree', {
             GroupOne: two.groupone,
-            GroupTwo: two.grouptwo,
+            GroupTwo: two.id,
         }),
     );
 }
@@ -193,7 +193,7 @@ function openGroupThree(two) {
         <Head title="Accounts Setting" />
 
         <AccountsLayout :breadcrumbs="breadcrumbs">
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToGroupOne"
                         ><CornerDownLeft></CornerDownLeft> Back Group One
@@ -218,7 +218,7 @@ function openGroupThree(two) {
                         <TableBody v-for="(two, index) in data.data ?? []" :key="index">
                             <TableRow>
                                 <TableCell>{{ index + 1 }}</TableCell>
-                                <TableCell>{{ two.grouptwo }}</TableCell>
+                                <TableCell>{{ two.code }}</TableCell>
                                 <TableCell>
                                     <button @click="openGroupThree(two)" class="cursor-pointer text-blue-500 underline hover:text-blue-700">
                                         {{ two.description }}
@@ -229,8 +229,8 @@ function openGroupThree(two) {
                                     <Switch v-model="two.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(two)"> </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(two.id)"><SquarePen></SquarePen></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(two.id)"><Trash></Trash></Button>
+                                    <Button size="sm" variant="outline" @click="onEdit(two.id)"><SquarePen></SquarePen></Button>
+                                    <Button size="sm" variant="outline" @click="onDelete(two.id)"><Trash></Trash></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -278,10 +278,10 @@ function openGroupThree(two) {
 
                         <!-- Code -->
                         <div>
-                            <Label for="groupone" class="text-sm font-medium">Code<span class="text-red-500">*</span></Label>
-                            <Input type="text" id="grouptwo" v-model="form.grouptwo" class="mt-1 w-full" readonly disabled />
-                            <p v-if="form.errors.grouptwo" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.grouptwo }}
+                            <Label for="code" class="text-sm font-medium">Code<span class="text-red-500">*</span></Label>
+                            <Input type="text" id="code" v-model="form.code" class="mt-1 w-full" readonly disabled />
+                            <p v-if="form.errors.code" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.code }}
                             </p>
                         </div>
 

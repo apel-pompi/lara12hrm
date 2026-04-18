@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark'=> ($appearance ?? 'system') == 'dark'])>
 <head>
     <meta charset="utf-8">
     <title>Chart of Accounts</title>
@@ -111,17 +111,17 @@
         <tbody>
             @foreach ($accounts as $groupOne)
                 <tr class="level-1">
-                    <td colspan="5">{{ $groupOne->groupone }} — {{ $groupOne->description }}</td>
+                    <td colspan="5">{{ $groupOne->code }} — {{ $groupOne->description }}</td>
                 </tr>
 
                 @foreach ($groupOne->GroupTwo as $groupTwo)
                     <tr class="level-2">
-                        <td colspan="5">{{ $groupTwo->grouptwo }} — {{ $groupTwo->description }}</td>
+                        <td colspan="5">{{ $groupTwo->code }} — {{ $groupTwo->description }}</td>
                     </tr>
 
                     @foreach ($groupTwo->GroupThree as $groupThree)
                         <tr class="level-3">
-                            <td colspan="5">{{ $groupThree->groupthree }} — {{ $groupThree->description }}</td>
+                            <td colspan="5">{{ $groupThree->code }} — {{ $groupThree->description }}</td>
                         </tr>
 
                         @foreach ($groupThree->chartOfAccounts as $chart)

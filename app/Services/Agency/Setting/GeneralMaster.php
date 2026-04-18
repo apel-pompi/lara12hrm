@@ -9,7 +9,7 @@ class GeneralMaster
 {
     public function get(array $queryParams = [])
     {
-        $queryBuilder = MasterCategory::with('user')->orderBy('id', 'DESC');
+        $queryBuilder = MasterCategory::with('user')->withCount('partner')->orderBy('id', 'DESC');
 
         $student = resolve(GeneralMasterFiltter::class)->getResults([
             'builder' => $queryBuilder,

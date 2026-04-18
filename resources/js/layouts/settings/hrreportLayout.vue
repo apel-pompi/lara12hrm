@@ -7,19 +7,19 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Personal Info',
+        title: 'Employee Master Report',
         href: '/hrreports',
     },
     {
-        title: 'Daily Attendance',
+        title: 'Daily Attendance Report',
         href: '/hrreports/DailyAttendance',
     },
     {
-        title: 'Employee Attendance',
+        title: 'Employee Attendance Summary',
         href: '/hrreports/EmployeeAttendance',
     },
     {
-        title: 'Monthly Attendance',
+        title: 'Monthly Attendance Report',
         href: '/hrreports/MonthlyAttendance',
     }
 ];

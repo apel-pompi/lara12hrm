@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudentApplication extends Model
@@ -54,7 +55,7 @@ class StudentApplication extends Model
      */
     public function partnerBranch(): BelongsTo
     {
-        return $this->belongsTo(PartnerBranch::class, 'partner_branch_id');
+        return $this->belongsTo(PartnerBranch::class, 'partner_branch_id', 'id')->withTrashed();
     }
 
 

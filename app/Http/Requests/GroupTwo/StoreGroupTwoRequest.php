@@ -22,8 +22,8 @@ class StoreGroupTwoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'groupone' => ['required', 'integer', 'exists:group_ones,groupone'],
-            'grouptwo' => ['required', 'integer', 'unique:group_twos,grouptwo'],
+            'groupone' => ['required', 'integer', 'exists:group_ones,code'],
+            'code' => ['required', 'integer', 'unique:group_twos,code'],
             'description' => ['required', 'string', 'max:255', 'unique:group_twos,description'],
             'active' => ['required', 'integer', 'in:0,1'], // or just integer
         ];

@@ -36,8 +36,8 @@ class CodesParamController extends Controller
 
             'actogl' => CodesParam::with('branch','craccount','draccount','taxaccount')->get(),
             'supplier' => Supplier::where('active', 1)->get(),
-            'draccountcode' => ChartOfAccount::where('active', 1)->where('accounttype','LIABILITIES')->where('accountusage', 'AP')->get(),
-            'craccountcode' => ChartOfAccount::where('active', 1)->where('accounttype','EXPENDITURES')->where('accountusage', 'AR')->get(),
+            'draccountcode' => ChartOfAccount::where('active', 1)->where('accounttype','LIABILITIES')->where('accountusage', ['Ledger','AP'])->get(),
+            'craccountcode' => ChartOfAccount::where('active', 1)->where('accounttype',['ASSET','EXPENDITURES'])->where('accountusage', ['Ledger','AR'])->where('analyticalcode','Cash')->get(),
             'branch' => Branch::all(),
         ]);
     }

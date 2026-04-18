@@ -64,9 +64,9 @@ class StoreStudentRequest extends FormRequest
             'lname.required'        => 'Last name is required.',
             'phone.required'        => 'Phone no is required.',
             'email.email'           => 'Provide a valid email address.',
-            'dateofbirth.required'           => 'Provide a valid date of birth address.',
-            'gender.required'           => 'Provide gender.',
-            'descountry_id.required' => 'Preferred destination country is required.',
+            'dateofbirth.required'  => 'Provide a valid date of birth address.',
+            'gender.required'       => 'Provide gender.',
+            'descountry_id.required'=> 'Preferred destination country is required.',
             'assain_user.required'  => 'Assign user is required.',
             'source_id.required'    => 'Student source is required.',
         ];

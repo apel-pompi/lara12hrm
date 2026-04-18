@@ -11,10 +11,19 @@ class Status implements ComponentInterface
 {
     public function handle(array $content, Closure $next): mixed
     {
-        if (isset($content['params']['status'])) {
+        if (array_key_exists('status', $content['params'])) {
 
-            $content['builder']->where('status', $content['params']['status']);
+            $status = $content['params']['status'];
+
+            if (is_null($status)) {
+                // Pending
+                $content['builder']->whereNull('status');
+            } else {
+                // Lead / Prospect / OnBoard / Archive
+                $content['builder']->where('status', $status);
+            }
         }
+
         return $next($content);
     }
 }

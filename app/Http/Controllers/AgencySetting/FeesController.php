@@ -132,7 +132,7 @@ class FeesController extends Controller
     public function updateStatus(Request $request, $fees)
     {
         try {
-            $this->authorize('Fees.updateStatus');
+            $this->authorize('Fees.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

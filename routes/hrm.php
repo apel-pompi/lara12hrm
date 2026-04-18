@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\HRM\{
     CompanyInfoController,
+    ZktecoController,
     BranchController,
     DepartmentController,
     DesignationController,
@@ -16,11 +17,10 @@ use App\Http\Controllers\HRM\{
     LeaveController,
     AttendanceStatusController,
     HRreportsController
-
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
+Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(function () {
     //Company Inforamation Route
     Route::controller(CompanyInfoController::class)
         ->prefix('/companyinfo')
@@ -30,7 +30,19 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::put('/{companyInfo}', 'update')->name('company.update');
             }
         );
-
+    //Zkteco Device Sync Route
+    Route::controller(ZktecoController::class)
+        ->prefix('/zkteco')
+        ->group(
+            function () {
+                Route::get('/', 'index')->name('zkteco.index');
+                Route::post('/connect', 'connect')->name('zkteco.connect');
+                Route::post('/sync', 'sync')->name('zkteco.sync');
+                Route::post('/sync-range', 'syncRange')->name('zkteco.sync-range');
+                Route::get('/status', 'checkStatus')->name('zkteco.checkStatus');
+                Route::get('/stats', 'getStats')->name('zkteco.getStats');
+            }
+        );
     //Branch Route
     Route::controller(BranchController::class)
         ->prefix('branch')
@@ -44,7 +56,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::put('/{branch}', 'update')->name('branch.update');
             }
         );
-   
+
     //Department Route
     Route::controller(DepartmentController::class)
         ->prefix('department')
@@ -86,7 +98,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::put('/{leaveplan}', 'update')->name('leaveplan.update');
             }
         );
-    
+
     //Working Hours Route
     Route::controller(WorkHourSetupController::class)
         ->prefix('workhour')
@@ -115,7 +127,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::put('/{attensetting}', 'update')->name('attensetting.update');
             }
         );
-    
+
     //Attendance Setting Route
     Route::controller(AttenDeductController::class)
         ->prefix('attendeduct')
@@ -139,7 +151,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/create', 'create')->name('attendanceStatus.create');
 
                 Route::post('/store', 'store')->name('attendanceStatus.store');
-                               
+
                 Route::get('/{attendanceStatus}/edit', 'edit')->name('attendanceStatus.edit');
                 Route::put('/{attendanceStatus}', 'update')->name('attendanceStatus.update');
                 Route::put('/{attendanceStatus}/status', 'updateStatus')->name('attendanceStatus.updateStatus');
@@ -221,7 +233,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/{leave}/{empid}/fetchUserLeave', 'fetchUserLeave')->name('leave.fetchUserLeave');
             }
         );
-    
+
     //Reports
     Route::controller(HRreportsController::class)
         ->prefix('hrreports')
@@ -238,5 +250,3 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
             }
         );
 });
-
-

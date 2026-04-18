@@ -19,7 +19,7 @@ import SelectValue from '@/components/ui/select/SelectValue.vue';
 import Switch from '@/components/ui/switch/Switch.vue';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import TableCell from '@/components/ui/table/TableCell.vue';
-import { CornerDownLeft, Plus, Trash } from 'lucide-vue-next';
+import { CornerDownLeft, Plus, RefreshCcw, Trash } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
 export interface ProductType {
@@ -32,8 +32,19 @@ export interface ProductType {
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Product Type Setup', href: '/patnersetup' }];
 
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    per_page: number;
+    to: number | null;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 const props = defineProps<{
-    productsetup: ProductType[];
+    productsetup: Paginated<ProductType>;
     mastersetup: { id: number; catname: string }[];
 }>();
 
@@ -128,48 +139,156 @@ const onDelete = async (id: number) => {
 const goToMasterCategory = () => {
     router.visit('/general');
 };
+
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
+};
+const refresh = () => {
+    router.get(route('general.productsetup'), {}, { replace: true });
+};
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('general.productsetup'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Product Type Setup" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
-                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToMasterCategory"><CornerDownLeft></CornerDownLeft>Back Master Category </Button>
-                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Product Type </Button>
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header -->
+                <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <!-- Left Buttons -->
+                    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                        <Button
+                            class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-700"
+                            variant="outline"
+                            size="sm"
+                            @click="goToMasterCategory"
+                        >
+                            <CornerDownLeft class="mr-2 h-4 w-4" />
+                            Back Master Category
+                        </Button>
+
+                        <Button
+                            class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
+                            size="sm"
+                            @click="showDailogCreate"
+                        >
+                            <Plus class="mr-2 h-4 w-4" />
+                            Product Type
+                        </Button>
+
+                         <!-- Refresh -->
+                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-700" variant="outline" size="sm" @click="refresh">
+                            <RefreshCcw class="mr-2 h-4 w-4" />
+                            Refresh
+                        </Button>
+                    </div>
                 </div>
-                <div class="rounded-md border">
+
+                <!-- Table Card -->
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Product Type</h2>
+                        <p class="text-sm text-gray-500">Manage all product type records from here.</p>
+                    </div>
                     <Table>
-                        <TableHeader>
+                        <TableHeader class="bg-gray-100 dark:bg-gray-800">
                             <TableRow>
-                                <TableHead>Product Type Name</TableHead>
-                                <TableHead>Master Category</TableHead>
-                                <TableHead>Added By</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead class="text-center">Action</TableHead>
+                                <TableHead class="mmin-w-55">Product Type Name</TableHead>
+                                <TableHead class="min-w-55">Master Category</TableHead>
+                                <TableHead class="min-w-55">Added By</TableHead>
+                                <TableHead class="min-w-55 text-center">Status</TableHead>
+                                <TableHead class="min-w-55 text-center">Action</TableHead>
                             </TableRow>
                         </TableHeader>
+
                         <TableBody>
-                            <TableRow v-for="(productsetup, index) in data" :key="productsetup.id ?? index">
-                                <TableCell>{{ productsetup.producttypename }}</TableCell>
-                                <TableCell>{{ productsetup.mastercategory.catname }}</TableCell>
-                                <TableCell>{{ productsetup.user.name }}</TableCell>
+                            <TableRow
+                                v-for="(productsetup, index) in data"
+                                :key="productsetup.id ?? index"
+                                class="transition hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                                <TableCell class="font-medium">
+                                    {{ productsetup.producttypename }}
+                                </TableCell>
+
                                 <TableCell>
-                                    <Switch v-model="productsetup.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(productsetup)">
-                                    </Switch>
+                                    <span
+                                        class="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+                                    >
+                                        {{ productsetup.mastercategory.catname }}
+                                    </span>
                                 </TableCell>
-                                <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(productsetup.id)"><Trash></Trash></Button>
+
+                                <TableCell>
+                                    {{ productsetup.user.name }}
                                 </TableCell>
+
+                                <TableCell class="text-center">
+                                    <Switch
+                                        v-model="productsetup.active"
+                                        :checked-value="1"
+                                        :unchecked-value="0"
+                                        @click="toggleStatus(productsetup)"
+                                    />
+                                </TableCell>
+
+                                <TableCell class="text-center">
+                                    <Button
+                                        class="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                        size="sm"
+                                        variant="outline"
+                                        @click="onDelete(productsetup.id)"
+                                    >
+                                        <Trash class="h-4 w-4" />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+
+                            <!-- Empty State -->
+                            <TableRow v-if="data.length === 0">
+                                <TableCell colspan="5" class="py-10 text-center text-gray-500"> No Product Type Found </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </div>
+                <!-- Pagination -->
+                <div class="mt-5 flex flex-col items-center justify-between gap-4 md:flex-row">
+                    <!-- Left -->
+                    <div class="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                        <label>Show:</label>
 
-                <div class="flex items-center justify-end space-x-2 py-4">
-                    <div class="text-muted-foreground flex-1 text-sm"></div>
-                    <div class="space-x-2"></div>
+                        <select v-model="perPage" @change="changePerPage" class="rounded-md border px-2 py-1 text-sm">
+                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
+                                {{ size }}
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <!-- Right -->
+                    <div class="flex flex-wrap gap-2">
+                        <Button
+                            v-for="(link, index) in data.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            size="sm"
+                            :class="[
+                                link.active ? 'bg-indigo-600 text-white hover:bg-indigo-700' : '',
+                                !link.url ? 'cursor-not-allowed opacity-50' : '',
+                            ]"
+                            @click="goToPage(link.url)"
+                        >
+                            <span v-html="link.label"></span>
+                        </Button>
+                    </div>
                 </div>
             </div>
             <!-- Dialog -->

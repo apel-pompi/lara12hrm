@@ -61,7 +61,10 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
             function () {
                 Route::get('/{id}', 'index')->name('documentlist.index');
                 Route::post('/store', 'store')->name('documentlist.store');
-                Route::get('/{id}/adddoctype', 'adddoctype')->name('documenttype.adddoctype');
+                Route::get('/{id}/adddoctype', 'adddoctype')->name('documentlist.adddoctype');
+                Route::get('/{id}/adddoctypeEdit', 'adddoctypeEdit')->name('documentlist.adddoctypeEdit');
+                Route::put('/{id}/adddoctypeEdit', 'update')->name('documentlist.update');
+                Route::delete('/{id}/adddoctypeDelete', 'destroy')->name('documentlist.destroy');
             }
         );
     //Workflows document type

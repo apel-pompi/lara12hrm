@@ -1,26 +1,22 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { Plus, RefreshCcw, Search } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import { RefreshCcw, Search } from 'lucide-vue-next';
+import { nextTick, onMounted, ref, watch } from 'vue';
 
 export interface Student {
     id: number;
-    photo: string;
     student_id: string;
     fname: string;
     lname: string;
     gender: number;
-    email: string;
     phone: string;
-    descountry_id: number;
-    stage_id: number;
     assain_user: number;
     source_id: number;
     user_id: number;
@@ -41,11 +37,9 @@ export interface Paginated<T> {
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Student', href: '/student' }];
 
 const props = defineProps<{
-    allsearch: [];
-    allcountry: [];
-    assaignUser: [];
     student: Paginated<Student>;
     filters: { name?: string };
+    studentID: { id: number; student_id: string }[];
     countAll: { countAll: number };
     countLead: { countLead: number };
     countPending: { countPending: number };
@@ -68,30 +62,6 @@ const colors = [
     'bg-yellow-700',
 ];
 
-const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-    });
-};
-
-const getTimeText = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return {
-        text: date.toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }),
-        color: 'blue',
-    };
-};
-
 function getAvatarColor(name: string) {
     if (!name) return colors[0];
     const index = name.charCodeAt(0) % colors.length;
@@ -113,575 +83,490 @@ const getStatusText = (status: number) => {
     }
 };
 
-const goToStudentCreate = () => {
-    router.visit('/student/create');
+const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+    });
 };
 
-// Combobox states
-const selectedName = ref(null);
-const queryName = ref('');
+// Selected values
+const selectedID = ref<Student | null>(null);
+const selectedStudent = ref<Student | null>(null);
+const selectedPhone = ref<Student | null>(null);
+const selectedAssain = ref<Student['assain_user'] | null>(null);
+const selectedDate = ref<string | null>(null);
 
-const selectedPhone = ref(null);
-const queryPhone = ref('');
+// Query & results
+const idResults = ref<Student[]>([]);
+const nameResults = ref<Student[]>([]);
+const phoneResults = ref<Student[]>([]);
+const assainResults = ref<Student['assain_user'][]>([]);
+const dateResults = ref<string[]>([]);
 
-const selectedAssain = ref(null);
-const queryAssain = ref('');
+let timer: ReturnType<typeof setTimeout> | null = null;
 
-const selectedTime = ref(null);
-const queryTime = ref('');
+// Fetch students from server
+const fetchStudents = async (type: 'student_id' | 'name' | 'phone' | 'assain' | 'date', query: string = '') => {
+    try {
+        const res = await axios.get<Student[]>('/student/SearchProspect', {
+            params: { type, q: query },
+        });
+        switch (type) {
+            case 'student_id':
+                idResults.value = res.data;
+                break;
+            case 'name':
+                nameResults.value = res.data;
+                break;
+            case 'phone':
+                phoneResults.value = res.data;
+                break;
+            case 'assain':
+                // unique assain users
+                const map = new Map<number, Student['assain_user']>();
+                res.data.forEach((s) => {
+                    if (s.assainuser && !map.has(s.assainuser.id)) {
+                        map.set(s.assainuser.id, s.assainuser);
+                    }
+                });
+                assainResults.value = Array.from(map.values());
+                break;
 
-const selectedSource = ref(null);
-const querySource = ref('');
+            case 'date':
+                const dateMap = new Map<string, string>();
+                res.data.forEach((s) => {
+                    if (!s.date) return;
 
-// Filtered lists
-const filteredName = computed(() => {
-    if (queryName.value === '') return data.data;
-
-    return data.data.filter((n) => `${n.fname} ${n.lname}`.toLowerCase().includes(queryName.value.toLowerCase()));
-});
-
-const filteredPhone = computed(() => {
-    if (queryPhone.value === '') return data.data;
-
-    return data.data.filter((n) => n.phone && n.phone.toLowerCase().includes(queryPhone.value.toLowerCase()));
-});
-
-const selectedCountry = ref<string | null>(null);
-const queryDesCoun = ref('');
-
-const filteredCountries = computed(() => {
-    const countries = data.data.map((i) => i.country).filter(Boolean);
-
-    const uniqueCountries = countries.filter((c, index, self) => index === self.findIndex((t) => t.id === c.id));
-
-    if (!queryDesCoun.value) return uniqueCountries;
-
-    return uniqueCountries.filter(
-        (c) =>
-            c.name.toLowerCase().includes(queryDesCoun.value.toLowerCase()) ||
-            c.id.toLowerCase().includes(queryDesCoun.value.toLowerCase()),
-    );
-});
-
-const filteredAssain = computed(() => {
-    const filtered =
-        queryAssain.value === ''
-            ? data.data
-            : data.data.filter((n) => n.assainuser && n.assainuser.name.toLowerCase().includes(queryAssain.value.toLowerCase()));
-
-    // unique user name
-    const uniqueMap = new Map();
-    filtered.forEach((item) => {
-        if (item.assainuser && !uniqueMap.has(item.assainuser.id)) {
-            uniqueMap.set(item.assainuser.id, item.assainuser);
+                    if (!dateMap.has(s.date)) {
+                        dateMap.set(s.date, s.date);
+                    }
+                });
+                dateResults.value = Array.from(dateMap.keys()).sort((a, b) => b.localeCompare(a));
+                break;
         }
-    });
+    } catch (e) {
+        console.error(e);
+    }
+};
 
-    return Array.from(uniqueMap.values());
-});
+// Debounced search
+const searchStudents = (type: 'student_id' | 'name' | 'phone' | 'assain' | 'date', query: string) => {
+    if (timer) clearTimeout(timer);
 
-const filteredTime = computed(() => {
-    const filtered =
-        queryTime.value === ''
-            ? data.data
-            : data.data.filter((item) => getTimeText(item.created_at).text.toLowerCase().includes(queryTime.value.toLowerCase()));
+    timer = setTimeout(() => {
+        fetchStudents(type, query);
+    }, 300);
+};
 
-    // Remove duplicates by text
-    const uniqueMap = new Map<string, { text: string; color: string }>();
-    filtered.forEach((item) => {
-        const statusObj = getTimeText(item.created_at);
-        if (!uniqueMap.has(statusObj.text)) {
-            uniqueMap.set(statusObj.text, statusObj);
-        }
-    });
-
-    return Array.from(uniqueMap.values());
-});
-
-const filteredSource = computed(() => {
-    const filtered =
-        querySource.value === ''
-            ? data.data
-            : data.data.filter((n) => n.source && n.source.name.toLowerCase().includes(querySource.value.toLowerCase()));
-
-    // unique user name
-    const uniqueMap = new Map();
-    filtered.forEach((item) => {
-        if (item.source && !uniqueMap.has(item.source.id)) {
-            uniqueMap.set(item.source.id, item.source);
-        }
-    });
-
-    return Array.from(uniqueMap.values());
-});
-
-const selectedStudentID = ref(null);
-const queryStudentID = ref('');
-
-const filteredStudentID = computed(() => {
-    if (queryStudentID.value === '') return data.data;
-
-    return data.data.filter((n) => n.student_id && n.student_id.toLowerCase().includes(queryStudentID.value.toLowerCase()));
-});
+// Show all data on focus / button click
+const showAllStudents = (type: 'student_id' | 'name' | 'phone' | 'assain' | 'date') => {
+    fetchStudents(type, '');
+};
 
 const search = () => {
     const params: Record<string, any> = {};
-
-    if (selectedName.value) params.name = selectedName.value.id;
+    if (selectedID.value) params.student_id = selectedID.value.student_id;
+    if (selectedStudent.value) params.name = selectedStudent.value.id;
     if (selectedPhone.value) params.phone = selectedPhone.value.phone;
-    if (selectedCountry.value) params.country = selectedCountry.value.id;
-    if (selectedSource.value) params.source_id = selectedSource.value.id;
     if (selectedAssain.value) params.user = selectedAssain.value.id;
-    if (selectedTime.value) params.created_at = selectedTime.value;
-    if (selectedStudentID.value) params.student_id = selectedStudentID.value.student_id;
+    if (selectedDate.value) params.created_at = selectedDate.value;
 
     router.get(route('student.prospect'), params, {
         preserveState: false,
         preserveScroll: true,
     });
 };
+
 const refresh = () => {
     router.get(route('student.prospect'), {}, { replace: true });
 };
 
 const perPage = ref(10);
 
-const changePerPage = () => {
-    router.get(route('student.prospect'), { per_page: perPage.value }, { preserveState: false, replace: true });
-};
+watch(perPage, (value) => {
+    router.get(
+        route('student.prospect'),
+        { per_page: value },
+        {
+            preserveState: false,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+});
+
 const goToPage = (url: string | null) => {
     if (url) {
         router.get(url, {}, { preserveState: false, replace: true });
     }
 };
 
-const goToAll = () => {
-    router.get(route('student.index'), {}, { replace: true });
+const page = usePage();
+const active = ref('all');
+const tabRefs = ref([]);
+const tabs = [
+    { key: 'all', label: 'All', count: props.countAll },
+    { key: 'pending', label: 'Pending', count: props.countPending },
+    { key: 'lead', label: 'Lead', count: props.countLead },
+    { key: 'prospect', label: 'Prospect', count: props.countProspect },
+    { key: 'onboard', label: 'OnBoard', count: props.countonBoard },
+    { key: 'archive', label: 'Archive', count: props.countArchive },
+];
+
+const routes = {
+    all: 'student.index',
+    pending: 'student.pending',
+    lead: 'student.lead',
+    prospect: 'student.prospect',
+    onboard: 'student.onBoard',
+    archive: 'student.archive',
 };
 
-const goToLead = () => {
-    router.get(route('student.lead'), {}, { replace: true });
-};
-const goToPending = () => {
-    router.get(route('student.pending'), {}, { replace: true });
-};
-const goToProspect = () => {
-    router.get(route('student.prospect'), {}, { replace: true });
+const indicatorStyle = ref({});
+
+const updateIndicator = () => {
+    const index = tabs.findIndex((t) => t.key === active.value);
+    const el = tabRefs.value[index];
+
+    if (!el) return;
+
+    indicatorStyle.value = {
+        width: el.offsetWidth + 'px',
+        transform: `translateX(${el.offsetLeft}px)`,
+    };
 };
 
-const goToOnBoard = () => {
-    router.get(route('student.onBoard'), {}, { replace: true });
+const setActive = async (tab) => {
+    active.value = tab;
+    await nextTick();
+    updateIndicator();
+
+    router.get(route(routes[tab]), {}, { replace: true });
 };
 
-const goToArchive = () => {
-    router.get(route('student.archive'), {}, { replace: true });
+const setActiveFromUrl = () => {
+    const url = page.url;
+
+    if (url.includes('pending')) active.value = 'pending';
+    else if (url.includes('lead')) active.value = 'lead';
+    else if (url.includes('prospect')) active.value = 'prospect';
+    else if (url.includes('onBoard')) active.value = 'onboard';
+    else if (url.includes('archive')) active.value = 'archive';
+    else active.value = 'all';
+};
+
+onMounted(async () => {
+    setActiveFromUrl();
+    await nextTick();
+    updateIndicator();
+
+    window.addEventListener('resize', updateIndicator);
+});
+
+watch(active, async () => {
+    await nextTick();
+    updateIndicator();
+});
+
+const statusClass = (status) => {
+    const map = {
+        1: 'px-2 py-1 text-xs rounded-full bg-green-100 text-green-600',
+        2: 'px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-600',
+        3: 'px-2 py-1 text-xs rounded-full bg-red-100 text-red-600',
+    };
+
+    return map[status] ?? 'px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600';
 };
 </script>
 
 <template>
     <Head title="Student" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-            <div class="flex items-center gap-2 py-4">
-                <Button variant="outline" size="sm" @click="goToStudentCreate"><Plus></Plus> Student Create </Button>
-            </div>
-            <div class="flex items-center gap-2 py-4">
-                <!-- Search start -->
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedStudentID">
-                        <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select ID..."
-                                :display-value="(invoice) => invoice?.student_id ?? ''"
-                                @input="queryStudentID = $event.target.value"
-                            />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                            </ComboboxButton>
+        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
+            <div class="flex justify-center p-4">
+                <div class="no-scrollbar relative flex overflow-x-auto rounded-full bg-gray-100/80 p-1 dark:bg-gray-800/80">
+                    <!-- Sliding Indicator -->
+                    <div
+                        class="absolute top-1 bottom-1 rounded-full bg-white shadow transition-all duration-300 ease-out dark:bg-gray-900"
+                        :style="indicatorStyle"
+                    ></div>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div
-                                    v-if="filteredStudentID.length === 0 && queryStudentID !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredStudentID"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.student_id }}</span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedName">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select name..."
-                                    :display-value="(n) => (n ? `${n.fname} ${n.lname}` : '')"
-                                    @input="queryName = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
-
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div v-if="filteredName.length === 0 && queryName !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredName"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.fname }} {{ n.lname }} </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedPhone">
-                        <div class="relative w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Phone"
-                                @input="queryPhone = $event.target.value"
-                                :display-value="(c) => c?.phone ?? ''"
-                            />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                            </ComboboxButton>
-
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div v-if="filteredPhone.length === 0 && queryPhone !== ''" class="px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="country in filteredPhone"
-                                    :key="country.id"
-                                    :value="country"
-                                    class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                >
-                                    {{ country.phone }}
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedCountry">
-                        <div class="relative w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Country"
-                                @input="queryDesCoun = $event.target.value"
-                                :display-value="(c) => c?.name ?? ''"
-                            />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                            </ComboboxButton>
-
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div v-if="filteredCountries.length === 0 && queryDesCoun !== ''" class="px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="country in filteredCountries"
-                                    :key="country.descountry_id"
-                                    :value="country"
-                                    class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                >
-                                    {{ country.name }}
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedSource">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select source"
-                                    :display-value="(n) => n?.name"
-                                    @input="querySource = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
-
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div
-                                    v-if="filteredSource.length === 0 && querySource !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredSource"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ n.name }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedAssain">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select assain user"
-                                    :display-value="(n) => n?.name"
-                                    @input="queryAssain = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
-
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div
-                                    v-if="filteredAssain.length === 0 && queryAssain !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredAssain"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ n.name }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedTime">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select entry date"
-                                    :display-value="(n) => n?.text ?? ''"
-                                    @input="queryTime = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
-
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div v-if="filteredTime.length === 0 && queryTime !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredTime"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected, active }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ n.text }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                        :class="active ? 'text-white' : 'text-indigo-600'"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-
-                <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                </div>
-                <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+                    <!-- Tabs -->
+                    <button
+                        v-for="(tab, index) in tabs"
+                        :key="tab.key"
+                        @click="setActive(tab.key)"
+                        :ref="(el) => (tabRefs[index] = el)"
+                        class="relative z-10 cursor-pointer px-5 py-1.5 text-sm font-medium whitespace-nowrap transition-all duration-200"
+                        :class="active === tab.key ? 'text-indigo-600' : 'text-gray-600 hover:text-indigo-500 dark:text-gray-300'"
+                    >
+                        {{ tab.label }}
+                        <span class="ml-1 text-xs opacity-70">({{ tab.count }})</span>
+                    </button>
                 </div>
             </div>
-            <div class="flex items-center gap-2 py-4">
-                <Button class="cursor-pointer bg-green-600 text-white" size="sm" @click="goToAll">({{ props.countAll }})All</Button>
-                <Button class="cursor-pointer bg-red-800 text-white" size="sm" @click="goToPending">({{ props.countPending }})Pending</Button>
-                <Button class="cursor-pointer bg-green-500 text-white" size="sm" @click="goToLead">({{ props.countLead }})Lead</Button>
-                <Button class="cursor-pointer bg-yellow-500 text-white" size="sm" @click="goToProspect">({{ props.countProspect }})Prospect</Button>
-                <Button class="cursor-pointer bg-blue-500 text-white" size="sm" @click="goToOnBoard">({{ props.countonBoard }})OnBoard</Button>
-                <Button class="cursor-pointer bg-gray-500 text-white" size="sm" @click="goToArchive">({{ props.countArchive }})Archive</Button>
+            <div class="mb-4 dark:border-gray-700 dark:bg-gray-900/60">
+                <div class="mb-4 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
+                    <!-- Student ID -->
+                    <Combobox v-model="selectedID" class="w-full">
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="input"
+                                placeholder="Search ID..."
+                                :display-value="(s: Student | null) => (s ? `${s.student_id}` : '')"
+                                @input="($e) => searchStudents('student_id', $e.target.value)"
+                                @focus="() => showAllStudents('student_id')"
+                            />
+                            <ComboboxButton class="icon-btn" @click="() => showAllStudents('student_id')">
+                                <ChevronUpDownIcon class="icon" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions class="dropdown">
+                                <div v-if="idResults.length === 0" class="empty">Searching...</div>
+                                <ComboboxOption v-for="s in idResults" :key="s.id" :value="s" class="option">
+                                    {{ s.student_id }}
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                    <!--  Name -->
+                    <Combobox v-model="selectedStudent" as="div" class="w-full">
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="input"
+                                placeholder="Search name..."
+                                :display-value="(s) => (s ? `${s.fname} ${s.lname}` : '')"
+                                @input="($e) => searchStudents('name', $e.target.value)"
+                                @focus="() => showAllStudents('name')"
+                            />
+                            <ComboboxButton class="icon-btn" @click="() => showAllStudents('name')">
+                                <ChevronUpDownIcon class="icon" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions class="dropdown">
+                                <div v-if="nameResults.length === 0" class="empty">Searching...</div>
+                                <ComboboxOption v-for="s in nameResults" :key="s.id" :value="s" class="option">
+                                    {{ s.fname }} {{ s.lname }}
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                    <!--  Phone -->
+                    <Combobox v-model="selectedPhone" class="w-full">
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="input"
+                                placeholder="Search phone..."
+                                :display-value="(s) => s?.phone ?? ''"
+                                @input="($e) => searchStudents('phone', $e.target.value)"
+                                @focus="() => showAllStudents('phone')"
+                            />
+                            <ComboboxButton class="icon-btn" @click="() => showAllStudents('phone')">
+                                <ChevronUpDownIcon class="icon" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions class="dropdown">
+                                <div v-if="phoneResults.length === 0" class="empty">Searching...</div>
+                                <ComboboxOption v-for="s in phoneResults" :key="s.id" :value="s" class="option">
+                                    {{ s.phone }}
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+
+                    <!-- Assign -->
+                    <Combobox v-model="selectedAssain" class="w-full">
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="input"
+                                placeholder="Assign user..."
+                                :display-value="(s) => s?.name ?? ''"
+                                @input="($e) => searchStudents('assain', $e.target.value)"
+                                @focus="() => showAllStudents('assain')"
+                            />
+                            <ComboboxButton class="icon-btn" @click="() => showAllStudents('assain')">
+                                <ChevronUpDownIcon class="icon" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions class="dropdown">
+                                <div v-if="assainResults.length === 0" class="empty">Searching...</div>
+                                <ComboboxOption v-for="s in assainResults" :key="s.id" :value="s" class="option">
+                                    {{ s.name }}
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+
+                    <!-- Date -->
+                    <Combobox v-model="selectedDate" class="w-full">
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="input"
+                                placeholder="Entry date..."
+                                :display-value="(d) => d ?? ''"
+                                @input="($e) => searchStudents('date', $e.target.value)"
+                                @focus="() => showAllStudents('date')"
+                            />
+                            <ComboboxButton class="icon-btn" @click="() => showAllStudents('date')">
+                                <ChevronUpDownIcon class="icon" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions class="dropdown">
+                                <div v-if="dateResults.length === 0" class="empty">Searching...</div>
+                                <ComboboxOption v-for="d in dateResults" :key="d" :value="d" class="option">
+                                    {{ d }}
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                    <div class="flex flex-col items-stretch justify-end gap-2 sm:flex-row">
+                        <Button class="btn-primary w-full cursor-pointer sm:w-auto" @click="search"><Search class="mr-1 h-4 w-4" /> Search </Button>
+                        <Button class="w-full cursor-pointer sm:w-auto" @click="refresh"><RefreshCcw class="mr-1 h-4 w-4" /> Refresh </Button>
+                    </div>
+                </div>
             </div>
-            <div class="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Phone</TableHead>
-                            <TableHead>Gender</TableHead>
-                            <TableHead>Destination Country</TableHead>
-                            <TableHead>Source</TableHead>
-                            <TableHead>Assignee</TableHead>
-                            <TableHead>Entry Time</TableHead>
-                            <TableHead>Status</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(stud, index) in data.data" :key="stud.id ?? index">
-                            <TableCell>
-                                <Link :href="route('studentActivities.index', stud.id)" method="get" class="flex items-center space-x-2">
-                                    <template v-if="stud.photo">
-                                        <img
-                                            :src="`/storage/student/${stud.photo}`"
-                                            alt="Profile"
-                                            class="h-10 w-10 rounded-full object-cover shadow-md"
-                                        />
-                                    </template>
-                                    <template v-else>
-                                        <span
-                                            :class="[
-                                                'flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold text-white shadow-md',
-                                                getAvatarColor(stud.fname),
-                                            ]"
-                                        >
-                                            {{ (stud.fname?.charAt(0) ?? '').toUpperCase() }}{{ (stud.lname?.charAt(0) ?? '').toUpperCase() }}
-                                        </span>
-                                    </template>
-                                    <span class="font-medium text-gray-900">{{ stud.student_id }}</span>
-                                </Link>
-                            </TableCell>
-                            <TableCell>
-                                <Link :href="route('studentActivities.index', stud.id)" method="get" class="flex items-center space-x-2">
-                                    <span class="font-medium text-gray-900">{{ stud.fname }} {{ stud.lname }} </span>
-                                </Link>
-                            </TableCell>
-                            <TableCell>{{ stud.phone }}</TableCell>
-                            <TableCell>
-                                <span v-if="stud.gender == 1">Male</span>
-                                <span v-if="stud.gender == 2">Female</span>
-                                <span v-if="stud.gender == 3">Other's</span>
-                            </TableCell>
-                            <TableCell>{{ stud.country.name }}</TableCell>
-                            <TableCell>{{ stud.source.name }}</TableCell>
-                            <TableCell>{{ stud.assainuser.name }}</TableCell>
-                            <TableCell>{{ formatDate(stud.created_at) }}</TableCell>
-                            <TableCell>
-                                <div class="flex items-center space-x-2">
-                                    <Badge size="sm" :class="getStatusText(stud.status).color">
+
+            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+                <!-- TABLE WRAPPER -->
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-225 text-sm">
+                        <!-- HEADER -->
+                        <thead class="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                            <tr>
+                                <th class="th">Student Name</th>
+                                <th class="th">Phone</th>
+                                <th class="th">Gender</th>
+                                <th class="th">Source</th>
+                                <th class="th">Assignee User</th>
+                                <th class="th">Entry Date Time</th>
+                                <th class="th">Status</th>
+                            </tr>
+                        </thead>
+                        <!-- BODY -->
+                        <tbody>
+                            <tr
+                                v-for="(stud, index) in data.data"
+                                :key="stud.id ?? index"
+                                class="border-t transition hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                                <!-- Student -->
+                                <td class="td">
+                                    <Link :href="route('studentActivities.index', stud.id)" class="flex items-center gap-3">
+                                        <!-- Avatar -->
+                                        <div class="relative">
+                                            <img
+                                                v-if="stud.photo"
+                                                :src="`/storage/student/${stud.photo}`"
+                                                class="h-10 w-10 rounded-full object-cover"
+                                            />
+                                            <div
+                                                v-else
+                                                :class="[
+                                                    'flex h-10 w-10 items-center justify-center rounded-full font-semibold text-white',
+                                                    getAvatarColor(stud.fname),
+                                                ]"
+                                            >
+                                                {{ stud.fname?.charAt(0) }}{{ stud.lname?.charAt(0) }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Name -->
+                                        <div>
+                                            <div class="font-medium text-gray-900 dark:text-white">{{ stud.fname }} {{ stud.lname }}</div>
+                                            <div class="text-xs text-gray-500">ID: {{ stud.student_id }}</div>
+                                        </div>
+                                    </Link>
+                                </td>
+                                <!-- Phone -->
+                                <td class="td">{{ stud.phone }}</td>
+                                <!-- Gender -->
+                                <td class="td">
+                                    <span class="badge-gray">
+                                        {{ stud.gender == 1 ? 'Male' : stud.gender == 2 ? 'Female' : 'Other' }}
+                                    </span>
+                                </td>
+                                <!-- Source -->
+                                <td class="td">{{ stud.source?.name }}</td>
+                                <!-- Assignee -->
+                                <td class="td">{{ stud.assainuser?.name }}</td>
+
+                                <!-- Date -->
+                                <td class="td text-gray-500">
+                                    {{ formatDate(stud.created_at) }}
+                                </td>
+                                <!-- Status -->
+                                <td class="td">
+                                    <span :class="statusClass(stud.status)">
                                         {{ getStatusText(stud.status).text }}
-                                    </Badge>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
-                    <label for="per-page" class="text-gray-600">Show:</label>
-                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
-                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
-                    </select>
-                    <span>Showing {{ student.from }} to {{ student.to }} of {{ student.total }} results</span>
+            <div class="mt-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <!-- LEFT SIDE -->
+                <div class="flex flex-col gap-2 text-sm text-gray-600 sm:flex-row sm:items-center dark:text-gray-300">
+                    <!-- Per Page -->
+                    <div class="flex items-center gap-2">
+                        <span>Show</span>
+
+                        <Select v-model="perPage">
+                            <SelectTrigger class="h-8 w-20 text-sm">
+                                <SelectValue placeholder="10" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="size in [5, 10, 25, 50, 100, 200, 500]" :key="size" :value="size">
+                                    {{ size }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        <span>entries</span>
+                    </div>
+
+                    <!-- Info -->
+                    <div>
+                        Showing
+                        <span class="font-medium text-gray-900 dark:text-white">
+                            {{ student.from }}
+                        </span>
+                        to
+                        <span class="font-medium text-gray-900 dark:text-white">
+                            {{ student.to }}
+                        </span>
+                        of
+                        <span class="font-medium text-gray-900 dark:text-white">
+                            {{ student.total }}
+                        </span>
+                        results
+                    </div>
                 </div>
 
-                <div class="space-x-2">
-                    <Button
+                <!-- RIGHT SIDE PAGINATION -->
+                <div class="flex flex-wrap justify-center gap-2 md:justify-end">
+                    <button
                         v-for="(link, index) in student.links"
                         :key="index"
-                        :disabled="!link.url"
-                        variant="outline"
-                        size="sm"
-                        :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
                         @click="goToPage(link.url)"
-                    >
-                        <span v-html="link.label"></span>
-                    </Button>
+                        :disabled="!link.url"
+                        v-html="link.label"
+                        :class="[
+                            'rounded-md border px-3 py-1.5 text-sm transition',
+                            link.active
+                                ? 'border-indigo-600 bg-indigo-600 text-white shadow'
+                                : 'bg-white text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                            !link.url ? 'cursor-not-allowed opacity-50' : '',
+                        ]"
+                    ></button>
                 </div>
             </div>
         </div>

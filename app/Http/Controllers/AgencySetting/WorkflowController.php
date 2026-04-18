@@ -149,7 +149,7 @@ class WorkflowController extends Controller
     public function updateStatus(Request $request, $workflow)
     {
         try {
-            $this->authorize('workflow.updateStatus');
+            $this->authorize('workflow.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

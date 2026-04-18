@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark'=> ($appearance ?? 'system') == 'dark'])>
 <head>
     <meta charset="utf-8">
     <title>Trial Balance (Consolidated)</title>
@@ -144,7 +144,7 @@
 <table class="meta-table">
     <tr>
         <td width="25%">
-            <span class="meta-label">Branch:</span> {{ $branch->branchname }}
+            <span class="meta-label">Branch:</span> {{ $branch->branchname?? 'All Branch' }}
         </td>
         <td width="25%">
             <span class="meta-label">Currency:</span> BDT

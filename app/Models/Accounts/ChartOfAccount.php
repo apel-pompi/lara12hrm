@@ -34,7 +34,7 @@ class ChartOfAccount extends Model
      */
     public function GroupOne(): BelongsTo
     {
-        return $this->belongsTo(GroupOne::class, 'groupone', 'groupone');
+        return $this->belongsTo(GroupOne::class, 'groupone');
     }
 
     /**
@@ -44,7 +44,7 @@ class ChartOfAccount extends Model
      */
     public function GroupTwo(): BelongsTo
     {
-        return $this->belongsTo(GroupTwo::class, 'grouptwo', 'grouptwo');
+        return $this->belongsTo(GroupTwo::class, 'grouptwo');
     }
 
     /**
@@ -54,7 +54,7 @@ class ChartOfAccount extends Model
      */
     public function GroupThree(): BelongsTo
     {
-        return $this->belongsTo(GroupThree::class, 'groupthree', 'groupthree');
+        return $this->belongsTo(GroupThree::class, 'groupthree');
     }
 
     /**

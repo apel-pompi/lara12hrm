@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { Eye, Link, ShieldCheck, X } from 'lucide-vue-next';
+import { Eye, Link, RefreshCcw, ShieldCheck, X } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 const breadcrumbs: BreadcrumbItem[] = [
@@ -43,11 +43,7 @@ const props = defineProps<{
 
 const data = props.quotation;
 
-const goToPage = (url: string | null) => {
-    if (url) {
-        router.get(url, {}, { preserveState: false, replace: true });
-    }
-};
+
 
 const form = useForm({
     quoat_id: '',
@@ -153,13 +149,33 @@ const onView = async (id: number) => {
 const onReport = (id : number) => {
     router.visit(route('studentQuotations.index', { student: id }));
 }
+
+const refresh = () => {
+    router.get(route('dashboard.QuotationRequest'), {}, { replace: true });
+};
+
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('dashboard.QuotationRequest'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
+};
 </script>
 
 <template>
     <Head title="Quotation Request" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
+            <div class="flex flex-wrap items-center gap-4 py-4">
+                <div class="grid gap-2">
+                    <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+                </div>
+            </div>
             <div class="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -185,7 +201,7 @@ const onReport = (id : number) => {
                                 <div v-if="isadmin">
                                     <div v-if="quoat.active == 0">
                                         <div class="group relative inline-block">
-                                            <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onView(quoat.description)">
+                                            <Button class="cursor-pointer" size="sm" variant="outline" @click="onView(quoat.description)">
                                                 <Eye class="text-purple-500"
                                             /></Button>
                                             <span
@@ -195,7 +211,7 @@ const onReport = (id : number) => {
                                             </span>
                                         </div>
                                         <div class="group relative inline-block">
-                                            <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onConfirm(quoat.quotation_no)">
+                                            <Button class="cursor-pointer" size="sm" variant="outline" @click="onConfirm(quoat.quotation_no)">
                                                 <ShieldCheck class="text-green-500"
                                             /></Button>
                                             <span
@@ -205,7 +221,7 @@ const onReport = (id : number) => {
                                             </span>
                                         </div>
                                         <div class="group relative inline-block">
-                                            <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onDelete(quoat.quotation_no)"
+                                            <Button class="cursor-pointer" size="sm" variant="outline" @click="onDelete(quoat.quotation_no)"
                                                 ><X class="text-red-500"
                                             /></Button>
                                             <span
@@ -246,8 +262,14 @@ const onReport = (id : number) => {
                     </TableBody>
                 </Table>
             </div>
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="text-muted-foreground flex-1 text-sm">Showing {{ data.from }} to {{ data.to }} of {{ data.total }} results</div>
+            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
+                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
+                    <label for="per-page" class="text-gray-600">Show:</label>
+                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
+                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                    </select>
+                    <span>Showing {{ quotation.from }} to {{ quotation.to }} of {{ quotation.total }} results</span>
+                </div>
                 <div class="space-x-2">
                     <Button
                         v-for="(link, index) in data.links"
@@ -262,13 +284,14 @@ const onReport = (id : number) => {
                     </Button>
                 </div>
             </div>
+            
         </div>
         <Dialog v-model:open="ViewDailog">
             <DialogContent
                 class="flex max-h-[90vh] w-[95vw] max-w-full flex-col rounded-2xl bg-white shadow-xl sm:max-w-lg md:max-w-2xl lg:max-w-4xl dark:bg-gray-900"
             >
                 <!-- Header -->
-                <DialogHeader class="flex-shrink-0 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                <DialogHeader class="shrink-0 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                     <DialogTitle class="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-100">Student Quoatations View </DialogTitle>
                     <DialogDescription class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         Fill in the details below to view quoatations.
@@ -375,7 +398,7 @@ const onReport = (id : number) => {
                         <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                             <!-- Fees Table -->
                             <div class="overflow-x-auto">
-                                <table class="w-full min-w-[500px] table-auto border-collapse border border-gray-200 text-sm dark:border-gray-700">
+                                <table class="w-full min-w-125 table-auto border-collapse border border-gray-200 text-sm dark:border-gray-700">
                                     <thead class="bg-gray-100 dark:bg-gray-700">
                                         <tr>
                                             <th class="border-b border-gray-300 px-3 py-2 text-left dark:border-gray-600">Fee Name</th>
@@ -411,7 +434,7 @@ const onReport = (id : number) => {
 
                 <!-- Footer -->
                 <DialogFooter
-                    class="flex flex-shrink-0 flex-col-reverse gap-3 border-t border-gray-200 px-6 py-4 sm:flex-row sm:justify-end dark:border-gray-700"
+                    class="flex shrink-0 flex-col-reverse gap-3 border-t border-gray-200 px-6 py-4 sm:flex-row sm:justify-end dark:border-gray-700"
                 >
                     <DialogClose as-child>
                         <Button type="button" variant="secondary" class="w-full px-4 py-2 sm:w-auto">Cancel</Button>

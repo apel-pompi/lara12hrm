@@ -12,7 +12,7 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { FileText } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'HR Reports', href: '/hrreports' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Sales Overview', href: '/hrreports' }];
 
 const props = defineProps<{
     months: { id: number; name: string };
@@ -69,11 +69,11 @@ const onReport = async () => {
 </script>
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Lead Reports" />
+        <Head title="Sales Overview" />
         <LeadReportLayout>
             <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
                 <!-- Title -->
-                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Monthly Reports</h2>
+                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Sales Overview</h2>
                 <div v-if="props.isAdmin">
                     <div class="space-y-2">
                         <Select v-model="form.employee">

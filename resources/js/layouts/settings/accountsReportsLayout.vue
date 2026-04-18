@@ -7,19 +7,19 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: "Chart of Account's",
+        title: "Chart of Accounts",
         href: '/accountsreport',
     },
     {
-        title: "Cash Book Statement",
+        title: "Cash Book",
         href: '/accountsreport/CashBook',
     },
     {
-        title: "Cash Flow Statement",
+        title: "Cash Flow",
         href: '/accountsreport/CashFlow',
     },
     {
-        title: 'Account to General Ledger',
+        title: 'General Ledger',
         href: '/accountsreport/ActoGL',
     },
     {
@@ -31,7 +31,7 @@ const sidebarNavItems: NavItem[] = [
         href: '/accountsreport/trialbalanceconsolidated',
     },
     {
-        title: 'Trial Balance (Branch Wise)',
+        title: 'Trial Balance (Branch-wise)',
         href: '/accountsreport/trialbalance',
     },
     {
@@ -39,7 +39,7 @@ const sidebarNavItems: NavItem[] = [
         href: '/accountsreport/balancesheet',
     },
     {
-        title: 'Profit Loss',
+        title: 'Profit & Loss Statement',
         href: '/accountsreport/profitloss',
     },
 ];

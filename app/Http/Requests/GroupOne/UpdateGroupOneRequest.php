@@ -24,10 +24,10 @@ class UpdateGroupOneRequest extends FormRequest
         $groupOneId = $this->route('groupOne')->id;
         return [
 
-            'groupone' => [
+            'code' => [
                 'required',
                 'integer',
-                'unique:group_ones,groupone,' . $groupOneId
+                'unique:group_ones,code,' . $groupOneId
             ],
 
             'description' => [

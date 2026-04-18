@@ -31,6 +31,7 @@ export interface Paginated<T> {
 export interface Workflow {
     id: number;
     name: string;
+    partner_count: number;
     active: number;
 }
 
@@ -208,113 +209,183 @@ const goToPage = (url: string | null) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Workflows" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center justify-between py-4">
-                    
-                    <div class="flex flex-wrap items-center gap-4">
-                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
-                        ><Plus></Plus> Workflows
-                    </Button>
-                        <div class="w-full sm:w-1/2 lg:w-auto">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header -->
+                <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <!-- Left Section -->
+                    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                        <!-- Create Button -->
+                        <Button
+                            class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
+                            size="sm"
+                            @click="showDailogCreate"
+                        >
+                            <Plus class="mr-2 h-4 w-4" />
+                            Workflows
+                        </Button>
+
+                        <!-- Search Combobox -->
+                        <div class="w-full sm:w-64">
                             <Combobox v-model="selectedName">
-                                <div class="relative w-full md:w-48">
+                                <div class="relative w-full">
                                     <ComboboxInput
-                                        class="w-full rounded-md border px-3 py-2 text-sm"
-                                        placeholder="Select Name"
+                                        class="w-full rounded-xl border px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Search workflow..."
                                         @input="queryName = $event.target.value"
                                         :display-value="(c) => c?.name ?? ''"
                                     />
-                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+
+                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
                                         <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                     </ComboboxButton>
 
                                     <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white py-1 text-sm shadow-xl dark:bg-gray-900"
                                     >
-                                        <div v-if="filteredName.length === 0 && queryName !== ''" class="text-gray-500 select-none">
-                                            Nothing found.
-                                        </div>
+                                        <div v-if="filteredName.length === 0 && queryName !== ''" class="px-4 py-2 text-gray-500">Nothing found.</div>
 
                                         <ComboboxOption
                                             v-for="one in filteredName"
                                             :key="one.id"
                                             :value="one"
-                                            class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pl-10 select-none"
+                                            class="ui-active:bg-blue-600 ui-active:text-white relative cursor-pointer py-2 pr-4 pl-10"
                                             v-slot="{ selected }"
                                         >
-                                            <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                            <span class="block truncate">
                                                 {{ one.name }}
                                             </span>
+
                                             <span
                                                 v-if="selected"
-                                                class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                                class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600"
                                             >
-                                                <CheckIcon class="h-5 w-5" />
+                                                <CheckIcon class="h-4 w-4" />
                                             </span>
                                         </ComboboxOption>
                                     </ComboboxOptions>
                                 </div>
                             </Combobox>
                         </div>
-                        <div class="w-full sm:w-auto">
-                            <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                        </div>
-                        <div class="w-full sm:w-auto">
-                            <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+
+                        <!-- Buttons -->
+                        <div class="flex gap-2">
+                            <Button variant="outline" size="sm" @click="search">
+                                <Search class="mr-1 h-4 w-4" />
+                                Search
+                            </Button>
+
+                            <Button variant="outline" size="sm" @click="refresh">
+                                <RefreshCcw class="mr-1 h-4 w-4" />
+                                Refresh
+                            </Button>
                         </div>
                     </div>
 
+                    <!-- Right Button -->
                     <div>
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToDocumentType"
-                            ><HousePlus></HousePlus> Document Type
+                        <Button
+                            class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-700"
+                            variant="outline"
+                            size="sm"
+                            @click="goToDocumentType"
+                        >
+                            <HousePlus class="mr-2 h-4 w-4" />
+                            Document Type
                         </Button>
                     </div>
                 </div>
-                <div class="rounded-md border">
+
+                <!-- Table -->
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Workflow Management</h2>
+                        <p class="text-sm text-gray-500">Manage all workflow management from here.</p>
+                    </div>
                     <Table>
-                        <TableHeader>
+                        <TableHeader class="bg-gray-100 dark:bg-gray-800">
                             <TableRow>
-                                <TableHead>General Services </TableHead>
-                                <TableHead>Total Partners</TableHead>
-                                <TableHead>Added Person</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead class="text-center">Action</TableHead>
+                                <TableHead class="min-w-60">General Services</TableHead>
+                                <TableHead class="min-w-60">Total Partners</TableHead>
+                                <TableHead class="min-w-60">Added Person</TableHead>
+                                <TableHead class="min-w-60 text-center">Status</TableHead>
+                                <TableHead class="min-w-60 text-center">Action</TableHead>
                             </TableRow>
                         </TableHeader>
+
                         <TableBody>
-                            <TableRow v-for="(workflow, index) in data.data" :key="workflow.id ?? index">
-                                <TableCell>{{ workflow.name }}</TableCell>
-                                <TableCell></TableCell>
-                                <TableCell>{{ workflow.user.name }}</TableCell>
+                            <TableRow
+                                v-for="(workflow, index) in data.data"
+                                :key="workflow.id ?? index"
+                                class="transition hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                                <TableCell class="font-medium">
+                                    {{ workflow.name }}
+                                </TableCell>
+
                                 <TableCell>
-                                    <Switch v-model="workflow.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(workflow)">
-                                    </Switch>
+                                    <span
+                                        class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+                                    >
+                                        {{ workflow.partner_count }}
+                                    </span>
                                 </TableCell>
-                                <TableCell class="text-right">
-                                    <Button size="sm" variant="outline" @click="onEdit(workflow.id)"><SquarePen></SquarePen></Button>
-                                    <Button size="sm" variant="outline" @click="goToDocumentList(workflow.id)"><PlusCircle></PlusCircle></Button>
+
+                                <TableCell>
+                                    {{ workflow.user.name }}
                                 </TableCell>
+
+                                <TableCell class="text-center">
+                                    <Switch v-model="workflow.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(workflow)" />
+                                </TableCell>
+
+                                <TableCell class="text-center">
+                                    <div class="flex justify-center gap-2">
+                                        <Button size="sm" variant="outline" @click="onEdit(workflow.id)">
+                                            <SquarePen class="h-4 w-4" />
+                                        </Button>
+
+                                        <Button size="sm" variant="outline" class="text-blue-600" @click="goToDocumentList(workflow.id)">
+                                            <PlusCircle class="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+
+                            <!-- Empty -->
+                            <TableRow v-if="data.data.length === 0">
+                                <TableCell colspan="5" class="py-10 text-center text-gray-500"> No Workflow Found </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </div>
 
-                <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
-                    <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
-                        <label for="per-page" class="text-gray-600">Show:</label>
-                        <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
-                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                <!-- Footer -->
+                <div class="mt-5 flex flex-col items-center justify-between gap-4 md:flex-row">
+                    <!-- Left -->
+                    <div class="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                        <label>Show:</label>
+
+                        <select v-model="perPage" @change="changePerPage" class="rounded-md border px-2 py-1 text-sm">
+                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
+                                {{ size }}
+                            </option>
                         </select>
-                        <span>Showing {{ workflow.from }} to {{ workflow.to }} of {{ workflow.total }} results</span>
+
+                        <span> Showing {{ workflow.from }} to {{ workflow.to }} of {{ workflow.total }} results </span>
                     </div>
-                    <div class="space-x-2">
+
+                    <!-- Right -->
+                    <div class="flex flex-wrap gap-2">
                         <Button
                             v-for="(link, index) in data.links"
                             :key="index"
                             :disabled="!link.url"
-                            variant="outline"
                             size="sm"
-                            :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                            :class="[
+                                link.active ? 'bg-indigo-600 text-white hover:bg-indigo-700' : '',
+                                !link.url ? 'cursor-not-allowed opacity-50' : '',
+                            ]"
                             @click="goToPage(link.url)"
                         >
                             <span v-html="link.label"></span>

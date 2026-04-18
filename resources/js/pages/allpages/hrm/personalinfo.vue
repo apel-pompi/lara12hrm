@@ -19,12 +19,12 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import ImageUpload from '@/components/EmployeeImage.vue';
 
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
+import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Switch from '@/components/ui/switch/Switch.vue';
 import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker  from '@vuepic/vue-datepicker';
+import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { toast } from 'vue-sonner';
 
@@ -305,7 +305,6 @@ const toggleStatus = (personalinfos: PersonalInfo) => {
     );
 };
 
-
 // Combobox states
 const selectedPersonID = ref(null); // empid
 const selectedPerson = ref(null); // empname
@@ -314,59 +313,40 @@ const selectedDepartment = ref(null); // branchname
 const selectedDesignation = ref(null); // branchname
 const selectedBlood = ref(null); // branchname
 
-const queryID = ref("");
-const queryName = ref("");
-const queryBranch = ref("");
-const queryDepartment = ref("");
-const queryDesignation = ref("");
-const queryBlood = ref("");
+const queryID = ref('');
+const queryName = ref('');
+const queryBranch = ref('');
+const queryDepartment = ref('');
+const queryDesignation = ref('');
+const queryBlood = ref('');
 
 // Filtered lists
 
-const filteredPeopleID = computed(() =>
-  queryID.value === ""
-    ? data.data
-    : data.data.filter((person) =>
-        person.empid)
-);
+const filteredPeopleID = computed(() => (queryID.value === '' ? data.data : data.data.filter((person) => person.empid)));
 const filteredPeople = computed(() =>
-  queryName.value === ""
-    ? data.data
-    : data.data.filter((person) =>
-        person.empname.toLowerCase().includes(queryName.value.toLowerCase())
-      )
+    queryName.value === '' ? data.data : data.data.filter((person) => person.empname.toLowerCase().includes(queryName.value.toLowerCase())),
 );
 
 const filteredBranch = computed(() =>
-  queryBranch.value === ""
-    ? props.branch
-    : props.branch.filter((branches) =>
-        branches.branchname.toLowerCase().includes(queryBranch.value.toLowerCase())
-      )
+    queryBranch.value === ''
+        ? props.branch
+        : props.branch.filter((branches) => branches.branchname.toLowerCase().includes(queryBranch.value.toLowerCase())),
 );
 
 const filteredDepartment = computed(() =>
-  queryDepartment.value === ""
-    ? props.department
-    : props.department.filter((departments) =>
-        departments.deptname.toLowerCase().includes(queryDepartment.value.toLowerCase())
-      )
+    queryDepartment.value === ''
+        ? props.department
+        : props.department.filter((departments) => departments.deptname.toLowerCase().includes(queryDepartment.value.toLowerCase())),
 );
 
 const filteredDesignation = computed(() =>
-  queryDesignation.value === ""
-    ? props.designation
-    : props.designation.filter((designations) =>
-        designations.desname.toLowerCase().includes(queryDesignation.value.toLowerCase())
-      )
+    queryDesignation.value === ''
+        ? props.designation
+        : props.designation.filter((designations) => designations.desname.toLowerCase().includes(queryDesignation.value.toLowerCase())),
 );
 
 const filteredBlood = computed(() =>
-  queryBlood.value === ""
-    ? data.data
-    : data.data.filter((bloods) =>
-        bloods.blood.toLowerCase().includes(queryBlood.value.toLowerCase())
-      )
+    queryBlood.value === '' ? data.data : data.data.filter((bloods) => bloods.blood.toLowerCase().includes(queryBlood.value.toLowerCase())),
 );
 
 const search = () => {
@@ -375,12 +355,11 @@ const search = () => {
         params.empid = selectedPersonID.value.empid;
     }
     if (selectedPerson.value) params.empname = selectedPerson.value.empname;
-    
+
     if (selectedBranch.value) params.branch_id = selectedBranch.value.id;
     if (selectedDepartment.value) params.dept_id = selectedDepartment.value.id;
     if (selectedDesignation.value) params.des_id = selectedDesignation.value.id;
     if (selectedBlood.value) params.blood = selectedBlood.value.blood;
-
 
     router.get(route('personalinfo.index'), params, {
         preserveState: false,
@@ -402,359 +381,378 @@ const goToPage = (url: string | null) => {
         router.get(url, {}, { preserveState: false, replace: true });
     }
 };
-
 </script>
 
 <template>
     <Head title="Personnel Information" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-            <div class="flex items-center gap-2 py-4">
-                <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Personnel Info </Button>
-                <!-- Search start -->
-                <div class="grid gap-2">
+        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
+            <!-- Responsive Filter + Action Section -->
+            
+
+                <!-- Filters Grid -->
+                <div class="p-2 grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10 2xl:grid-cols-12">
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        @click="showDailogCreate"
+                        class="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+                    >
+                        <Plus class="h-4 w-4" />
+                        Create
+                    </Button>
+                    <!-- Employee ID -->
                     <Combobox v-model="selectedPersonID">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select empid..."
-                                    :display-value="(person) => person?.empid"
-                                    @input="query = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Employee ID..."
+                                :display-value="(person) => person?.empid"
+                                @input="query = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div v-if="filteredPeopleID.length === 0 && query !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
+                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
                                 <ComboboxOption
                                     v-for="person in filteredPeopleID"
                                     :key="person.id"
                                     :value="person"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
+                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
                                 >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ person.empid }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
+                                    {{ person.empid }}
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
                     </Combobox>
-                </div>
-                <div class="grid gap-2">
+
+                    <!-- Employee Name -->
                     <Combobox v-model="selectedPerson">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select employee..."
-                                    :display-value="(person) => person?.empname"
-                                    @input="query = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Employee Name..."
+                                :display-value="(person) => person?.empname"
+                                @input="query = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div v-if="filteredPeople.length === 0 && query !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
+                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
                                 <ComboboxOption
                                     v-for="person in filteredPeople"
                                     :key="person.id"
                                     :value="person"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
+                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
                                 >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ person.empname }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
+                                    {{ person.empname }}
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
                     </Combobox>
-                    
-                </div>
-                <div class="grid gap-2">
+
+                    <!-- Branch -->
                     <Combobox v-model="selectedBranch">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select Branch..."
-                                    :display-value="(branches) => branches?.branchname"
-                                    @input="queryBranch  = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Branch..."
+                                :display-value="(branches) => branches?.branchname"
+                                @input="queryBranch = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div v-if="filteredBranch.length === 0 && queryBranch !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
+                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
                                 <ComboboxOption
                                     v-for="branches in filteredBranch"
                                     :key="branches.id"
                                     :value="branches"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
+                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
                                 >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ branches.branchname }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
+                                    {{ branches.branchname }}
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
                     </Combobox>
-                </div>
-                <div class="grid gap-2">
+
+                    <!-- Department -->
                     <Combobox v-model="selectedDepartment">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select Department..."
-                                    :display-value="(departments) => departments?.deptname"
-                                    @input="queryDepartment  = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Department..."
+                                :display-value="(departments) => departments?.deptname"
+                                @input="queryDepartment = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div v-if="filteredDepartment.length === 0 && queryDepartment !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
+                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
                                 <ComboboxOption
                                     v-for="departments in filteredDepartment"
                                     :key="departments.id"
                                     :value="departments"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
+                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
                                 >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ departments.deptname }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
+                                    {{ departments.deptname }}
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
                     </Combobox>
-                </div>
-                <div class="grid gap-2">
+
+                    <!-- Designation -->
                     <Combobox v-model="selectedDesignation">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select Designation..."
-                                    :display-value="(designations) => designations?.desname"
-                                    @input="queryDesignation  = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Designation..."
+                                :display-value="(designations) => designations?.desname"
+                                @input="queryDesignation = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div v-if="filteredDesignation.length === 0 && queryDesignation !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
+                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
                                 <ComboboxOption
                                     v-for="designations in filteredDesignation"
                                     :key="designations.id"
                                     :value="designations"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
+                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
                                 >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ designations.desname }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
+                                    {{ designations.desname }}
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
                     </Combobox>
-                    
-                </div>
-                <div class="grid gap-2">
+
+                    <!-- Blood -->
                     <Combobox v-model="selectedBlood">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select Blood..."
-                                    :display-value="(bloods) => bloods?.blood"
-                                    @input="queryBlood  = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-                            </div>
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Blood Group..."
+                                :display-value="(bloods) => bloods?.blood"
+                                @input="queryBlood = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div v-if="filteredBlood.length === 0 && queryBlood !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
+                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
                                 <ComboboxOption
                                     v-for="bloods in filteredBlood"
                                     :key="bloods.blood"
                                     :value="bloods"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
+                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
                                 >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ bloods.blood }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
+                                    {{ bloods.blood }}
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
                     </Combobox>
-                    
-                </div>
-                <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                </div>
-                <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
-                </div>
-                <!-- Search end -->
-            </div>
-            <div class="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Employee ID</TableHead>
-                            <TableHead>Employee Name</TableHead>
-                            <TableHead>Branch</TableHead>
-                            <TableHead>Department </TableHead>
-                            <TableHead>Designation</TableHead>
-                            <TableHead>Phone</TableHead>
-                            <TableHead>Blood</TableHead>
-                            <TableHead class="text-center">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(personal, index) in data.data" :key="personal.id">
-                            <TableCell>{{ personal.empid }}</TableCell>
-                            <TableCell>{{ personal.empname }}</TableCell>
-                            <TableCell>{{ personal.branch?.branchname }}</TableCell>
-                            <TableCell>{{ personal.department?.deptname }}</TableCell>
-                            <TableCell>{{ personal.designation?.desname }}</TableCell>
-                            <TableCell>{{ personal.phonepersonal }}</TableCell>
-                            <TableCell>{{ personal.blood }}</TableCell>
-                            <TableCell>
-                                <Switch v-model="personal.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(personal)"> </Switch>
-                            </TableCell>
-                            <TableCell class="text-right">
-                                <Button size="sm" variant="outline" @click="onShow(personal.id)"><Eye></Eye></Button>
-                                <Button size="sm" variant="outline" @click="onEdit(personal.id)"><SquarePen></SquarePen></Button>
-                                <Button size="sm" variant="outline" @click="onDelete(personal.id)"><Trash></Trash></Button>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </div>
-
-            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
-                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
-                    <label for="per-page" class="text-gray-600">Show:</label>
-                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
-                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
-                    </select>
-                    <span>Showing {{ personalinfo.from }} to {{ personalinfo.to }} of {{ personalinfo.total }} results</span>
-                </div>
-                <div class="space-x-2">
-                    <Button
-                        v-for="(link, index) in data.links"
-                        :key="index"
-                        :disabled="!link.url"
-                        variant="outline"
-                        size="sm"
-                        :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
-                        @click="goToPage(link.url)"
-                    >
-                        <span v-html="link.label"></span>
+                    <Button size="sm" @click="search" class="rounded-xl bg-indigo-600 px-5 text-white hover:bg-indigo-700">
+                        <Search class="h-4 w-4" />
+                        Search
                     </Button>
+                    <Button variant="outline" size="sm" @click="refresh" class="rounded-xl px-5">
+                        <RefreshCcw class="h-4 w-4" />
+                        Refresh
+                    </Button>
+                </div>
+
+                
+            
+            <!-- Premium Employee Table -->
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <!-- Responsive Table -->
+                <div class="overflow-x-auto">
+                    <Table class="min-w-300">
+                        <!-- Header -->
+                        <TableHeader class="bg-gray-50">
+                            <TableRow class="border-b">
+                                <TableHead class="w-14 px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase">#</TableHead>
+
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Employee Name </TableHead>
+
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Employee ID </TableHead>
+
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Branch </TableHead>
+
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Department </TableHead>
+
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Designation </TableHead>
+
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Phone </TableHead>
+
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Blood </TableHead>
+
+                                <TableHead class="px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase"> Status </TableHead>
+
+                                <TableHead class="px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase"> Actions </TableHead>
+                            </TableRow>
+                        </TableHeader>
+
+                        <!-- Body -->
+                        <TableBody>
+                            <TableRow v-for="(personal, index) in data.data" :key="personal.id" class="border-b transition hover:bg-gray-50">
+                                <!-- Serial -->
+                                <TableCell class="px-4 py-4 text-center font-medium text-gray-700">
+                                    {{ index + 1 }}
+                                </TableCell>
+
+                                <!-- Name -->
+                                <TableCell class="px-4 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <!-- Avatar -->
+                                        <div
+                                            class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-600"
+                                        >
+                                            {{ personal.empname?.charAt(0) }}
+                                        </div>
+
+                                        <div>
+                                            <p class="font-semibold text-gray-800">
+                                                {{ personal.empname }}
+                                            </p>
+                                            <p class="text-sm text-gray-500">
+                                                {{ personal.email }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </TableCell>
+
+                                <!-- ID -->
+                                <TableCell class="px-4 py-4">
+                                    <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 ring-1 ring-blue-200">
+                                        {{ personal.empid }}
+                                    </span>
+                                </TableCell>
+
+                                <!-- Branch -->
+                                <TableCell class="px-4 py-4 text-gray-700">
+                                    {{ personal.branch?.branchname }}
+                                </TableCell>
+
+                                <!-- Department -->
+                                <TableCell class="px-4 py-4 text-gray-700">
+                                    {{ personal.department?.deptname }}
+                                </TableCell>
+
+                                <!-- Designation -->
+                                <TableCell class="px-4 py-4 text-gray-700">
+                                    {{ personal.designation?.desname }}
+                                </TableCell>
+
+                                <!-- Phone -->
+                                <TableCell class="px-4 py-4 text-gray-700">
+                                    {{ personal.phonepersonal }}
+                                </TableCell>
+
+                                <!-- Blood -->
+                                <TableCell class="px-4 py-4">
+                                    <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 ring-1 ring-red-200">
+                                        {{ personal.blood }}
+                                    </span>
+                                </TableCell>
+
+                                <!-- Status -->
+                                <TableCell class="px-4 py-4 text-center">
+                                    <div class="flex justify-center">
+                                        <Switch v-model="personal.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(personal)" />
+                                    </div>
+                                </TableCell>
+
+                                <!-- Actions -->
+                                <TableCell class="px-4 py-4">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            class="h-8 w-8 text-blue-600 hover:bg-blue-50"
+                                            @click="onShow(personal.id)"
+                                        >
+                                            <Eye class="h-4 w-4" />
+                                        </Button>
+
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            class="h-8 w-8 text-amber-600 hover:bg-amber-50"
+                                            @click="onEdit(personal.id)"
+                                        >
+                                            <SquarePen class="h-4 w-4" />
+                                        </Button>
+
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            class="h-8 w-8 text-red-600 hover:bg-red-50"
+                                            @click="onDelete(personal.id)"
+                                        >
+                                            <Trash class="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <!-- Footer Pagination -->
+                <div class="flex flex-col gap-4 border-t bg-white px-5 py-4 md:flex-row md:items-center md:justify-between">
+                    <!-- Left -->
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center">
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <span>Show</span>
+
+                            <select
+                                v-model="perPage"
+                                @change="changePerPage"
+                                class="rounded-lg border px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            >
+                                <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
+                                    {{ size }}
+                                </option>
+                            </select>
+
+                            <span>entries</span>
+                        </div>
+
+                        <p class="text-sm text-gray-500">
+                            Showing {{ personalinfo.from }} to {{ personalinfo.to }} of {{ personalinfo.total }} results
+                        </p>
+                    </div>
+
+                    <!-- Right -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <Button
+                            v-for="(link, index) in data.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            variant="outline"
+                            size="sm"
+                            :class="[
+                                'min-w-9.5 rounded-lg',
+                                link.active ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700' : '',
+                                !link.url ? 'cursor-not-allowed opacity-50' : '',
+                            ]"
+                            @click="goToPage(link.url)"
+                        >
+                            <span v-html="link.label"></span>
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- Dialog -->
         <Dialog v-model:open="showDialog">
-            <DialogContent class="h-[auto] w-full max-w-[95vw] overflow-y-auto sm:max-w-[900px]">
+            <DialogContent class="h-auto w-full max-w-[95vw] overflow-y-auto sm:max-w-225">
                 <DialogHeader>
                     <DialogTitle>{{ isEditMode ? 'Edit Personal Info' : 'Create Personal Info' }}</DialogTitle>
                     <DialogDescription>Fill in the employee details below. Click save when you're done.</DialogDescription>

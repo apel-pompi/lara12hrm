@@ -14,6 +14,8 @@ use App\Models\Student\StudentQuotationHD;
 use App\Models\Student\StudentUtility;
 use App\Models\User;
 use App\Services\Agency\Student\AppoinmentsService;
+use App\Services\Agency\Student\QuoattionRequestService;
+use App\Services\Agency\Student\RefundRequestService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,7 +29,7 @@ class DashboardController extends Controller
         $user = Auth::user();
         $current = Carbon::now();
         $currentDay = $current->year . '-' . $current->month . '-' . $current->day;
-
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
         if ($roles->contains('superadmin') or $roles->contains('Admin') or $roles->contains('Manager')) {
 
@@ -123,7 +125,7 @@ class DashboardController extends Controller
                     ->whereRaw("LEFT(b.insnumber, 4) = 'MR--'")
                     ->groupBy('b.student_id')
                     ->get(),
-                'calander' => StudentUtility::with('student')->where('name','appoinments')->get(),
+                'calander' => StudentUtility::with('student')->where('name', 'appoinments')->get(),
                 'presentCount' => $presentCount,
                 'lateCount' => $lateCount,
                 'absentCount' => $absentCount,
@@ -298,7 +300,7 @@ class DashboardController extends Controller
                     ->whereRaw("LEFT(b.insnumber, 4) = 'MR--'")
                     ->groupBy('b.student_id')
                     ->get(),
-                'calander' => StudentUtility::with('student')->where('name','appoinments')->where('user_id',Auth::id())->get(),
+                'calander' => StudentUtility::with('student')->where('name', 'appoinments')->where('user_id', Auth::id())->get(),
                 'intimes'      => $in,
                 'outtimes'      => $out,
                 'statuses'      => $statusname,
@@ -326,7 +328,9 @@ class DashboardController extends Controller
 
         $user = Auth::user();
 
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
+
         if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
 
             return Inertia::render('allpages/Agency/Request/archive', [
@@ -346,7 +350,7 @@ class DashboardController extends Controller
     {
 
         $user = Auth::user();
-
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
         if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
 
@@ -368,7 +372,7 @@ class DashboardController extends Controller
     {
 
         $user = Auth::user();
-
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
         if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
 
@@ -389,7 +393,7 @@ class DashboardController extends Controller
     {
 
         $user = Auth::user();
-
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
         if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
 
@@ -406,111 +410,68 @@ class DashboardController extends Controller
         }
     }
 
-    public function QuotationRequest()
+    public function QuotationRequest(Request $request, QuoattionRequestService $service)
     {
 
         $user = Auth::user();
 
-        $roles = $user->getRoleNames();
-        if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
+        $isAdmin = $user->hasAnyRole(['superadmin', 'Admin', 'Manager']);
 
-            return Inertia::render('allpages/Agency/Request/quotation', [
-                'quotation' => ApprovalRequest::with(['user', 'student'])
-                    ->leftJoin('student_quotation_h_d_s as b', 'approval_requests.description', '=', 'b.id')
-                    ->where('approval_requests.remarks', 'quotation')
-                    ->select(
-                        'approval_requests.*',
-                        'b.quotation_no',
-                        'b.totalamount',
-                        'b.adddate',
-                        'b.active',
-                        'b.notes'
-                    )
-                    ->orderBy('approval_requests.id', 'DESC')
-                    ->paginate(20),
-                'isadmin' => true,
+        $perPage = $request->query('per_page', 10);
 
-            ]);
-        } else {
-            return Inertia::render('allpages/Agency/Request/quotation', [
-                'quotation' => ApprovalRequest::with(['user', 'student'])
-                    ->leftJoin('student_quotation_h_d_s as b', 'approval_requests.description', '=', 'b.id')
-                    ->where('approval_requests.remarks', 'quotation')
-                    ->select(
-                        'approval_requests.*',
-                        'b.quotation_no',
-                        'b.totalamount',
-                        'b.adddate',
-                        'b.active',
-                        'b.notes'
-                    )
-                    ->orderBy('approval_requests.id', 'DESC')
-                    ->paginate(20),
-                'isadmin' => false,
-            ]);
-        }
+        $quotation = $service->get(
+            array_merge($request->query(), ['per_page' => $perPage])
+        );
+
+        return Inertia::render('allpages/Agency/Request/quotation', [
+            'quotation'  => $quotation,
+            'isadmin' => $isAdmin,
+            'filters' => $request->only(['student_id', 'id']),
+        ]);
+
+        
     }
 
-    public function ReturnRequest()
+    public function ReturnRequest(Request $request, RefundRequestService $service)
     {
-
         $user = Auth::user();
 
-        $roles = $user->getRoleNames();
-        if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
+        $isAdmin = $user->hasAnyRole(['superadmin', 'Admin', 'Manager']);
 
-            return Inertia::render('allpages/Agency/Request/invoicereturn', [
-                'refund' => ApprovalRequest::with(['user', 'student'])
-                    ->leftJoin('student_invoice_hd as b', 'approval_requests.description', '=', 'b.id')
-                    ->where('approval_requests.remarks', 'Refund')
-                    ->select(
-                        'approval_requests.*',
-                        'b.insnumber',
-                        'b.insdate',
-                        'b.netamount'
-                    )
-                    ->orderBy('approval_requests.id', 'DESC')
-                    ->paginate(20),
-                'isadmin' => true,
+        $perPage = $request->query('per_page', 10);
 
-            ]);
-        } else {
-            return Inertia::render('allpages/Agency/Request/invoicereturn', [
-                'refund' => ApprovalRequest::with(['user', 'student'])
-                    ->leftJoin('student_invoice_hd as b', 'approval_requests.description', '=', 'b.id')
-                    ->where('approval_requests.remarks', 'Refund')
-                    ->select(
-                        'approval_requests.*',
-                        'b.insnumber',
-                        'b.insdate',
-                        'b.netamount'
-                    )
-                    ->orderBy('approval_requests.id', 'DESC')
-                    ->paginate(20),
-                'isadmin' => false,
-            ]);
-        }
+        $refund = $service->get(
+            array_merge($request->query(), ['per_page' => $perPage])
+        );
+
+        return Inertia::render('allpages/Agency/Request/invoicereturn', [
+            'refund'  => $refund,
+            'isadmin' => $isAdmin,
+            'filters' => $request->only(['student_id', 'id']),
+        ]);
     }
 
-    public function Calender(Request $request, AppoinmentsService $appoinment)
+
+    public function Calender(Request $request, AppoinmentsService $service)
     {
-        $user = Auth::user();
-
+        $user  = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
-        if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
 
-            return Inertia::render('allpages/default/calender', [
-                'appoinments' => $appoinment->get($request->query()),
-                'filters'   => $appoinment->get($request->query()),
-                'isadmin' => true,
+        $perPage = $request->query('per_page', 10);
 
-            ]);
-        } else {
-            return Inertia::render('allpages/default/calender', [
-                'appoinments' => $appoinment->get($request->query()),
-                'filters'   => $appoinment->get($request->query()),
-                'isadmin' => false,
-            ]);
-        }
+        $isAdmin = $roles->intersect(['superadmin', 'Admin', 'Manager'])->isNotEmpty();
+
+        $appointments = $service->get(
+            array_merge($request->query(), ['per_page' => $perPage])
+        );
+
+        return Inertia::render('allpages/default/calender', [
+            'appoinments' => $appointments,
+            'isadmin'      => $isAdmin,
+            'filters'      => $request->only(['student_id', 'id']),
+        ]);
     }
 }

@@ -80,6 +80,15 @@ class Student extends Model
     }
 
     /**
+     * Get the stage that owns the Student
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function stage(): BelongsTo
+    {
+        return $this->belongsTo(StudentStage::class, 'stage_id');
+    }
+    /**
      * Get the country that owns the Student
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -87,5 +96,15 @@ class Student extends Model
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'descountry_id');
+    }
+
+    /**
+     * Get the service that owns the StudentInvoiceHD
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(StudentInService::class,'id','student_id');
     }
 }

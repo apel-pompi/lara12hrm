@@ -12,9 +12,9 @@ class StudentPending
     public function get(array $queryParams = [])
     {
         $user = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
-        $queryBuilder = ModelsStudent::with(['user', 'assainuser', 'source', 'country'])->where('status',null)
-            ->orderBy('id', 'DESC');
+        $queryBuilder = ModelsStudent::with(['user:id,name', 'assainuser:id,name', 'source:id,name', 'country:id,name'])->where('status',null)->orderBy('id', 'DESC');
 
         if (! $roles->intersect(['superadmin', 'Admin', 'Manager'])->count()) {
             $queryBuilder->where('assain_user', Auth::id());

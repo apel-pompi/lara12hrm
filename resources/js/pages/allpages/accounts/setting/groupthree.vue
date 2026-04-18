@@ -32,7 +32,7 @@ export interface Paginated<T> {
 }
 
 export interface GroupThree {
-    groupthree: string;
+    code: string;
     description: string;
     active: number;
     group_one: { groupone: number; description: string };
@@ -44,8 +44,8 @@ export interface GroupThree {
 }
 
 const props = defineProps<{
-    groupInfo: { groupone: number; grouptwo: string; description: string; group_one: { groupone: number; description: string } };
-    code: number;
+    groupInfo: { id: number; groupone: number; code: string; description: string; group_one: { code: number; description: string } };
+    code: string;
     groupthree: Paginated<GroupThree>;
 }>();
 
@@ -56,9 +56,9 @@ const isEditMode = ref(false);
 
 const form = useForm({
     id: null as number | null,
-    groupone: '',
-    grouptwo: '',
-    groupthree: '',
+    groupone: null as number | null,
+    grouptwo: null as number | null,
+    code: '',
     description: '',
     active: '0',
 });
@@ -66,9 +66,9 @@ const form = useForm({
 const showDailogCreate = () => {
     form.reset();
     form.id = null;
-    form.groupone = props.groupInfo.groupone;
-    form.grouptwo = props.groupInfo.grouptwo;
-    form.groupthree = props.code;
+    form.groupone = props.groupInfo.group_one.id;
+    form.grouptwo = props.groupInfo.id;
+    form.code = props.code;
     isEditMode.value = false;
     showDialog.value = true;
 };
@@ -85,7 +85,7 @@ const onEdit = async (id: number) => {
         const data = await res.json();
         Object.assign(form, data.data);
         form.id = data.data.id;
-
+        
         isEditMode.value = true;
         showDialog.value = true;
     } catch (error) {
@@ -104,7 +104,7 @@ const submit = () => {
                 showDialog.value = false;
                 router.visit(route('accsetting.GroupThree',{
                     GroupOne: props.groupInfo.groupone,
-                    GroupTwo: props.groupInfo.grouptwo,
+                    GroupTwo: props.groupInfo.id,
                 }), {
                     preserveScroll: true,
                     preserveState: false,
@@ -185,6 +185,8 @@ const goToPage = (url: string | null) => {
 const goToGroupTwo = () => {
     router.get(route('accsetting.GroupTwo', { GroupOne: props.groupInfo.groupone }));
 };
+
+
 </script>
 
 <template>
@@ -192,7 +194,7 @@ const goToGroupTwo = () => {
         <Head title="Accounts Setting" />
 
         <AccountsLayout :breadcrumbs="breadcrumbs">
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToGroupTwo"
                         ><CornerDownLeft></CornerDownLeft> Back Group Two
@@ -220,15 +222,15 @@ const goToGroupTwo = () => {
                                 <TableCell>{{ index + 1 }}</TableCell>
                                 <TableCell>{{ three.group_one.description }}</TableCell>
                                 <TableCell>{{ three.group_two.description }}</TableCell>
-                                <TableCell>{{ three.groupthree }}</TableCell>
+                                <TableCell>{{ three.code }}</TableCell>
                                 <TableCell>{{ three.description }}</TableCell>
                                 <TableCell>{{ three.user.name }}</TableCell>
                                 <TableCell>
                                     <Switch v-model="three.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(three)"> </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(three.id)"><SquarePen></SquarePen></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(three.id)"><Trash></Trash></Button>
+                                    <Button  size="sm" variant="outline" @click="onEdit(three.id)"><SquarePen></SquarePen></Button>
+                                    <Button size="sm" variant="outline" @click="onDelete(three.id)"><Trash></Trash></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -276,14 +278,14 @@ const goToGroupTwo = () => {
                         <!-- Group Two -->
                         <div>
                             <Label for="grouptwo" class="text-sm font-medium">Group Two<span class="text-red-500">*</span></Label>
-                            <p>{{ props.groupInfo.group_two.description }}</p>
+                            <p>{{ props.groupInfo.description }}</p>
                         </div>
                         <!-- Code -->
                         <div>
-                            <Label for="groupthree" class="text-sm font-medium">Code<span class="text-red-500">*</span></Label>
-                            <Input type="text" id="groupthree" v-model="form.groupthree" class="mt-1 w-full" readonly disabled />
-                            <p v-if="form.errors.groupthree" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.groupthree }}
+                            <Label for="code" class="text-sm font-medium">Code<span class="text-red-500">*</span></Label>
+                            <Input type="text" id="code" v-model="form.code" class="mt-1 w-full" readonly disabled />
+                            <p v-if="form.errors.code" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.code }}
                             </p>
                         </div>
 

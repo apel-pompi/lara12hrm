@@ -15,7 +15,7 @@ class GroupOne extends Model
     use HasFactory,SoftDeletes;
     
     protected $fillable = [
-        'groupone',
+        'code',
         'description',
         'user_id',
         'active',
@@ -43,7 +43,7 @@ class GroupOne extends Model
      */
     public function GroupTwo(): HasMany
     {
-        return $this->hasMany(GroupTwo::class, 'groupone', 'groupone');
+        return $this->hasMany(GroupTwo::class, 'groupone');
     }
 
     /**
@@ -53,8 +53,16 @@ class GroupOne extends Model
      */
     public function GroupThree(): HasMany
     {
-        return $this->hasMany(GroupTwo::class, 'groupone', 'groupone');
+        return $this->hasMany(GroupThree::class, 'groupone');
     }
 
-   
+   /**
+     * Get all of the GroupThree for the GroupOne
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function chartOfAccounts(): HasMany
+    {
+        return $this->hasMany(ChartOfAccount::class, 'groupone');
+    }
 }

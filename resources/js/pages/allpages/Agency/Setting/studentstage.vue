@@ -23,6 +23,11 @@ export interface StudentStage {
     adddate: string;
     user_id: number;
     active: number;
+    usage_count: number;
+    user: {
+        id: number;
+        name: string;
+    };
 }
 
 export interface Paginated<T> {
@@ -190,116 +195,169 @@ const goToPage = (url: string | null) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Student Stage" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
-                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Stage </Button>
-                    <!-- Search start -->
-                    <div class="grid gap-2">
-                        <Combobox v-model="selecteName">
-                            <div class="relative w-48">
-                                <!-- Input -->
-                                <div class="relative w-full">
-                                    <ComboboxInput
-                                        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select name..."
-                                        :display-value="(n) => n?.name"
-                                        @input="queryName = $event.target.value"
-                                    />
-                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                    </ComboboxButton>
-                                </div>
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header / Search Section -->
+                <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    
+                        <!-- Left Side -->
+                        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                            <Button
+                                class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
+                                size="sm"
+                                @click="showDailogCreate"
+                            >
+                                <Plus class="mr-2 h-4 w-4" />
+                                Add Stage
+                            </Button>
 
-                                <!-- Options -->
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                >
-                                    <div
-                                        v-if="filteredName.length === 0 && queryName !== ''"
-                                        class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                    >
-                                        Nothing found.
+                            <!-- Search Combobox -->
+                            <Combobox v-model="selecteName">
+                                <div class="relative w-full sm:w-64">
+                                    <div class="relative">
+                                        <ComboboxInput
+                                            class="h-10 w-full rounded-xl border border-gray-300 bg-white py-2 pr-10 pl-4 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                            placeholder="Search stage name..."
+                                            :display-value="(n) => n?.name"
+                                            @input="queryName = $event.target.value"
+                                        />
+
+                                        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                        </ComboboxButton>
                                     </div>
 
-                                    <ComboboxOption
-                                        v-for="n in filteredName"
-                                        :key="n.id"
-                                        :value="n"
-                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                        v-slot="{ selected }"
+                                    <ComboboxOptions
+                                        class="absolute z-20 mt-2 max-h-60 w-full overflow-auto rounded-xl border bg-white py-2 shadow-xl dark:border-gray-700 dark:bg-gray-900"
                                     >
-                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                            {{ n.name }}
-                                        </span>
-                                        <span
-                                            v-if="selected"
-                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                        <div v-if="filteredName.length === 0 && queryName !== ''" class="px-4 py-2 text-sm text-gray-500">
+                                            No stage found
+                                        </div>
+
+                                        <ComboboxOption
+                                            v-for="n in filteredName"
+                                            :key="n.id"
+                                            :value="n"
+                                            v-slot="{ selected }"
+                                            class="relative cursor-pointer px-4 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-gray-800"
                                         >
-                                            <CheckIcon class="h-5 w-5" />
-                                        </span>
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-                    </div>
-                    <div class="grid gap-2">
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                    </div>
-                    <div class="grid gap-2">
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
-                    </div>
+                                            <span class="block truncate">
+                                                {{ n.name }}
+                                            </span>
+
+                                            <CheckIcon v-if="selected" class="absolute top-2.5 right-3 h-4 w-4 text-indigo-600" />
+                                        </ComboboxOption>
+                                    </ComboboxOptions>
+                                </div>
+                            </Combobox>
+
+                            <!-- Buttons -->
+                            <Button variant="outline" class="h-10 rounded-xl px-4" size="sm" @click="search">
+                                <Search class="mr-2 h-4 w-4" />
+                                Search
+                            </Button>
+
+                            <Button variant="outline" class="h-10 rounded-xl px-4" size="sm" @click="refresh">
+                                <RefreshCcw class="mr-2 h-4 w-4" />
+                                Reset
+                            </Button>
+                        </div>
+                    
                 </div>
-                <div class="rounded-md border">
+
+                <!-- Table Card -->
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Student Stages</h2>
+                        <p class="text-sm text-gray-500">Manage all student stage records from here.</p>
+                    </div>
                     <Table>
                         <TableHeader>
-                            <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Added Date</TableHead>
-                                <TableHead>Total Usage</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Added By</TableHead>
-                                <TableHead class="text-center">Action</TableHead>
+                            <TableRow class="bg-gray-100 hover:bg-gray-100">
+                                <TableHead class="font-semibold">Stage Name</TableHead>
+                                <TableHead class="font-semibold">Added Date</TableHead>
+                                <TableHead class="font-semibold">Usage</TableHead>
+                                <TableHead class="text-center font-semibold">Status</TableHead>
+                                <TableHead class="font-semibold">Added By</TableHead>
+                                <TableHead class="text-center font-semibold">Action</TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody>
-                            <TableRow v-for="(student, index) in data.data" :key="student.id ?? index">
-                                <TableCell>{{ student.name }}</TableCell>
-                                <TableCell>{{ student.adddate }}</TableCell>
-                                <TableCell></TableCell>
-                                <TableCell>
-                                    <Switch v-model="student.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(student)"> </Switch>
-                                </TableCell>
-                                <TableCell>{{ student.user.name }}</TableCell>
 
-                                <TableCell class="text-right">
-                                    <Button size="sm" variant="outline" @click="onEdit(student.id)"><SquarePen></SquarePen></Button>
-                                    <Button size="sm" variant="outline" @click="onDelete(student.id)"><Trash></Trash></Button>
+                        <TableBody>
+                            <TableRow v-for="(student, index) in data.data" :key="student.id ?? index" class="hover:bg-gray-50">
+                                <TableCell class="font-medium text-gray-800">
+                                    {{ student.name }}
                                 </TableCell>
+
+                                <TableCell>
+                                    {{ student.adddate }}
+                                </TableCell>
+
+                                <TableCell>
+                                    <Badge variant="secondary"> {{ student.usage_count }} </Badge>
+                                </TableCell>
+
+                                <TableCell class="text-center">
+                                    <Switch v-model="student.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(student)" />
+                                </TableCell>
+
+                                <TableCell>
+                                    {{ student.user.name }}
+                                </TableCell>
+
+                                <TableCell>
+                                    <div class="flex justify-center gap-2">
+                                        <Button size="icon" variant="outline" class="h-9 w-9 rounded-lg" @click="onEdit(student.id)">
+                                            <SquarePen class="h-4 w-4 text-blue-600" />
+                                        </Button>
+
+                                        <Button size="icon" variant="outline" class="h-9 w-9 rounded-lg" @click="onDelete(student.id)">
+                                            <Trash class="h-4 w-4 text-red-600" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+
+                            <!-- Empty -->
+                            <TableRow v-if="data.data.length === 0">
+                                <TableCell colspan="6" class="py-10 text-center text-gray-500"> No Data Found </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
-                </div>
 
-                <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
-                    <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
-                        <label for="per-page" class="text-gray-600">Show:</label>
-                        <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
-                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
-                        </select>
-                        <span>Showing {{ studentStage.from }} to {{ studentStage.to }} of {{ studentStage.total }} results</span>
-                    </div>
-                    <div class="space-x-2">
-                        <Button
-                            v-for="(link, index) in data.links"
-                            :key="index"
-                            :disabled="!link.url"
-                            variant="outline"
-                            size="sm"
-                            :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
-                            @click="goToPage(link.url)"
-                        >
-                            <span v-html="link.label"></span>
-                        </Button>
+                    <!-- Footer Pagination -->
+                    <div class="flex flex-col gap-4 border-t px-4 py-4 md:flex-row md:items-center md:justify-between">
+                        <!-- Left -->
+                        <div class="flex flex-col gap-2 text-sm text-gray-600 sm:flex-row sm:items-center">
+                            <div class="flex items-center gap-2">
+                                <span>Show</span>
+
+                                <select v-model="perPage" @change="changePerPage" class="rounded-lg border px-2 py-1">
+                                    <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
+                                        {{ size }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <span> Showing {{ studentStage.from }} to {{ studentStage.to }} of {{ studentStage.total }} entries </span>
+                        </div>
+
+                        <!-- Right -->
+                        <div class="flex flex-wrap gap-2">
+                            <Button
+                                v-for="(link, index) in data.links"
+                                :key="index"
+                                :disabled="!link.url"
+                                size="sm"
+                                :class="[
+                                    link.active ? 'bg-indigo-600 text-white hover:bg-indigo-700' : '',
+                                    !link.url ? 'cursor-not-allowed opacity-50' : '',
+                                ]"
+                                @click="goToPage(link.url)"
+                            >
+                                <span v-html="link.label"></span>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -326,7 +384,6 @@ const goToPage = (url: string | null) => {
                                 {{ errors.name }}
                             </p>
                         </div>
-
                     </div>
 
                     <!-- Footer -->

@@ -32,7 +32,7 @@ class StudentCheckLogController extends Controller
         ]);
 
         if ($created) {
-            
+
             StudentActivities::create([
                 'student_id' => $student->id,
                 'title' => "has created student check in",
@@ -62,10 +62,16 @@ class StudentCheckLogController extends Controller
                 'lastactivity' => null,
                 'user_id' => Auth::id()
             ]);
-            $student->update(['status' => 1]);
-            return back()->with('success', 'check in successfully.');
+            if (is_null($student->status)) {
+
+                $student->update([
+                    'status' => 1
+                ]);
+
+                return back()->with('message', 'check out successfully!');
+            }
         } else {
-            return back()->with('error', 'Unable to check in');
+            return back()->with('error', 'Unable to check out');
         }
     }
 }

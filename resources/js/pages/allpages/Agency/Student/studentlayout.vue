@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -213,6 +212,14 @@ const sidebarNavItems = computed<NavItem[]>(() => {
         return archive;
     }
 });
+
+const page = usePage();
+const currentUrl = computed(() => page.url);
+
+const isActiveTab = (href: string) => {
+    const clean = href.split('?')[0];
+    return currentUrl.value.startsWith(clean);
+};
 
 const goToStudent = () => {
     router.visit('/student');
@@ -550,16 +557,27 @@ const updateStudent = () => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border bg-gray-100 px-4 md:min-h-min">
-            <div class="flex items-center justify-end space-x-2 pt-1 pl-4">
-                <div class="flex-1 text-sm dark:text-black">
-                    <Heading class="dark:text-black" title="Student Actvities" description="Manage your student activities and account settings" />
-                </div>
-                <div class="space-x-2">
-                    <Button class="dark:text-black" variant="outline" size="sm" @click="goToStudent"><CornerDownLeft></CornerDownLeft> Back</Button>
+        <div class="relative flex-1 bg-gray-50 dark:bg-gray-950 min-h-screen">
+            <!-- Page Header -->
+            <div class="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h1 class="text-base font-semibold text-gray-900 dark:text-gray-100">Student Activities</h1>
+                        <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Manage student activities and account settings</p>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        @click="goToStudent"
+                        class="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                    >
+                        <CornerDownLeft class="h-3.5 w-3.5" />
+                        Back to Students
+                    </Button>
                 </div>
             </div>
-            <div class="flex flex-col gap-6 pb-12 lg:flex-row">
+
+            <div class="flex flex-col gap-4 p-4 lg:flex-row lg:items-start">
                 <!-- LEFT SIDEBAR -->
                 <StudentSidebar
                     :student="student"
@@ -574,26 +592,34 @@ const updateStudent = () => {
                 />
 
                 <!-- MAIN CONTENT -->
-                <main class="flex flex-1 flex-col gap-6">
-                    <!-- Tabs -->
-                    <nav class="text-md flex flex-wrap gap-4 border-b bg-white p-6 font-medium">
-                        <div class="border-sidebar-border/70 dark:border-sidebar-border relative flex-1 border bg-gray-100 p-3">
-                            <Button class="mr-1 dark:bg-black" v-for="item in sidebarNavItems" :key="item.href" variant="ghost" as-child>
-                                <Link :href="item.href">
-                                    {{ item.title }}
-                                </Link>
-                            </Button>
+                <main class="flex min-w-0 flex-1 flex-col gap-4">
+                    <!-- Navigation Tabs -->
+                    <nav class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                        <div class="flex flex-wrap gap-1 p-2">
+                            <Link
+                                v-for="item in sidebarNavItems"
+                                :key="item.href"
+                                :href="item.href"
+                                class="relative rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-150"
+                                :class="{
+                                    'bg-indigo-600 text-white shadow-sm': isActiveTab(item.href),
+                                    'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200': !isActiveTab(item.href)
+                                }"
+                            >
+                                {{ item.title }}
+                            </Link>
                         </div>
                     </nav>
 
-                    <section class="bg-white p-4 shadow dark:bg-gray-900">
+                    <!-- Content Card -->
+                    <section class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
                         <slot />
                     </section>
                 </main>
             </div>
         </div>
         <Dialog v-model:open="showDialog">
-            <DialogContent class="max-w-[825px]">
+            <DialogContent class="max-w-206.25">
                 <!-- Header -->
                 <DialogHeader>
                     <DialogTitle> User Assignee </DialogTitle>
@@ -640,7 +666,7 @@ const updateStudent = () => {
         </Dialog>
 
         <Dialog v-model:open="showTransfer">
-            <DialogContent class="max-w-[825px]">
+            <DialogContent class="max-w-206.25">
                 <!-- Header -->
                 <DialogHeader>
                     <DialogTitle> Lead Transfer Request </DialogTitle>
@@ -677,7 +703,7 @@ const updateStudent = () => {
         </Dialog>
 
         <Dialog v-model:open="editDialog">
-            <DialogContent class="max-h-[90vh] max-w-[900px] overflow-y-auto bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+            <DialogContent class="max-h-[90vh] max-w-206.25 overflow-y-auto bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                 <!-- Header -->
                 <DialogHeader class="border-b border-gray-200 pb-4 dark:border-gray-700">
                     <DialogTitle class="text-xl font-bold text-gray-900 dark:text-white">Student Information Update</DialogTitle>
@@ -884,7 +910,7 @@ const updateStudent = () => {
         </Dialog>
 
         <Dialog v-model:open="showonBoard">
-            <DialogContent class="max-w-[825px]">
+            <DialogContent class="max-w-206.25">
                 <!-- Header -->
                 <DialogHeader>
                     <DialogTitle> Student onBoard Request </DialogTitle>
@@ -921,7 +947,7 @@ const updateStudent = () => {
         </Dialog>
 
         <Dialog v-model:open="showArchive">
-            <DialogContent class="max-w-[825px]">
+            <DialogContent class="max-w-206.25">
                 <!-- Header -->
                 <DialogHeader>
                     <DialogTitle> Archive Request </DialogTitle>

@@ -95,7 +95,7 @@ class QuoatationsController extends Controller
     public function updateStatus(Request $request, $quoatations)
     {
         try {
-            $this->authorize('quoatations.updateStatus');
+            $this->authorize('quoatations.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

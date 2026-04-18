@@ -133,6 +133,8 @@ class RolePermissionSeeder extends Seeder
                 'permissions' => [
                     'DocumentCheck.index',
                     'DocumentCheck.store',
+                    'DocumentCheck.edit',
+                    'DocumentCheck.update',
                     
                 ],
             ],
@@ -449,7 +451,9 @@ class RolePermissionSeeder extends Seeder
                 'permissions' => [
                     'leadReports.monthly-lead-info',
                     'leadReports.student-transaction',
+                    'leadReports.student-ladger',
                     'leadReports.student-revenue',
+                    'leadReports.student-refund',
                 ],
             ],
 

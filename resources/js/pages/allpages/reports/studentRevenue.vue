@@ -12,7 +12,7 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import { FileText } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Student Revenue', href: '/leadreports/revenue' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Student Revenue Analysis', href: '/leadreports/revenue' }];
 
 const props = defineProps<{
     UsersWithRoles: [];
@@ -64,11 +64,11 @@ const onReport = async () => {
 </script>
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Student Revenue Reports" />
+        <Head title="Student Revenue Analysis Reports" />
         <LeadReportLayout>
             <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
                 <!-- Title -->
-                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Student Revenue</h2>
+                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Student Revenue Analysis</h2>
                 <div v-if="props.isAdmin">
                     <div class="space-y-2">
                         <Select v-model="form.employee">

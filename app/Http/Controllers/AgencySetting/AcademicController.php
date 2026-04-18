@@ -133,7 +133,7 @@ class AcademicController extends Controller
     public function updateStatus(Request $request, $academic)
     {
         try {
-            $this->authorize('Academic.updateStatus');
+            $this->authorize('Academic.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

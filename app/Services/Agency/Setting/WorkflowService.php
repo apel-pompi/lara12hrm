@@ -10,7 +10,7 @@ class WorkflowService
 {
     public function get(array $queryParams = [])
     {
-        $queryBuilder = Workflow::with(['user'])->orderBy('id', 'desc');
+        $queryBuilder = Workflow::with(['user'])->withCount('partner')->orderBy('id', 'desc');
 
         $workflow = resolve(AcademicFilter::class)->getResults([
             'builder' => $queryBuilder,

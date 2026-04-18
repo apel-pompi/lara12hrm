@@ -10,7 +10,7 @@ class AllMoneyReceiptService
 {
     public function get(array $queryParams = [])
     {
-        $queryBuilder = StudentInvoiceHD::with(['student','user'])->withSum('details', 'amount')->where('status', 'Confirmed')->whereIn(DB::raw("LEFT(insnumber, 4)"), ['MR--'])->orderBy('id', 'DESC');
+        $queryBuilder = StudentInvoiceHD::with(['student','user'])->withSum('details', 'amount')->whereIn(DB::raw("LEFT(insnumber, 4)"), ['MR--'])->orderBy('id', 'DESC');
         $query = resolve(AllInvoiceFiltter::class)->getResults([
             'builder' => $queryBuilder,
 

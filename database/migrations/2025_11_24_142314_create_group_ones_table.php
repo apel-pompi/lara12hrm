@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('group_ones', function (Blueprint $table) {
             $table->id();
-             $table->integer('groupone')->unique();
+             $table->integer('code')->unique();
             $table->string('description')->unique();
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();

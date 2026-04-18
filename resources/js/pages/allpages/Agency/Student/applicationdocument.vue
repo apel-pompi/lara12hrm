@@ -275,7 +275,7 @@ const downloadFile = (documentId: number) => {
                             <div v-if="openIndex === index" class="border-t bg-gray-50 px-4 py-3">
                                 <div v-for="check in stage.document_checks || []" :key="check.id" class="flex items-center gap-2 py-1">
                                     <!-- Check Icon -->
-                                    <CloudUpload @click="openDialog(stage, check)" class="h-4 w-4 flex-shrink-0 text-green-500" />
+                                    <CloudUpload @click="openDialog(stage, check)" class="h-4 w-4 shrink-0 text-green-500" />
                                     <!-- Document Name -->
                                     <span class="text-xs text-gray-700">
                                         {{ check.documenttype.docname }}
@@ -370,7 +370,7 @@ const downloadFile = (documentId: number) => {
                 <!-- Body -->
                 <div class="mt-4 flex flex-col gap-4">
                     <!-- Folder Tree -->
-                    <div class="max-h-[300px] overflow-auto rounded border bg-gray-50 p-3">
+                    <div class="max-h-75 overflow-auto rounded border bg-gray-50 p-3">
                         <RecursiveFolder :folders="[props.folderNames]" v-model:selectedFolder="selectedFolder" />
                     </div>
 
@@ -411,7 +411,7 @@ const downloadFile = (documentId: number) => {
             </DialogContent>
         </Dialog>
         <Dialog v-model:open="showDialogChecklist">
-            <DialogContent class="max-w-[825px]">
+            <DialogContent class="max-w-206.25">
                 <!-- Header -->
                 <DialogHeader>
                     <DialogDescription> Manage your document check list here. Click save when you're done. </DialogDescription>

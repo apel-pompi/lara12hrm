@@ -43,7 +43,7 @@ class LeaveController extends Controller
 
         $leaveplan = Leaveplan::where('active', 1)->orderBy('id', 'desc')->get();
 
-
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
 
         $perPage = $request->query('per_page', 10);

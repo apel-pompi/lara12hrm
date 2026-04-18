@@ -133,7 +133,7 @@ class InstallmentController extends Controller
     public function updateStatus(Request $request, $installment)
     {
         try {
-            $this->authorize('Installment.updateStatus');
+            $this->authorize('Installment.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

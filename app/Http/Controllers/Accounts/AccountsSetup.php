@@ -27,7 +27,7 @@ class AccountsSetup extends Controller
         }
 
         return Inertia::render('allpages/accounts/setting/groupone', [
-            'code' => GroupOne::select(DB::raw("IF(MAX('groupone') IS NULL,1,MAX(`groupone`)+1) as onecode"))->first(),
+            'code' => GroupOne::select(DB::raw("IF(MAX('code') IS NULL,1,MAX(`code`)+1) as onecode"))->first(),
             'groupone' => GroupOne::with(['user'])->paginate(10)
         ]);
     }
@@ -47,9 +47,9 @@ class AccountsSetup extends Controller
         $idcode = $GroupOne . '0' . +1;
 
         return Inertia::render('allpages/accounts/setting/grouptwo', [
-            'groupone' => GroupOne::where('groupone', $GroupOne)->first(),
+            'groupone' => GroupOne::where('code', $GroupOne)->first(),
 
-            'code' => GroupTwo::select(DB::raw("IF(MAX('grouptwo') IS NULL,$idcode,MAX(`grouptwo`)+1) as twocode"))->where('groupone', $GroupOne)->first(),
+            'code' => GroupTwo::select(DB::raw("IF(MAX('code') IS NULL,$idcode,MAX(`code`)+1) as twocode"))->where('groupone', $GroupOne)->first(),
 
             'grouptwo' => GroupTwo::with(['GroupOne', 'user'])->where('groupone', $GroupOne)->paginate(10)
         ]);
@@ -57,7 +57,7 @@ class AccountsSetup extends Controller
 
     public function Groupthree($GroupOne, $GroupTwo)
     {
-
+        
         try {
             $this->authorize('accsetting.GroupThree');
         } catch (AuthorizationException $e) {
@@ -66,36 +66,31 @@ class AccountsSetup extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
+
         
-        // GroupThree full info if exists
-        $groupthree = GroupThree::with(['GroupOne', 'GroupTwo'])
-            ->where('groupone', $GroupOne)
-            ->where('grouptwo', $GroupTwo)
-            ->first();
-
         // If not exist then GroupTwo info only
-        $fallbackTwo = GroupTwo::with('GroupOne')
+        $grouptwo = GroupTwo::with('GroupOne')
             ->where('groupone', $GroupOne)
-            ->where('grouptwo', $GroupTwo)
+            ->where('id', $GroupTwo)
             ->first();
-
+        
         // Generate auto three code
         $codethree = GroupThree::where('groupone', $GroupOne)
             ->where('grouptwo', $GroupTwo)
-            ->selectRaw("IF(MAX(RIGHT(groupthree,3)) IS NULL, 1, MAX(RIGHT(groupthree,3)) + 1) AS threecode")
+            ->selectRaw("IF(MAX(RIGHT(code,3)) IS NULL, 1, MAX(RIGHT(code,3)) + 1) AS threecode")
             ->first()
             ->threecode;
-
+        
         if ($codethree <= 9) {
-            $code = "{$GroupTwo}-00{$codethree}";
+            $code = "{$grouptwo->code}-00{$codethree}";
         } elseif ($codethree <= 99) {
-            $code = "{$GroupTwo}-0{$codethree}";
+            $code = "{$grouptwo->code}-0{$codethree}";
         } else {
-            $code = "{$GroupTwo}-{$codethree}";
+            $code = "{$grouptwo->code}-{$codethree}";
         }
-
+        
         return Inertia::render('allpages/accounts/setting/groupthree', [
-            'groupInfo'  => $groupthree ?: $fallbackTwo,
+            'groupInfo'  => $grouptwo,
             'code'       => $code,
             'groupthree' => GroupThree::with(['GroupOne', 'GroupTwo', 'user'])
                 ->where('groupone', $GroupOne)

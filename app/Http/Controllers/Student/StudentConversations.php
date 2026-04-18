@@ -51,8 +51,14 @@ class StudentConversations extends Controller
                 'lastactivity' => null,
                 'user_id' => Auth::id()
             ]);
-            $student->update(['status' => 1]);
-            return back()->with('message', 'Conversation created successfully!');
+            if (is_null($student->status)) {
+
+                $student->update([
+                    'status' => 1
+                ]);
+
+                return back()->with('message', 'Conversation created successfully!');
+            }
         } else {
             return back()->with('error', 'Unable to storage');
         }
@@ -60,7 +66,7 @@ class StudentConversations extends Controller
 
     public function fetchData($conversation)
     {
-        $fechData = StudentUtility::with('user','student')->where('student_id',$conversation)->where('name','conversations')->get();
+        $fechData = StudentUtility::with('user', 'student')->where('student_id', $conversation)->where('name', 'conversations')->get();
         return response()->json([
             'success' => true,
             'data' => $fechData,

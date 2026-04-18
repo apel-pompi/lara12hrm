@@ -11,8 +11,9 @@ class Student
     public function get(array $queryParams = [])
     {
         $user = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
         $roles = $user->getRoleNames();
-        $queryBuilder = ModelsStudent::with(['user', 'assainuser', 'source', 'country'])
+        $queryBuilder = ModelsStudent::with(['user:id,name', 'assainuser:id,name', 'stage:id,name', 'source:id,name'])
             ->orderBy('id', 'DESC');
 
         if (! $roles->intersect(['superadmin', 'Admin', 'Manager'])->count()) {

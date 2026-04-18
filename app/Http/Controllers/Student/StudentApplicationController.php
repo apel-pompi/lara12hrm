@@ -455,7 +455,7 @@ class StudentApplicationController extends Controller
     public function updateCheckList(Student $student, StudentApplication $studentApplication, Request $request)
     {
 
-        $this->authorize('workflowDocumentCheck.store');
+        $this->authorize('DocumentCheck.store');
 
         $validated = $request->validate([
             'workflow_id' => 'required|integer',

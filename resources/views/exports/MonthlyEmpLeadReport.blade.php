@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Monthly Lead Information Report</title>
+    <title>SALES OVERWIEW REPORT</title>
     <style>
         body {
             font-family: 'Segoe UI', 'DejaVu Sans', 'Helvetica Neue', Arial, sans-serif;
@@ -310,7 +310,7 @@
     <!-- Header -->
     <header>
         <div class="report-title">
-            MONTHLY LEAD INFORMATION REPORT
+            SALES OVERWIEW REPORT
         </div>
     </header>
 

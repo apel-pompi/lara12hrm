@@ -361,40 +361,32 @@ function eventsForDate(date: Date | null) {
                                 method="get"
                             >
                                 <div
-                                    class="group relative min-h-[80px] cursor-pointer rounded-lg border border-gray-200 p-2 dark:border-gray-800"
+                                    class="group relative flex min-h-20 cursor-pointer items-center justify-center rounded-lg border border-gray-200 p-2 dark:border-gray-800"
                                     :class="
                                         eventsForDate(day).length
                                             ? 'border-blue-500 bg-blue-300 dark:bg-blue-900/20'
                                             : 'border-gray-200 dark:border-gray-800'
                                     "
                                 >
-                                    <div v-if="day" class="font-medium text-gray-900 dark:text-gray-100">{{ day.getDate() }}</div>
-                                    <div v-for="event in eventsForDate(day)" :key="event.id" class="mt-1 rounded px-2 py-1 text-xs text-white">
-                                        <div class="text-[10px] text-black">{{ event.datetime.split(' ')[1] }}</div>
-                                    </div>
-                                    <div
-                                        v-if="eventsForDate(day).length"
-                                        class="pointer-events-none absolute top-full left-1/2 z-50 mt-2 w-max -translate-x-1/2 rounded-md bg-gray-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100"
-                                    >
-                                        <!-- Tooltip Content -->
-                                        <div v-for="event in eventsForDate(day)" :key="event.id" class="mb-1 last:mb-0">
-                                            <div class="font-semibold">{{ event.name }}</div>
-                                            <div class="text-gray-300">{{ event.datetime }}</div>
-                                            <div class="text-gray-300">{{ event.discus }}</div>
-                                            <div class="text-[10px] text-gray-400">{{ event.fname }} {{ event.lname }}</div>
-                                            <div class="text-[10px] text-gray-400">{{ event.phone }}</div>
-                                        </div>
+                                    <div v-if="day" class="font-medium text-gray-900 dark:text-gray-100">
+                                        {{ day.getDate() }}
                                     </div>
                                 </div>
                             </Link>
-                            <div v-else class="group relative min-h-[80px] cursor-pointer rounded-lg border border-gray-200 p-2 dark:border-gray-800">
-                                <div v-if="day" class="font-medium text-gray-900 dark:text-gray-100">{{ day.getDate() }}</div>
+
+                            <div
+                                v-else
+                                class="group relative flex min-h-20 items-center justify-center rounded-lg border border-gray-200 p-2 dark:border-gray-800"
+                            >
+                                <div v-if="day" class="font-medium text-gray-900 dark:text-gray-100">
+                                    {{ day.getDate() }}
+                                </div>
                             </div>
                         </template>
                     </div>
                 </div>
             </div>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 rounded-xl border md:min-h-min">
                 <PlaceholderPattern />
             </div>
         </div>

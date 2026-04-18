@@ -22,9 +22,9 @@ class StoreGroupThreeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'groupone' => ['required', 'exists:group_ones,groupone'],
-            'grouptwo' => ['required', 'exists:group_twos,grouptwo'],
-            'groupthree' => ['required', 'string', 'max:255', 'unique:group_threes,groupthree'],
+            'groupone' => ['required', 'exists:group_ones,id'],
+            'grouptwo' => ['required', 'exists:group_twos,id'],
+            'code' => ['required', 'string', 'max:255', 'unique:group_threes,code'],
             'description' => ['required', 'string', 'max:255', 'unique:group_threes,description'],
             'active' => ['nullable', 'integer', 'in:0,1'],
         ];

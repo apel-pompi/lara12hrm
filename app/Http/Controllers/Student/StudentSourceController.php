@@ -158,7 +158,7 @@ class StudentSourceController extends Controller
     public function updateStatus(Request $request, $student)
     {
         try {
-            $this->authorize('StudentSource.updateStatus');
+            $this->authorize('StudentSource.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

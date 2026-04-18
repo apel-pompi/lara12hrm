@@ -124,7 +124,7 @@ class GeneralController extends Controller
     public function updateStatus(Request $request, $general)
     {
         try {
-            $this->authorize('general.updateStatus');
+            $this->authorize('general.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
@@ -217,7 +217,7 @@ class GeneralController extends Controller
     public function patnersetupUpdateStatus(Request $request, $patnersetup)
     {
         try {
-            $this->authorize('patnerSetting.updateStatus');
+            $this->authorize('patnerSetting.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
@@ -310,7 +310,7 @@ class GeneralController extends Controller
     public function producttypeUpdateStatus(Request $request, $productsetup)
     {
         try {
-            $this->authorize('productSetting.updateStatus');
+            $this->authorize('productSetting.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

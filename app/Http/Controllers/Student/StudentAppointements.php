@@ -34,7 +34,7 @@ class StudentAppointements extends Controller
 
     public function store(Student $student, Request $request)
     {
-        
+
         $request->validate([
             'apdate' => 'required|string',
             'discus' => 'required|string|max:1000',
@@ -44,9 +44,13 @@ class StudentAppointements extends Controller
             $request->apdate
         )->format('Y-m-d H:i:s');
 
-        $student->update([
-            'status'      => 1,
-        ]);
+        if (is_null($student->status)) {
+
+            $student->update([
+                'status' => 1
+            ]);
+        }
+
 
         Notification::create([
             'user_id' => Auth::id(),

@@ -4,28 +4,36 @@ namespace App\Services\Agency\Student;
 
 use App\Filters\Agency\Student\ActivityFilter;
 use App\Models\Student\StudentUtility;
+use Illuminate\Support\Facades\Auth;
 
 class AppoinmentsService
 {
     public function get(array $queryParams = [])
     {
-        $queryBuilder = StudentUtility::with(['user','student'])
+        $user  = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
+        $roles = $user->getRoleNames();
+
+        $query = StudentUtility::with(['user', 'student'])
             ->where('name', 'appoinments')
-            ->orderBy('id', 'DESC');
+            ->latest();
+
+        // Restrict non-admin users
+        if (! $roles->intersect(['superadmin', 'Admin', 'Manager'])->isNotEmpty()) {
+            $query->where('user_id', $user->id);
+        }
 
         if (!empty($queryParams['id'])) {
-            $queryBuilder->where('id', $queryParams['id']);
+            $query->where('id', $queryParams['id']);
         }
 
         if (!empty($queryParams['student_id'])) {
-            $queryBuilder->where('student_id', $queryParams['student_id']);
+            $query->where('student_id', $queryParams['student_id']);
         }
 
-        $student = resolve(ActivityFilter::class)->getResults([
-            'builder' => $queryBuilder,
-            'params' => $queryParams
+        return resolve(ActivityFilter::class)->getResults([
+            'builder' => $query,
+            'params'  => $queryParams,
         ]);
-        return $student;
-
     }
 }

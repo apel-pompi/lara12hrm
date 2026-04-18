@@ -161,7 +161,7 @@ const onReport = async (invId: number, student_id: number) => {
     <Head title="All Invoices" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
             <div class="flex flex-wrap items-center gap-4 py-4">
                 <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedInvoice">
@@ -213,7 +213,7 @@ const onReport = async (invId: number, student_id: number) => {
                                 class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                 placeholder="Select student ID..."
                                 :display-value="(invoice) => invoice?.student_id ?? ''"
-                                @input="queryInvoice = $event.target.value"
+                                @input="queryStudentID = $event.target.value"
                             />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
@@ -409,7 +409,7 @@ const onReport = async (invId: number, student_id: number) => {
                                 <div class="group relative inline-block">
                                     <Button
                                         v-if="inv.status === 'Confirmed'"
-                                        class="m-[2px] cursor-pointer"
+                                        class="cursor-pointer"
                                         size="sm"
                                         variant="outline"
                                         @click="onReport(inv.id, inv.student_id)"

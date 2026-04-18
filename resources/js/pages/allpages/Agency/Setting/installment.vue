@@ -189,18 +189,28 @@ const goToPage = (url: string | null) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Installment" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
-                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Installment </Button>
-                    <!-- Search start -->
-                    <div class="grid gap-2">
+        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header Actions -->
+                <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <!-- Left Actions -->
+                    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                        <!-- Create -->
+                        <Button
+                            class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
+                            size="sm"
+                            @click="showDailogCreate"
+                        >
+                            <Plus class="mr-2 h-4 w-4" />
+                            Installment
+                        </Button>
+
+                        <!-- Search Combobox -->
                         <Combobox v-model="selecteName">
-                            <div class="relative w-48">
-                                <!-- Input -->
-                                <div class="relative w-full">
+                            <div class="relative w-full sm:w-56">
+                                <div class="relative">
                                     <ComboboxInput
-                                        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select name..."
+                                        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                        placeholder="Search installment..."
                                         :display-value="(n) => n?.name"
                                         @input="queryName = $event.target.value"
                                     />
@@ -209,14 +219,10 @@ const goToPage = (url: string | null) => {
                                     </ComboboxButton>
                                 </div>
 
-                                <!-- Options -->
                                 <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                                    class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-xl ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
                                 >
-                                    <div
-                                        v-if="filteredName.length === 0 && queryName !== ''"
-                                        class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                    >
+                                    <div v-if="filteredName.length === 0 && queryName !== ''" class="px-4 py-2 text-gray-500 select-none">
                                         Nothing found.
                                     </div>
 
@@ -227,9 +233,10 @@ const goToPage = (url: string | null) => {
                                         class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
                                         v-slot="{ selected }"
                                     >
-                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        <span :class="selected ? 'font-medium' : 'font-normal'" class="block truncate">
                                             {{ n.name }}
                                         </span>
+
                                         <span
                                             v-if="selected"
                                             class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
@@ -240,18 +247,33 @@ const goToPage = (url: string | null) => {
                                 </ComboboxOptions>
                             </div>
                         </Combobox>
-                    </div>
-                    <div class="grid gap-2">
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                    </div>
-                    <div class="grid gap-2">
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+
+                        <!-- Search -->
+                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-700" variant="outline" size="sm" @click="search">
+                            <Search class="mr-2 h-4 w-4" />
+                            Search
+                        </Button>
+
+                        <!-- Refresh -->
+                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-700" variant="outline" size="sm" @click="refresh">
+                            <RefreshCcw class="mr-2 h-4 w-4" />
+                            Refresh
+                        </Button>
                     </div>
                 </div>
-                <div class="rounded-md border">
+
+                <!-- Table Card -->
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Installment Plan</h2>
+                        <p class="text-sm text-gray-500">Manage all installment records from here.</p>
+                    </div>
+
+                    <!-- Table -->
                     <Table>
                         <TableHeader>
-                            <TableRow>
+                            <TableRow class="bg-gray-100">
                                 <TableHead>Name</TableHead>
                                 <TableHead>Added Date</TableHead>
                                 <TableHead>Added By</TableHead>
@@ -259,40 +281,67 @@ const goToPage = (url: string | null) => {
                                 <TableHead class="text-center">Action</TableHead>
                             </TableRow>
                         </TableHeader>
+
                         <TableBody>
-                            <TableRow v-for="(fee, index) in data.data" :key="fee.id ?? index">
-                                <TableCell>{{ fee.name }}</TableCell>
-                                <TableCell>{{ fee.adddate }}</TableCell>
-                                <TableCell>{{ fee.user.name }}</TableCell>
+                            <TableRow v-for="(acc, index) in data.data" :key="acc.id ?? index" class="transition hover:bg-gray-50">
+                                <TableCell class="font-medium text-gray-800">
+                                    {{ acc.name }}
+                                </TableCell>
+
                                 <TableCell>
-                                    <Switch v-model="fee.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(fee)"> </Switch>
+                                    {{ acc.adddate }}
+                                </TableCell>
+
+                                <TableCell>
+                                    {{ acc.user.name }}
+                                </TableCell>
+
+                                <TableCell>
+                                    <Switch v-model="acc.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(acc)" />
                                 </TableCell>
 
                                 <TableCell class="text-right">
-                                    <Button size="sm" variant="outline" @click="onEdit(fee.id)"><SquarePen></SquarePen></Button>
-                                    <Button size="sm" variant="outline" @click="onDelete(fee.id)"><Trash></Trash></Button>
+                                    <div class="flex justify-end gap-2">
+                                        <Button size="sm" variant="outline" @click="onEdit(acc.id)" class="hover:bg-indigo-50">
+                                            <SquarePen class="h-4 w-4 text-indigo-600" />
+                                        </Button>
+
+                                        <Button size="sm" variant="outline" @click="onDelete(acc.id)" class="hover:bg-red-50">
+                                            <Trash class="h-4 w-4 text-red-500" />
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </div>
 
-                <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
-                    <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
-                        <label for="per-page" class="text-gray-600">Show:</label>
-                        <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
-                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                <!-- Pagination -->
+                <div class="mt-5 flex flex-col items-center justify-between gap-4 md:flex-row">
+                    <!-- Left -->
+                    <div class="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                        <label>Show:</label>
+
+                        <select v-model="perPage" @change="changePerPage" class="rounded-md border px-2 py-1 text-sm">
+                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
+                                {{ size }}
+                            </option>
                         </select>
-                        <span>Showing {{ installment.from }} to {{ installment.to }} of {{ installment.total }} results</span>
+
+                        <span> Showing {{ installment.from }} to {{ installment.to }} of {{ installment.total }} results </span>
                     </div>
-                    <div class="space-x-2">
+
+                    <!-- Right -->
+                    <div class="flex flex-wrap gap-2">
                         <Button
                             v-for="(link, index) in data.links"
                             :key="index"
                             :disabled="!link.url"
-                            variant="outline"
                             size="sm"
-                            :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                            :class="[
+                                link.active ? 'bg-indigo-600 text-white hover:bg-indigo-700' : '',
+                                !link.url ? 'cursor-not-allowed opacity-50' : '',
+                            ]"
                             @click="goToPage(link.url)"
                         >
                             <span v-html="link.label"></span>
@@ -300,6 +349,7 @@ const goToPage = (url: string | null) => {
                     </div>
                 </div>
             </div>
+            
             <!-- Dialog -->
             <Dialog v-model:open="showDialog">
                 <DialogContent class="max-w-lg rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl">

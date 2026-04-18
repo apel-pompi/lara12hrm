@@ -94,21 +94,30 @@ const showDailogCreate = (stageId: number) => {
 
 const onEdit = async (id: number) => {
     try {
-        const res = await fetch(`/workflow/${id}/edit`);
+        const res = await fetch(`/documentlist/${id}/adddoctypeEdit`);
 
-        if (!res.ok) {
-            toast.error('Server error while fetching department details.');
+        if (res.status === 403) {
+            const response = await res.json();
+            toast.error(response.message);
             return;
         }
+        const response = await res.json();
 
-        const data = await res.json();
-        Object.assign(form, data.data);
-        form.id = data.data.id;
+        Object.assign(form, response.data);
+
+        form.id = response.data.id;
+        form.doctype_id = response.data.id;
+
+        // first relation row
+        if (response.data.docusage.length > 0) {
+            form.workflow_id = response.data.docusage[0].workflow_id;
+            form.workstage_id = response.data.docusage[0].workstage_id;
+        }
 
         isEditMode.value = true;
         showDialog.value = true;
     } catch (error) {
-        console.error('Fetch error:', error);
+        console.error(error);
     }
 };
 
@@ -140,6 +149,33 @@ const submit = () => {
     });
 };
 
+const deleteForm = useForm({});
+
+const onDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this document checklist?')) return;
+
+    if (deleteForm.processing) return;
+
+    deleteForm.delete(`/documentlist/${id}/adddoctypeDelete`, {
+        onSuccess: (page) => {
+            if (page.props.flash.success) {
+                toast.success(page.props.flash.success);
+            }
+
+            if (page.props.flash.error) {
+                toast.error(page.props.flash.error);
+            }
+        },
+
+        onError: () => {
+            toast.error('Something went wrong!');
+        },
+
+        preserveScroll: true,
+        preserveState: false,
+    });
+};
+
 const goToWorkflow = () => {
     router.visit('/workflow');
 };
@@ -149,72 +185,104 @@ const goToWorkflow = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Workflows" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
-                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToWorkflow"><CornerDownLeft></CornerDownLeft>Back Workflows </Button>
-                    <!-- <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Document Check List </Button> -->
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Top Bar -->
+                <div class="mb-6 flex flex-wrap items-center gap-3">
+                    <Button class="shadow-sm dark:bg-black dark:text-white dark:hover:bg-gray-700" variant="outline" size="sm" @click="goToWorkflow">
+                        <CornerDownLeft class="mr-2 h-4 w-4" />
+                        Back Workflows
+                    </Button>
                 </div>
-                <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                    <!-- Title -->
-                    <h2 class="mb-4 text-xl font-semibold text-gray-800">Edit Document Checklist</h2>
 
-                    <!-- Selected Workflow -->
-                    <div class="mb-6">
-                        <p class="text-sm text-gray-500">Selected Workflow</p>
-                        <h3 class="text-lg font-bold text-indigo-600">{{ data.name }}</h3>
+                <!-- Main Card -->
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
+                    <!-- Header -->
+                    <div class="mb-6 flex flex-col gap-2 border-b pb-5 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Edit Document Checklist</h2>
+                            <p class="text-sm text-gray-500">Manage required documents for each workflow stage.</p>
+                        </div>
+
+                        <div class="rounded-xl bg-indigo-50 px-4 py-3 text-right">
+                            <p class="text-xs font-medium text-gray-500">Selected Workflow</p>
+                            <h3 class="text-lg font-bold text-indigo-600">
+                                {{ data.name }}
+                            </h3>
+                        </div>
                     </div>
 
-                    <hr class="my-4" />
-
-                    <!-- Checklist Info -->
-                    <div class="mb-6">
-                        <p class="font-medium text-gray-700">Document Checklist</p>
-                        <p class="text-sm text-gray-500">Create your document checklist based on your selected workflow stages</p>
-                    </div>
-
+                    <!-- Stages -->
                     <div class="space-y-6">
-                        <!-- Stage with checklist items -->
+                        <div
+                            v-for="(stage, index) in data.stages"
+                            :key="stage.id ?? index"
+                            class="rounded-2xl border border-gray-200 bg-gray-50 p-5 shadow-sm"
+                        >
+                            <!-- Stage Header -->
+                            <div class="mb-4 flex items-center justify-between border-b pb-3">
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    {{ stage.stagename }}
+                                </h3>
 
-                        <div v-for="(stage, index) in data.stages" :key="stage.id ?? index" class="mb-6">
-                            <p class="mb-2 font-semibold text-gray-900">{{ stage.stagename }}</p>
+                                <Label
+                                    @click="showDailogCreate(stage.id)"
+                                    class="flex cursor-pointer items-center gap-1 rounded-md bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-700 transition hover:bg-indigo-200"
+                                >
+                                    <Plus class="h-4 w-4" />
+                                    Add Checklist
+                                </Label>
+                            </div>
 
-                            <div class="space-y-2">
-                                <!-- Checklist Item -->
+                            <!-- Checklist Items -->
+                            <div class="space-y-3">
                                 <div
                                     v-for="doc in stage.document_checks"
-                                    :key="doc.id ?? index"
-                                    class="flex items-center justify-between rounded-md border p-2"
+                                    :key="doc.id"
+                                    class="group flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 transition hover:shadow-md"
                                 >
-                                    <div class="flex items-center gap-2">
-                                        <Check class="h-4 w-4 text-gray-500" />
-                                        <span>{{ doc.documenttype.docname }}</span>
+                                    <!-- Left -->
+                                    <div class="flex items-center gap-3">
+                                        <div class="rounded-full bg-green-100 p-2">
+                                            <Check class="h-4 w-4 text-green-600" />
+                                        </div>
+
+                                        <div>
+                                            <p class="font-medium text-gray-800">
+                                                {{ doc.documenttype.docname }}
+                                            </p>
+                                            <p class="text-xs text-gray-500">Required for this stage</p>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-2 text-gray-500">
-                                        <span class="text-sm">All Partners</span>
-                                        <Trash class="h-4 w-4 cursor-pointer hover:text-red-600" />
-                                        <SquarePen class="h-4 w-4 cursor-pointer hover:text-indigo-600" />
+
+                                    <!-- Right -->
+                                    <div class="flex items-center gap-3">
+                                        <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600"> All Partners </span>
+
+                                        <Button size="icon" variant="ghost" @click="onEdit(doc.documenttype.id)" class="hover:bg-indigo-50">
+                                            <SquarePen class="h-4 w-4 text-indigo-600" />
+                                        </Button>
+
+                                        <Button size="icon" variant="ghost" @click="onDelete(doc.id)" class="hover:bg-red-50">
+                                            <Trash class="h-4 w-4 text-red-500" />
+                                        </Button>
                                     </div>
                                 </div>
 
-                                <!-- Add new checklist -->
-                                <Label
-                                    @click="showDailogCreate(stage.id)"
-                                    class="font-sm flex cursor-pointer items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800"
-                                    ><Plus></Plus> Add New Checklist</Label
+                                <!-- Empty State -->
+                                <div
+                                    v-if="stage.document_checks.length === 0"
+                                    class="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-6 text-center text-sm text-gray-400"
                                 >
+                                    No checklist added yet.
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="flex items-center justify-end space-x-2 py-4">
-                    <div class="text-muted-foreground flex-1 text-sm"></div>
-                    <div class="space-x-2"></div>
-                </div>
             </div>
             <!-- Dialog -->
             <Dialog v-model:open="showDialog">
-                <DialogContent class="max-w-[825px]">
+                <DialogContent class="max-w-206.25">
                     <!-- Header -->
                     <DialogHeader>
                         <DialogTitle>

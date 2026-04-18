@@ -114,7 +114,7 @@ class WDocumentTypeController extends Controller
     public function updateStatus(Request $request, $id)
     {
         try {
-            $this->authorize('workflowDocument.updateStatus');
+            $this->authorize('workflowDocument.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

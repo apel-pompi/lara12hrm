@@ -159,7 +159,7 @@ class StudentStageController extends Controller
     public function updateStatus(Request $request, $student)
     {
         try {
-            $this->authorize('StudentStage.updateStatus');
+            $this->authorize('StudentStage.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

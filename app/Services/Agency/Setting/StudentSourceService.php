@@ -9,7 +9,7 @@ class StudentSourceService
 {
     public function get(array $queryParams = [])
     {
-        $queryBuilder = StudentSource::with('user')->orderBy('id', 'DESC');
+        $queryBuilder = StudentSource::with('user')->withCount('usage')->orderBy('id', 'DESC');
 
         $student = resolve(StudentSourceFilter::class)->getResults([
             'builder' => $queryBuilder,

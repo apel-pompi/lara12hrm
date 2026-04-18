@@ -20,6 +20,7 @@ export interface Master {
     id: number;
     catname: string;
     catadddate: string;
+    partner_count: number;
     user_id: number;
     active: number;
 }
@@ -193,133 +194,184 @@ const goToPage = (url: string | null) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Master Setup" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-                <div class="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
-                    <!-- Left actions -->
-                    <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
-                        <!-- Create Master Category -->
-                        <Button class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate" >
-                            <Plus class="mr-2 h-4 w-4" /> Master Category
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header / Toolbar -->
+                <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <!-- Left Side -->
+                    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                        <!-- Create -->
+                        <Button
+                            class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
+                            size="sm"
+                            @click="showDailogCreate"
+                        >
+                            <Plus class="mr-2 h-4 w-4" />
+                            Master Category
                         </Button>
 
-                        <!-- Search Box -->
-                        <div class="flex w-full items-center gap-2 sm:w-auto">
-                            <Combobox v-model="selecteName" class="w-full sm:w-56">
-                                <div class="relative w-full">
-                                    <!-- Input -->
-                                    <div class="relative">
-                                        <ComboboxInput
-                                            class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                            placeholder="search name..."
-                                            :display-value="(n) => n?.catname"
-                                            @input="queryName = $event.target.value"
-                                        />
-                                        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                        </ComboboxButton>
+                        <!-- Search Combobox -->
+                        <Combobox v-model="selecteName">
+                            <div class="relative w-full sm:w-72">
+                                <div class="relative">
+                                    <ComboboxInput
+                                        class="h-10 w-full rounded-xl border border-gray-300 bg-white py-2 pr-10 pl-4 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                        placeholder="Search category..."
+                                        :display-value="(n) => n?.catname"
+                                        @input="queryName = $event.target.value"
+                                    />
+
+                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                    </ComboboxButton>
+                                </div>
+
+                                <ComboboxOptions
+                                    class="absolute z-20 mt-2 max-h-60 w-full overflow-auto rounded-xl border bg-white py-2 shadow-xl dark:border-gray-700 dark:bg-gray-900"
+                                >
+                                    <div v-if="filteredName.length === 0 && queryName !== ''" class="px-4 py-2 text-sm text-gray-500">
+                                        No result found
                                     </div>
 
-                                    <!-- Options -->
-                                    <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                                    <ComboboxOption
+                                        v-for="n in filteredName"
+                                        :key="n.id"
+                                        :value="n"
+                                        v-slot="{ selected }"
+                                        class="relative cursor-pointer px-4 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-gray-800"
                                     >
-                                        <div
-                                            v-if="filteredName.length === 0 && queryName !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
-                                            Nothing found.
-                                        </div>
+                                        <span class="block truncate">
+                                            {{ n.catname }}
+                                        </span>
 
-                                        <ComboboxOption
-                                            v-for="n in filteredName"
-                                            :key="n.id"
-                                            :value="n"
-                                            class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                            v-slot="{ selected }"
-                                        >
-                                            <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                                {{ n.catname }}
-                                            </span>
-                                            <span
-                                                v-if="selected"
-                                                class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                            >
-                                                <CheckIcon class="h-5 w-5" />
-                                            </span>
-                                        </ComboboxOption>
-                                    </ComboboxOptions>
-                                </div>
-                            </Combobox>
-                        </div>
+                                        <CheckIcon v-if="selected" class="absolute top-2.5 right-3 h-4 w-4 text-indigo-600" />
+                                    </ComboboxOption>
+                                </ComboboxOptions>
+                            </div>
+                        </Combobox>
 
-                        <!-- Search + Refresh -->
-                        <div class="flex gap-2">
-                            <Button class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="search">
-                                <Search class="mr-1 h-4 w-4" /> Search
-                            </Button>
-                            <Button variant="outline" size="sm" @click="refresh" class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-600">
-                                <RefreshCcw class="mr-1 h-4 w-4" /> Refresh
-                            </Button>
-                        </div>
+                        <!-- Search -->
+                        <Button variant="outline" class="h-10 rounded-xl px-4" size="sm" @click="search">
+                            <Search class="mr-2 h-4 w-4" />
+                            Search
+                        </Button>
+
+                        <!-- Refresh -->
+                        <Button variant="outline" class="h-10 rounded-xl px-4" size="sm" @click="refresh">
+                            <RefreshCcw class="mr-2 h-4 w-4" />
+                            Refresh
+                        </Button>
                     </div>
 
-                    <!-- Right actions -->
-                    <div class="flex justify-end gap-2">
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToPartnerType"> <HousePlus class="mr-1 h-4 w-4" /> Partner Type </Button>
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToProductType"> <PackageSearch class="mr-1 h-4 w-4" /> Product Type </Button>
+                    <!-- Right Side -->
+                    <div class="flex flex-col gap-2 sm:flex-row">
+                        <Button variant="outline" class="h-10 rounded-xl px-4" size="sm" @click="goToPartnerType">
+                            <HousePlus class="mr-2 h-4 w-4" />
+                            Partner Type
+                        </Button>
+
+                        <Button variant="outline" class="h-10 rounded-xl px-4" size="sm" @click="goToProductType">
+                            <PackageSearch class="mr-2 h-4 w-4" />
+                            Product Type
+                        </Button>
                     </div>
                 </div>
 
-                <div class="rounded-md border">
+                <!-- Table Card -->
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Master Category</h2>
+                        <p class="text-sm text-gray-500">Manage all master categories from here.</p>
+                    </div>
                     <Table>
                         <TableHeader>
-                            <TableRow>
-                                <TableHead>Catergory Name</TableHead>
-                                <TableHead>Added Date</TableHead>
-                                <TableHead>Total Usage</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Added By</TableHead>
-                                <TableHead class="text-center">Action</TableHead>
+                            <TableRow class="bg-gray-100 hover:bg-gray-100">
+                                <TableHead class="font-semibold">Category Name</TableHead>
+                                <TableHead class="font-semibold">Added Date</TableHead>
+                                <TableHead class="text-center font-semibold">Usage</TableHead>
+                                <TableHead class="text-center font-semibold">Status</TableHead>
+                                <TableHead class="font-semibold">Added By</TableHead>
+                                <TableHead class="text-center font-semibold">Action</TableHead>
                             </TableRow>
                         </TableHeader>
+
                         <TableBody>
-                            <TableRow v-for="(master, index) in data.data" :key="master.id ?? index">
-                                <TableCell>{{ master.catname }}</TableCell>
-                                <TableCell>{{ master.catadddate }}</TableCell>
-                                <TableCell></TableCell>
+                            <TableRow v-for="(master, index) in data.data" :key="master.id ?? index" class="hover:bg-gray-50">
+                                <TableCell class="font-medium text-gray-800">
+                                    {{ master.catname }}
+                                </TableCell>
+
                                 <TableCell>
-                                    <Switch v-model="master.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(master)"> </Switch>
+                                    {{ master.catadddate }}
                                 </TableCell>
-                                <TableCell>{{ master.user.name }}</TableCell>
-                                <TableCell class="text-right">
-                                    <Button size="sm" variant="outline" @click="onEdit(master.id)"><SquarePen></SquarePen></Button>
-                                    <Button  size="sm" variant="outline" @click="onDelete(master.id)"><Trash></Trash></Button>
+
+                                <TableCell class="text-center">
+                                    <Badge variant="secondary">
+                                        {{ master.partner_count }}
+                                    </Badge>
                                 </TableCell>
+
+                                <TableCell class="text-center">
+                                    <Switch v-model="master.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(master)" />
+                                </TableCell>
+
+                                <TableCell>
+                                    {{ master.user.name }}
+                                </TableCell>
+
+                                <TableCell>
+                                    <div class="flex justify-center gap-2">
+                                        <Button size="icon" variant="outline" class="h-9 w-9 rounded-lg" @click="onEdit(master.id)">
+                                            <SquarePen class="h-4 w-4 text-blue-600" />
+                                        </Button>
+
+                                        <Button size="icon" variant="outline" class="h-9 w-9 rounded-lg" @click="onDelete(master.id)">
+                                            <Trash class="h-4 w-4 text-red-600" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+
+                            <!-- Empty -->
+                            <TableRow v-if="data.data.length === 0">
+                                <TableCell colspan="6" class="py-10 text-center text-gray-500"> No Data Found </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
-                </div>
 
-                <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
-                    <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
-                        <label for="per-page" class="text-gray-600">Show:</label>
-                        <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
-                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
-                        </select>
-                        <span>Showing {{ mastercategory.from }} to {{ mastercategory.to }} of {{ mastercategory.total }} results</span>
-                    </div>
-                    <div class="space-x-2">
-                        <Button
-                            v-for="(link, index) in data.links"
-                            :key="index"
-                            :disabled="!link.url"
-                            variant="outline"
-                            size="sm"
-                            :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
-                            @click="goToPage(link.url)"
-                        >
-                            <span v-html="link.label"></span>
-                        </Button>
+                    <!-- Footer -->
+                    <div class="flex flex-col gap-4 border-t px-4 py-4 md:flex-row md:items-center md:justify-between">
+                        <!-- Left -->
+                        <div class="flex flex-col gap-2 text-sm text-gray-600 sm:flex-row sm:items-center">
+                            <div class="flex items-center gap-2">
+                                <span>Show</span>
+
+                                <select v-model="perPage" @change="changePerPage" class="rounded-lg border px-2 py-1">
+                                    <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
+                                        {{ size }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <span> Showing {{ mastercategory.from }} to {{ mastercategory.to }} of {{ mastercategory.total }} entries </span>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="flex flex-wrap gap-2">
+                            <Button
+                                v-for="(link, index) in data.links"
+                                :key="index"
+                                :disabled="!link.url"
+                                size="sm"
+                                :class="[
+                                    link.active ? 'bg-indigo-600 text-white hover:bg-indigo-700' : '',
+                                    !link.url ? 'cursor-not-allowed opacity-50' : '',
+                                ]"
+                                @click="goToPage(link.url)"
+                            >
+                                <span v-html="link.label"></span>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>

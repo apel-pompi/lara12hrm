@@ -29,7 +29,6 @@ const props = defineProps<{
     };
 }>();
 
-
 interface FormErrors {
     hrsurplus?: string;
 }
@@ -39,16 +38,15 @@ const errors = ref<FormErrors>();
 const form = useForm({
     id: '',
     hrsurplus: '',
-    branch_id:'',
-    monthname:'',
-    yearname:'',
+    branch_id: '',
+    monthname: '',
+    yearname: '',
 });
 
 const showEditDialog = ref(false);
 
-const onEdit = async (id: number,branch_id:number,monthname:number,yearname:number) => {
-    if (confirm('Are you surplus hour this employee ?')) 
-    form.id = id;
+const onEdit = async (id: number, branch_id: number, monthname: number, yearname: number) => {
+    if (confirm('Are you surplus hour this employee ?')) form.id = id;
     form.branch_id = branch_id;
     form.monthname = monthname;
     form.yearname = yearname;
@@ -86,67 +84,136 @@ const onConfirm = () => {
 <template>
     <Head title="Pay Slip Generate View" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-            <div class="flex items-center gap-2 py-4"></div>
-            <div class="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Employee Name</TableHead>
-                            <TableHead>Department</TableHead>
-                            <TableHead>Designation</TableHead>
-                            <TableHead>Working Hours</TableHead>
-                            <TableHead>Attend Hours</TableHead>
-                            <TableHead>Deduct Hours</TableHead>
-                            <TableHead>Absent</TableHead>
-                            <TableHead>Leave</TableHead>
-                            <TableHead>H.R. Surplus</TableHead>
-                            <TableHead>Net Hours</TableHead>
-                            <TableHead>Payable Hours</TableHead>
-                            <TableHead class="text-center">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(keydata, index) in props.alldata" :key="keydata.id ?? index">
-                            <TableCell>{{ keydata.employee.empname }}</TableCell>
-                            <TableCell>{{ keydata.employee.department.deptname }}</TableCell>
-                            <TableCell>{{ keydata.employee.designation.desname }}</TableCell>
-                            <TableCell>{{ keydata.workhour }}</TableCell>
-                            <TableCell>{{ keydata.totalhour }}</TableCell>
-                            <TableCell>{{ keydata.deducthour }}</TableCell>
-                            <TableCell>{{ keydata.absent }}</TableCell>
-                            <TableCell>{{ keydata.leave }}</TableCell>
-                            <TableCell>{{ keydata.hrsurplus }}</TableCell>
-                            <TableCell>{{ keydata.nethour }}</TableCell>
-                            <TableCell>
-                                <Badge variant="secondary" class="bg-red-500" size="sm" v-if="keydata.payablehour < keydata.workhour">{{
-                                    keydata.payablehour
-                                }}</Badge>
-                                <Badge variant="secondary" class="bg-green-500" size="sm" v-if="keydata.payablehour > keydata.workhour">{{
-                                    keydata.payablehour
-                                }}</Badge>
-                            </TableCell>
-                            
-                            <TableCell>
-                                <div class="group relative" v-if="keydata.payablehour < keydata.workhour">
-                                    <Button class="m-[2px] cursor-pointer" size="sm" variant="outline" @click="onEdit(keydata.id,keydata.branch_id,keydata.monthname,keydata.yearname)">
-                                        <SquarePen class="text-green-500"
-                                    /></Button>
-                                    <span
-                                        class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
-                                    >
-                                        Edit
-                                    </span>
-                                </div>
-                            </TableCell>
-                            
-                        </TableRow>
-                    </TableBody>
-                </Table>
+        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 py-4 md:px-6">
+            <!-- Table Card -->
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <!-- Header -->
+                <div class="border-b bg-gray-50 px-5 py-4">
+                    <h2 class="text-lg font-semibold text-gray-800">Employee Attendance Summary</h2>
+                    <p class="text-sm text-gray-500">Monthly working, attendance & payable hours report</p>
+                </div>
+
+                <!-- Responsive Table -->
+                <div class="overflow-x-auto">
+                    <Table class="min-w-full">
+                        <!-- Table Head -->
+                        <TableHeader>
+                            <TableRow class="bg-gray-50">
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Employee Name</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Department</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Designation</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Working Hours</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Attend Hours</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Deduct Hours</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Absent</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Leave</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">H.R. Surplus</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Net Hours</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Payable Hours</TableHead>
+                                <TableHead class="px-4 py-3 text-center font-semibold text-gray-700">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+
+                        <!-- Body -->
+                        <TableBody>
+                            <TableRow
+                                v-for="(keydata, index) in props.alldata"
+                                :key="keydata.id ?? index"
+                                class="border-t transition hover:bg-gray-50"
+                            >
+                                <!-- Employee -->
+                                <TableCell class="px-4 py-3 font-medium whitespace-nowrap text-gray-800">
+                                    {{ keydata.employee.empname }}
+                                </TableCell>
+
+                                <!-- Department -->
+                                <TableCell class="px-4 py-3 whitespace-nowrap text-gray-600">
+                                    {{ keydata.employee.department.deptname }}
+                                </TableCell>
+
+                                <!-- Designation -->
+                                <TableCell class="px-4 py-3 whitespace-nowrap text-gray-600">
+                                    {{ keydata.employee.designation.desname }}
+                                </TableCell>
+
+                                <!-- Work Hour -->
+                                <TableCell class="px-4 py-3 font-medium">
+                                    {{ keydata.workhour }}
+                                </TableCell>
+
+                                <!-- Attend -->
+                                <TableCell class="px-4 py-3 font-semibold text-green-600">
+                                    {{ keydata.totalhour }}
+                                </TableCell>
+
+                                <!-- Deduct -->
+                                <TableCell class="px-4 py-3 font-semibold text-red-500">
+                                    {{ keydata.deducthour }}
+                                </TableCell>
+
+                                <!-- Absent -->
+                                <TableCell class="px-4 py-3">
+                                    <Badge variant="secondary" class="bg-red-100 text-red-700">
+                                        {{ keydata.absent }}
+                                    </Badge>
+                                </TableCell>
+
+                                <!-- Leave -->
+                                <TableCell class="px-4 py-3">
+                                    <Badge variant="secondary" class="bg-yellow-100 text-yellow-700">
+                                        {{ keydata.leave }}
+                                    </Badge>
+                                </TableCell>
+
+                                <!-- Surplus -->
+                                <TableCell class="px-4 py-3 font-medium text-blue-600">
+                                    {{ keydata.hrsurplus }}
+                                </TableCell>
+
+                                <!-- Net -->
+                                <TableCell class="px-4 py-3 font-semibold">
+                                    {{ keydata.nethour }}
+                                </TableCell>
+
+                                <!-- Payable -->
+                                <TableCell class="px-4 py-3">
+                                    <Badge v-if="keydata.payablehour < keydata.workhour" class="bg-red-500 text-white" size="sm">
+                                        {{ keydata.payablehour }}
+                                    </Badge>
+
+                                    <Badge v-else class="bg-green-500 text-white" size="sm">
+                                        {{ keydata.payablehour }}
+                                    </Badge>
+                                </TableCell>
+
+                                <!-- Action -->
+                                <TableCell class="px-4 py-3 text-center">
+                                    <div class="group relative inline-block" v-if="keydata.payablehour < keydata.workhour">
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            class="h-9 w-9 text-green-600 hover:bg-green-100"
+                                            @click="onEdit(keydata.id, keydata.branch_id, keydata.monthname, keydata.yearname)"
+                                        >
+                                            <SquarePen class="h-4 w-4" />
+                                        </Button>
+
+                                        <!-- Tooltip -->
+                                        <span
+                                            class="absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 rounded-lg bg-gray-800 px-2 py-1 text-xs text-white group-hover:block"
+                                        >
+                                            Edit Record
+                                        </span>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
         </div>
         <Dialog v-model:open="showEditDialog">
-            <DialogContent class="max-w-[825px]">
+            <DialogContent class="max-w-206.25">
                 <!-- Header -->
                 <DialogHeader>
                     <DialogTitle>H.R Surplus Surplus </DialogTitle>
@@ -159,7 +226,7 @@ const onConfirm = () => {
                     <div class="grid gap-2">
                         <Label for="doctype">Input Surplus Hour<span class="text-red-500">*</span></Label>
                         <Input type="number" id="hrsurplus" placeholder="HH.MM" step="0.01" v-model="form.hrsurplus" class="max-w-sm" autofocus />
-                       
+
                         <span v-if="errors?.hrsurplus" class="text-sm text-red-600">{{ errors.hrsurplus }}</span>
                     </div>
                 </div>

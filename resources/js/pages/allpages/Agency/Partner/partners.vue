@@ -9,7 +9,7 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Badge } from '@/components/ui/badge';
 import Switch from '@/components/ui/switch/Switch.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, RefreshCcw, Search, Trash } from 'lucide-vue-next';
+import { Plus, RefreshCcw, Search } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { computed, ref } from 'vue';
 
@@ -36,7 +36,7 @@ export interface Partner {
     active: number;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Partner', href: '/partner' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Business & Partners', href: '/partner' }];
 
 const props = defineProps<{
     pertners: Paginated<Partner>;
@@ -63,9 +63,6 @@ const toggleStatus = (partner: Partner) => {
     );
 };
 
-const goToPartnerCreate = () => {
-    router.visit('/partner/create');
-};
 
 const colors = [
     'bg-blue-500',
@@ -150,13 +147,11 @@ const goToPage = (url: string | null) => {
 </script>
 
 <template>
-    <Head title="Partner" />
+    <Head title="Business & Partners" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
             <div class="flex items-center justify-start space-x-2 py-4">
-                <div class="flex items-center gap-2 py-4">
-                    <Button variant="outline" size="sm" @click="goToPartnerCreate"><Plus></Plus> Create Partner </Button>
-                </div>
+                
                 <div class="flex flex-wrap items-center gap-4 py-4">
                     <div class="w-full sm:w-1/2 lg:w-auto">
                         <Combobox v-model="selectedName">

@@ -9,6 +9,7 @@ use App\Filters\Components\Accounts\InsRefCode;
 use App\Filters\Components\Accounts\StudentID;
 use App\Filters\Components\Accounts\StudentName;
 use App\Filters\Components\Accounts\StudentPhone;
+use App\Filters\Components\Default\Status;
 
 class AllInvoiceFiltter extends BaseFilter
 {
@@ -21,6 +22,7 @@ class AllInvoiceFiltter extends BaseFilter
             StudentID::class,
             StudentName::class,
             StudentPhone::class,
+            Status::class,
         ];
     }
 }

@@ -9,7 +9,7 @@ class StudentStageService
 {
     public function get(array $queryParams = [])
     {
-        $queryBuilder = StudentStage::with('user')->orderBy('id', 'DESC');
+        $queryBuilder = StudentStage::with('user')->withCount('usage')->orderBy('id', 'DESC');
 
         $student = resolve(StudentStageFilter::class)->getResults([
             'builder' => $queryBuilder,

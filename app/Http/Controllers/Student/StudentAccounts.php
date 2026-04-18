@@ -197,7 +197,7 @@ class StudentAccounts extends Controller
             'transno' => null,
             'currency' => 'BDT',
             'exchrate' => '1.00',
-            'note' => null,
+            'note' => 'REFUND',
             'shortnote' => $request->shortnote,
             'totalamt' => array_sum(array_column($request->selectedFees, 'amount')),
             'disc_rate' => null,

@@ -4,10 +4,12 @@ namespace App\Models\Partner;
 
 use App\Models\Default\City;
 use App\Models\Default\State;
+use App\Models\Student\StudentApplication;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PartnerBranch extends Model
@@ -63,5 +65,15 @@ class PartnerBranch extends Model
     public function citys(): BelongsTo
     {
         return $this->belongsTo(City::class, 'branch_city_id');
+    }
+
+    /**
+     * Get the citys that owns the PartnerBranch
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function studentApplications(): HasMany
+    {
+        return $this->hasMany(StudentApplication::class, 'partner_branch_id', 'id');
     }
 }

@@ -19,7 +19,7 @@ class WDocumentCheckController extends Controller
     public function index($id)
     {
         try {
-            $this->authorize('workflowDocumentCheck.index');
+            $this->authorize('DocumentCheck.index');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
@@ -38,7 +38,7 @@ class WDocumentCheckController extends Controller
     public function store(Request $request)
     {
         try {
-            $this->authorize('workflowDocumentCheck.store');
+            $this->authorize('DocumentCheck.store');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
@@ -63,5 +63,75 @@ class WDocumentCheckController extends Controller
         ]);
 
         return redirect()->route('documentlist.index', $validated['workflow_id'])->with('success', 'Document List Create successfully.');
+    }
+
+    public function adddoctypeEdit($id)
+    {
+        try {
+            $this->authorize('DocumentCheck.edit');
+        } catch (AuthorizationException $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ], 403);
+        }
+
+
+        $documenttype = WDocumentType::with('docusage')->findOrFail($id);
+
+        return response()->json([
+            'data' => [
+                'id'      => $documenttype->id,
+                'docname' => $documenttype->docname,
+                'active'  => $documenttype->active,
+                'docusage' => $documenttype->docusage,
+            ],
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $this->authorize('DocumentCheck.update');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
+
+        $validated = $request->validate([
+            'doctype_id' => 'required|numeric',
+        ]);
+
+        $documenttype = WDocumentCheck::where('doctype_id', $id)->firstOrFail();
+        $documenttype->update([
+            'doctype_id' => $validated['doctype_id'],
+        ]);
+
+        return redirect()->route('documentlist.index', $documenttype->workflow_id)->with('success', 'Document List updated successfully.');
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $this->authorize('DocumentCheck.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with('error', 'You are not authorized to delete this item.');
+        }
+
+        try {
+            $documentcheck = WDocumentCheck::findOrFail($id);
+            $workflow_id = $documentcheck->workflow_id;
+
+            $documentcheck->delete();
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to delete document checklist.');
+        }
+
+        return redirect()
+            ->route('documentlist.index', $workflow_id)
+            ->with('success', 'Document Checklist deleted successfully.');
     }
 }

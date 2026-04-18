@@ -165,7 +165,7 @@ class SalaryTypeController extends Controller
     public function updateStatus(Request $request, $salaryType)
     {
         try {
-            $this->authorize('salaryType.updateStatus');
+            $this->authorize('salaryType.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

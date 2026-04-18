@@ -2,6 +2,7 @@
 
 namespace App\Models\AgencySetting;
 
+use App\Models\Partner\Partner;
 use App\Models\Partner\PartnerTypeSetup;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,7 +32,15 @@ class MasterCategory extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-   
+   /**
+     * Get all of the comments for the MasterCategory
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function partner(): HasMany
+    {
+        return $this->hasMany(Partner::class, 'master_cat_id');
+    }
 
     /**
      * Get all of the comments for the MasterCategory

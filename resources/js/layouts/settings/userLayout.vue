@@ -7,11 +7,11 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'User Role',
+        title: 'Role Management',
         href: '/roles',
     },
     {
-        title: 'User Permission',
+        title: 'Permission Management',
         href: '/userpermission',
     }
 ];

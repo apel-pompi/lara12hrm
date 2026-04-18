@@ -7,18 +7,21 @@ import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Monthly Lead Report',
+        title: 'Sales Overview',
         href: '/leadreports/',
     },
     {
         title: 'Student Transaction',
-        href: '/leadreports/ledger',
+        href: '/leadreports/transaction',
     },
-    // {
-    //     title: 'Student Revenue',
-    //     href: '/leadreports/revenue',
-    // },
-      
+    {
+        title: 'Student Revenue Analysis',
+        href: '/leadreports/revenue',
+    },
+     {
+        title: 'Student Refund Summary',
+        href: '/leadreports/refund',
+    },
 ];
 
 const page = usePage<{

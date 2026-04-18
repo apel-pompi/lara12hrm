@@ -23,11 +23,11 @@ class UpdateGroupTwoRequest extends FormRequest
     {
         $groupTwoId = $this->route('groupTwo')->id;
         return [
-            'groupone' => ['required', 'exists:group_ones,groupone'],
-            'grouptwo' => [
+            'groupone' => ['required', 'exists:group_ones,code'],
+            'code' => [
                 'required',
                 'integer',
-                'unique:group_twos,grouptwo,' . $groupTwoId
+                'unique:group_twos,code,' . $groupTwoId
             ],
             'description' => [
                 'required',

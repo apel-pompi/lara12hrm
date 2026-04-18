@@ -32,7 +32,7 @@ export interface Paginated<T> {
 }
 
 export interface GroupOne {
-    groupone: number;
+    code: number;
     description: string;
     active: number;
     user: {
@@ -55,7 +55,7 @@ const isEditMode = ref(false);
 
 const form = useForm({
     id: null as number | null,
-    groupone: '',
+    code: '',
     description: '',
     active: '0',
     
@@ -64,7 +64,7 @@ const form = useForm({
 const showDailogCreate = () => {
     form.reset();
     form.id = null;
-    form.groupone = props.code.onecode
+    form.code = props.code.onecode
     isEditMode.value = false;
     showDialog.value = true;
 };
@@ -181,7 +181,7 @@ const goToPage = (url: string | null) => {
         <Head title="Accounts Setting" />
 
         <AccountsLayout :breadcrumbs="breadcrumbs">
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
                 <div class="flex items-center gap-2 py-4">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
                         ><Plus></Plus> Group One
@@ -202,17 +202,17 @@ const goToPage = (url: string | null) => {
                         <TableBody v-for="(one, index) in data.data ?? []" :key="index">
                             <TableRow>
                                 <TableCell>{{ index + 1 }}</TableCell>
-                                <TableCell>{{ one.groupone }}</TableCell>
+                                <TableCell>{{ one.code }}</TableCell>
                                 <TableCell>
-                                    <Link :href="route('accsetting.GroupTwo', { GroupOne: one.groupone })" method="get" class="underline hover:text-blue-500">{{ one.description }}</Link>
+                                    <Link :href="route('accsetting.GroupTwo', { GroupOne: one.code })" method="get" class="underline hover:text-blue-500">{{ one.description }}</Link>
                                 </TableCell>
                                 <TableCell>{{ one.user.name }}</TableCell>
                                 <TableCell>
                                     <Switch v-model="one.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(one)"> </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(one.id)"><SquarePen></SquarePen></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(one.id)"><Trash></Trash></Button>
+                                    <Button size="sm" variant="outline" @click="onEdit(one.id)"><SquarePen></SquarePen></Button>
+                                    <Button size="sm" variant="outline" @click="onDelete(one.id)"><Trash></Trash></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -254,10 +254,10 @@ const goToPage = (url: string | null) => {
                     <div class="mt-6 space-y-5">
                         <!-- Code -->
                         <div>
-                            <Label for="groupone" class="text-sm font-medium">Code<span class="text-red-500">*</span></Label>
-                            <Input type="text" id="groupone" v-model="form.groupone" class="mt-1 w-full" readonly disabled />
-                            <p v-if="form.errors.groupone" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.groupone }}
+                            <Label for="code" class="text-sm font-medium">Code<span class="text-red-500">*</span></Label>
+                            <Input type="text" id="code" v-model="form.code" class="mt-1 w-full" readonly disabled />
+                            <p v-if="form.errors.code" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.code }}
                             </p>
                         </div>
 

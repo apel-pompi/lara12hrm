@@ -10,7 +10,7 @@ class DocumentTypeService
 {
     public function get(array $queryParams = [])
     {
-        $queryBuilder = WDocumentType::with(['user'])->orderBy('id', 'desc');
+        $queryBuilder = WDocumentType::with(['user'])->withCount('docusage')->orderBy('id', 'desc');
 
         $workflow = resolve(DocumentTypeFilter::class)->getResults([
             'builder' => $queryBuilder,
