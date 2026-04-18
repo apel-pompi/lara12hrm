@@ -16,7 +16,7 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
-            
+
             //profiles
             [
                 'group_name' => 'Profile',
@@ -42,7 +42,7 @@ class RolePermissionSeeder extends Seeder
                     'role.edit',
                     'role.update',
                     'role.destroy',
-                    
+
                 ],
             ],
             //Parmission
@@ -55,7 +55,7 @@ class RolePermissionSeeder extends Seeder
                     'user.update',
                     'user.destroy',
                     'user.active',
-                    
+
                 ],
             ],
             //Company
@@ -64,7 +64,7 @@ class RolePermissionSeeder extends Seeder
                 'permissions' => [
                     'company.edit',
                     'company.update',
-                    
+
                 ],
             ],
             //Agency Genneral (Master Category)
@@ -78,7 +78,7 @@ class RolePermissionSeeder extends Seeder
                     'general.update',
                     'general.status',
                     'general.destroy',
-                    
+
                 ],
             ],
             //Agency Genneral (Partner Setting)
@@ -89,7 +89,7 @@ class RolePermissionSeeder extends Seeder
                     'patnerSetting.store',
                     'patnerSetting.status',
                     'patnerSetting.destroy',
-                    
+
                 ],
             ],
             //Agency Genneral (Product Type Setting)
@@ -100,7 +100,7 @@ class RolePermissionSeeder extends Seeder
                     'productSetting.store',
                     'productSetting.status',
                     'productSetting.destroy',
-                    
+
                 ],
             ],
             //Agency Genneral (Workflow)
@@ -112,7 +112,7 @@ class RolePermissionSeeder extends Seeder
                     'workflow.edit',
                     'workflow.update',
                     'workflow.status',
-                    
+
                 ],
             ],
             //Agency Genneral (Workflow Document)
@@ -124,7 +124,7 @@ class RolePermissionSeeder extends Seeder
                     'workflowDocument.edit',
                     'workflowDocument.update',
                     'workflowDocument.status',
-                    
+
                 ],
             ],
             //Agency Genneral (Workflow Document check list)
@@ -135,7 +135,7 @@ class RolePermissionSeeder extends Seeder
                     'DocumentCheck.store',
                     'DocumentCheck.edit',
                     'DocumentCheck.update',
-                    
+
                 ],
             ],
             //Partner Branch
@@ -149,7 +149,7 @@ class RolePermissionSeeder extends Seeder
                     'partnerBranch.update',
                     'partnerBranch.status',
                     'partnerBranch.destroy',
-                    
+
                 ],
             ],
             //Academic Setting
@@ -163,7 +163,7 @@ class RolePermissionSeeder extends Seeder
                     'Academic.update',
                     'Academic.status',
                     'Academic.destroy',
-                    
+
                 ],
             ],
             //Student Stage
@@ -177,7 +177,7 @@ class RolePermissionSeeder extends Seeder
                     'StudentStage.update',
                     'StudentStage.status',
                     'StudentStage.destroy',
-                    
+
                 ],
             ],
             //Student Source
@@ -191,7 +191,7 @@ class RolePermissionSeeder extends Seeder
                     'StudentSource.update',
                     'StudentSource.status',
                     'StudentSource.destroy',
-                    
+
                 ],
             ],
             //Fees
@@ -205,7 +205,7 @@ class RolePermissionSeeder extends Seeder
                     'Fees.update',
                     'Fees.status',
                     'Fees.destroy',
-                    
+
                 ],
             ],
             //Installment
@@ -219,7 +219,7 @@ class RolePermissionSeeder extends Seeder
                     'Installment.update',
                     'Installment.status',
                     'Installment.destroy',
-                    
+
                 ],
             ],
             //Trancaction
@@ -233,7 +233,7 @@ class RolePermissionSeeder extends Seeder
                     'Trancaction.update',
                     'Trancaction.status',
                     'Trancaction.destroy',
-                    
+
                 ],
             ],
             //Trancaction No
@@ -247,7 +247,7 @@ class RolePermissionSeeder extends Seeder
                     'TrancactionNo.update',
                     'TrancactionNo.status',
                     'TrancactionNo.destroy',
-                    
+
                 ],
             ],
             //branch            
@@ -260,7 +260,7 @@ class RolePermissionSeeder extends Seeder
                     'branch.edit',
                     'branch.update',
                     'branch.destroy'
-                    
+
                 ],
             ],
             //Department            
@@ -273,7 +273,7 @@ class RolePermissionSeeder extends Seeder
                     'department.edit',
                     'department.update',
                     'department.destroy',
-                    
+
                 ],
             ],
             //Designation            
@@ -287,7 +287,7 @@ class RolePermissionSeeder extends Seeder
                     'designation.edit',
                     'designation.update',
                     'designation.destroy'
-                    
+
                 ],
             ],
             //Leave Plan            
@@ -300,10 +300,10 @@ class RolePermissionSeeder extends Seeder
                     'leaveplan.edit',
                     'leaveplan.update',
                     'leaveplan.destroy'
-                    
+
                 ],
             ],
-             //Working Hour Setup       
+            //Working Hour Setup       
             [
                 'group_name' => 'Working Hour',
                 'permissions' => [
@@ -314,7 +314,7 @@ class RolePermissionSeeder extends Seeder
                     'worksetup.update',
                     'worksetup.destroy',
                     'worksetup.status'
-                    
+
                 ],
             ],
             //Attendance Setting         
@@ -327,7 +327,7 @@ class RolePermissionSeeder extends Seeder
                     'attendanmst.edit',
                     'attendanmst.update',
                     'attendanmst.destroy'
-                    
+
                 ],
             ],
             //Attendance Deduct         
@@ -340,7 +340,20 @@ class RolePermissionSeeder extends Seeder
                     'deduct.edit',
                     'deduct.update',
                     'deduct.destroy'
-                    
+
+                ],
+            ],
+            //Attendance
+            [
+                'group_name' => 'Attendance',
+                'permissions' => [
+                    'attendance.index',
+                    'attendance.store',
+                    'attendance.show',
+                    'attendance.edit',
+                    'attendance.update',
+                    'attendance.destroy'
+
                 ],
             ],
             //Attendance Status         
@@ -353,10 +366,10 @@ class RolePermissionSeeder extends Seeder
                     'attendStatus.edit',
                     'attendStatus.update',
                     'attendStatus.destroy'
-                    
+
                 ],
             ],
-             //Salary Type Setup       
+            //Salary Type Setup       
             [
                 'group_name' => 'Salary Type Setup',
                 'permissions' => [
@@ -393,7 +406,7 @@ class RolePermissionSeeder extends Seeder
                     'holidaydt.destroy',
                 ],
             ],
-           
+
             //Personal Information        
             [
                 'group_name' => 'PersonalInformation',
@@ -405,7 +418,7 @@ class RolePermissionSeeder extends Seeder
                     'personal.update',
                     'personal.destroy',
                     'personal.status',
-                    
+
                 ],
             ],
             //Leave Request      
@@ -422,7 +435,7 @@ class RolePermissionSeeder extends Seeder
                     'Leave.reports'
                 ],
             ],
-            
+
             //Student 
             [
                 'group_name' => 'Student',
@@ -430,7 +443,7 @@ class RolePermissionSeeder extends Seeder
                     'Student.index',
                     'Student.store',
                     'Student.create'
-                    
+
                 ],
             ],
 
@@ -441,7 +454,7 @@ class RolePermissionSeeder extends Seeder
                     'StudentLead.index',
                     'StudentLead.import',
                     'StudentLead.download'
-                    
+
                 ],
             ],
 
@@ -467,7 +480,7 @@ class RolePermissionSeeder extends Seeder
                     'Application.edit',
                     'Application.update',
                     'Application.destroy',
-                    
+
                 ],
             ],
 
@@ -482,7 +495,7 @@ class RolePermissionSeeder extends Seeder
                     'Service.edit',
                     'Service.update',
                     'Service.destroy',
-                    
+
                 ],
             ],
             //Student Document
@@ -496,7 +509,7 @@ class RolePermissionSeeder extends Seeder
                     'Document.edit',
                     'Document.update',
                     'Document.destroy',
-                    
+
                 ],
             ],
             //Student Quoatations
@@ -510,7 +523,7 @@ class RolePermissionSeeder extends Seeder
                     'StudQuoat.destroy',
                     'StudQuoat.ApprovedReport',
                     'StudQuoat.report',
-                    
+
                 ],
             ],
             //Student Accounts
@@ -527,7 +540,7 @@ class RolePermissionSeeder extends Seeder
                     'StudIns.approval',
                     'StudIns.destroy',
                     'StudIns.report',
-                    
+
                 ],
             ],
             //Partner 
@@ -541,7 +554,7 @@ class RolePermissionSeeder extends Seeder
                     'Partner.update',
                     'Partner.status',
                     'Partner.destroy'
-                    
+
                 ],
             ],
 
@@ -557,7 +570,7 @@ class RolePermissionSeeder extends Seeder
                     'Product.destroy',
                 ],
             ],
-            
+
             //Product Activities
             [
                 'group_name' => 'Product Activities',
@@ -644,7 +657,7 @@ class RolePermissionSeeder extends Seeder
                     'ACToGL.update',
                     'ACToGL.status',
                     'ACToGL.destroy',
-                    
+
                 ],
             ],
             //Supplier
@@ -674,7 +687,7 @@ class RolePermissionSeeder extends Seeder
                     'SupplierInvoice.Confirm',
                 ],
             ],
-             //Supplier Payable
+            //Supplier Payable
             [
                 'group_name' => 'Supplier Payable',
                 'permissions' => [
@@ -683,8 +696,8 @@ class RolePermissionSeeder extends Seeder
                     'SupplierPayable.managePayable',
                 ],
             ],
-            
-             //All Voucher
+
+            //All Voucher
             [
                 'group_name' => 'All Voucher List',
                 'permissions' => [
@@ -695,7 +708,7 @@ class RolePermissionSeeder extends Seeder
                     'voucher.singleReport'
                 ],
             ],
-             //Opening Balance
+            //Opening Balance
             [
                 'group_name' => 'Opening Balance',
                 'permissions' => [
@@ -705,7 +718,7 @@ class RolePermissionSeeder extends Seeder
                     'voucher.openingConfirm',
                 ],
             ],
-             //Jurnal Header
+            //Jurnal Header
             [
                 'group_name' => 'Jurnal Voucher',
                 'permissions' => [
@@ -715,7 +728,7 @@ class RolePermissionSeeder extends Seeder
                     'voucher.jurnalConfirm',
                 ],
             ],
-             //Payment Header
+            //Payment Header
             [
                 'group_name' => 'Payment Voucher',
                 'permissions' => [
@@ -725,7 +738,7 @@ class RolePermissionSeeder extends Seeder
                     'voucher.paymentConfirm',
                 ],
             ],
-             //Receipt Header
+            //Receipt Header
             [
                 'group_name' => 'Receipt Voucher',
                 'permissions' => [
@@ -735,7 +748,7 @@ class RolePermissionSeeder extends Seeder
                     'voucher.receiptConfirm',
                 ],
             ],
-             //Reverse Header
+            //Reverse Header
             [
                 'group_name' => 'Reverse Voucher',
                 'permissions' => [
@@ -773,7 +786,7 @@ class RolePermissionSeeder extends Seeder
                     'accountsreport.balancesheet',
                     'accountsreport.profitloss'
                 ],
-            ],            
+            ],
             //HR Reports
             [
                 'group_name' => 'HR Reports',
@@ -818,7 +831,7 @@ class RolePermissionSeeder extends Seeder
     {
         if (is_null($admin)) {
             $roleSuperAdmin = Role::create(['name' => 'superadmin', 'guard_name' => 'web']);
-        }else{
+        } else {
             $roleSuperAdmin = Role::where('name', 'superadmin')->where('guard_name', 'web')->first();
         }
 

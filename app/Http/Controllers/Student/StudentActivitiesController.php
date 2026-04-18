@@ -24,7 +24,7 @@ class StudentActivitiesController extends Controller
         return Inertia::render('allpages/Agency/Student/activites', [
             'student' => $student,
             'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get(),
-            'activity' => StudentActivities::with(['user'])->orderBy('id', 'DESC')->where('student_id', $student->id)->paginate(15),
+            'activity' => StudentActivities::with(['user'])->orderBy('id', 'DESC')->where('student_id', $student->id)->paginate(10),
         ]);
     }
 

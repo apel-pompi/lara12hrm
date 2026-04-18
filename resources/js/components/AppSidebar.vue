@@ -26,8 +26,10 @@ import {
     ClipboardCheck,
     ClipboardPlus,
     Columns2,
+    Cpu,
     CreditCard,
     FileCog,
+    Fingerprint,
     Flag,
     Handshake,
     LayoutDashboard,
@@ -99,21 +101,28 @@ const hrMenu = [
     },
 ];
 
+/* ---------------- Biometric ---------------- */
+const biometricMenu = [
+    {
+        title: 'Biometric Managemets',
+        icon: ClipboardPlus,
+        items: [
+            { title: 'Device Management', href: '/zkteco', icon: Cpu },
+            { title: 'Biometric Attendance', href: '/attendance', icon: Fingerprint },
+            { title: 'Attendance Report', href: 'zkteco.report', icon: Flag },
+        ],
+    },
+];
+
 /* ---------------- LEAVE ---------------- */
 const leaveMenu = [
     {
         title: 'Leave Management',
         icon: MessageCircleOff,
-        items: [
-            { href: '/leave', title: 'Leave Statistics', icon: MessageCircleOff },
-        ],
+        items: [{ href: '/leave', title: 'Leave Statistics', icon: MessageCircleOff }],
     },
 ];
 
-/* ---------------- MAIN ---------------- */
-// const mainMenu = [
-//     { route: 'leave.index', title: 'Leave Management', icon: MessageCircleOff },
-// ];
 /* ---------------- BUSINESS & PARTNERS ---------------- */
 const businessMenu = [
     {
@@ -223,22 +232,10 @@ const reportMenu = [
 
                     <NavMain :items="systemAdmin" />
                     <NavMain :items="hrMenu" />
+                    <NavMain :items="biometricMenu" />
                     <NavMain :items="leaveMenu" />
                     <NavMain :items="businessMenu" />
                     <NavMain :items="studentMenu" />
-
-                    <!-- Main -->
-                    <!-- <SidebarMenu>
-                        <SidebarMenuItem v-for="item in mainMenu" :key="item.title">
-                            <SidebarMenuButton as-child>
-                                <Link :href="route(item.route)" class="ps-4">
-                                    <component :is="item.icon" />
-                                    <span>{{ item.title }}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu> -->
-
                     <NavMain :items="invoiceMenu" />
                     <NavMain :items="supplierMenu" />
                     <NavMain :items="accountsMenu" />

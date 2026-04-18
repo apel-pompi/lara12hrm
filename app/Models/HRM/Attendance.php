@@ -4,6 +4,7 @@ namespace App\Models\HRM;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 
 class Attendance extends Model
@@ -16,6 +17,17 @@ class Attendance extends Model
         'device_ip',
         'state',
     ];
+
+    /**
+     * Get the employee that owns the AttendanceStatus
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(PersonalInfo::class, 'user_id', 'empid');
+    }
+
 
     public static function getAttendanceIn($empid, $date)
     {

@@ -16,6 +16,7 @@ use App\Http\Controllers\HRM\{
     PersonalInfoController,
     LeaveController,
     AttendanceStatusController,
+    AttendanceController,
     HRreportsController
 };
 use Illuminate\Support\Facades\Route;
@@ -139,6 +140,19 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
                 Route::delete('/show/{attendeduct}', 'destroy')->name('attendeduct.destroy');
                 Route::get('/{attendeduct}/edit', 'edit')->name('attendeduct.edit');
                 Route::put('/{attendeduct}', 'update')->name('attendeduct.update');
+            }
+        );
+    //Attendance 
+    Route::controller(AttendanceController::class)
+        ->prefix('attendance')
+        ->group(
+            function () {
+                Route::get('/', 'index')->name('attendance.index');
+                Route::post('/store', 'store')->name('attendance.store');
+                Route::get('/show/{id}/{date}', 'show')->name('attendance.show');
+                Route::delete('/show/{attendance}', 'destroy')->name('attendance.destroy');
+                Route::get('/{attendance}/edit', 'edit')->name('attendance.edit');
+                Route::put('/{attendance}', 'update')->name('attendance.update');
             }
         );
     //Attendance Setting Route

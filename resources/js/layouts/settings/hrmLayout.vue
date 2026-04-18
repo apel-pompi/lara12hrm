@@ -6,11 +6,6 @@ import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
-    
-    {
-        title: 'Attendance Device',
-        href: '/zkteco',
-    },
     {
         title: 'Branch Management',
         href: '/branch',
@@ -42,7 +37,7 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Salary Structure Setup',
         href: '/salarytype',
-    }
+    },
 ];
 
 const page = usePage<{
@@ -77,7 +72,7 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
 
             <Separator class="my-6 md:hidden" />
 
-            <section class="flex-1 dark:bg-gray-9002 rounded-xl bg-white p-4 shadow">
+            <section class="dark:bg-gray-9002 flex-1 rounded-xl bg-white p-4 shadow">
                 <slot />
             </section>
         </div>
