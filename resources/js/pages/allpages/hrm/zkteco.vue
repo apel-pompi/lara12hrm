@@ -65,7 +65,7 @@ const connectDevice = async () => {
     loading.value = true;
 
     try {
-        const response = await axios.post('zkteco/connect', deviceConfig.value);
+        const response = await axios.post('/zkteco/connect', deviceConfig.value);
 
         if (response.data.success) {
             toast('success', {
@@ -108,7 +108,7 @@ const syncData = async () => {
     loading.value = true;
 
     try {
-        const response = await axios.post('zkteco/sync', {
+        const response = await axios.post('/zkteco/sync', {
             date: selectedDate.value,
         });
         syncResult.value = response.data;
@@ -156,7 +156,7 @@ const syncDateRange = async () => {
     loading.value = true;
 
     try {
-        const response = await axios.post('zkteco/sync-range', {
+        const response = await axios.post('/zkteco/sync-range', {
             start_date: dateRange.value.start,
             end_date: dateRange.value.end,
         });
@@ -198,7 +198,7 @@ const checkDeviceStatus = async () => {
 
 const loadStats = async () => {
     try {
-        const response = await axios.get('zkteco/stats');
+        const response = await axios.get('/zkteco/stats');
         stats.value = response.data;
     } catch (error) {
         console.error('Failed to load stats:', error);
@@ -221,6 +221,7 @@ onMounted(() => {
         if (!syncing.value && !connecting.value) {
             checkDeviceStatus();
             loadStats();
+            // syncData();
         }
     }, 30000);
 
@@ -230,15 +231,17 @@ onMounted(() => {
 </script>
 
 <template>
+    <Head title="ZKTeco Device Manager" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="ZKTeco Device Manager" />
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
+        <div
+            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
+        >
             <div class="min-h-screen p-4 md:p-6">
                 <div class="mx-auto max-w-7xl space-y-6">
                     <!-- 🔌 CONNECT + STATUS -->
                     <div class="grid gap-6 lg:grid-cols-2">
                         <!-- Connect Card -->
-                        <div class="rounded-2xl bg-gray-100 p-6 shadow-lg">
+                        <div class="rounded-2xl bg-white p-6 shadow-lg">
                             <h2 class="mb-4 text-lg font-semibold text-gray-800">🔌 Connect Device</h2>
 
                             <div class="space-y-4">
@@ -273,7 +276,7 @@ onMounted(() => {
                         </div>
 
                         <!-- Status Card -->
-                        <div class="rounded-2xl bg-gray-100 p-6 shadow-lg">
+                        <div class="rounded-2xl bg-gray-100 bg-white p-6 shadow-lg">
                             <h2 class="mb-4 text-lg font-semibold text-gray-800">📊 Device Status</h2>
 
                             <div v-if="deviceStatus.connected" class="space-y-3">
@@ -300,7 +303,7 @@ onMounted(() => {
                     </div>
 
                     <!-- 📅 DATE SECTION -->
-                    <div class="rounded-2xl bg-gray-100 p-6 shadow-lg">
+                    <div class="rounded-2xl bg-gray-100 bg-white p-6 shadow-lg">
                         <h2 class="mb-4 text-lg font-semibold text-gray-800">📅 Select Date</h2>
 
                         <div class="grid gap-4 md:grid-cols-3">

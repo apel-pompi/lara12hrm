@@ -39,7 +39,7 @@ export interface Branch {
     branchname: string;
 }
 
-export interface AttenDeduct{
+export interface AttenDeduct {
     id: number;
     branch_id: string;
     starttime: string;
@@ -320,7 +320,7 @@ const submit = () => {
         },
         preserveScroll: true,
         preserveState: false,
-        
+
         onError: (errors) => {
             const firstError = Object.values(errors)[0];
             toast('Validation Error', {
@@ -365,8 +365,8 @@ const onDelete = async (id: number) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Attendance Deduct" />
         <HrmLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                     <Input
                         class="max-w-sm"
                         placeholder="Filter Branch Name..."
@@ -395,7 +395,12 @@ const onDelete = async (id: number) => {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                <div class="rounded-md border">
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Attendance Deduct List</h2>
+                        <p class="text-sm text-gray-500">Manage all Attendance Deduct from here.</p>
+                    </div>
                     <Table>
                         <TableHeader>
                             <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
@@ -497,7 +502,7 @@ const onDelete = async (id: number) => {
                         <div class="grid gap-y-3">
                             <div class="grid gap-2">
                                 <Label for="active">Deduct Hours</Label>
-                                <Input type="number" id="deduct"  v-model="form.deduct" class="max-w-sm" autofocus />
+                                <Input type="number" id="deduct" v-model="form.deduct" class="max-w-sm" autofocus />
                                 <span v-if="errors?.deduct" class="text-sm text-red-600">{{ errors.deduct }}</span>
                             </div>
                             <div class="grid gap-2">

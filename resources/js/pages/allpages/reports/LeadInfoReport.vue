@@ -5,10 +5,10 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import AppLayout from '@/layouts/AppLayout.vue';
 import LeadReportLayout from '@/layouts/settings/leadreportLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker  from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
 import { Head, useForm } from '@inertiajs/vue3';
+import { getLocalTimeZone, today } from '@internationalized/date';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 import { FileText } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
@@ -43,9 +43,7 @@ watch(todate, (newDate) => {
     }
 });
 
-
 const onReport = async () => {
-    
     if (form.formdate == '') {
         alert('Form date not selected');
         return;
@@ -59,21 +57,19 @@ const onReport = async () => {
     const url = route('leadreports.MonthlyEmpLeadReport', {
         formdate: form.formdate,
         todate: form.todate,
-        isAdmin:props.isAdmin,
-        employee: form.employee || null
-        
+        isAdmin: props.isAdmin,
+        employee: form.employee || null,
     });
     window.open(url, '_blank');
-    
 };
 </script>
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Sales Overview" />
         <LeadReportLayout>
-            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md">
                 <!-- Title -->
-                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Sales Overview</h2>
+                <h2 class="text-center text-xl font-semibold text-gray-800">Sales Overview</h2>
                 <div v-if="props.isAdmin">
                     <div class="space-y-2">
                         <Select v-model="form.employee">
@@ -93,7 +89,7 @@ const onReport = async () => {
                 <div v-else></div>
                 <!-- Input -->
                 <div class="space-y-2">
-                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Form Date</Label>
+                    <Label class="block text-sm font-medium text-gray-700">Form Date</Label>
                     <VueDatePicker
                         v-model="formdate"
                         :max-date="maxDate"
@@ -102,10 +98,9 @@ const onReport = async () => {
                         placeholder="Form Date"
                         auto-apply
                     />
-                    
                 </div>
                 <div class="space-y-2">
-                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">To Date</Label>
+                    <Label class="block text-sm font-medium text-gray-700">To Date</Label>
                     <VueDatePicker
                         v-model="todate"
                         :max-date="maxDate"

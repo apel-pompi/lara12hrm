@@ -244,6 +244,9 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
 
                 Route::get('/transaction', 'studentTransaction')->name('leadreports.studentTransaction');
                 Route::get('/transaction/{student}', 'studentTransactionReport')->name('leadreports.studentTransactionReport');
+
+                Route::get('/ledger', 'studentLedger')->name('leadreports.studentLedger');
+                Route::get('/ledger/{student}', 'studentLedgerReport')->name('leadreports.studentLedgerReport');
                 
                 Route::get('/revenue', 'studentRevenue')->name('leadreports.studentRevenue');
                 Route::get('/revenue/{formdate}/{todate}/{isAdmin}/{employee?}', 'studentRevenueReport')->name('leadreports.studentRevenueReport');
@@ -252,9 +255,6 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/refund/{formdate}/{todate}/{isAdmin}/{employee?}', 'studentRefundReport')->name('leadreports.studentRefundReport');
                 
                 Route::get('/emp/{formdate}/{todate}/{isAdmin}/{employee?}', 'MonthlyEmpLeadReport')->name('leadreports.MonthlyEmpLeadReport');
-
-                Route::get('/ledger', 'studentLedger')->name('leadreports.studentLedger');
-                Route::get('/ledger/{student}', 'studentLedgerReport')->name('leadreports.studentLedgerReport');
             }
         );
     

@@ -7,7 +7,7 @@ import LeadReportLayout from '@/layouts/settings/leadreportLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
 import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker  from '@vuepic/vue-datepicker';
+import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { FileText } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
@@ -55,9 +55,8 @@ const onReport = async () => {
     const url = route('leadreports.studentRevenueReport', {
         formdate: form.formdate,
         todate: form.todate,
-        isAdmin:props.isAdmin,
-        employee: form.employee || null
-        
+        isAdmin: props.isAdmin,
+        employee: form.employee || null,
     });
     window.open(url, '_blank');
 };
@@ -66,9 +65,9 @@ const onReport = async () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Student Revenue Analysis Reports" />
         <LeadReportLayout>
-            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md">
                 <!-- Title -->
-                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Student Revenue Analysis</h2>
+                <h2 class="text-center text-xl font-semibold text-gray-800">Student Revenue Analysis</h2>
                 <div v-if="props.isAdmin">
                     <div class="space-y-2">
                         <Select v-model="form.employee">
@@ -122,7 +121,7 @@ const onReport = async () => {
                             <FileText class="text-red-500" />
                         </Button>
                         <span
-                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100 dark:bg-gray-800 dark:text-gray-200"
                         >
                             Report
                         </span>

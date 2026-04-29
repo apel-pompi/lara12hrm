@@ -308,144 +308,153 @@ const goToHolidayHd = () => {
 <template>
     <Head title="Holiday Details" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 py-4 md:px-6">
+        <div
+            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
+        >
             <!-- Header Section -->
-            
-                <!-- Top Row -->
-                <div class="flex flex-col p-3 gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <!-- Left Buttons -->
-                    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                        <Button variant="outline" size="sm" @click="goToHolidayHd" class="rounded-xl">
-                            <CornerDownLeft class="mr-2 h-4 w-4" />
-                            Manage Holiday
-                        </Button>
 
-                        <Button size="sm" @click="showDailogCreate" class="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
-                            <Plus class="mr-2 h-4 w-4" />
-                            Create Holiday
-                        </Button>
-                    </div>
+            <!-- Top Row -->
+            <div class="flex flex-col gap-3 p-3 lg:flex-row lg:items-center lg:justify-between">
+                <!-- Left Buttons -->
+                <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                    <Button variant="outline" size="sm" @click="goToHolidayHd" class="rounded-xl">
+                        <CornerDownLeft class="mr-2 h-4 w-4" />
+                        Manage Holiday
+                    </Button>
 
-                    <!-- Column Dropdown -->
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="outline" class="w-full rounded-xl sm:w-auto">
-                                Columns
-                                <ChevronDown class="ml-2 h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-
-                        <DropdownMenuContent class="w-52">
-                            <DropdownMenuCheckboxItem
-                                v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
-                                :key="column.id"
-                                class="capitalize"
-                                :model-value="column.getIsVisible()"
-                                @update:model-value="
-                                    (value) => {
-                                        column.toggleVisibility(!!value);
-                                    }
-                                "
-                            >
-                                {{ column.id }}
-                            </DropdownMenuCheckboxItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button size="sm" @click="showDailogCreate" class="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+                        <Plus class="mr-2 h-4 w-4" />
+                        Create Holiday
+                    </Button>
                 </div>
-            
+
+                <!-- Column Dropdown -->
+                <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                        <Button variant="outline" class="w-full rounded-xl sm:w-auto">
+                            Columns
+                            <ChevronDown class="ml-2 h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent class="w-52">
+                        <DropdownMenuCheckboxItem
+                            v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
+                            :key="column.id"
+                            class="capitalize"
+                            :model-value="column.getIsVisible()"
+                            @update:model-value="
+                                (value) => {
+                                    column.toggleVisibility(!!value);
+                                }
+                            "
+                        >
+                            {{ column.id }}
+                        </DropdownMenuCheckboxItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
 
             <!-- Table Card -->
-            <div class="overflow-hidden rounded-2xl border bg-white shadow-sm">
-                <!-- Responsive Table -->
-                <div class="overflow-x-auto">
-                    <Table class="min-w-full">
-                        <!-- Table Head -->
-                        <TableHeader>
-                            <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id" class="bg-gray-50">
-                                <TableHead
-                                    v-for="header in headerGroup.headers"
-                                    :key="header.id"
-                                    :data-pinned="header.column.getIsPinned()"
-                                    :class="
-                                        cn(
-                                            'px-4 py-3 font-semibold whitespace-nowrap text-gray-700',
-                                            { 'sticky z-10 bg-white': header.column.getIsPinned() },
-                                            header.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                        )
-                                    "
-                                >
-                                    <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <!-- Title -->
+                <div class="border-b px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-800">Holiday Details List</h2>
+                    <p class="text-sm text-gray-500">Manage all Holiday Details from here.</p>
+                </div>
+                <Table class="min-w-full">
+                    <!-- Table Head -->
+                    <TableHeader>
+                        <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id" class="bg-gray-50">
+                            <TableHead
+                                v-for="header in headerGroup.headers"
+                                :key="header.id"
+                                :data-pinned="header.column.getIsPinned()"
+                                :class="
+                                    cn(
+                                        'px-4 py-3 font-semibold whitespace-nowrap text-gray-700',
+                                        { 'sticky z-10 bg-white': header.column.getIsPinned() },
+                                        header.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
+                                    )
+                                "
+                            >
+                                <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
 
-                        <!-- Table Body -->
-                        <TableBody>
-                            <template v-if="table.getRowModel().rows?.length">
-                                <template v-for="row in table.getRowModel().rows" :key="row.id">
-                                    <TableRow :data-state="row.getIsSelected() && 'selected'" class="border-t transition hover:bg-gray-50">
-                                        <TableCell
-                                            v-for="cell in row.getVisibleCells()"
-                                            :key="cell.id"
-                                            :data-pinned="cell.column.getIsPinned()"
-                                            :class="
-                                                cn(
-                                                    'px-4 py-3 whitespace-nowrap',
-                                                    { 'sticky z-10 bg-white': cell.column.getIsPinned() },
-                                                    cell.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                                )
-                                            "
-                                        >
-                                            <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-                                        </TableCell>
-                                    </TableRow>
+                    <!-- Table Body -->
+                    <TableBody>
+                        <template v-if="table.getRowModel().rows?.length">
+                            <template v-for="row in table.getRowModel().rows" :key="row.id">
+                                <TableRow :data-state="row.getIsSelected() && 'selected'" class="border-t transition hover:bg-gray-50">
+                                    <TableCell
+                                        v-for="cell in row.getVisibleCells()"
+                                        :key="cell.id"
+                                        :data-pinned="cell.column.getIsPinned()"
+                                        :class="
+                                            cn(
+                                                'px-4 py-3 whitespace-nowrap',
+                                                { 'sticky z-10 bg-white': cell.column.getIsPinned() },
+                                                cell.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
+                                            )
+                                        "
+                                    >
+                                        <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                                    </TableCell>
+                                </TableRow>
 
-                                    <!-- Expanded Row -->
-                                    <TableRow v-if="row.getIsExpanded()">
-                                        <TableCell :colspan="row.getAllCells().length" class="bg-gray-50 px-4 py-3 text-sm text-gray-600">
-                                            {{ row.original }}
-                                        </TableCell>
-                                    </TableRow>
-                                </template>
+                                <!-- Expanded Row -->
+                                <TableRow v-if="row.getIsExpanded()">
+                                    <TableCell :colspan="row.getAllCells().length" class="bg-gray-50 px-4 py-3 text-sm text-gray-600">
+                                        {{ row.original }}
+                                    </TableCell>
+                                </TableRow>
                             </template>
+                        </template>
 
-                            <!-- No Data -->
-                            <TableRow v-else>
-                                <TableCell :colspan="columns.length" class="h-24 text-center text-gray-500"> No results found. </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
+                        <!-- No Data -->
+                        <TableRow v-else>
+                            <TableCell :colspan="columns.length" class="h-24 text-center text-gray-500"> No results found. </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+                <div class="mt-4 border bg-white px-4 py-4">
+                    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <!-- Left -->
+                        <div class="text-sm text-gray-600">
+                            {{ table.getFilteredSelectedRowModel().rows.length }}
+                            of
+                            {{ table.getFilteredRowModel().rows.length }}
+                            row(s) selected.
+                        </div>
+
+                        <!-- Right -->
+                        <div class="flex justify-end gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                class="rounded-xl"
+                                :disabled="!table.getCanPreviousPage()"
+                                @click="table.previousPage()"
+                            >
+                                Previous
+                            </Button>
+
+                            <Button
+                                size="sm"
+                                class="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+                                :disabled="!table.getCanNextPage()"
+                                @click="table.nextPage()"
+                            >
+                                Next
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Footer Pagination -->
-            <div class="mt-4 rounded-2xl border bg-white px-4 py-4 shadow-sm">
-                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <!-- Left -->
-                    <div class="text-sm text-gray-600">
-                        {{ table.getFilteredSelectedRowModel().rows.length }}
-                        of
-                        {{ table.getFilteredRowModel().rows.length }}
-                        row(s) selected.
-                    </div>
-
-                    <!-- Right -->
-                    <div class="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" class="rounded-xl" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">
-                            Previous
-                        </Button>
-
-                        <Button
-                            size="sm"
-                            class="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
-                            :disabled="!table.getCanNextPage()"
-                            @click="table.nextPage()"
-                        >
-                            Next
-                        </Button>
-                    </div>
-                </div>
-            </div>
         </div>
         <!-- Dialog -->
         <Dialog v-model:open="showDialog">

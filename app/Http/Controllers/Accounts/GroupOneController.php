@@ -138,7 +138,7 @@ class GroupOneController extends Controller
     public function updateStatus(Request $request, $groupOne)
     {
         try {
-            $this->authorize('GroupOne.updateStatus');
+            $this->authorize('GroupOne.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

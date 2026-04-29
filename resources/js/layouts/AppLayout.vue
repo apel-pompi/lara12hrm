@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { Toaster } from '@/components/ui/sonner';
 import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
 import type { BreadcrumbItemType } from '@/types';
-import { Toaster } from "@/components/ui/sonner"
 import { usePage } from '@inertiajs/vue3';
+import { onMounted, watch } from 'vue';
 import { toast } from 'vue-sonner';
-import { watch, onMounted } from 'vue';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
@@ -23,9 +23,13 @@ onMounted(() => {
 });
 
 // Watch for navigation changes and flash updates
-watch(() => page.props.flash, (newFlash) => {
-    showToast(newFlash);
-}, { deep: true });
+watch(
+    () => page.props.flash,
+    (newFlash) => {
+        showToast(newFlash);
+    },
+    { deep: true },
+);
 
 const showToast = (flash: any) => {
     if (!flash.message) return;
@@ -50,7 +54,6 @@ const showToast = (flash: any) => {
 </script>
 
 <template>
-    
     <AppLayout :breadcrumbs="breadcrumbs">
         <slot />
     </AppLayout>

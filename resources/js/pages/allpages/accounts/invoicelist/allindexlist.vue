@@ -11,7 +11,7 @@ import { computed, ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'All Invoices',
+        title: 'Student Invoices',
         href: '/invoicelist/AllInvoiceList',
     },
 ];
@@ -114,10 +114,6 @@ const filteredStudentID = computed(() => {
     return uniqueStudentIDs.filter((d) => d.student_id.toLowerCase().includes(queryStudentID.value.toLowerCase()));
 });
 
-
-
-
-
 const search = () => {
     const params: Record<string, any> = {};
     if (selectedName.value) params.fname = selectedName.value.fname;
@@ -158,232 +154,209 @@ const onReport = async (invId: number, student_id: number) => {
 </script>
 
 <template>
-    <Head title="All Invoices" />
+    <Head title="Students Invoices" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-            <div class="flex flex-wrap items-center gap-4 py-4">
-                <div class="w-full sm:w-1/2 lg:w-auto">
-                    <Combobox v-model="selectedInvoice">
-                        <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select invoice..."
-                                :display-value="(invoice) => invoice?.insnumber ?? ''"
-                                @input="queryInvoice = $event.target.value"
-                            />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                            </ComboboxButton>
+        <div
+            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
+        >
+            <div
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
+            >
+                <Combobox v-model="selectedInvoice">
+                    <div class="relative w-full md:w-48">
+                        <ComboboxInput
+                            class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                            placeholder="Select invoice..."
+                            :display-value="(invoice) => invoice?.insnumber ?? ''"
+                            @input="queryInvoice = $event.target.value"
+                        />
+                        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                        </ComboboxButton>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        <!-- Options -->
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        >
+                            <div
+                                v-if="filteredInvoice.length === 0 && queryInvoice !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none"
                             >
-                                <div
-                                    v-if="filteredInvoice.length === 0 && queryInvoice !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
+                                Nothing found.
+                            </div>
 
-                                <ComboboxOption
-                                    v-for="n in filteredInvoice"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.insnumber }}</span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="w-full sm:w-1/2 lg:w-auto">
-                    <Combobox v-model="selectedStudentID">
-                        <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select student ID..."
-                                :display-value="(invoice) => invoice?.student_id ?? ''"
-                                @input="queryStudentID = $event.target.value"
-                            />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                            </ComboboxButton>
-
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            <ComboboxOption
+                                v-for="n in filteredInvoice"
+                                :key="n.id"
+                                :value="n"
+                                class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                v-slot="{ selected }"
                             >
-                                <div
-                                    v-if="filteredStudentID.length === 0 && queryStudentID !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.insnumber }}</span>
+                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                    <CheckIcon class="h-5 w-5" />
+                                </span>
+                            </ComboboxOption>
+                        </ComboboxOptions>
+                    </div>
+                </Combobox>
+                <Combobox v-model="selectedStudentID">
+                    <div class="relative w-full md:w-48">
+                        <ComboboxInput
+                            class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                            placeholder="Select student ID..."
+                            :display-value="(invoice) => invoice?.student_id ?? ''"
+                            @input="queryStudentID = $event.target.value"
+                        />
+                        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                        </ComboboxButton>
 
-                                <ComboboxOption
-                                    v-for="n in filteredStudentID"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.student_id }}</span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="w-full sm:w-1/2 lg:w-auto">
-                    <Combobox v-model="selectedInvoiceDate">
-                        <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select invoice date..."
-                                :display-value="(invoice) => invoice?.insdate ?? ''"
-                                @input="queryInvoiceDate = $event.target.value"
-                            />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                            </ComboboxButton>
-
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        <!-- Options -->
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        >
+                            <div
+                                v-if="filteredStudentID.length === 0 && queryStudentID !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none"
                             >
-                                <div
-                                    v-if="filteredInvoiceDate.length === 0 && queryInvoiceDate !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
+                                Nothing found.
+                            </div>
 
-                                <ComboboxOption
-                                    v-for="n in filteredInvoiceDate"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.insdate }}</span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="w-full sm:w-1/2 lg:w-auto">
-                    <Combobox v-model="selectedName">
-                        <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select Student name..."
-                                :display-value="(n) => (n ? `${n.fname} ${n.lname}` : '')"
-                                @input="queryName = $event.target.value"
-                            />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                            </ComboboxButton>
-
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            <ComboboxOption
+                                v-for="n in filteredStudentID"
+                                :key="n.id"
+                                :value="n"
+                                class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                v-slot="{ selected }"
                             >
-                                <div v-if="filteredName.length === 0 && queryName !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.student_id }}</span>
+                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                    <CheckIcon class="h-5 w-5" />
+                                </span>
+                            </ComboboxOption>
+                        </ComboboxOptions>
+                    </div>
+                </Combobox>
+                <Combobox v-model="selectedInvoiceDate">
+                    <div class="relative w-full md:w-48">
+                        <ComboboxInput
+                            class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                            placeholder="Select invoice date..."
+                            :display-value="(invoice) => invoice?.insdate ?? ''"
+                            @input="queryInvoiceDate = $event.target.value"
+                        />
+                        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                        </ComboboxButton>
 
-                                <ComboboxOption
-                                    v-for="n in filteredName"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.fname }} {{ n.lname }} </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="w-full sm:w-1/2 lg:w-auto">
-                    <Combobox v-model="selectedPhone">
-                        <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select student phone..."
-                                :display-value="(student) => student?.phone ?? ''"
-                                @input="queryPhone = $event.target.value"
-                            />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                            </ComboboxButton>
-
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        <!-- Options -->
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        >
+                            <div
+                                v-if="filteredInvoiceDate.length === 0 && queryInvoiceDate !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none"
                             >
-                                <div
-                                    v-if="filteredPhone.length === 0 && queryPhone !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
+                                Nothing found.
+                            </div>
 
-                                <ComboboxOption
-                                    v-for="n in filteredPhone"
-                                    :key="n.student_id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.phone }}</span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                </div>
-                <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
-                </div>
+                            <ComboboxOption
+                                v-for="n in filteredInvoiceDate"
+                                :key="n.id"
+                                :value="n"
+                                class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                v-slot="{ selected }"
+                            >
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.insdate }}</span>
+                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                    <CheckIcon class="h-5 w-5" />
+                                </span>
+                            </ComboboxOption>
+                        </ComboboxOptions>
+                    </div>
+                </Combobox>
+                <Combobox v-model="selectedName">
+                    <div class="relative w-full md:w-48">
+                        <ComboboxInput
+                            class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                            placeholder="Select Student name..."
+                            :display-value="(n) => (n ? `${n.fname} ${n.lname}` : '')"
+                            @input="queryName = $event.target.value"
+                        />
+                        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                        </ComboboxButton>
+
+                        <!-- Options -->
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        >
+                            <div v-if="filteredName.length === 0 && queryName !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
+                                Nothing found.
+                            </div>
+
+                            <ComboboxOption
+                                v-for="n in filteredName"
+                                :key="n.id"
+                                :value="n"
+                                class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                v-slot="{ selected }"
+                            >
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.fname }} {{ n.lname }} </span>
+                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                    <CheckIcon class="h-5 w-5" />
+                                </span>
+                            </ComboboxOption>
+                        </ComboboxOptions>
+                    </div>
+                </Combobox>
+                <Combobox v-model="selectedPhone">
+                    <div class="relative w-full md:w-48">
+                        <ComboboxInput
+                            class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                            placeholder="Select student phone..."
+                            :display-value="(student) => student?.phone ?? ''"
+                            @input="queryPhone = $event.target.value"
+                        />
+                        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                        </ComboboxButton>
+
+                        <!-- Options -->
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        >
+                            <div v-if="filteredPhone.length === 0 && queryPhone !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
+                                Nothing found.
+                            </div>
+
+                            <ComboboxOption
+                                v-for="n in filteredPhone"
+                                :key="n.student_id"
+                                :value="n"
+                                class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                v-slot="{ selected }"
+                            >
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.phone }}</span>
+                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                    <CheckIcon class="h-5 w-5" />
+                                </span>
+                            </ComboboxOption>
+                        </ComboboxOptions>
+                    </div>
+                </Combobox>
+                <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
+                <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
             </div>
-            <div class="rounded-md border">
-                <Table class="min-w-full">
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <!-- Title -->
+                <div class="border-b px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-800">Student Invoice</h2>
+                    <p class="text-sm text-gray-500">Manage all Student Invoice list from here.</p>
+                </div>
+                <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead>Sl</TableHead>
@@ -425,28 +398,44 @@ const onReport = async (invId: number, student_id: number) => {
                         </TableRow>
                     </TableBody>
                 </Table>
-            </div>
+                <!-- Footer Pagination -->
+                <div class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
+                    <!-- Left -->
+                    <div class="flex flex-col gap-2 text-sm text-gray-600 sm:flex-row sm:items-center">
+                        <div class="flex items-center gap-2">
+                            <label>Show</label>
 
-            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
-                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
-                    <label for="per-page" class="text-gray-600">Show:</label>
-                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
-                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
-                    </select>
-                    <span>Showing {{ invoice.from }} to {{ invoice.to }} of {{ invoice.total }} results</span>
-                </div>
-                <div class="space-x-2">
-                    <Button
-                        v-for="(link, index) in data.links"
-                        :key="index"
-                        :disabled="!link.url"
-                        variant="outline"
-                        size="sm"
-                        :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
-                        @click="goToPage(link.url)"
-                    >
-                        <span v-html="link.label"></span>
-                    </Button>
+                            <select
+                                v-model="perPage"
+                                @change="changePerPage"
+                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
+                            >
+                                <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
+                                    {{ size }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <span> Showing {{ invoice.from }} to {{ invoice.to }} of {{ invoice.total }} results </span>
+                    </div>
+
+                    <!-- Right -->
+                    <div class="flex flex-wrap justify-center gap-2 md:justify-end">
+                        <Button
+                            v-for="(link, index) in data.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            size="sm"
+                            variant="outline"
+                            @click="goToPage(link.url)"
+                            :class="[
+                                link.active ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-gray-700',
+                                !link.url ? 'cursor-not-allowed opacity-50' : '',
+                            ]"
+                        >
+                            <span v-html="link.label"></span>
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

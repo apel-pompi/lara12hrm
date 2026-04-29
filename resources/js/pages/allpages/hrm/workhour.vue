@@ -226,15 +226,14 @@ const goToPage = (url: string | null) => {
 };
 
 // Switch toggle handler
-const toggleStatus = (workhour: WorkHours) => {
-    const newStatus = !Boolean(workhour.active); // boolean
+const toggleStatus = (workhour: WorkHours, checked: boolean) => {
     router.put(
         route('workhour.updateStatus', workhour.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                workhour.active = newStatus ? 1 : 0; // local update (number)
+                workhour.active = checked ? 1 : 0;
                 const flash = usePage().props.flash;
 
                 if (flash?.success) {
@@ -254,17 +253,16 @@ const toggleStatus = (workhour: WorkHours) => {
 };
 
 const getMonthName = (m) => {
-  return new Date(0, m - 1).toLocaleString("en-US", { month: "long" });
+    return new Date(0, m - 1).toLocaleString('en-US', { month: 'long' });
 };
 </script>
 
 <template>
-    
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Working Hour Setup" />
         <HrmLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                     <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Working Hour </Button>
                     <!-- Search start -->
                     <div class="grid gap-2">
@@ -317,7 +315,12 @@ const getMonthName = (m) => {
                     </div>
                     <!-- Search start -->
                 </div>
-                <div class="rounded-md border">
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Work Hour List</h2>
+                        <p class="text-sm text-gray-500">Manage all Work Hour from here.</p>
+                    </div>
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -331,19 +334,26 @@ const getMonthName = (m) => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="(work, index) in data.data" :key="work.id ?? index">
+                            <TableRow class="bg-gray-100 hover:bg-gray-100" v-for="(work, index) in data.data" :key="work.id ?? index">
                                 <TableCell>{{ work.branch?.branchname }}</TableCell>
                                 <TableCell>{{ work.workhour }}</TableCell>
                                 <TableCell>{{ work.yearname }}</TableCell>
                                 <TableCell>{{ getMonthName(work.monthname) }}</TableCell>
                                 <TableCell>{{ work.user.name }}</TableCell>
                                 <TableCell>
-                                    <Switch v-model="work.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(work)"> </Switch>
+                                    <Switch :model-value="Boolean(work.active)" @update:model-value="(checked) => toggleStatus(work, checked)">
+                                    </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onShow(work.id)"><Eye></Eye></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(work.id)"><SquarePen></SquarePen></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(work.id)"><Trash></Trash></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onShow(work.id)"
+                                        ><Eye class="h-4 w-4 text-green-600"></Eye
+                                    ></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(work.id)"
+                                        ><SquarePen class="h-4 w-4 text-indigo-600"></SquarePen
+                                    ></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(work.id)"
+                                        ><Trash class="h-4 w-4 text-red-600"></Trash
+                                    ></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -469,7 +479,6 @@ const getMonthName = (m) => {
                         <FormGroup label="Working Hour" htmlFor="workhour">
                             <Input id="workhour" v-model="form.workhour" :disabled="!isEditMode" />
                         </FormGroup>
-                        
                     </div>
                     <!-- Left Column -->
                     <div class="space-y-4">
@@ -480,8 +489,6 @@ const getMonthName = (m) => {
                         <FormGroup label="Month" htmlFor="monthname">
                             <Input id="monthname" :modelValue="isEditMode ? form.monthname : month[form.monthname]" :disabled="!isEditMode" />
                         </FormGroup>
-
-                        
                     </div>
                 </div>
                 <DialogFooter class="sm:justify-end">

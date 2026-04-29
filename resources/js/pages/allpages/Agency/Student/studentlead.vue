@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import Label from '@/components/ui/label/Label.vue';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
@@ -287,9 +286,11 @@ const statusClass = (status) => {
 <template>
     <Head title="Student" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-            <div class="flex justify-center p-4">
-                <div class="no-scrollbar relative flex overflow-x-auto rounded-full bg-gray-100/80 p-1 dark:bg-gray-800/80">
+        <div
+            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
+        >
+            <div class="flex justify-center">
+                <div class="no-scrollbar relative mb-4 flex overflow-x-auto rounded-full bg-gray-100/80 p-1 dark:bg-gray-800/80">
                     <!-- Sliding Indicator -->
                     <div
                         class="absolute top-1 bottom-1 rounded-full bg-white shadow transition-all duration-300 ease-out dark:bg-gray-900"
@@ -310,9 +311,11 @@ const statusClass = (status) => {
                     </button>
                 </div>
             </div>
-            <div class="mb-4 dark:border-gray-700 dark:bg-gray-900/60">
+            <div
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
+            >
                 <!--  FILTER GRID -->
-                <div class="mb-4 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
                     <!--  Name -->
                     <Combobox v-model="selectedStudent" as="div" class="w-full">
                         <div class="relative w-full">
@@ -410,83 +413,67 @@ const statusClass = (status) => {
                 </div>
             </div>
 
-            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-                <!-- TABLE WRAPPER -->
-                <div class="overflow-x-auto">
-                    <table class="w-full min-w-225 text-sm">
-                        <!-- HEADER -->
-                        <thead class="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
-                            <tr>
-                                <th class="th">Student Name</th>
-                                <th class="th">Phone</th>
-                                <th class="th">Gender</th>
-                                <th class="th">Source</th>
-                                <th class="th">Assignee User</th>
-                                <th class="th">Entry Date Time</th>
-                                <th class="th">Status</th>
-                            </tr>
-                        </thead>
-                        <!-- BODY -->
-                        <tbody>
-                            <tr
-                                v-for="(stud, index) in data.data"
-                                :key="stud.id ?? index"
-                                class="border-t transition hover:bg-gray-50 dark:hover:bg-gray-800"
-                            >
-                                <!-- Student -->
-                                <td class="td">
-                                    <Link :href="route('studentActivities.index', stud.id)" class="flex items-center gap-3">
-                                        <!-- Avatar -->
-                                        <div class="relative">
-                                            <img
-                                                v-if="stud.photo"
-                                                :src="`/storage/student/${stud.photo}`"
-                                                class="h-10 w-10 rounded-full object-cover"
-                                            />
-                                            <div
-                                                v-else
-                                                :class="[
-                                                    'flex h-10 w-10 items-center justify-center rounded-full font-semibold text-white',
-                                                    getAvatarColor(stud.fname),
-                                                ]"
-                                            >
-                                                {{ stud.fname?.charAt(0) }}{{ stud.lname?.charAt(0) }}
-                                            </div>
-                                        </div>
-
-                                        <!-- Name -->
-                                        <div>
-                                            <div class="font-medium text-gray-900 dark:text-white">{{ stud.fname }} {{ stud.lname }}</div>
-                                        </div>
-                                    </Link>
-                                </td>
-                                <!-- Phone -->
-                                <td class="td">{{ stud.phone }}</td>
-                                <!-- Gender -->
-                                <td class="td">
-                                    <span class="badge-gray">
-                                        {{ stud.gender == 1 ? 'Male' : stud.gender == 2 ? 'Female' : 'Other' }}
-                                    </span>
-                                </td>
-                                <!-- Source -->
-                                <td class="td">{{ stud.source?.name }}</td>
-                                <!-- Assignee -->
-                                <td class="td">{{ stud.assainuser?.name }}</td>
-
-                                <!-- Date -->
-                                <td class="td text-gray-500">
-                                    {{ formatDate(stud.created_at) }}
-                                </td>
-                                <!-- Status -->
-                                <td class="td">
-                                    <span :class="statusClass(stud.status)">
-                                        {{ getStatusText(stud.status).text }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <!-- Title -->
+                <div class="border-b px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-800">Lead Student list</h2>
+                    <p class="text-sm text-gray-500">Manage all lead Student from here.</p>
                 </div>
+                <Table class="w-full min-w-225 text-sm">
+                    <TableHeader>
+                        <TableRow class="bg-gray-100 hover:bg-gray-200">
+                            <TableHead>Student Name</TableHead>
+                            <TableHead>Phone</TableHead>
+                            <TableHead>Gender</TableHead>
+                            <TableHead>Source</TableHead>
+                            <TableHead>Assignee User</TableHead>
+                            <TableHead>Entry Date Time</TableHead>
+                            <TableHead>Status</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow v-for="(stud, index) in data.data" :key="stud.id ?? index">
+                            <TableCell>
+                                <Link :href="route('studentActivities.index', stud.id)" class="flex items-center gap-3">
+                                    <!-- Avatar -->
+                                    <div class="relative">
+                                        <img v-if="stud.photo" :src="`/storage/student/${stud.photo}`" class="h-10 w-10 rounded-full object-cover" />
+                                        <div
+                                            v-else
+                                            :class="[
+                                                'flex h-10 w-10 items-center justify-center rounded-full font-semibold text-white',
+                                                getAvatarColor(stud.fname),
+                                            ]"
+                                        >
+                                            {{ stud.fname?.charAt(0) }}{{ stud.lname?.charAt(0) }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Name -->
+                                    <div>
+                                        <div class="font-medium text-gray-900 dark:text-white">{{ stud.fname }} {{ stud.lname }}</div>
+                                    </div>
+                                </Link>
+                            </TableCell>
+                            <TableCell>{{ stud.phone }}</TableCell>
+                            <TableCell>
+                                <span class="badge-gray">
+                                    {{ stud.gender == 1 ? 'Male' : stud.gender == 2 ? 'Female' : 'Other' }}
+                                </span>
+                            </TableCell>
+                            <TableCell>{{ stud.source?.name }}</TableCell>
+                            <TableCell>{{ stud.assainuser?.name }}</TableCell>
+                            <TableCell class="text-gray-500">
+                                {{ formatDate(stud.created_at) }}
+                            </TableCell>
+                            <TableCell>
+                                <span :class="statusClass(stud.status)">
+                                    {{ getStatusText(stud.status).text }}
+                                </span>
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
             </div>
 
             <div class="mt-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

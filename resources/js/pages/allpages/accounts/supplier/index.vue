@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import FormGroup from '@/components/FormGroup.vue';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
-import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
@@ -32,6 +32,7 @@ export interface Suppliers {
     contact_person: string;
     subphone: string;
     subemail: string;
+    active: number;
     user: { id: number; name: string };
 }
 
@@ -179,15 +180,14 @@ const onDelete = async (id: number) => {
 };
 
 // Switch toggle handler
-const toggleStatus = (supplier: Suppliers) => {
-    const newStatus = !Boolean(supplier.active); // boolean
+const toggleStatus = (supplier: Suppliers, checked: boolean) => {
     router.put(
         route('suppliers.updateStatus', supplier.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                supplier.active = newStatus ? 1 : 0; // local update (number)
+                supplier.active = checked ? 1 : 0;
                 toast.success('Supplier status update');
             },
         },
@@ -250,7 +250,7 @@ const search = () => {
     if (selectedEmail.value) params.subemail = selectedEmail.value.subemail;
     if (selectedContactPerson.value) params.contact_person = selectedContactPerson.value.contact_person;
     if (selectedPhone.value) params.subphone = selectedPhone.value.subphone;
-    
+
     router.get(route('suppliers.index'), params, {
         preserveState: false,
         preserveScroll: true,
@@ -276,9 +276,15 @@ const goToPage = (url: string | null) => {
 <template>
     <Head title="Supplier" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-            <div class="flex items-center gap-2 py-4">
-                <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Supplier </Button>
+        <div
+            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
+        >
+            <div
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
+            >
+                <Button variant="outline" size="sm" @click="showDailogCreate" class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+                    ><Plus></Plus> Create
+                </Button>
                 <!-- Search start -->
                 <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedSupplier">
@@ -419,7 +425,10 @@ const goToPage = (url: string | null) => {
                             <ComboboxOptions
                                 class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
                             >
-                                <div v-if="filteredContactPerson.length === 0 && queryContactPerson !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                <div
+                                    v-if="filteredContactPerson.length === 0 && queryContactPerson !== ''"
+                                    class="px-4 py-2 text-gray-500 select-none"
+                                >
                                     Nothing found.
                                 </div>
 
@@ -534,7 +543,12 @@ const goToPage = (url: string | null) => {
                 </div>
                 <!-- Search start -->
             </div>
-            <div class="rounded-md border">
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <!-- Title -->
+                <div class="border-b px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-800">Supplier list</h2>
+                    <p class="text-sm text-gray-500">Manage all Supplier from here.</p>
+                </div>
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -557,7 +571,8 @@ const goToPage = (url: string | null) => {
                             <TableCell>{{ supplier.subphone }}</TableCell>
                             <TableCell>{{ supplier.subemail }}</TableCell>
                             <TableCell>
-                                <Switch v-model="supplier.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(supplier)"> </Switch>
+                                <Switch :model-value="Boolean(supplier.active)" @update:model-value="(checked) => toggleStatus(supplier, checked)">
+                                </Switch>
                             </TableCell>
                             <TableCell class="text-right">
                                 <Button size="sm" variant="outline" @click="onShow(supplier.id)"><Eye></Eye></Button>
@@ -567,28 +582,43 @@ const goToPage = (url: string | null) => {
                         </TableRow>
                     </TableBody>
                 </Table>
-            </div>
+                <div class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
+                    <!-- Left -->
+                    <div class="flex flex-col gap-2 text-sm text-gray-600 sm:flex-row sm:items-center">
+                        <div class="flex items-center gap-2">
+                            <label>Show</label>
 
-            <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
-                <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
-                    <label for="per-page" class="text-gray-600">Show:</label>
-                    <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
-                        <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
-                    </select>
-                    <span>Showing {{ supplier.from }} to {{ supplier.to }} of {{ supplier.total }} results</span>
-                </div>
-                <div class="space-x-2">
-                    <Button
-                        v-for="(link, index) in data.links"
-                        :key="index"
-                        :disabled="!link.url"
-                        variant="outline"
-                        size="sm"
-                        :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
-                        @click="goToPage(link.url)"
-                    >
-                        <span v-html="link.label"></span>
-                    </Button>
+                            <select
+                                v-model="perPage"
+                                @change="changePerPage"
+                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
+                            >
+                                <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
+                                    {{ size }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <span> Showing {{ supplier.from }} to {{ supplier.to }} of {{ supplier.total }} results </span>
+                    </div>
+
+                    <!-- Right -->
+                    <div class="flex flex-wrap justify-center gap-2 md:justify-end">
+                        <Button
+                            v-for="(link, index) in data.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            size="sm"
+                            variant="outline"
+                            @click="goToPage(link.url)"
+                            :class="[
+                                link.active ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-gray-700',
+                                !link.url ? 'cursor-not-allowed opacity-50' : '',
+                            ]"
+                        >
+                            <span v-html="link.label"></span>
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

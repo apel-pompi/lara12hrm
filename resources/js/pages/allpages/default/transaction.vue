@@ -105,15 +105,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (transaction: Transaction) => {
-    const newStatus = !Boolean(transaction.active); // boolean
+const toggleStatus = (transaction: Transaction, checked: boolean) => {
     router.put(
         route('transaction.updateStatus', transaction.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                transaction.active = newStatus ? 1 : 0; // local update (number)
+                transaction.active = checked ? 1 : 0;
                 toast.success('Transaction Code status update');
             },
         },
@@ -358,7 +357,8 @@ const changePerPage = () => {
                                 <TableCell>{{ trn.increment }}</TableCell>
                                 <TableCell>{{ trn.user.name }}</TableCell>
                                 <TableCell>
-                                    <Switch v-model="trn.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(trn)"> </Switch>
+                                    <Switch :model-value="Boolean(trn.active)" @update:model-value="(checked) => toggleStatus(trn, checked)">
+                                    </Switch>
                                 </TableCell>
 
                                 <TableCell class="text-right">

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark'=> ($appearance ?? 'system') == 'dark'])>
+
 <head>
     <meta charset="utf-8">
     <title>Journal Transaction Report</title>
@@ -15,32 +16,60 @@
         /* ================= HEADER ================= */
         .header {
             width: 100%;
-            border-bottom: 2px solid #000;
-            margin-bottom: 10px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .logo img {
+            max-height: 60px;
         }
 
         .company-name {
-            font-size: 15px;
+            font-size: 17px;
             font-weight: bold;
         }
 
         .company-info {
             font-size: 10px;
+            line-height: 1.4;
+            color: #555;
         }
 
         /* ================= TITLE ================= */
-        .title {
+        .report-title {
             text-align: center;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: bold;
-            margin: 10px 0 5px;
+            margin: 5px 0 10px;
+            padding: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .report-title-section {
+            margin-bottom: 25px;
+        }
+
+
+        .title-table {
+            width: 100%;
+            background: #D7D7D7;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .title-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
             text-transform: uppercase;
         }
 
-        .subtitle {
-            text-align: center;
-            font-size: 10px;
-            margin-bottom: 10px;
+        .title-value {
+            font-size: 12px;
+            color: #1e293b;
+            font-weight: 500;
         }
 
         /* ================= META ================= */
@@ -118,112 +147,139 @@
 
 <body>
 
-<!-- HEADER -->
-<table class="header">
-    <tr>
-        <td>
-            <div class="company-name">{{ $company->companyname }}</div>
-            <div class="company-info">
-                {{ $company->address_one }}<br>
-                {{ $company->company_phone }} | {{ $company->company_email }}
-            </div>
-        </td>
-        <td align="right">
-            <strong>Date:</strong> {{ date('d M Y') }}<br>
-            <strong>Printed By:</strong> {{ auth()->user()->name }}
-        </td>
-    </tr>
-</table>
-
-<!-- TITLE -->
-<div class="title">Journal Transaction Report</div>
-<div class="subtitle">
-    For the period {{ date('d M Y', strtotime($startdate)) }} to {{ date('d M Y', strtotime($enddate)) }}
-</div>
-
-@foreach ($jurnalTransactions as $transaction)
-<!-- META -->
-<table class="meta-table">
-    <tr>
-        <td class="meta-label">Voucher No</td>
-        <td>{{ $transaction->vouchernumber }}</td>
-
-        <td class="meta-label">Voucher Date</td>
-        <td>{{ $transaction->voucherdate }}</td>
-
-        <td class="meta-label">Year</td>
-        <td>{{ $transaction->yearname }}</td>
-
-        <td class="meta-label">Period </td>
-        <td>{{ $transaction->monthname }}</td>
-    </tr>
-    <tr>
-        <td class="meta-label">Branch</td>
-        <td>{{ $transaction->branch->branchname }}</td>
-
-        <td class="meta-label">Reference</td>
-        <td colspan="3">{{ $transaction->referance }}</td>
-
-        <td class="meta-label">Status </td>
-        <td>{{ $transaction->status }}</td>
-    </tr>
-</table>
-
-<!-- JOURNAL TABLE -->
-<table class="journal-table">
-    <thead>
+    <!-- HEADER -->
+    <table class="header">
         <tr>
-            <th width="10%">SL</th>
-            <th width="45%">Account Head</th>
-            <th width="15%">Debit (Dr)</th>
-            <th width="15%">Credit (Cr)</th>
+            <td class="logo" width="30%">
+                @if ($company->companylogo)
+                <img src="{{ public_path('storage/company/' . $company->companylogo) }}">
+                @endif
+            </td>
+            <td align="right">
+                <div class="company-name">{{ $company->companyname }}</div>
+                <div class="company-info">
+                    {{ $company->address_one }}<br>
+                    {{ $company->address_two }}<br>
+                    {{ $company->company_phone }} | {{ $company->company_email }}
+                </div>
+            </td>
         </tr>
-    </thead>
+    </table>
 
-    <tbody>
-        @php
+    <!-- TITLE -->
+    <div class="report-title">
+        Journal Transaction Report
+    </div>
+    <div class="report-title-section">
+        <table class="title-table">
+            <tr>
+                <td width="50%">
+                    <div class="title-label">Report Period</div>
+                    <div class="title-value">{{ date('M d, Y', strtotime($startdate)) }} - {{ date('M d, Y', strtotime($enddate)) }}</div>
+                </td>
+                <td align="right">
+                    <div class="title-label">Branch</div>
+                    <div class="title-value">{{ $branch->branchname ?? 'All Branches' }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+
+    @foreach ($jurnalTransactions as $transaction)
+    <!-- META -->
+    <table class="meta-table">
+        <tr>
+            <td class="meta-label">Voucher No</td>
+            <td>{{ $transaction->vouchernumber }}</td>
+
+            <td class="meta-label">Voucher Date</td>
+            <td>{{ $transaction->voucherdate }}</td>
+
+            <td class="meta-label">Year</td>
+            <td>{{ $transaction->yearname }}</td>
+
+            <td class="meta-label">Period </td>
+            <td>{{ $transaction->monthname }}</td>
+        </tr>
+        <tr>
+            <td class="meta-label">Branch</td>
+            <td>{{ $transaction->branch->branchname }}</td>
+
+            <td class="meta-label">Reference</td>
+            <td colspan="3">{{ $transaction->referance }}</td>
+
+            <td class="meta-label">Status </td>
+            <td>{{ $transaction->status }}</td>
+        </tr>
+    </table>
+
+    <!-- JOURNAL TABLE -->
+    <table class="journal-table">
+        <thead>
+            <tr>
+                <th width="15%">Account Code</th>
+                <th width="20%">Account Description</th>
+                <th width="40%">Notes</th>
+                <th width="10%">Debit (Dr)</th>
+                <th width="10%">Credit (Cr)</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+            @php
             $totalDr = 0;
             $totalCr = 0;
-        @endphp
-        @foreach ($transaction->voucherdt as $index => $detail)
+            @endphp
+            @foreach ($transaction->voucherdt as $index => $detail)
             @php
-                $dr = $detail->primeamt < 0 ? abs($detail->primeamt) : 0;
+            $dr = $detail->primeamt < 0 ? abs($detail->primeamt) : 0;
                 $cr = $detail->primeamt > 0 ? $detail->primeamt : 0;
 
                 $totalDr += $dr;
                 $totalCr += $cr;
-            @endphp
+                @endphp
+                <tr>
+                    <td class="text-center">{{ $index + 1 }}</td>
+
+                    <td class="{{ $dr > 0 ? 'debit' : '' }}">
+                        {{ $detail->ChartOfAccount->description }}
+                    </td>
+
+                    <td class="{{ $cr < 0 ? 'credit' : '' }}">
+                        {{ $detail->notes }}
+                    </td>
+
+                    <td class="text-right">{{ $dr > 0 ? number_format($dr,3) : '' }}</td>
+                    <td class="text-right">{{ $cr > 0 ? number_format($cr,3) : '' }}</td>
+                </tr>
+
+                @endforeach
+
+                <tr class="total-row">
+                    <td colspan="3" class="text-right">Total</td>
+                    <td class="text-right">{{ number_format($totalDr,3) }}</td>
+                    <td class="text-right">{{ number_format($totalCr,3) }}</td>
+                </tr>
+        </tbody>
+    </table>
+    @endforeach
+    <!-- FOOTER -->
+    <table class="footer">
         <tr>
-            <td class="text-center">{{ $index + 1 }}</td>
-            <td class="{{ $dr > 0 ? 'debit' : '' }}">{{ $detail->ChartOfAccount->description }}</td>
-            <td class="text-right">{{ $dr > 0 ? $dr : '' }}</td>
-            <td class="text-right">{{ $cr > 0 ? $cr : '' }}</td>
+            <td class="sign">
+                <span>Prepared By</span>
+            </td>
+            <td class="sign">
+                <span>Checked By</span>
+            </td>
+            <td class="sign">
+                <span>Approved By</span>
+            </td>
         </tr>
-
-        @endforeach
-
-        <tr class="total-row">
-            <td colspan="2" class="text-right">Total</td>
-            <td class="text-right">{{ $totalDr }}</td>
-            <td class="text-right">{{ $totalCr }}</td>
-        </tr>
-    </tbody>
-</table>
-@endforeach
-<!-- FOOTER -->
-<table class="footer">
-    <tr>
-        <td class="sign">
-            <span>Prepared By</span>
-        </td>
-        <td class="sign">
-            <span>Checked By</span>
-        </td>
-        <td class="sign">
-            <span>Approved By</span>
-        </td>
-    </tr>
-</table>
+    </table>
 
 </body>
+
 </html>

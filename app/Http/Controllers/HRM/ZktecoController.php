@@ -9,13 +9,25 @@ use Illuminate\Http\Request;
 use MshadyDev\ZKTeco\ZKTeco;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 
 
 class ZktecoController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index()
     {
+        try {
+            $this->authorize('device.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
 
         return Inertia::render('allpages/hrm/zkteco', [
             // Pass any necessary data to the view here
@@ -24,6 +36,15 @@ class ZktecoController extends Controller
 
     public function connect(Request $request)
     {
+        try {
+            $this->authorize('device.connect');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
         try {
             $request->validate([
                 'ip' => 'required|ip',
@@ -73,6 +94,15 @@ class ZktecoController extends Controller
 
     public function sync(Request $request)
     {
+        try {
+            $this->authorize('device.sync');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
         try {
             $request->validate([
                 'date' => 'required|date'
@@ -160,6 +190,15 @@ class ZktecoController extends Controller
 
     public function syncRange(Request $request)
     {
+        try {
+            $this->authorize('device.syncRange');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
         try {
             $request->validate([
                 'start_date' => 'required|date',

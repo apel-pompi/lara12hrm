@@ -73,7 +73,6 @@ const props = defineProps<{
     substitute: Substitute[];
 }>();
 
-
 const data = props.leaves;
 
 const fromdate = ref<string | null>(null);
@@ -268,18 +267,15 @@ const filteredLeaveName = computed(() => (queryLeaveName.value === '' ? props.le
 const selectedEmployee = ref(null);
 const queryEmployee = ref('');
 
-
 const filteredEmployee = computed(() => {
     const filtered = queryEmployee.value
-        ? props.employee.filter(v =>
-            v.empname?.toLowerCase().includes(queryEmployee.value.toLowerCase())
-        )
+        ? props.employee.filter((v) => v.empname?.toLowerCase().includes(queryEmployee.value.toLowerCase()))
         : props.employee;
 
     // unique by empname but keep full object
     const map = new Map();
 
-    filtered.forEach(v => {
+    filtered.forEach((v) => {
         if (v.empname && !map.has(v.empname)) {
             map.set(v.empname, v);
         }
@@ -288,20 +284,15 @@ const filteredEmployee = computed(() => {
     return Array.from(map.values());
 });
 
-
 const selectedFormDate = ref(null);
 const queryFormDate = ref('');
 const filteredFormDate = computed(() => {
-    const filtered = queryFormDate.value
-        ? data.data.filter(v =>
-            v.fromdate?.toLowerCase().includes(queryFormDate.value.toLowerCase())
-        )
-        : data.data;
+    const filtered = queryFormDate.value ? data.data.filter((v) => v.fromdate?.toLowerCase().includes(queryFormDate.value.toLowerCase())) : data.data;
 
     // unique by fromdate but keep full object
     const map = new Map();
 
-    filtered.forEach(v => {
+    filtered.forEach((v) => {
         if (v.fromdate && !map.has(v.fromdate)) {
             map.set(v.fromdate, v);
         }
@@ -310,21 +301,15 @@ const filteredFormDate = computed(() => {
     return Array.from(map.values());
 });
 
-
-
 const selectedToDate = ref(null);
 const queryToDate = ref('');
 const filteredToDate = computed(() => {
-    const filtered = queryToDate.value
-        ? data.data.filter(v =>
-            v.todate?.toLowerCase().includes(queryToDate.value.toLowerCase())
-        )
-        : data.data;
+    const filtered = queryToDate.value ? data.data.filter((v) => v.todate?.toLowerCase().includes(queryToDate.value.toLowerCase())) : data.data;
 
     // unique by fromdate but keep full object
     const map = new Map();
 
-    filtered.forEach(v => {
+    filtered.forEach((v) => {
         if (v.todate && !map.has(v.todate)) {
             map.set(v.todate, v);
         }
@@ -336,18 +321,15 @@ const filteredToDate = computed(() => {
 const selectedSubstitute = ref(null);
 const querySubstitute = ref('');
 
-
 const filteredSubstitute = computed(() => {
     const filtered = querySubstitute.value
-        ? props.employee.filter(v =>
-            v.empname?.toLowerCase().includes(querySubstitute.value.toLowerCase())
-        )
+        ? props.employee.filter((v) => v.empname?.toLowerCase().includes(querySubstitute.value.toLowerCase()))
         : props.employee;
 
     // unique by empname but keep full object
     const map = new Map();
 
-    filtered.forEach(v => {
+    filtered.forEach((v) => {
         if (v.empname && !map.has(v.empname)) {
             map.set(v.empname, v);
         }
@@ -390,265 +372,244 @@ const goToPage = (url: string | null) => {
 <template>
     <Head title="Leave Paln" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-            <div class="flex items-center gap-2 py-4">
-                <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Leave Request </Button>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedLeaveName">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select name..."
-                                    :display-value="(n) => n?.leavename"
-                                    @input="queryLeaveName = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
+        <div
+            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
+        >
+            <div
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
+            >
+                <Button variant="outline" size="sm" @click="showDailogCreate" class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+                    ><Plus></Plus> Create
+                </Button>
+                <Combobox v-model="selectedLeaveName">
+                    <div class="relative">
+                        <!-- Input -->
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                placeholder="Select name..."
+                                :display-value="(n) => n?.leavename"
+                                @input="queryLeaveName = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+                        </div>
+
+                        <!-- Options -->
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        >
+                            <div
+                                v-if="filteredLeaveName.length === 0 && queryLeaveName !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none"
+                            >
+                                Nothing found.
                             </div>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            <ComboboxOption
+                                v-for="n in filteredLeaveName"
+                                :key="n.id"
+                                :value="n"
+                                class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                v-slot="{ selected }"
                             >
-                                <div
-                                    v-if="filteredLeaveName.length === 0 && queryLeaveName !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredLeaveName"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ n.leavename }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                    {{ n.leavename }}
+                                </span>
+                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                    <CheckIcon class="h-5 w-5" />
+                                </span>
+                            </ComboboxOption>
+                        </ComboboxOptions>
+                    </div>
+                </Combobox>
+                <Combobox v-model="selectedEmployee">
+                    <div class="relative">
+                        <!-- Input -->
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                placeholder="Select name..."
+                                :display-value="(n) => n?.empname"
+                                @input="queryEmployee = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
                         </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedEmployee">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select name..."
-                                    :display-value="(n) => n?.empname"
-                                    @input="queryEmployee = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
+
+                        <!-- Options -->
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        >
+                            <div
+                                v-if="filteredEmployee.length === 0 && queryEmployee !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none"
+                            >
+                                Nothing found.
                             </div>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            <ComboboxOption
+                                v-for="n in filteredEmployee"
+                                :key="n.id"
+                                :value="n"
+                                class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                v-slot="{ selected }"
                             >
-                                <div
-                                    v-if="filteredEmployee.length === 0 && queryEmployee !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredEmployee"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ n.empname }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                    {{ n.empname }}
+                                </span>
+                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                    <CheckIcon class="h-5 w-5" />
+                                </span>
+                            </ComboboxOption>
+                        </ComboboxOptions>
+                    </div>
+                </Combobox>
+                <Combobox v-model="selectedFormDate">
+                    <div class="relative">
+                        <!-- Input -->
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                placeholder="Select fromdate..."
+                                :display-value="(n) => n?.fromdate"
+                                @input="queryFormDate = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
                         </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedFormDate">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select fromdate..."
-                                    :display-value="(n) => n?.fromdate"
-                                    @input="queryFormDate = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
+
+                        <!-- Options -->
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        >
+                            <div
+                                v-if="filteredFormDate.length === 0 && queryFormDate !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none"
+                            >
+                                Nothing found.
                             </div>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            <ComboboxOption
+                                v-for="n in filteredFormDate"
+                                :key="n.id"
+                                :value="n"
+                                class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                v-slot="{ selected }"
                             >
-                                <div
-                                    v-if="filteredFormDate.length === 0 && queryFormDate !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredFormDate"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ n.fromdate }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                    {{ n.fromdate }}
+                                </span>
+                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                    <CheckIcon class="h-5 w-5" />
+                                </span>
+                            </ComboboxOption>
+                        </ComboboxOptions>
+                    </div>
+                </Combobox>
+                <Combobox v-model="selectedToDate">
+                    <div class="relative">
+                        <!-- Input -->
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                placeholder="Select todate..."
+                                :display-value="(n) => n?.todate"
+                                @input="queryToDate = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
                         </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedToDate">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select todate..."
-                                    :display-value="(n) => n?.todate"
-                                    @input="queryToDate = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
+
+                        <!-- Options -->
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        >
+                            <div v-if="filteredToDate.length === 0 && queryToDate !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
+                                Nothing found.
                             </div>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            <ComboboxOption
+                                v-for="n in filteredToDate"
+                                :key="n.id"
+                                :value="n"
+                                class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                v-slot="{ selected }"
                             >
-                                <div
-                                    v-if="filteredToDate.length === 0 && queryToDate !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredToDate"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ n.todate }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                    {{ n.todate }}
+                                </span>
+                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                    <CheckIcon class="h-5 w-5" />
+                                </span>
+                            </ComboboxOption>
+                        </ComboboxOptions>
+                    </div>
+                </Combobox>
+                <Combobox v-model="selectedSubstitute">
+                    <div class="relative">
+                        <!-- Input -->
+                        <div class="relative w-full">
+                            <ComboboxInput
+                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                placeholder="Select substitute..."
+                                :display-value="(n) => n?.empname"
+                                @input="querySubstitute = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
                         </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Combobox v-model="selectedSubstitute">
-                        <div class="relative w-48">
-                            <!-- Input -->
-                            <div class="relative w-full">
-                                <ComboboxInput
-                                    class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                    placeholder="Select substitute..."
-                                    :display-value="(n) => n?.empname"
-                                    @input="querySubstitute = $event.target.value"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
+
+                        <!-- Options -->
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                        >
+                            <div
+                                v-if="filteredSubstitute.length === 0 && querySubstitute !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none"
+                            >
+                                Nothing found.
                             </div>
 
-                            <!-- Options -->
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            <ComboboxOption
+                                v-for="n in filteredSubstitute"
+                                :key="n.id"
+                                :value="n"
+                                class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                v-slot="{ selected }"
                             >
-                                <div
-                                    v-if="filteredSubstitute.length === 0 && querySubstitute !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="n in filteredSubstitute"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ n.empname }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
-                                        <CheckIcon class="h-5 w-5" />
-                                    </span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
-                        </div>
-                    </Combobox>
-                </div>
-                <div class="grid gap-2">
-                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="search"
-                        ><Search></Search> Search
-                    </Button>
-                </div>
-                <div class="grid gap-2">
-                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="refresh"
-                        ><RefreshCcw></RefreshCcw> Refresh
-                    </Button>
-                </div>
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                    {{ n.empname }}
+                                </span>
+                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                    <CheckIcon class="h-5 w-5" />
+                                </span>
+                            </ComboboxOption>
+                        </ComboboxOptions>
+                    </div>
+                </Combobox>
+                <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="search"
+                    ><Search></Search> Search
+                </Button>
+                <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="refresh"
+                    ><RefreshCcw></RefreshCcw> Refresh
+                </Button>
             </div>
 
-            <div class="rounded-md border">
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <!-- Title -->
+                <div class="border-b px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-800">Leave request list</h2>
+                    <p class="text-sm text-gray-500">Manage all Leave request from here.</p>
+                </div>
                 <Table>
                     <TableHeader>
-                        <TableRow>
+                        <TableRow class="bg-gray-100 hover:bg-gray-200">
                             <TableHead>Leave Name</TableHead>
                             <TableHead>Employee Name</TableHead>
                             <TableHead>From Date</TableHead>

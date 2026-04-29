@@ -31,6 +31,17 @@ import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Roles', href: '/roles' }];
 
+export interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    per_page: number;
+    to: number | null;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 export interface Roles {
     id: number;
     name: string;
@@ -49,7 +60,7 @@ type PermissionGroup = {
 };
 
 const props = defineProps<{
-    roles: Roles[];
+    roles: Paginated<Roles>;
     permissionGroups: PermissionGroup[];
     permissionsByGroup: Record<string, Permission[]>;
 }>();
@@ -363,24 +374,43 @@ const checkPermissionByGroup = (className: string | number, checkThis: Event) =>
         }
     });
 };
+
+const perPage = ref(10);
+
+const changePerPage = () => {
+    router.get(route('roles.index'), { per_page: perPage.value }, { preserveState: false, replace: true });
+};
+const goToPage = (url: string | null) => {
+    if (url) {
+        router.get(url, {}, { preserveState: false, replace: true });
+    }
+};
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Roles" />
         <UserLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header / Toolbar -->
+                <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                    <!-- Create -->
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
+                        ><Plus></Plus> Create Roles
+                    </Button>
+                    <!-- Search Combobox -->
                     <Input
                         class="max-w-sm"
                         placeholder="Filter Roles Name..."
                         :model-value="table.getColumn('name')?.getFilterValue() as string"
                         @update:model-value="table.getColumn('name')?.setFilterValue($event)"
                     />
-                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Roles </Button>
+
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
-                            <Button class="ml-auto dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline"> Columns <ChevronDown class="ml-2 h-4 w-4" /> </Button>
+                            <Button class="ml-auto dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline">
+                                Columns <ChevronDown class="ml-2 h-4 w-4" />
+                            </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                             <DropdownMenuCheckboxItem
@@ -399,10 +429,17 @@ const checkPermissionByGroup = (className: string | number, checkThis: Event) =>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                <div class="rounded-md border">
+
+                <!-- Table Card -->
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Roles List</h2>
+                        <p class="text-sm text-gray-500">Manage all roles from here.</p>
+                    </div>
                     <Table>
                         <TableHeader>
-                            <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                            <TableRow class="bg-gray-100 hover:bg-gray-200" v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
                                 <TableHead
                                     v-for="header in headerGroup.headers"
                                     :key="header.id"
@@ -451,13 +488,37 @@ const checkPermissionByGroup = (className: string | number, checkThis: Event) =>
                     </Table>
                 </div>
 
-                <div class="flex items-center justify-end space-x-2 py-4">
-                    <div class="text-muted-foreground flex-1 text-sm">
-                        {{ table.getFilteredSelectedRowModel().rows.length }} of {{ table.getFilteredRowModel().rows.length }} row(s) selected.
+                <!-- Pagination -->
+                <div class="mt-5 flex flex-col items-center justify-between gap-4 md:flex-row">
+                    <!-- Left -->
+                    <div class="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                        <label>Show:</label>
+
+                        <select v-model="perPage" @change="changePerPage" class="rounded-md border px-2 py-1 text-sm">
+                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
+                                {{ size }}
+                            </option>
+                        </select>
+
+                        <span> Showing {{ roles.from }} to {{ roles.to }} of {{ roles.total }} results </span>
                     </div>
-                    <div class="space-x-2">
-                        <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()"> Previous </Button>
-                        <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()"> Next </Button>
+
+                    <!-- Right -->
+                    <div class="flex flex-wrap gap-2">
+                        <Button
+                            v-for="(link, index) in data.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            variant="outline"
+                            size="sm"
+                            :class="[
+                                link.active ? 'bg-indigo-600 text-white hover:bg-indigo-700' : '',
+                                !link.url ? 'cursor-not-allowed opacity-50' : '',
+                            ]"
+                            @click="goToPage(link.url)"
+                        >
+                            <span v-html="link.label"></span>
+                        </Button>
                     </div>
                 </div>
             </div>

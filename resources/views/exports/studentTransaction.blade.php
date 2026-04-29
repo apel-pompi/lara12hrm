@@ -169,7 +169,7 @@
 
             <!-- CENTER: Report Title -->
             <div class="header-col report-title">
-                <h1>Student Transaction Ledger</h1>
+                <h1>Student Transaction</h1>
             </div>
 
             <!-- RIGHT: Meta Info -->
@@ -353,7 +353,7 @@
                     <th>#</th>
                     <th>Purticulars</th>
                     <th>Invoice Amount</th>
-                    <th>Receve Amount</th>
+                    <th>Received Amount</th>
                 </tr>
             </thead>
 
@@ -425,7 +425,7 @@
                     <th>#</th>
                     <th>Purticulars</th>
                     <th>Invoice Amount</th>
-                    <th>Receve Amount</th>
+                    <th>Received Amount</th>
                 </tr>
             </thead>
 

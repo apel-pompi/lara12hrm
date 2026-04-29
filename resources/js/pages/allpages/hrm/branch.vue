@@ -382,8 +382,9 @@ const onDelete = async (id: number) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Branch" />
         <HrmLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header / Toolbar -->
+                <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                     <Input
                         class="max-w-sm"
                         placeholder="Filter Branch Name..."
@@ -412,10 +413,16 @@ const onDelete = async (id: number) => {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                <div class="rounded-md border">
+                <!-- Table Card -->
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Branch List</h2>
+                        <p class="text-sm text-gray-500">Manage all branch from here.</p>
+                    </div>
                     <Table>
                         <TableHeader>
-                            <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                            <TableRow class="bg-gray-100 hover:bg-gray-100" v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
                                 <TableHead
                                     v-for="header in headerGroup.headers"
                                     :key="header.id"

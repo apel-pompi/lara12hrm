@@ -35,6 +35,7 @@ export interface Paginated<T> {
 }
 
 export interface ChartOfAccount {
+    id: number;
     accounttype: string;
     accountcode: string;
     description: string;
@@ -84,14 +85,13 @@ const showDailogCreate = () => {
     showDialog.value = true;
 };
 
-
 const grouptwoOptions = ref([]);
 
 const fetchTwo = async () => {
     if (!form.groupone) return; // groupone code
     const res = await fetch(`/chartOfAccount/getGroupTwo/${form.groupone}`);
     const data = await res.json();
-    
+
     grouptwoOptions.value = data.data;
 };
 
@@ -109,7 +109,7 @@ const fetchThree = async () => {
 
     const res = await fetch(`/chartOfAccount/getGroupThree/${form.groupone}/${form.grouptwo}`);
     const data = await res.json();
-    console.log(data)
+    console.log(data);
     groupthreeOptions.value = data.data;
 };
 
@@ -149,7 +149,7 @@ const onEdit = async (id: number) => {
         const data = await res.json();
         Object.assign(form, data.data);
         form.id = data.data.id;
-        
+
         // Fetch group three options
         await fetchThree();
         form.groupthree = data.data.groupthree;
@@ -190,15 +190,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (one: ChartOfAccount) => {
-    const newStatus = !Boolean(one.active); // boolean
+const toggleStatus = (one: ChartOfAccount, checked: boolean) => {
     router.put(
         route('chartOfAccount.updateStatus', one.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                one.active = newStatus ? 1 : 0; // local update (number)
+                one.active = checked ? 1 : 0;
                 const flash = usePage().props.flash;
                 if (flash?.success) {
                     toast('success', {
@@ -241,7 +240,6 @@ const onDelete = async (id: number) => {
 const GroupOne = ref(null);
 
 watch(GroupOne, (val) => {
-
     if (val) {
         form.groupone = val.id; // numeric/code
         form.accounttype = val.description; // auto fill
@@ -341,273 +339,259 @@ const goToPage = (url: string | null) => {
         <Head title="Accounts Setting" />
 
         <AccountsLayout :breadcrumbs="breadcrumbs">
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header / Toolbar -->
+                <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
                         ><Plus></Plus> Create
                     </Button>
+                    <Combobox v-model="selectedGroupOne">
+                        <div class="relative w-full md:w-48">
+                            <ComboboxInput
+                                class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Select GroupOne"
+                                @input="queryGroupOne = $event.target.value"
+                                :display-value="(c) => c?.description ?? ''"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                            >
+                                <div v-if="filteredGroupOne.length === 0 && queryGroupOne !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="one in filteredGroupOne"
+                                    :key="one.id"
+                                    :value="one"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ one.description }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                    <Combobox v-model="selectedGroupTwo">
+                        <div class="relative w-full md:w-48">
+                            <ComboboxInput
+                                class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Select GroupTwo"
+                                @input="queryGroupTwo = $event.target.value"
+                                :display-value="(c) => c?.description ?? ''"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                            >
+                                <div v-if="filteredGroupTwo.length === 0 && queryGroupTwo !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="two in filteredGroupTwo"
+                                    :key="two.id"
+                                    :value="two"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ two.description }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                    <Combobox v-model="selectedGroupThree">
+                        <div class="relative w-full md:w-48">
+                            <ComboboxInput
+                                class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Select GroupThree"
+                                @input="queryGroupThree = $event.target.value"
+                                :display-value="(c) => c?.description ?? ''"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                            >
+                                <div v-if="filteredGroupThree.length === 0 && queryGroupThree !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="three in filteredGroupThree"
+                                    :key="three.id"
+                                    :value="three"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ three.description }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                    <Combobox v-model="selectedDescription">
+                        <div class="relative w-full md:w-48">
+                            <ComboboxInput
+                                class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Select Description"
+                                @input="queryDescription = $event.target.value"
+                                :display-value="(c) => c?.description ?? ''"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                            >
+                                <div v-if="filteredDescription.length === 0 && queryDescription !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="three in filteredDescription"
+                                    :key="three.id"
+                                    :value="three"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ three.description }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                    <Combobox v-model="selectedUsages">
+                        <div class="relative w-full md:w-48">
+                            <ComboboxInput
+                                class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Account Usage"
+                                @input="queryUsages = $event.target.value"
+                                :display-value="(value) => value ?? ''"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                            >
+                                <div v-if="filteredUsages.length === 0 && queryUsages !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="usage in filteredUsages"
+                                    :key="usage.id"
+                                    :value="usage"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ usage }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                    <Combobox v-model="selectedAnalytic">
+                        <div class="relative w-full md:w-48">
+                            <ComboboxInput
+                                class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Analytic Type"
+                                @input="queryAnalytic = $event.target.value"
+                                :display-value="(value) => value ?? ''"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                            >
+                                <div v-if="filteredAnalytic.length === 0 && queryAnalytic !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="usage in filteredAnalytic"
+                                    :key="usage.id"
+                                    :value="usage"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ usage }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
+                    <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
+                    <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
                 </div>
-                <div class="flex flex-wrap items-center gap-4 py-4">
-                    <div class="w-full sm:w-1/2 lg:w-auto">
-                        <Combobox v-model="selectedGroupOne">
-                            <div class="relative w-full md:w-48">
-                                <ComboboxInput
-                                    class="w-full rounded-md border px-3 py-2 text-sm"
-                                    placeholder="Select GroupOne"
-                                    @input="queryGroupOne = $event.target.value"
-                                    :display-value="(c) => c?.description ?? ''"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
 
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                                >
-                                    <div v-if="filteredGroupOne.length === 0 && queryGroupOne !== ''" class="px-4 py-2 text-gray-500 select-none">
-                                        Nothing found.
-                                    </div>
-
-                                    <ComboboxOption
-                                        v-for="one in filteredGroupOne"
-                                        :key="one.id"
-                                        :value="one"
-                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                        v-slot="{ selected }"
-                                    >
-                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                            {{ one.description }}
-                                        </span>
-                                        <span
-                                            v-if="selected"
-                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                        >
-                                            <CheckIcon class="h-5 w-5" />
-                                        </span>
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Chart of accounts List</h2>
+                        <p class="text-sm text-gray-500">Manage all Chart of accounts from here.</p>
                     </div>
-                    <div class="w-full sm:w-1/2 lg:w-auto">
-                        <Combobox v-model="selectedGroupTwo">
-                            <div class="relative w-full md:w-48">
-                                <ComboboxInput
-                                    class="w-full rounded-md border px-3 py-2 text-sm"
-                                    placeholder="Select GroupTwo"
-                                    @input="queryGroupTwo = $event.target.value"
-                                    :display-value="(c) => c?.description ?? ''"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                                >
-                                    <div v-if="filteredGroupTwo.length === 0 && queryGroupTwo !== ''" class="px-4 py-2 text-gray-500 select-none">
-                                        Nothing found.
-                                    </div>
-
-                                    <ComboboxOption
-                                        v-for="two in filteredGroupTwo"
-                                        :key="two.id"
-                                        :value="two"
-                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                        v-slot="{ selected }"
-                                    >
-                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                            {{ two.description }}
-                                        </span>
-                                        <span
-                                            v-if="selected"
-                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                        >
-                                            <CheckIcon class="h-5 w-5" />
-                                        </span>
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-                    </div>
-                    <div class="w-full sm:w-1/2 lg:w-auto">
-                        <Combobox v-model="selectedGroupThree">
-                            <div class="relative w-full md:w-48">
-                                <ComboboxInput
-                                    class="w-full rounded-md border px-3 py-2 text-sm"
-                                    placeholder="Select GroupThree"
-                                    @input="queryGroupThree = $event.target.value"
-                                    :display-value="(c) => c?.description ?? ''"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                                >
-                                    <div v-if="filteredGroupThree.length === 0 && queryGroupThree !== ''" class="px-4 py-2 text-gray-500 select-none">
-                                        Nothing found.
-                                    </div>
-
-                                    <ComboboxOption
-                                        v-for="three in filteredGroupThree"
-                                        :key="three.id"
-                                        :value="three"
-                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                        v-slot="{ selected }"
-                                    >
-                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                            {{ three.description }}
-                                        </span>
-                                        <span
-                                            v-if="selected"
-                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                        >
-                                            <CheckIcon class="h-5 w-5" />
-                                        </span>
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-                    </div>
-                    <div class="w-full sm:w-1/2 lg:w-auto">
-                        <Combobox v-model="selectedDescription">
-                            <div class="relative w-full md:w-48">
-                                <ComboboxInput
-                                    class="w-full rounded-md border px-3 py-2 text-sm"
-                                    placeholder="Select Description"
-                                    @input="queryDescription = $event.target.value"
-                                    :display-value="(c) => c?.description ?? ''"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                                >
-                                    <div
-                                        v-if="filteredDescription.length === 0 && queryDescription !== ''"
-                                        class="px-4 py-2 text-gray-500 select-none"
-                                    >
-                                        Nothing found.
-                                    </div>
-
-                                    <ComboboxOption
-                                        v-for="three in filteredDescription"
-                                        :key="three.id"
-                                        :value="three"
-                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                        v-slot="{ selected }"
-                                    >
-                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                            {{ three.description }}
-                                        </span>
-                                        <span
-                                            v-if="selected"
-                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                        >
-                                            <CheckIcon class="h-5 w-5" />
-                                        </span>
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-                    </div>
-                    <div class="w-full sm:w-1/2 lg:w-auto">
-                        <Combobox v-model="selectedUsages">
-                            <div class="relative w-full md:w-48">
-                                <ComboboxInput
-                                    class="w-full rounded-md border px-3 py-2 text-sm"
-                                    placeholder="Account Usage"
-                                    @input="queryUsages = $event.target.value"
-                                    :display-value="(value) => value ?? ''"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                                >
-                                    <div v-if="filteredUsages.length === 0 && queryUsages !== ''" class="px-4 py-2 text-gray-500 select-none">
-                                        Nothing found.
-                                    </div>
-
-                                    <ComboboxOption
-                                        v-for="usage in filteredUsages"
-                                        :key="usage.id"
-                                        :value="usage"
-                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                        v-slot="{ selected }"
-                                    >
-                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                            {{ usage }}
-                                        </span>
-                                        <span
-                                            v-if="selected"
-                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                        >
-                                            <CheckIcon class="h-5 w-5" />
-                                        </span>
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-                    </div>
-                    <div class="w-full sm:w-1/2 lg:w-auto">
-                        <Combobox v-model="selectedAnalytic">
-                            <div class="relative w-full md:w-48">
-                                <ComboboxInput
-                                    class="w-full rounded-md border px-3 py-2 text-sm"
-                                    placeholder="Analytic Type"
-                                    @input="queryAnalytic = $event.target.value"
-                                    :display-value="(value) => value ?? ''"
-                                />
-                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                </ComboboxButton>
-
-                                <ComboboxOptions
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                                >
-                                    <div v-if="filteredAnalytic.length === 0 && queryAnalytic !== ''" class="px-4 py-2 text-gray-500 select-none">
-                                        Nothing found.
-                                    </div>
-
-                                    <ComboboxOption
-                                        v-for="usage in filteredAnalytic"
-                                        :key="usage.id"
-                                        :value="usage"
-                                        class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                        v-slot="{ selected }"
-                                    >
-                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                            {{ usage }}
-                                        </span>
-                                        <span
-                                            v-if="selected"
-                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                        >
-                                            <CheckIcon class="h-5 w-5" />
-                                        </span>
-                                    </ComboboxOption>
-                                </ComboboxOptions>
-                            </div>
-                        </Combobox>
-                    </div>
-                    <div class="w-full sm:w-auto">
-                        <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                    </div>
-                    <div class="w-full sm:w-auto">
-                        <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
-                    </div>
-                </div>
-                <div class="overflow-hidden rounded-xl border shadow-sm">
                     <Table class="w-full text-sm">
                         <TableHeader>
-                            <TableRow>
+                            <TableRow class="bg-gray-100 hover:bg-gray-100">
                                 <TableHead>Sl</TableHead>
                                 <TableHead>Group One</TableHead>
                                 <TableHead>Group Two</TableHead>
@@ -631,11 +615,16 @@ const goToPage = (url: string | null) => {
                                 <TableCell>{{ chart.accountusage }}</TableCell>
                                 <TableCell>{{ chart.analyticalcode }}</TableCell>
                                 <TableCell>
-                                    <Switch v-model="chart.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(chart)"> </Switch>
+                                    <Switch :model-value="Boolean(chart.active)" @update:model-value="(checked) => toggleStatus(chart, checked)">
+                                    </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button size="sm" variant="outline" @click="onEdit(chart.id)"><SquarePen></SquarePen></Button>
-                                    <Button size="sm" variant="outline" @click="onDelete(chart.id)"><Trash></Trash></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(chart.id)">
+                                        <SquarePen class="h-4 w-4 text-indigo-600" />
+                                    </Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(chart.id)">
+                                        <Trash class="h-4 w-4 text-red-600" />
+                                    </Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -752,7 +741,14 @@ const goToPage = (url: string | null) => {
                         <!-- Account Type -->
                         <div>
                             <Label for="accounttype" class="text-sm font-medium">Account Type<span class="text-red-500">*</span></Label>
-                            <Input type="text" id="accounttype" v-model="form.accounttype" placeholder="Enter Account Type" disabled class="mt-1 w-full" />
+                            <Input
+                                type="text"
+                                id="accounttype"
+                                v-model="form.accounttype"
+                                placeholder="Enter Account Type"
+                                disabled
+                                class="mt-1 w-full"
+                            />
                             <p v-if="form.errors.accounttype" class="mt-1 text-sm text-red-600">{{ form.errors.accounttype }}</p>
                         </div>
 

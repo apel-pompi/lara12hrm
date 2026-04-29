@@ -193,15 +193,14 @@ watch(
 );
 
 // Switch toggle handler
-const toggleStatus = (holidayhd: HolidayHd) => {
-    const newStatus = !Boolean(holidayhd.active); // boolean
+const toggleStatus = (holidayhd: HolidayHd, checked: boolean) => {
     router.put(
         route('holidayhd.updateStatus', holidayhd.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                holidayhd.active = newStatus ? 1 : 0; // local update (number)
+                holidayhd.active = checked ? 1 : 0;
                 toast.success('Holiday status update');
             },
         },
@@ -249,22 +248,25 @@ const getMonthName = (m) => {
 <template>
     <Head title="Holiday" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
+        <div
+            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
+        >
             <!-- Responsive Header + Search Section -->
 
             <!-- Filters -->
-            <div class="grid grid-cols-1 p-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-5 justify-between items-center">
-                <Button
-                    variant="default"
-                    size="sm"
-                    @click="showDailogCreate"
-                    class="w-full rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 lg:w-auto"
-                >
-                    <Plus class="h-4 w-4" />
-                    Create
-                </Button>
-                <!-- Branch -->
-                <div>
+            <div
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
+            >
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
+                    <Button
+                        variant="default"
+                        size="sm"
+                        @click="showDailogCreate"
+                        class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+                    >
+                        <Plus class="h-4 w-4" />
+                        Create
+                    </Button>
                     <Select v-model="searchForm.branch_id">
                         <SelectTrigger class="w-full rounded-xl border-gray-300">
                             <SelectValue placeholder="Select Branch" />
@@ -278,10 +280,6 @@ const getMonthName = (m) => {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                </div>
-
-                <!-- Year -->
-                <div>
                     <Select v-model="searchForm.yearname">
                         <SelectTrigger class="w-full rounded-xl border-gray-300">
                             <SelectValue placeholder="Select Year" />
@@ -295,10 +293,6 @@ const getMonthName = (m) => {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                </div>
-
-                <!-- Month -->
-                <div>
                     <Select v-model="searchForm.monthname">
                         <SelectTrigger class="w-full rounded-xl border-gray-300">
                             <SelectValue placeholder="Select Month" />
@@ -312,9 +306,6 @@ const getMonthName = (m) => {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                </div>
-
-                <div>
                     <!-- Search -->
                     <Button variant="outline" size="sm" @click="search" class="rounded-xl border-indigo-300 hover:bg-indigo-50">
                         <Search class="mr-2 h-4 w-4" />
@@ -331,97 +322,88 @@ const getMonthName = (m) => {
 
             <!-- Modern Responsive Holiday Table -->
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-                <!-- Table -->
-                <div class="overflow-x-auto">
-                    <Table class="min-w-full">
-                        <TableHeader>
-                            <TableRow class="bg-gray-50">
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Branch Name</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Year</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Month</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Holiday Days</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Working Days</TableHead>
-                                <TableHead class="px-4 py-3 text-center font-semibold text-gray-700">Status</TableHead>
-                                <TableHead class="px-4 py-3 text-center font-semibold text-gray-700">Action</TableHead>
-                            </TableRow>
-                        </TableHeader>
-
-                        <TableBody>
-                            <TableRow
-                                v-for="(holidayhd, index) in data.data"
-                                :key="holidayhd.id ?? index"
-                                class="border-t transition hover:bg-gray-50"
-                            >
-                                <!-- Branch -->
-                                <TableCell class="px-4 py-3 font-medium whitespace-nowrap text-gray-800">
-                                    {{ holidayhd.branch?.branchname }}
-                                </TableCell>
-
-                                <!-- Year -->
-                                <TableCell class="px-4 py-3 text-gray-600">
-                                    {{ holidayhd.yearname }}
-                                </TableCell>
-
-                                <!-- Month -->
-                                <TableCell class="px-4 py-3 text-gray-600">
-                                    {{ getMonthName(holidayhd.monthname) }}
-                                </TableCell>
-
-                                <!-- Holiday Days -->
-                                <TableCell class="px-4 py-3">
-                                    <a
-                                        :href="`/holidaydt/${holidayhd.id}/create/`"
-                                        class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 hover:bg-blue-200"
-                                    >
-                                        {{ holidayhd.holidays }} Days
-                                    </a>
-                                </TableCell>
-
-                                <!-- Working -->
-                                <TableCell class="px-4 py-3 font-medium text-green-700">
-                                    {{ holidayhd.holiworking }}
-                                </TableCell>
-
-                                <!-- Status -->
-                                <TableCell class="px-4 py-3 text-center">
-                                    <Switch v-model="holidayhd.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(holidayhd)" />
-                                </TableCell>
-
-                                <!-- Action -->
-                                <TableCell class="px-4 py-3">
-                                    <div class="flex justify-center gap-2">
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            class="h-8 w-8 text-blue-600 hover:bg-blue-100"
-                                            @click="onShow(holidayhd.id)"
-                                        >
-                                            <Eye class="h-4 w-4" />
-                                        </Button>
-
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            class="h-8 w-8 text-amber-600 hover:bg-amber-100"
-                                            @click="onEdit(holidayhd.id)"
-                                        >
-                                            <SquarePen class="h-4 w-4" />
-                                        </Button>
-
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            class="h-8 w-8 text-red-600 hover:bg-red-100"
-                                            @click="onDelete(holidayhd.id)"
-                                        >
-                                            <Trash class="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
+                <!-- Title -->
+                <div class="border-b px-6 py-4">
+                    <h2 class="text-lg font-semibold text-gray-800">Holiday Configuration List</h2>
+                    <p class="text-sm text-gray-500">Manage all Holiday Configuration from here.</p>
                 </div>
+                <Table class="min-w-full">
+                    <TableHeader>
+                        <TableRow class="bg-gray-50">
+                            <TableHead class="px-4 py-3 font-semibold text-gray-700">Branch Name</TableHead>
+                            <TableHead class="px-4 py-3 font-semibold text-gray-700">Year</TableHead>
+                            <TableHead class="px-4 py-3 font-semibold text-gray-700">Month</TableHead>
+                            <TableHead class="px-4 py-3 font-semibold text-gray-700">Holiday Days</TableHead>
+                            <TableHead class="px-4 py-3 font-semibold text-gray-700">Working Days</TableHead>
+                            <TableHead class="px-4 py-3 text-center font-semibold text-gray-700">Status</TableHead>
+                            <TableHead class="px-4 py-3 text-center font-semibold text-gray-700">Action</TableHead>
+                        </TableRow>
+                    </TableHeader>
+
+                    <TableBody>
+                        <TableRow v-for="(holidayhd, index) in data.data" :key="holidayhd.id ?? index" class="border-t transition hover:bg-gray-50">
+                            <!-- Branch -->
+                            <TableCell class="px-4 py-3 font-medium whitespace-nowrap text-gray-800">
+                                {{ holidayhd.branch?.branchname }}
+                            </TableCell>
+
+                            <!-- Year -->
+                            <TableCell class="px-4 py-3 text-gray-600">
+                                {{ holidayhd.yearname }}
+                            </TableCell>
+
+                            <!-- Month -->
+                            <TableCell class="px-4 py-3 text-gray-600">
+                                {{ getMonthName(holidayhd.monthname) }}
+                            </TableCell>
+
+                            <!-- Holiday Days -->
+                            <TableCell class="px-4 py-3">
+                                <a
+                                    :href="`/holidaydt/${holidayhd.id}/create/`"
+                                    class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 hover:bg-blue-200"
+                                >
+                                    {{ holidayhd.holidays }} Days
+                                </a>
+                            </TableCell>
+
+                            <!-- Working -->
+                            <TableCell class="px-4 py-3 font-medium text-green-700">
+                                {{ holidayhd.holiworking }}
+                            </TableCell>
+
+                            <!-- Status -->
+                            <TableCell class="px-4 py-3 text-center">
+                                <Switch
+                                    :model-value="Boolean(holidayhd.active)"
+                                    @update:model-value="(checked) => toggleStatus(holidayhd, checked)"
+                                />
+                            </TableCell>
+
+                            <!-- Action -->
+                            <TableCell class="px-4 py-3">
+                                <div class="flex justify-center gap-2">
+                                    <Button size="icon" variant="ghost" class="h-8 w-8 text-blue-600 hover:bg-blue-100" @click="onShow(holidayhd.id)">
+                                        <Eye class="h-4 w-4" />
+                                    </Button>
+
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        class="h-8 w-8 text-amber-600 hover:bg-amber-100"
+                                        @click="onEdit(holidayhd.id)"
+                                    >
+                                        <SquarePen class="h-4 w-4" />
+                                    </Button>
+
+                                    <Button size="icon" variant="ghost" class="h-8 w-8 text-red-600 hover:bg-red-100" @click="onDelete(holidayhd.id)">
+                                        <Trash class="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
 
                 <!-- Footer Pagination -->
                 <div class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">

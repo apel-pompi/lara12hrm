@@ -7,37 +7,49 @@ import { type BreadcrumbItem } from '@/types';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Head, useForm } from '@inertiajs/vue3';
-import { FileText } from 'lucide-vue-next';
-import { computed, ref,watch } from 'vue';
 import { getLocalTimeZone, today } from '@internationalized/date';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
+import { FileText } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'HR Reports', href: '/hrreports' }];
 
 const props = defineProps<{
     employee: { id: number; empname: string }[];
+    currentEmployee?: { id: number; empname: string } | null;
+    isSuperadmin: boolean;
     branch: { id: number; branchname: string }[];
 }>();
 
-const selecteEmployee = ref(null);
+const selecteEmployee = ref(props.isSuperadmin ? null : (props.currentEmployee ?? null));
 const queryEmployee = ref('');
-const filteredEmployee = computed(() => (queryEmployee.value === '' ? props.employee : props.employee.filter((n) => n.empname)));
+const filteredEmployee = computed(() => {
+    if (queryEmployee.value === '') {
+        return props.employee;
+    }
 
-const selecteBranch = ref(null);
+    return props.employee.filter((n) => n.empname.toLowerCase().includes(queryEmployee.value.toLowerCase()));
+});
+
+const selecteBranch = ref(props.isSuperadmin ? null : (props.branch[0] ?? null));
 const queryBranch = ref('');
-const filteredBranch = computed(() => (queryBranch.value === '' ? props.branch : props.branch.filter((n) => n.name)));
+const filteredBranch = computed(() => {
+    if (queryBranch.value === '') {
+        return props.branch;
+    }
+
+    return props.branch.filter((n) => n.branchname.toLowerCase().includes(queryBranch.value.toLowerCase()));
+});
 
 const dob = ref<string | null>(null);
 
 const maxDate = today(getLocalTimeZone());
 
-
-
 const form = useForm({
     empid: '',
     branch_id: '',
-    datename:''
+    datename: '',
 });
 
 watch(dob, (newDate) => {
@@ -47,7 +59,6 @@ watch(dob, (newDate) => {
 });
 
 const onReport = async () => {
-    
     if (!selecteBranch.value || !selecteBranch.value.id) {
         alert('Branch is not selected');
         return;
@@ -72,9 +83,9 @@ const onReport = async () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="HR Reports" />
         <HrReportLayout>
-            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md">
                 <!-- Title -->
-                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Daily attendance Reports</h2>
+                <h2 class="text-center text-xl font-semibold text-gray-800">Daily attendance Reports</h2>
 
                 <!-- Input -->
                 <div class="space-y-2">
@@ -84,13 +95,15 @@ const onReport = async () => {
                             <ComboboxInput
                                 class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                 placeholder="Select Employee"
+                                :disabled="!props.isSuperadmin"
                                 @input="queryEmployee = $event.target.value"
                                 :display-value="(c) => (c ? c.empname : '')"
                             />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2" :disabled="!props.isSuperadmin">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
                             <ComboboxOptions
+                                v-if="props.isSuperadmin"
                                 class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
                             >
                                 <div
@@ -110,6 +123,9 @@ const onReport = async () => {
                             </ComboboxOptions>
                         </div>
                     </Combobox>
+                    <p v-if="!props.isSuperadmin" class="text-xs text-gray-500 dark:text-gray-400">
+                        You can only generate the report for your own employee profile.
+                    </p>
                 </div>
                 <div class="space-y-2">
                     <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Branch</Label>
@@ -118,13 +134,15 @@ const onReport = async () => {
                             <ComboboxInput
                                 class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                 placeholder="Select Branch"
+                                :disabled="!props.isSuperadmin"
                                 @input="queryBranch = $event.target.value"
                                 :display-value="(c) => (c ? c.branchname : '')"
                             />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2" :disabled="!props.isSuperadmin">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
                             <ComboboxOptions
+                                v-if="props.isSuperadmin"
                                 class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
                             >
                                 <div
@@ -144,19 +162,21 @@ const onReport = async () => {
                             </ComboboxOptions>
                         </div>
                     </Combobox>
+                    <p v-if="!props.isSuperadmin" class="text-xs text-gray-500 dark:text-gray-400">
+                        Your branch is fixed to your own employee profile.
+                    </p>
                 </div>
                 <div class="space-y-2">
                     <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Date</Label>
                     <VueDatePicker
-                                    v-model="dob"
-                                    :max-date="maxDate"
-                                    :format="'yyyy-MM-dd'"
-                                    :enable-time-picker="false"
-                                    placeholder="Select Date"
-                                    auto-apply
-                                />
+                        v-model="dob"
+                        :max-date="maxDate"
+                        :format="'yyyy-MM-dd'"
+                        :enable-time-picker="false"
+                        placeholder="Select Date"
+                        auto-apply
+                    />
                 </div>
-                
 
                 <!-- Submit -->
                 <div class="flex justify-center">

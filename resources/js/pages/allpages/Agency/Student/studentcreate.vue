@@ -12,7 +12,7 @@ import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOption
 import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker  from '@vuepic/vue-datepicker';
+import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { CornerDownLeft, Save } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -27,8 +27,8 @@ export interface Student {
     gender: number;
     email: string;
     phone: string;
-    ename:string;
-    ephone:string;
+    ename: string;
+    ephone: string;
     contactpre: string;
     preaddcountry: number;
     preaddstate: number;
@@ -80,8 +80,8 @@ const props = defineProps<{
 interface FormErrors {
     fname?: string;
     lname?: string;
-    dateofbirth:string;
-    gender:number;
+    dateofbirth: string;
+    gender: number;
     descountry_id?: number;
     stage_id?: number;
     metting_note?: string;
@@ -187,8 +187,8 @@ const form = useForm({
     gender: '',
     email: '',
     phone: '',
-    ename:'',
-    ephone:'',
+    ename: '',
+    ephone: '',
     contactpre: '',
     preaddcountry: '',
     preaddstate: '',
@@ -275,12 +275,15 @@ const goToManageStudent = () => {
 <template>
     <Head title="Create Student" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="flex-1 text-sm">
+        <div
+            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
+        >
+            <div
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
+            >
+                <div class="grid grid-cols-1 gap-4">
                     <Button variant="outline" size="sm" @click="goToManageStudent"><CornerDownLeft></CornerDownLeft> Manage Student </Button>
                 </div>
-                <div class="space-x-2"></div>
             </div>
             <div class="mx-auto mb-15 max-w-6xl space-y-8 rounded-lg border border-gray-800 bg-white p-6 shadow">
                 <p class="text-sm text-gray-500"><span class="text-red-500">*</span> fields are mandatory.</p>
@@ -425,7 +428,6 @@ const goToManageStudent = () => {
                                 class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
-                        
                     </div>
                 </section>
                 <section>
@@ -547,13 +549,13 @@ const goToManageStudent = () => {
                         <div>
                             <Label class="block text-sm font-medium text-gray-700">Preferred Intake</Label>
                             <VueDatePicker
-                                    v-model="intake"
-                                    :max-date="maxDate"
-                                    :format="'yyyy-MM-dd'"
-                                    :enable-time-picker="false"
-                                    placeholder="Preferred Intake Date"
-                                    auto-apply
-                                />
+                                v-model="intake"
+                                :max-date="maxDate"
+                                :format="'yyyy-MM-dd'"
+                                :enable-time-picker="false"
+                                placeholder="Preferred Intake Date"
+                                auto-apply
+                            />
                         </div>
                         <div>
                             <Label class="block text-sm font-medium text-gray-700">Country of Passport</Label>
@@ -805,11 +807,14 @@ const goToManageStudent = () => {
                 </section>
                 <section class="border-t pt-6">
                     <div class="flex justify-end">
-                        <Button :disabled="form.processing" @click="submit" class="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-white shadow-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-400">
-                        <template v-if="form.processing">Saving...</template>
-                        <template v-else><Save class="h-5 w-5" />Save</template>
-                    </Button>
-                        
+                        <Button
+                            :disabled="form.processing"
+                            @click="submit"
+                            class="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-white shadow-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-400"
+                        >
+                            <template v-if="form.processing">Saving...</template>
+                            <template v-else><Save class="h-5 w-5" />Save</template>
+                        </Button>
                     </div>
                 </section>
             </div>

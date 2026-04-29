@@ -118,15 +118,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (installment: Installment) => {
-    const newStatus = !Boolean(installment.active); // boolean
+const toggleStatus = (installment: Installment, checked: boolean) => {
     router.put(
         route('installment.updateStatus', installment.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                installment.active = newStatus ? 1 : 0; // local update (number)
+                installment.active = checked ? 1 : 0;
                 toast.success('Installment  status update');
             },
         },
@@ -189,7 +188,7 @@ const goToPage = (url: string | null) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Installment" />
         <AgencyLayout>
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
                 <!-- Header Actions -->
                 <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <!-- Left Actions -->
@@ -297,7 +296,7 @@ const goToPage = (url: string | null) => {
                                 </TableCell>
 
                                 <TableCell>
-                                    <Switch v-model="acc.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(acc)" />
+                                    <Switch :model-value="Boolean(acc.active)" @update:model-value="(checked) => toggleStatus(acc, checked)" />
                                 </TableCell>
 
                                 <TableCell class="text-right">
@@ -349,7 +348,7 @@ const goToPage = (url: string | null) => {
                     </div>
                 </div>
             </div>
-            
+
             <!-- Dialog -->
             <Dialog v-model:open="showDialog">
                 <DialogContent class="max-w-lg rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl">

@@ -102,15 +102,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (partnertype: PartnerType) => {
-    const newStatus = !Boolean(partnertype.active); // boolean
+const toggleStatus = (partnertype: PartnerType, checked: boolean) => {
     router.put(
         route('general.patnersetupUpdateStatus', partnertype.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                partnertype.active = newStatus ? 1 : 0; // local update (number)
+                partnertype.active = checked ? 1 : 0;
                 toast.success('Partner Type  status update');
             },
         },
@@ -183,7 +182,6 @@ const changePerPage = () => {
                             Partner Type
                         </Button>
 
-                       
                         <!-- Refresh -->
                         <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-700" variant="outline" size="sm" @click="refresh">
                             <RefreshCcw class="mr-2 h-4 w-4" />
@@ -233,7 +231,10 @@ const changePerPage = () => {
                                 </TableCell>
 
                                 <TableCell class="text-center">
-                                    <Switch v-model="patnersetup.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(patnersetup)" />
+                                    <Switch
+                                        :model-value="Boolean(patnersetup.active)"
+                                        @update:model-value="(checked) => toggleStatus(patnersetup, checked)"
+                                    />
                                 </TableCell>
 
                                 <TableCell class="text-center">
@@ -267,7 +268,6 @@ const changePerPage = () => {
                                 {{ size }}
                             </option>
                         </select>
-
                     </div>
 
                     <!-- Right -->

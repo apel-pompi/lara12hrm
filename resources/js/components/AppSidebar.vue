@@ -109,7 +109,6 @@ const biometricMenu = [
         items: [
             { title: 'Device Management', href: '/zkteco', icon: Cpu },
             { title: 'Biometric Attendance', href: '/attendance', icon: Fingerprint },
-            { title: 'Attendance Report', href: 'zkteco.report', icon: Flag },
         ],
     },
 ];
@@ -177,12 +176,12 @@ const accountsMenu = [
         title: 'Financial Transactions',
         icon: ClipboardPlus,
         items: [
-            { route: 'voucherheader.opening', title: 'Opening Balances', icon: Columns2 },
-            { route: 'voucherheader.jurnal', title: 'Journal Entries', icon: CreditCard },
-            { route: 'voucherheader.payment', title: 'Payment Vouchers', icon: PanelRightClose },
-            { route: 'voucherheader.receipt', title: 'Receipt Vouchers', icon: RadioReceiver },
-            { route: 'voucherheader.reverse', title: 'Reversal Entries', icon: Columns2 },
-            { route: 'voucherheader.allvoucher', title: 'All Transactions', icon: Columns2 },
+            { route: 'voucherheader.opening', title: 'Opening Balance', icon: Columns2 },
+            { route: 'voucherheader.jurnal', title: 'Journal Voucher', icon: CreditCard },
+            { route: 'voucherheader.payment', title: 'Payment Voucher', icon: PanelRightClose },
+            { route: 'voucherheader.receipt', title: 'Receipt Voucher', icon: RadioReceiver },
+            { route: 'voucherheader.reverse', title: 'Reverse Entry', icon: Columns2 },
+            { route: 'voucherheader.allvoucher', title: 'All Vouchers', icon: Columns2 },
         ],
     },
 ];

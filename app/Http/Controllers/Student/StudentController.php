@@ -88,7 +88,7 @@ class StudentController extends Controller
             ->where('status', 3)
             ->with(['assainuser:id,name']);
 
-        
+
         if ($query) {
             $q = preg_replace('/\D/', '', $query); // remove non-digit for phone search
 
@@ -116,7 +116,7 @@ class StudentController extends Controller
 
                 case 'date':
                     // search by created_at date YYYY-MM-DD
-                    $students->whereRaw("DATE(created_at) LIKE ?",["%{$query}%"]);
+                    $students->whereRaw("DATE(created_at) LIKE ?", ["%{$query}%"]);
                     break;
 
                 case 'status':
@@ -231,7 +231,7 @@ class StudentController extends Controller
                     break;
                 case 'date':
                     // search by created_at date YYYY-MM-DD
-                    $students->whereRaw("DATE(created_at) LIKE ?",["%{$query}%"]);
+                    $students->whereRaw("DATE(created_at) LIKE ?", ["%{$query}%"]);
                     break;
             }
         }
@@ -325,8 +325,6 @@ class StudentController extends Controller
                     // search by created_at date YYYY-MM-DD
                     $students->whereDate('created_at', 'like', "%{$query}%");
                     break;
-
-                
             }
         }
         $students = $students->orderBy('id', 'desc')->limit(500)->get();
@@ -422,7 +420,7 @@ class StudentController extends Controller
                     break;
                 case 'date':
                     // search by created_at date YYYY-MM-DD
-                    $students->whereRaw("DATE(created_at) LIKE ?",["%{$query}%"]);
+                    $students->whereRaw("DATE(created_at) LIKE ?", ["%{$query}%"]);
                     break;
             }
         }
@@ -519,7 +517,7 @@ class StudentController extends Controller
                     break;
                 case 'date':
                     // search by created_at date YYYY-MM-DD
-                    $students->whereRaw("DATE(created_at) LIKE ?",["%{$query}%"]);
+                    $students->whereRaw("DATE(created_at) LIKE ?", ["%{$query}%"]);
                     break;
             }
         }
@@ -581,7 +579,7 @@ class StudentController extends Controller
         $query = $request->get('q', '');
 
         $students = Student::query()
-            ->select('id','fname', 'lname', 'phone', 'assain_user')
+            ->select('id', 'fname', 'lname', 'phone', 'assain_user')
             ->selectRaw('DATE(created_at) as date')
             ->where('status', 4)
             ->with(['assainuser:id,name']);
@@ -613,7 +611,7 @@ class StudentController extends Controller
                     break;
                 case 'date':
                     // search by created_at date YYYY-MM-DD
-                    $students->whereRaw("DATE(created_at) LIKE ?",["%{$query}%"]);
+                    $students->whereRaw("DATE(created_at) LIKE ?", ["%{$query}%"]);
                     break;
             }
         }
@@ -693,12 +691,6 @@ class StudentController extends Controller
             ]);
         }
 
-        $existsBirth = Student::where('dateofbirth', $validated['dateofbirth'])->exists();
-        if ($existsBirth) {
-            return back()->withErrors([
-                'dateofbirth' => 'This date of birth already exists.',
-            ]);
-        }
 
         Student::create([
             // Basic Info

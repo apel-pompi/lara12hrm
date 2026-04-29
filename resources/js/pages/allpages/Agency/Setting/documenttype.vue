@@ -117,15 +117,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (documenttype: DocumentType) => {
-    const newStatus = !Boolean(documenttype.active); // boolean
+const toggleStatus = (documenttype: DocumentType, checked: boolean) => {
     router.put(
         route('documenttype.updateStatus', documenttype.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                documenttype.active = newStatus ? 1 : 0; // local update (number)
+                documenttype.active = checked ? 1 : 0;
                 toast.success('Document Type  status update');
             },
         },
@@ -297,10 +296,8 @@ const goToPage = (url: string | null) => {
 
                                 <TableCell>
                                     <Switch
-                                        v-model="documenttype.active"
-                                        :checked-value="1"
-                                        :unchecked-value="0"
-                                        @click="toggleStatus(documenttype)"
+                                        :model-value="Boolean(documenttype.active)"
+                                        @update:model-value="(checked) => toggleStatus(documenttype, checked)"
                                     />
                                 </TableCell>
 

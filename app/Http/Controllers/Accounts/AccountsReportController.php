@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Accounts;
 use App\Http\Controllers\Controller;
 use App\Models\Accounts\ChartOfAccount;
 use App\Models\Accounts\GroupOne;
+use App\Models\Accounts\Supplier;
 use App\Models\Accounts\VoucherBalance;
 use App\Models\Accounts\Voucherheader;
 use App\Models\Default\Transaction;
@@ -181,6 +182,90 @@ class AccountsReportController extends Controller
         return $pdf->stream("AcToGl-Reports.pdf");
     }
 
+    public function SupplierLedger()
+    {
+        try {
+            $this->authorize('accountsreport.supplierLedger');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
+        return Inertia::render('allpages/reports/accounts/supplierledger', [
+            'branch' => Branch::where('active', 1)->get(),
+            'supplier' => Supplier::where('active', 1)->get(),
+        ]);
+    }
+
+    public function SupplierLedgerReport(Request $request)
+    {
+        $branch = $request->branch_id;
+        $supplier = $request->supplier;
+        $from_date = $request->startdate;
+        $to_date = $request->enddate;
+
+        $data = DB::table('suppliers as a')
+            ->join('voucherdetails as b', 'a.subcode', '=', 'b.subacccode')
+            ->join('voucherheaders as c', 'b.vouchernumber', '=', 'c.vouchernumber')
+            ->join('branches as d', 'c.branch_id', '=', 'd.id')
+            ->when($branch, fn($q) => $q->where('c.branch_id', $branch))
+            ->when($supplier, fn($q) => $q->where('a.subcode', $supplier))
+            ->select('a.subcode', 'a.name', 'a.subaddress', 'c.branch_id', 'd.branchname')
+            ->groupBy('a.subcode', 'a.name', 'a.subaddress', 'c.branch_id', 'd.branchname')
+            ->get();
+
+        $report = [];
+
+        foreach ($data as $row) {
+
+            // Opening Balance
+            $opening = DB::table('suppliers as a')
+                ->join('voucherdetails as b', 'a.subcode', '=', 'b.subacccode')
+                ->join('voucherheaders as c', 'b.vouchernumber', '=', 'c.vouchernumber')
+                ->where('c.branch_id', $row->branch_id)
+                ->where('a.subcode', $row->subcode)
+                ->where('c.voucherdate', '<', $from_date)
+                ->sum('b.baseamt');
+
+            //Transactions
+            $transactions = DB::table('suppliers as a')
+                ->join('voucherdetails as b', 'a.subcode', '=', 'b.subacccode')
+                ->join('voucherheaders as c', 'b.vouchernumber', '=', 'c.vouchernumber')
+                ->where('c.branch_id', $row->branch_id)
+                ->whereBetween('c.voucherdate', [$from_date, $to_date])
+                ->when($supplier, fn($q) => $q->where('a.subcode', $supplier))
+                ->orderBy('c.voucherdate')
+                ->select('c.voucherdate', 'c.vouchernumber', 'b.notes', 'b.baseamt')
+                ->get();
+
+            $report[] = [
+                'info' => $row,
+                'opening' => $opening,
+                'transactions' => $transactions
+            ];
+        }
+
+        $company = CompanyInfo::first();
+
+        $pdf = PDF::loadView('exports.accounts.supplierledger', [
+            'report' => $report,
+            'company' => $company,
+            'from_date' => $from_date,
+            'to_date' => $to_date,
+        ])
+            ->setPaper('a4', 'landscape')
+            ->setOption([
+                'margin-top'    => 5,
+                'margin-right'  => 5,
+                'margin-bottom' => 5,
+                'margin-left'   => 5,
+            ]);
+
+        return $pdf->stream("SupplierLedger-Reports.pdf");
+    }
+
     public function CashBook()
     {
         try {
@@ -293,6 +378,10 @@ class AccountsReportController extends Controller
             ->whereIn('analyticalcode', ['Cash'])
             ->pluck('accountcode');
         /* =============================
+         | 1.BRANCH INFO
+         ============================= */
+        $branch = Branch::find($branchId);
+        /* =============================
          | 2. OPENING CASH BALANCE
          ============================= */
         $openingCash = VoucherBalance::whereIn('accountcode', $cashAccounts)
@@ -379,6 +468,7 @@ class AccountsReportController extends Controller
         $company = CompanyInfo::firstOrFail();
         $pdf = PDF::loadView('exports.accounts.cashflow', [
             'company' => $company,
+            'branch' => $branch,
             'from_date' => $from,
             'to_date' => $to,
             'openingCash' => $openingCash,
@@ -429,7 +519,7 @@ class AccountsReportController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
+        $branch = $request->branch_id ? Branch::findOrFail($request->branch_id) : null;
         $jurnalTransactions = Voucherheader::with(['voucherdt.ChartOfAccount'])
             ->whereBetween('voucherdate', [$request->startdate, $request->enddate])
             ->when($request->filled('branch_id'), function ($q) use ($request) {
@@ -451,6 +541,7 @@ class AccountsReportController extends Controller
         $company = CompanyInfo::firstOrFail();
         $pdf = PDF::loadView('exports.accounts.jurnaltransactions', [
             'company' => $company,
+            'branch' => $branch,
             'jurnalTransactions' => $jurnalTransactions,
             'startdate' => $request->startdate,
             'enddate' => $request->enddate,
@@ -723,7 +814,7 @@ class AccountsReportController extends Controller
                 AND a.monthname <= ?
                 AND a.status = 'Post'
                 " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
-                GROUP BY b.accounttype, b.grouptwo_name
+                GROUP BY b.accounttype, b.grouptwo_name,b.groupone_code,b.grouptwo_code
                 ORDER BY b.groupone_code, b.grouptwo_code
             ",
                 $request->filled('branch_id')

@@ -2,11 +2,11 @@
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import NavUser from '@/components/NavUser.vue';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
-import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
-import { AlertTriangle, Bell, BellOff, CheckCircle, CircleAlert, CircleCheck, Info, Sun, X } from 'lucide-vue-next';
+import { AlertTriangle, CircleAlert, CircleCheck, Info, Sun } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -14,7 +14,7 @@ const time = ref<string>('');
 const timeStyle = ref<{ color: string; textShadow: string; fontSize: string; fontWeight: string }>({
     color: '#2c3e50',
     textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    fontSize: '30px',
+    fontSize: 'clamp(0.85rem, 2vw, 1.875rem)',
     fontWeight: '700',
 });
 
@@ -51,9 +51,9 @@ const updateTime = () => {
     }
 
     // Add pulse animation every second
-    timeStyle.value.fontSize = '30px';
+    timeStyle.value.fontSize = 'clamp(0.85rem, 2vw, 1.875rem)';
     setTimeout(() => {
-        timeStyle.value.fontSize = '30px';
+        timeStyle.value.fontSize = 'clamp(0.85rem, 2vw, 1.875rem)';
     }, 100);
 };
 
@@ -78,13 +78,7 @@ withDefaults(
 );
 
 // Reactive states
-const appearanceRef = ref(null);
 const notificationsRef = ref(null);
-
-const showAppearance = ref(false);
-const toggleAppearance = () => {
-    showAppearance.value = !showAppearance.value;
-};
 
 // Toggle notifications dropdown
 const showNotifications = ref(false);
@@ -196,11 +190,6 @@ const formatTime = (timestamp) => {
 const handleClickOutside = (event: MouseEvent) => {
     const target = event.target as HTMLElement;
 
-    // Appearance dropdown close logic
-    if (showAppearance.value && appearanceRef.value && !appearanceRef.value.contains(target)) {
-        showAppearance.value = false;
-    }
-
     // Notifications dropdown close logic
     if (showNotifications.value && notificationsRef.value && !notificationsRef.value.contains(target)) {
         showNotifications.value = false;
@@ -218,7 +207,6 @@ const handleClickOutside = (event: MouseEvent) => {
 
 //     const data = await response.json();
 
-    
 //     if (data.unread_count > unreadCount.value) {
 //         await fetchNotifications();
 //         showNotifications.value = true;
@@ -226,74 +214,87 @@ const handleClickOutside = (event: MouseEvent) => {
 // };
 
 // Event listeners
-// onMounted(() => {
-//     document.addEventListener('click', handleClickOutside);
-//     setInterval(checkUnread, 15000);
-// });
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+    // setInterval(checkUnread, 15000);
+});
 
-// onUnmounted(() => {
-//     document.removeEventListener('click', handleClickOutside);
-// });
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 </script>
 <style scoped>
-
 .time-display-alt {
     font-family: 'Courier New', monospace;
-    font-size: 30px;
+    font-size: clamp(0.85rem, 2vw, 1.875rem);
     font-weight: 800;
     color: #2c3e50;
     text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    letter-spacing: 2px;
+    letter-spacing: clamp(0.5px, 0.18vw, 2px);
     transition: all 0.5s ease;
+    white-space: nowrap;
+    line-height: 1;
 }
 
 /* Modern dark theme */
 
 .time-display-dark {
     font-family: 'Arial', sans-serif;
-    font-size: 30px;
+    font-size: clamp(0.85rem, 2vw, 1.875rem);
     font-weight: 700;
     color: #ecf0f1;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    letter-spacing: 1px;
+    letter-spacing: clamp(0.5px, 0.14vw, 1px);
+    white-space: nowrap;
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .time-display-alt,
+    .time-display-dark {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 </style>
 <template>
     <header
-        class="grid h-16 shrink-0 grid-cols-3 items-center border-b border-gray-800 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-6"
+        class="grid min-h-16 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-gray-800 px-4 py-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:grid-cols-3 md:px-6"
     >
-        <div class="flex items-center gap-2">
+        <div class="flex min-w-0 items-center gap-2">
             <SidebarTrigger class="-ml-1" />
             <template v-if="breadcrumbs && breadcrumbs.length > 0">
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </template>
         </div>
 
-        <div class="flex items-center justify-center">
-                <div class="time-display-alt" :style="timeStyle">
-                    {{ time }}
-                </div>
-            
+        <div class="order-3 col-span-2 flex min-w-0 items-center justify-center md:order-none md:col-span-1">
+            <div class="time-display-alt max-w-full text-center" :style="timeStyle">
+                {{ time }}
+            </div>
         </div>
 
-        <div class="ml-auto flex items-center justify-end gap-4">
+        <div class="ml-auto flex items-center justify-end gap-2 md:gap-4">
             <!-- Appearance Menu -->
-            <div class="relative" ref="appearanceRef">
-                <button @click="toggleAppearance" class="relative rounded-lg p-2 text-gray-400 transition hover:bg-gray-800/60 hover:text-white">
-                    <Sun class="h-5 w-5" />
-                </button>
+            <DropdownMenu>
+                <DropdownMenuTrigger :as-child="true">
+                    <button class="relative rounded-lg p-2 text-gray-400 transition hover:bg-gray-800/60 hover:text-white">
+                        <Sun class="h-5 w-5" />
+                    </button>
+                </DropdownMenuTrigger>
 
-                <div
-                    v-if="showAppearance"
-                    class="animate-in fade-in-0 zoom-in-95 absolute top-12 right-0 z-50 mr-1 w-80 overflow-hidden rounded-xl border border-gray-700 pl-8 shadow-2xl backdrop-blur-md"
+                <DropdownMenuContent
+                    align="end"
+                    class="w-max max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-xl border border-gray-200 bg-white p-2 shadow-2xl dark:border-gray-700 dark:bg-gray-900"
                 >
                     <AppearanceTabs />
-                </div>
-            </div>
+                </DropdownMenuContent>
+            </DropdownMenu>
 
             <!-- Notifications -->
             <!-- <div class="relative" ref="notificationsRef"> -->
-                <!-- <button @click="toggleNotifications" class="relative rounded-lg p-2 text-gray-400 transition hover:bg-gray-800/60 hover:text-white">
+            <!-- <button @click="toggleNotifications" class="relative rounded-lg p-2 text-gray-400 transition hover:bg-gray-800/60 hover:text-white">
                     <Bell class="h-5 w-5" />
 
                     <span
@@ -304,12 +305,12 @@ const handleClickOutside = (event: MouseEvent) => {
                     </span>
                 </button> -->
 
-                <!-- <div
+            <!-- <div
                     v-if="showNotifications"
                     class="animate-in fade-in-0 zoom-in-95 absolute top-11 right-0 z-50 w-80 overflow-hidden rounded-xl border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md"
                 > -->
-                    <!-- Header -->
-                    <!-- <div class="flex items-center justify-between border-b border-gray-700 px-4 py-3">
+            <!-- Header -->
+            <!-- <div class="flex items-center justify-between border-b border-gray-700 px-4 py-3">
                         <h3 class="text-sm font-semibold text-white">Notifications</h3>
 
                         <div class="flex items-center gap-1.5">
@@ -330,8 +331,8 @@ const handleClickOutside = (event: MouseEvent) => {
                         </div>
                     </div> -->
 
-                    <!-- Notifications List -->
-                    <!-- <div class="max-h-96 overflow-y-auto">
+            <!-- Notifications List -->
+            <!-- <div class="max-h-96 overflow-y-auto">
                         <template v-if="notifications.length">
                             <div
                                 v-for="notification in notifications"
@@ -364,8 +365,8 @@ const handleClickOutside = (event: MouseEvent) => {
                         </div>
                     </div> -->
 
-                    <!-- Footer -->
-                    <!-- <div class="border-t border-gray-700 bg-gray-900/70 p-3">
+            <!-- Footer -->
+            <!-- <div class="border-t border-gray-700 bg-gray-900/70 p-3">
                         <Link
                             :href="route('notifications.index')"
                             class="block w-full rounded py-2 text-center text-sm text-blue-400 transition hover:bg-blue-600/15 hover:text-blue-300"
@@ -373,7 +374,7 @@ const handleClickOutside = (event: MouseEvent) => {
                             View all notifications
                         </Link>
                     </div> -->
-                <!-- </div>
+            <!-- </div>
             </div> -->
 
             <!-- Click Outside -->

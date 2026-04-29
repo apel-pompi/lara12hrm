@@ -12,7 +12,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { Head, router, useForm, Link } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { Plus, Trash } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -74,7 +74,6 @@ const filteredProduct = computed(() =>
         ? props.productType.filter((c) => c.producttypename.toLowerCase().includes(queryProduct.value.toLowerCase()))
         : props.productType,
 );
-
 
 //Intake Month
 const selectedIntake = ref<{ id: number; month: string }[]>([]);
@@ -143,15 +142,14 @@ const submit = () => {
         },
     });
 };
-const toggleStatus = (product: Product) => {
-    const newStatus = !Boolean(product.active); // boolean
+const toggleStatus = (product: Product, checked: boolean) => {
     router.put(
         route('product.updateStatus', product.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                product.active = newStatus ? 1 : 0; // local update (number)
+                product.active = checked ? 1 : 0;
                 toast.success('Partner  status update');
             },
         },
@@ -204,17 +202,23 @@ const onDelete = async (id: number) => {
                     <TableBody>
                         <TableRow v-for="(product, index) in data" :key="product.id ?? index">
                             <TableCell>
-                                <Link :href="route('productActivities.application', product.id)" method="get" class="flex items-center space-x-2 dark:text-white">{{ product.name }}</Link>
+                                <Link
+                                    :href="route('productActivities.application', product.id)"
+                                    method="get"
+                                    class="flex items-center space-x-2 dark:text-white"
+                                    >{{ product.name }}</Link
+                                >
                             </TableCell>
                             <TableCell>{{ product.productype.producttypename }}</TableCell>
                             <TableCell>{{ product.partner.name }}</TableCell>
-                            
+
                             <TableCell></TableCell>
-                                <Badge class="m-0.5 p-1" variant="outline" v-for="(b, idx) in product.intak_month.split(',')" :key="idx">
+                            <Badge class="m-0.5 p-1" variant="outline" v-for="(b, idx) in product.intak_month.split(',')" :key="idx">
                                 {{ b }}
-                                </Badge>
+                            </Badge>
                             <TableCell>
-                                <Switch v-model="product.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(product)"> </Switch>
+                                <Switch :model-value="Boolean(product.active)" @update:model-value="(checked) => toggleStatus(product, checked)">
+                                </Switch>
                             </TableCell>
                             <TableCell class="text-right">
                                 <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(product.id)"><Trash></Trash></Button>
@@ -280,8 +284,6 @@ const onDelete = async (id: number) => {
                         </Combobox>
                         <p v-if="form.errors.partner_id" class="mt-1 text-sm text-red-600">{{ form.errors.partner_id }}</p>
                     </div>
-
-                   
 
                     <!-- Product Type -->
                     <div>

@@ -290,15 +290,14 @@ const onDelete = async (id: number) => {
 };
 
 // Switch toggle handler
-const toggleStatus = (personalinfos: PersonalInfo) => {
-    const newStatus = !Boolean(personalinfos.active); // boolean
+const toggleStatus = (personalinfos: PersonalInfo, checked: boolean) => {
     router.put(
         route('personalinfo.updateStatus', personalinfos.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                personalinfos.active = newStatus ? 1 : 0; // local update (number)
+                personalinfos.active = checked ? 1 : 0;
                 toast.success('Personnel Info status update');
             },
         },
@@ -384,34 +383,40 @@ const goToPage = (url: string | null) => {
 </script>
 
 <template>
-    <Head title="Personnel Information" />
+    <Head title="Employee Information" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
+        <div
+            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
+        >
             <!-- Responsive Filter + Action Section -->
-            
 
-                <!-- Filters Grid -->
-                <div class="p-2 grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10 2xl:grid-cols-12">
+            <!-- Filters Grid -->
+            <div class="mb-6 flex justify-center rounded-md border border-gray-300 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                <div
+                    class="grid w-fit grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10"
+                >
+                    <!-- Create Button -->
                     <Button
                         variant="secondary"
                         size="sm"
                         @click="showDailogCreate"
-                        class="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+                        class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
                     >
-                        <Plus class="h-4 w-4" />
+                        <Plus class="mr-1 h-4 w-4" />
                         Create
                     </Button>
+
                     <!-- Employee ID -->
                     <Combobox v-model="selectedPersonID">
-                        <div class="relative w-full">
+                        <div class="relative w-40">
                             <ComboboxInput
-                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Employee ID..."
                                 :display-value="(person) => person?.empid"
                                 @input="query = $event.target.value"
                             />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
@@ -419,7 +424,7 @@ const goToPage = (url: string | null) => {
                                     v-for="person in filteredPeopleID"
                                     :key="person.id"
                                     :value="person"
-                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
                                 >
                                     {{ person.empid }}
                                 </ComboboxOption>
@@ -429,15 +434,15 @@ const goToPage = (url: string | null) => {
 
                     <!-- Employee Name -->
                     <Combobox v-model="selectedPerson">
-                        <div class="relative w-full">
+                        <div class="relative w-40">
                             <ComboboxInput
-                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Employee Name..."
                                 :display-value="(person) => person?.empname"
                                 @input="query = $event.target.value"
                             />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
@@ -445,7 +450,7 @@ const goToPage = (url: string | null) => {
                                     v-for="person in filteredPeople"
                                     :key="person.id"
                                     :value="person"
-                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
                                 >
                                     {{ person.empname }}
                                 </ComboboxOption>
@@ -455,15 +460,15 @@ const goToPage = (url: string | null) => {
 
                     <!-- Branch -->
                     <Combobox v-model="selectedBranch">
-                        <div class="relative w-full">
+                        <div class="relative w-40">
                             <ComboboxInput
-                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Branch..."
                                 :display-value="(branches) => branches?.branchname"
                                 @input="queryBranch = $event.target.value"
                             />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
@@ -471,7 +476,7 @@ const goToPage = (url: string | null) => {
                                     v-for="branches in filteredBranch"
                                     :key="branches.id"
                                     :value="branches"
-                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
                                 >
                                     {{ branches.branchname }}
                                 </ComboboxOption>
@@ -481,15 +486,15 @@ const goToPage = (url: string | null) => {
 
                     <!-- Department -->
                     <Combobox v-model="selectedDepartment">
-                        <div class="relative w-full">
+                        <div class="relative w-40">
                             <ComboboxInput
-                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Department..."
                                 :display-value="(departments) => departments?.deptname"
                                 @input="queryDepartment = $event.target.value"
                             />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
@@ -497,7 +502,7 @@ const goToPage = (url: string | null) => {
                                     v-for="departments in filteredDepartment"
                                     :key="departments.id"
                                     :value="departments"
-                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
                                 >
                                     {{ departments.deptname }}
                                 </ComboboxOption>
@@ -507,15 +512,15 @@ const goToPage = (url: string | null) => {
 
                     <!-- Designation -->
                     <Combobox v-model="selectedDesignation">
-                        <div class="relative w-full">
+                        <div class="relative w-40">
                             <ComboboxInput
-                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Designation..."
                                 :display-value="(designations) => designations?.desname"
                                 @input="queryDesignation = $event.target.value"
                             />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
@@ -523,7 +528,7 @@ const goToPage = (url: string | null) => {
                                     v-for="designations in filteredDesignation"
                                     :key="designations.id"
                                     :value="designations"
-                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
                                 >
                                     {{ designations.desname }}
                                 </ComboboxOption>
@@ -533,15 +538,15 @@ const goToPage = (url: string | null) => {
 
                     <!-- Blood -->
                     <Combobox v-model="selectedBlood">
-                        <div class="relative w-full">
+                        <div class="relative w-40">
                             <ComboboxInput
-                                class="w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
                                 placeholder="Blood Group..."
                                 :display-value="(bloods) => bloods?.blood"
                                 @input="queryBlood = $event.target.value"
                             />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
@@ -549,25 +554,28 @@ const goToPage = (url: string | null) => {
                                     v-for="bloods in filteredBlood"
                                     :key="bloods.blood"
                                     :value="bloods"
-                                    class="cursor-pointer px-4 py-2 hover:bg-indigo-600 hover:text-white"
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
                                 >
                                     {{ bloods.blood }}
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
                     </Combobox>
-                    <Button size="sm" @click="search" class="rounded-xl bg-indigo-600 px-5 text-white hover:bg-indigo-700">
-                        <Search class="h-4 w-4" />
+
+                    <!-- Search -->
+                    <Button size="sm" @click="search" class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+                        <Search class="mr-1 h-4 w-4" />
                         Search
                     </Button>
-                    <Button variant="outline" size="sm" @click="refresh" class="rounded-xl px-5">
-                        <RefreshCcw class="h-4 w-4" />
+
+                    <!-- Refresh -->
+                    <Button variant="outline" size="sm" @click="refresh" class="w-40 rounded-xl">
+                        <RefreshCcw class="mr-1 h-4 w-4" />
                         Refresh
                     </Button>
                 </div>
+            </div>
 
-                
-            
             <!-- Premium Employee Table -->
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                 <!-- Responsive Table -->
@@ -664,7 +672,10 @@ const goToPage = (url: string | null) => {
                                 <!-- Status -->
                                 <TableCell class="px-4 py-4 text-center">
                                     <div class="flex justify-center">
-                                        <Switch v-model="personal.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(personal)" />
+                                        <Switch
+                                            :model-value="Boolean(personal.active)"
+                                            @update:model-value="(checked) => toggleStatus(personal, checked)"
+                                        />
                                     </div>
                                 </TableCell>
 

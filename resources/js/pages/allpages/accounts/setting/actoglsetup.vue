@@ -25,6 +25,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export interface ACtoGLSetup {
+    id: number;
     type: string;
     code: string;
     cracc: string;
@@ -108,7 +109,7 @@ const showDailogCreate = () => {
 const onEdit = async (id: number) => {
     try {
         const { data } = await axios.get(`/actoglsetup/${id}/edit`);
-       
+
         Object.assign(form, data.data);
         form.id = data.data.id;
         selecteBranch.value = props.branch.find((b) => b.id === data.data.branch_id) ?? null;
@@ -200,15 +201,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (one: ACtoGLSetup) => {
-    const newStatus = !Boolean(one.active); // boolean
+const toggleStatus = (one: ACtoGLSetup, checked: boolean) => {
     router.put(
         route('actoglsetup.updateStatus', one.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                one.active = newStatus ? 1 : 0; // local update (number)
+                one.active = checked ? 1 : 0;
                 const flash = usePage().props.flash;
                 if (flash?.success) {
                     toast('success', {
@@ -254,17 +254,22 @@ const onDelete = async (id: number) => {
         <Head title="AC to GL Setup" />
 
         <AccountsLayout :breadcrumbs="breadcrumbs">
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header / Toolbar -->
+                <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
                         ><Plus></Plus> Create
                     </Button>
                 </div>
-                <div class="flex flex-wrap items-center gap-4 py-4"></div>
-                <div class="overflow-hidden rounded-xl border shadow-sm">
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">AC to GL setup List</h2>
+                        <p class="text-sm text-gray-500">Manage all AC to GL setup from here.</p>
+                    </div>
                     <Table class="w-full text-sm">
                         <TableHeader>
-                            <TableRow>
+                            <TableRow class="bg-gray-100 hover:bg-gray-100">
                                 <TableHead>Sl</TableHead>
                                 <TableHead>Branch Name</TableHead>
                                 <TableHead>Type</TableHead>
@@ -275,6 +280,7 @@ const onDelete = async (id: number) => {
                                 <TableHead>Props</TableHead>
                                 <TableHead>Percent</TableHead>
                                 <TableHead>Tax Acccount</TableHead>
+                                <TableHead>Status</TableHead>
                                 <TableHead>Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -291,11 +297,14 @@ const onDelete = async (id: number) => {
                                 <TableCell>{{ chart.percent }}</TableCell>
                                 <TableCell>{{ chart.taxaccount?.description ?? '' }}</TableCell>
                                 <TableCell>
-                                    <Switch v-model="chart.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(chart)"> </Switch>
+                                    <Switch :model-value="Boolean(chart.active)" @update:model-value="(checked) => toggleStatus(chart, checked)">
+                                    </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button size="sm" variant="outline" @click="onEdit(chart.id)"><SquarePen></SquarePen></Button>
-                                    <Button size="sm" variant="outline" @click="onDelete(chart.id)"><Trash></Trash></Button>
+                                    <Button size="sm" variant="outline" @click="onEdit(chart.id)"
+                                        ><SquarePen class="h-4 w-4 text-indigo-600"
+                                    /></Button>
+                                    <Button size="sm" variant="outline" @click="onDelete(chart.id)"><Trash class="h-4 w-4 text-indigo-600" /></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>

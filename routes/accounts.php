@@ -16,7 +16,7 @@ use App\Http\Controllers\Accounts\{
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
+Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(function () {
     //Accounts Setting
     Route::controller(AccountsSetup::class)
         ->prefix('accountssetting')
@@ -30,7 +30,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/{GroupOne}/{GroupTwo}/Groupthree', 'Groupthree')->name('accsetting.GroupThree');
             }
         );
-    
+
     //Group One Route
     Route::controller(GroupOneController::class)
         ->prefix('groupOne')
@@ -46,14 +46,14 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::delete('/show/{groupOne}', 'destroy')->name('GroupOne.destroy');
             }
         );
-    
+
     //Group Two Route
     Route::controller(GroupTwoController::class)
         ->prefix('Grouptwo')
         ->group(
             function () {
                 Route::post('/store', 'store')->name('GroupTwo.store');
-                
+
                 Route::get('/{groupTwo}/edit', 'edit')->name('GroupTwo.edit');
                 Route::put('/{groupTwo}', 'update')->name('GroupTwo.update');
                 Route::put('/{groupTwo}/status', 'updateStatus')->name('GroupTwo.updateStatus');
@@ -62,14 +62,14 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::delete('/show/{groupTwo}', 'destroy')->name('GroupTwo.destroy');
             }
         );
-    
+
     //Group Three Route
     Route::controller(GroupThreeController::class)
         ->prefix('Groupthree')
         ->group(
             function () {
                 Route::post('/store', 'store')->name('GroupThree.store');
-                
+
                 Route::get('/{groupThree}/edit', 'edit')->name('GroupThree.edit');
                 Route::put('/{groupThree}', 'update')->name('GroupThree.update');
                 Route::put('/{groupThree}/status', 'updateStatus')->name('GroupThree.updateStatus');
@@ -90,7 +90,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/generateAccountCode/{groupthree}', 'generateCode')->name('chartOfAccount.generateCode');
 
                 Route::post('/store', 'store')->name('chartOfAccount.store');
-                               
+
                 Route::get('/{chartOfAccount}/edit', 'edit')->name('chartOfAccount.edit');
                 Route::put('/{chartOfAccount}', 'update')->name('chartOfAccount.update');
                 Route::put('/{chartOfAccount}/status', 'updateStatus')->name('chartOfAccount.updateStatus');
@@ -121,7 +121,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/AllInvoiceList', 'AllInvoiceList')->name('invoicelist.AllInvoiceList');
                 Route::get('/DueInvoiceList', 'DueInvoiceList')->name('invoicelist.DueInvoiceList');
                 Route::get('/MRList', 'MRList')->name('invoicelist.MRList');
-                
+
                 Route::get('/{insid}/createmr/{sid}', 'createMR')->name('invoicelist.createMR');
                 Route::post('/{insnumber}/storeMR/{student}', 'storeMR')->name('invoicelist.storeMR');
                 Route::get('/{confirm}/onView', 'onView')->name('invoicelist.onView');
@@ -169,7 +169,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/manage', 'managePayable')->name('suppliersPayble.manage');
             }
         );
-     //Voucher header Route
+    //Voucher header Route
     Route::controller(VoucherheaderController::class)
         ->prefix('voucherheader')
         ->group(
@@ -183,34 +183,33 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::post('/opening', 'openingStore')->name('voucherheader.openingStore');
                 Route::get('/{opening}/edit', 'openingEdit')->name('voucherheader.openingEdit');
                 Route::put('/{opening}', 'openingUpdate')->name('voucherheader.openingUpdate');
-                Route::put('/{opening}/status', 'openingConfirm')->name('voucherheader.openingConfirm');
+                Route::put('/{opening}/openingStatus', 'openingConfirm')->name('voucherheader.openingConfirm');
                 // Jurnal Voucher Route
                 Route::get('/jurnal', 'jurnalVoucher')->name('voucherheader.jurnal');
                 Route::post('/jurnal', 'jurnalStore')->name('voucherheader.jurnalStore');
                 Route::get('/{jurnal}/edit', 'jurnalEdit')->name('voucherheader.jurnalEdit');
                 Route::put('/{jurnal}', 'jurnalUpdate')->name('voucherheader.jurnalUpdate');
-                Route::put('/{jurnal}/status', 'jurnalConfirm')->name('voucherheader.jurnalConfirm');
+                Route::put('/{jurnal}/jurnalStatus', 'jurnalConfirm')->name('voucherheader.jurnalConfirm');
                 // Payment Voucher Route
                 Route::get('/payment', 'paymentVoucher')->name('voucherheader.payment');
                 Route::post('/payment', 'paymentStore')->name('voucherheader.paymentStore');
                 Route::get('/{payment}/edit', 'paymentEdit')->name('voucherheader.paymentEdit');
                 Route::put('/{payment}', 'paymentUpdate')->name('voucherheader.paymentUpdate');
-                Route::put('/{payment}/status', 'paymentConfirm')->name('voucherheader.paymentConfirm');
+                Route::put('/{payment}/paymentStatus', 'paymentConfirm')->name('voucherheader.paymentConfirm');
                 // Receipt Voucher Route
                 Route::get('/receipt', 'receiptVoucher')->name('voucherheader.receipt');
                 Route::post('/receipt', 'receiptStore')->name('voucherheader.receiptStore');
                 Route::get('/{receipt}/edit', 'receiptEdit')->name('voucherheader.receiptEdit');
                 Route::put('/{receipt}', 'receiptUpdate')->name('voucherheader.receiptUpdate');
-                Route::put('/{receipt}/status', 'receiptConfirm')->name('voucherheader.receiptConfirm');
+                Route::put('/{receipt}/receiptStatus', 'receiptConfirm')->name('voucherheader.receiptConfirm');
                 // Reverse Voucher Route
                 Route::get('/reverse', 'reverseVoucher')->name('voucherheader.reverse');
                 Route::post('/reverse', 'reverseStore')->name('voucherheader.reverseStore');
                 Route::get('/{reverse}/edit', 'reverseEdit')->name('voucherheader.reverseEdit');
                 Route::put('/{reverse}', 'reverseUpdate')->name('voucherheader.reverseUpdate');
-                Route::put('/{reverse}/status', 'reverseConfirm')->name('voucherheader.reverseConfirm');
+                Route::put('/{reverse}/reverseStatus', 'reverseConfirm')->name('voucherheader.reverseConfirm');
                 //single voucher report
                 Route::get('/single/{voucherID}', 'singleReport')->name('voucherheader.singleReport');
-                
             }
         );
 
@@ -227,6 +226,8 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::get('/CashFlowReport', 'CashFlowReport')->name('accountsreport.CashFlowReport');
                 Route::get('/ActoGL', 'ActoGL')->name('accountsreport.ActoGL');
                 Route::get('/ActoGLReport', 'ActoGLReport')->name('accountsreport.ActoGLReport');
+                Route::get('/SupplierLedger', 'SupplierLedger')->name('accountsreport.SupplierLedger');
+                Route::get('/SupplierLedgerReport', 'SupplierLedgerReport')->name('accountsreport.SupplierLedgerReport');
                 Route::get('/JurnalTransactions', 'JurnalTransactions')->name('accountsreport.JurnalTransactions');
                 Route::get('/JurnalTransactionsReport', 'JurnalTransactionsReport')->name('accountsreport.JurnalTransactionsReport');
                 Route::get('/trialbalanceconsolidated', 'TrialBalanceConsolidated')->name('accountsreport.trialbalanceconsolidated');
@@ -237,7 +238,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
 
                 Route::get('/balancesheet', 'BalanceSheet')->name('accountsreport.balancesheet');
                 Route::get('/balancesheetreport', 'BalanceSheetReport')->name('accountsreport.balancesheetreport');
-                
+
                 Route::get('/profitloss', 'ProfitLoss')->name('accountsreport.ProfitLoss');
                 Route::get('/profitlossreport', 'ProfitLossReport')->name('accountsreport.ProfitLossreport');
             }

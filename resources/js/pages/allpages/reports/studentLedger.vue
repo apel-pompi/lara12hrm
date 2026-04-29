@@ -13,7 +13,7 @@ import { computed, ref, watch } from 'vue';
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Student Ladger', href: '/leadreports/ledger' }];
 
 const props = defineProps<{
-    student: { id: number; student_id: string;phone:string; };
+    student: { id: number; student_id: string; phone: string };
 }>();
 
 const selectedStudent = ref<{ id: number; student_id: string; phone: string } | null>(null);
@@ -24,18 +24,13 @@ const queryPhone = ref('');
 
 const filteredStudent = computed(() => {
     if (queryStudent.value === '') return props.student;
-    return props.student.filter((n) =>
-        n.student_id.toLowerCase().includes(queryStudent.value.toLowerCase())
-    );
+    return props.student.filter((n) => n.student_id.toLowerCase().includes(queryStudent.value.toLowerCase()));
 });
 
 const filteredPhone = computed(() => {
     if (queryPhone.value === '') return props.student;
-    return props.student.filter((n) =>
-        n.phone.toLowerCase().includes(queryPhone.value.toLowerCase())
-    );
+    return props.student.filter((n) => n.phone.toLowerCase().includes(queryPhone.value.toLowerCase()));
 });
-
 
 const form = useForm({
     student_id: '',
@@ -79,15 +74,14 @@ const onReport = async () => {
 const onRefresh = () => {
     router.get(route('leadreports.studentLedger'), {}, { replace: true });
 };
-
-</script> 
+</script>
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Student Ladger" />
         <LeadReportLayout>
-            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md">
                 <!-- Title -->
-                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Student Ladger</h2>
+                <h2 class="text-center text-xl font-semibold text-gray-800">Student Ladger</h2>
                 <div>
                     <div class="space-y-2">
                         <div class="w-full lg:w-auto">
@@ -179,12 +173,7 @@ const onRefresh = () => {
                 <!-- Submit -->
                 <div class="flex justify-center">
                     <div class="group relative p-5">
-                        <Button
-                            @click="onRefresh"
-                            class="cursor-pointer"
-                            variant="outline"
-                            size="sm"
-                        >
+                        <Button @click="onRefresh" class="cursor-pointer" variant="outline" size="sm">
                             <RefreshCcw class="text-red-500" />
                         </Button>
                         <span
@@ -194,12 +183,7 @@ const onRefresh = () => {
                         </span>
                     </div>
                     <div class="group relative p-5">
-                        <Button
-                            @click="onReport"
-                            class="cursor-pointer"
-                            variant="outline"
-                            size="sm"
-                        >
+                        <Button @click="onReport" class="cursor-pointer" variant="outline" size="sm">
                             <FileText class="text-red-500" />
                         </Button>
                         <span

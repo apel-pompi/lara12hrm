@@ -232,15 +232,14 @@ const goToPage = (url: string | null) => {
 };
 
 // Switch toggle handler
-const toggleStatus = (salarytype: SalaryType) => {
-    const newStatus = !Boolean(salarytype.active); // boolean
+const toggleStatus = (salarytype: SalaryType, checked: boolean) => {
     router.put(
         route('salarytype.updateStatus', salarytype.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                salarytype.active = newStatus ? 1 : 0; // local update (number)
+                salarytype.active = checked ? 1 : 0;
                 const flash = usePage().props.flash;
 
                 if (flash?.success) {
@@ -259,19 +258,21 @@ const toggleStatus = (salarytype: SalaryType) => {
     );
 };
 
-watch(() => form.amounttype, () => {
-    form.amount = "";
-    form.percentage = "";
-});
+watch(
+    () => form.amounttype,
+    () => {
+        form.amount = '';
+        form.percentage = '';
+    },
+);
 </script>
 
 <template>
-    
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Salary Type Setup" />
         <HrmLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                     <Button variant="outline" size="sm" @click="showDailogCreate"><Plus></Plus> Create Salary Type </Button>
                     <!-- Search start -->
                     <div class="grid gap-2">
@@ -324,10 +325,15 @@ watch(() => form.amounttype, () => {
                     </div>
                     <!-- Search start -->
                 </div>
-                <div class="rounded-md border">
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Salary Structure List</h2>
+                        <p class="text-sm text-gray-500">Manage all Salary Structure from here.</p>
+                    </div>
                     <Table>
                         <TableHeader>
-                            <TableRow>
+                            <TableRow class="bg-gray-100 hover:bg-gray-200">
                                 <TableHead>Branch Name</TableHead>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Property</TableHead>
@@ -349,12 +355,19 @@ watch(() => form.amounttype, () => {
                                 <TableCell>{{ salary.amount }}</TableCell>
                                 <TableCell>{{ salary.user.name }}</TableCell>
                                 <TableCell>
-                                    <Switch v-model="salary.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(salary)"> </Switch>
+                                    <Switch :model-value="Boolean(salary.active)" @update:model-value="(checked) => toggleStatus(salary, checked)">
+                                    </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onShow(salary.id)"><Eye></Eye></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(salary.id)"><SquarePen></SquarePen></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(salary.id)"><Trash></Trash></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onShow(salary.id)"
+                                        ><Eye class="h-4 w-4 text-green-600"></Eye
+                                    ></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(salary.id)"
+                                        ><SquarePen class="h-4 w-4 text-indigo-600"></SquarePen
+                                    ></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(salary.id)"
+                                        ><Trash class="h-4 w-4 text-red-600"></Trash
+                                    ></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -426,7 +439,6 @@ watch(() => form.amounttype, () => {
                         </div>
                     </div>
                     <div class="grid gap-y-3">
-                        
                         <div class="grid gap-2">
                             <Label for="amounttype">Type</Label>
                             <Select v-model="form.amounttype">
@@ -444,12 +456,26 @@ watch(() => form.amounttype, () => {
                         </div>
                         <div class="grid gap-2">
                             <Label for="percentage">Percentage</Label>
-                            <Input class="max-w-sm" placeholder="Enter Percentage" id="percentage" v-model="form.percentage" :disabled="form.amounttype !== '1'" autofocus />
+                            <Input
+                                class="max-w-sm"
+                                placeholder="Enter Percentage"
+                                id="percentage"
+                                v-model="form.percentage"
+                                :disabled="form.amounttype !== '1'"
+                                autofocus
+                            />
                             <span v-if="errors?.percentage" class="text-sm text-red-600">{{ errors.percentage }}</span>
                         </div>
                         <div class="grid gap-2">
                             <Label for="amount">Amount</Label>
-                            <Input class="max-w-sm" placeholder="Enter Amount" id="amount" v-model="form.amount" :disabled="form.amounttype !== '2'" autofocus />
+                            <Input
+                                class="max-w-sm"
+                                placeholder="Enter Amount"
+                                id="amount"
+                                v-model="form.amount"
+                                :disabled="form.amounttype !== '2'"
+                                autofocus
+                            />
                             <span v-if="errors?.amount" class="text-sm text-red-600">{{ errors.amount }}</span>
                         </div>
                         <input type="hidden" value="0" v-model="form.active" class="form-radio text-primary-600" />
@@ -491,13 +517,16 @@ watch(() => form.amounttype, () => {
                         <FormGroup label="Property" htmlFor="property">
                             <Input id="property" v-model="form.property" :disabled="!isEditMode" />
                         </FormGroup>
-                        
                     </div>
                     <!-- Left Column -->
                     <div class="space-y-4">
-                        
                         <FormGroup label="Type" htmlFor="amounttype">
-                            <Input id="amounttype" v-model="form.amounttype" :value="form.amounttype == 1 ? 'Percentage' : 'Amount'" :disabled="!isEditMode" />
+                            <Input
+                                id="amounttype"
+                                v-model="form.amounttype"
+                                :value="form.amounttype == 1 ? 'Percentage' : 'Amount'"
+                                :disabled="!isEditMode"
+                            />
                         </FormGroup>
                         <FormGroup label="Percentage" htmlFor="percentage">
                             <Input id="percentage" v-model="form.percentage" :disabled="!isEditMode" />

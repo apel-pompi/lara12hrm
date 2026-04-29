@@ -32,6 +32,7 @@ export interface Paginated<T> {
 }
 
 export interface GroupTwo {
+    id: number;
     groupone: { id: number; description: string };
     code: number;
     description: string;
@@ -120,15 +121,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (two: GroupTwo) => {
-    const newStatus = !Boolean(two.active); // boolean
+const toggleStatus = (two: GroupTwo, checked: boolean) => {
     router.put(
         route('GroupTwo.updateStatus', two.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                two.active = newStatus ? 1 : 0; // local update (number)
+                two.active = checked ? 1 : 0;
                 const flash = usePage().props.flash;
                 if (flash?.success) {
                     toast('success', {
@@ -193,8 +193,9 @@ function openGroupThree(two) {
         <Head title="Accounts Setting" />
 
         <AccountsLayout :breadcrumbs="breadcrumbs">
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header / Toolbar -->
+                <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToGroupOne"
                         ><CornerDownLeft></CornerDownLeft> Back Group One
                     </Button>
@@ -202,10 +203,15 @@ function openGroupThree(two) {
                         ><Plus></Plus> Group Two
                     </Button>
                 </div>
-                <div class="rounded-md border">
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Accounts Group Two List</h2>
+                        <p class="text-sm text-gray-500">Manage all Accounts Group Two from here.</p>
+                    </div>
                     <Table>
                         <TableHeader>
-                            <TableRow>
+                            <TableRow class="bg-gray-100 hover:bg-gray-100">
                                 <TableHead>Sl</TableHead>
                                 <TableHead>Group Two Code</TableHead>
                                 <TableHead>Group One</TableHead>
@@ -226,11 +232,16 @@ function openGroupThree(two) {
                                 </TableCell>
                                 <TableCell>{{ two.user.name }}</TableCell>
                                 <TableCell>
-                                    <Switch v-model="two.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(two)"> </Switch>
+                                    <Switch :model-value="Boolean(two.active)" @update:model-value="(checked) => toggleStatus(two, checked)">
+                                    </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button size="sm" variant="outline" @click="onEdit(two.id)"><SquarePen></SquarePen></Button>
-                                    <Button size="sm" variant="outline" @click="onDelete(two.id)"><Trash></Trash></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(two.id)"
+                                        ><SquarePen class="h-4 w-4 text-indigo-600"
+                                    /></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(two.id)"
+                                        ><Trash class="h-4 w-4 text-red-600"
+                                    /></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>

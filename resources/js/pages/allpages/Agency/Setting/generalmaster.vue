@@ -116,15 +116,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (mastercategory: Master) => {
-    const newStatus = !Boolean(mastercategory.active); // boolean
+const toggleStatus = (mastercategory: Master, checked: boolean) => {
     router.put(
         route('general.updateStatus', mastercategory.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                mastercategory.active = newStatus ? 1 : 0; // local update (number)
+                mastercategory.active = checked ? 1 : 0;
                 toast.success('Master Category  status update');
             },
         },
@@ -312,7 +311,7 @@ const goToPage = (url: string | null) => {
                                 </TableCell>
 
                                 <TableCell class="text-center">
-                                    <Switch v-model="master.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(master)" />
+                                    <Switch :model-value="Boolean(master.active)" @update:model-value="(checked) => toggleStatus(master, checked)" />
                                 </TableCell>
 
                                 <TableCell>

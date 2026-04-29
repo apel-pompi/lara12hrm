@@ -123,15 +123,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (studentStage: StudentStage) => {
-    const newStatus = !Boolean(studentStage.active); // boolean
+const toggleStatus = (studentStage: StudentStage, checked: boolean) => {
     router.put(
         route('studentStage.updateStatus', studentStage.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                studentStage.active = newStatus ? 1 : 0; // local update (number)
+                studentStage.active = checked ? 1 : 0;
                 toast.success('Student stage status update');
             },
         },
@@ -198,70 +197,68 @@ const goToPage = (url: string | null) => {
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
                 <!-- Header / Search Section -->
                 <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    
-                        <!-- Left Side -->
-                        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                            <Button
-                                class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
-                                size="sm"
-                                @click="showDailogCreate"
-                            >
-                                <Plus class="mr-2 h-4 w-4" />
-                                Add Stage
-                            </Button>
+                    <!-- Left Side -->
+                    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                        <Button
+                            class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
+                            size="sm"
+                            @click="showDailogCreate"
+                        >
+                            <Plus class="mr-2 h-4 w-4" />
+                            Add Stage
+                        </Button>
 
-                            <!-- Search Combobox -->
-                            <Combobox v-model="selecteName">
-                                <div class="relative w-full sm:w-64">
-                                    <div class="relative">
-                                        <ComboboxInput
-                                            class="h-10 w-full rounded-xl border border-gray-300 bg-white py-2 pr-10 pl-4 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                                            placeholder="Search stage name..."
-                                            :display-value="(n) => n?.name"
-                                            @input="queryName = $event.target.value"
-                                        />
+                        <!-- Search Combobox -->
+                        <Combobox v-model="selecteName">
+                            <div class="relative w-full sm:w-64">
+                                <div class="relative">
+                                    <ComboboxInput
+                                        class="h-10 w-full rounded-xl border border-gray-300 bg-white py-2 pr-10 pl-4 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                        placeholder="Search stage name..."
+                                        :display-value="(n) => n?.name"
+                                        @input="queryName = $event.target.value"
+                                    />
 
-                                        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
-                                        </ComboboxButton>
+                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                    </ComboboxButton>
+                                </div>
+
+                                <ComboboxOptions
+                                    class="absolute z-20 mt-2 max-h-60 w-full overflow-auto rounded-xl border bg-white py-2 shadow-xl dark:border-gray-700 dark:bg-gray-900"
+                                >
+                                    <div v-if="filteredName.length === 0 && queryName !== ''" class="px-4 py-2 text-sm text-gray-500">
+                                        No stage found
                                     </div>
 
-                                    <ComboboxOptions
-                                        class="absolute z-20 mt-2 max-h-60 w-full overflow-auto rounded-xl border bg-white py-2 shadow-xl dark:border-gray-700 dark:bg-gray-900"
+                                    <ComboboxOption
+                                        v-for="n in filteredName"
+                                        :key="n.id"
+                                        :value="n"
+                                        v-slot="{ selected }"
+                                        class="relative cursor-pointer px-4 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-gray-800"
                                     >
-                                        <div v-if="filteredName.length === 0 && queryName !== ''" class="px-4 py-2 text-sm text-gray-500">
-                                            No stage found
-                                        </div>
+                                        <span class="block truncate">
+                                            {{ n.name }}
+                                        </span>
 
-                                        <ComboboxOption
-                                            v-for="n in filteredName"
-                                            :key="n.id"
-                                            :value="n"
-                                            v-slot="{ selected }"
-                                            class="relative cursor-pointer px-4 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-gray-800"
-                                        >
-                                            <span class="block truncate">
-                                                {{ n.name }}
-                                            </span>
+                                        <CheckIcon v-if="selected" class="absolute top-2.5 right-3 h-4 w-4 text-indigo-600" />
+                                    </ComboboxOption>
+                                </ComboboxOptions>
+                            </div>
+                        </Combobox>
 
-                                            <CheckIcon v-if="selected" class="absolute top-2.5 right-3 h-4 w-4 text-indigo-600" />
-                                        </ComboboxOption>
-                                    </ComboboxOptions>
-                                </div>
-                            </Combobox>
+                        <!-- Buttons -->
+                        <Button variant="outline" class="h-10 rounded-xl px-4" size="sm" @click="search">
+                            <Search class="mr-2 h-4 w-4" />
+                            Search
+                        </Button>
 
-                            <!-- Buttons -->
-                            <Button variant="outline" class="h-10 rounded-xl px-4" size="sm" @click="search">
-                                <Search class="mr-2 h-4 w-4" />
-                                Search
-                            </Button>
-
-                            <Button variant="outline" class="h-10 rounded-xl px-4" size="sm" @click="refresh">
-                                <RefreshCcw class="mr-2 h-4 w-4" />
-                                Reset
-                            </Button>
-                        </div>
-                    
+                        <Button variant="outline" class="h-10 rounded-xl px-4" size="sm" @click="refresh">
+                            <RefreshCcw class="mr-2 h-4 w-4" />
+                            Reset
+                        </Button>
+                    </div>
                 </div>
 
                 <!-- Table Card -->
@@ -298,7 +295,10 @@ const goToPage = (url: string | null) => {
                                 </TableCell>
 
                                 <TableCell class="text-center">
-                                    <Switch v-model="student.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(student)" />
+                                    <Switch
+                                        :model-value="Boolean(student.active)"
+                                        @update:model-value="(checked) => toggleStatus(student, checked)"
+                                    />
                                 </TableCell>
 
                                 <TableCell>

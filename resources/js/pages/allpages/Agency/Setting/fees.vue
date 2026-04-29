@@ -118,15 +118,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (fees: Fees) => {
-    const newStatus = !Boolean(fees.active); // boolean
+const toggleStatus = (fees: Fees, checked: boolean) => {
     router.put(
         route('fees.updateStatus', fees.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                fees.active = newStatus ? 1 : 0; // local update (number)
+                fees.active = checked ? 1 : 0;
                 toast.success('Fees  status update');
             },
         },
@@ -297,7 +296,7 @@ const goToPage = (url: string | null) => {
                                 </TableCell>
 
                                 <TableCell>
-                                    <Switch v-model="acc.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(acc)" />
+                                    <Switch :model-value="Boolean(acc.active)" @update:model-value="(checked) => toggleStatus(acc, checked)" />
                                 </TableCell>
 
                                 <TableCell class="text-right">

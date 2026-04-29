@@ -17,12 +17,26 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class HRreportsController extends Controller
 {
     use AuthorizesRequests;
+
+    protected function getAuthenticatedEmployee(): ?PersonalInfo
+    {
+        $authUser = Auth::user();
+
+        if (! $authUser) {
+            return null;
+        }
+
+        return PersonalInfo::where('empname', 'LIKE', '%' . $authUser->name . '%')
+            ->where('active', 1)
+            ->first();
+    }
 
     public function index()
     {
@@ -35,8 +49,25 @@ class HRreportsController extends Controller
             ]);
         }
 
+        $authUser = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $authUser */
+        $isSuperadmin = $authUser?->hasRole('superadmin') ?? false;
+        $currentEmployee = $this->getAuthenticatedEmployee();
+
+        $employeeQuery = PersonalInfo::where('active', 1);
+
+        if (! $isSuperadmin) {
+            if ($currentEmployee) {
+                $employeeQuery->where('id', $currentEmployee->id);
+            } else {
+                $employeeQuery->whereRaw('1 = 0');
+            }
+        }
+
         return Inertia::render('allpages/reports/hrreports/EmpInfoReport', [
-            'employee' => PersonalInfo::where('active', 1)->get()
+            'employee' => $employeeQuery->get(),
+            'currentEmployee' => $currentEmployee,
+            'isSuperadmin' => $isSuperadmin,
         ]);
     }
 
@@ -52,8 +83,23 @@ class HRreportsController extends Controller
         }
 
 
+        $authUser = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $authUser */
+        $isSuperadmin = $authUser?->hasRole('superadmin') ?? false;
+        $currentEmployee = $this->getAuthenticatedEmployee();
+
+        $requestedEmployeeId = $request->empid;
+
+        if (! $isSuperadmin) {
+            abort_unless($currentEmployee, 403, 'Employee record not found for the current user.');
+            $requestedEmployeeId = $currentEmployee->id;
+        }
+
         $company = CompanyInfo::first();
-        $sql = PersonalInfo::with(['branch', 'designation', 'department'])->where('id', $request->empid)->where('active', 1)->first();
+        $sql = PersonalInfo::with(['branch', 'designation', 'department'])
+            ->where('id', $requestedEmployeeId)
+            ->where('active', 1)
+            ->firstOrFail();
 
         $pdf = Pdf::loadView('exports.hrreports.personalinfo', [
             'employees' => $sql,
@@ -81,8 +127,25 @@ class HRreportsController extends Controller
             ]);
         }
 
+        $authUser = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $authUser */
+        $isSuperadmin = $authUser?->hasRole('superadmin') ?? false;
+        $currentEmployee = $this->getAuthenticatedEmployee();
+
+        $employeeQuery = PersonalInfo::where('active', 1);
+
+        if (! $isSuperadmin) {
+            if ($currentEmployee) {
+                $employeeQuery->where('id', $currentEmployee->id);
+            } else {
+                $employeeQuery->whereRaw('1 = 0');
+            }
+        }
+
         return Inertia::render('allpages/reports/hrreports/employeeattendance', [
-            'employee' => PersonalInfo::where('active', 1)->get(),
+            'employee' => $employeeQuery->get(),
+            'currentEmployee' => $currentEmployee,
+            'isSuperadmin' => $isSuperadmin,
             'months' => collect($this->createMonth())
                 ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
                 ->values()
@@ -106,7 +169,22 @@ class HRreportsController extends Controller
         }
 
 
-        $sql = PersonalInfo::with(['designation', 'department'])->where('empid', $request->empid)->where('active', 1)->first();
+        $authUser = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $authUser */
+        $isSuperadmin = $authUser?->hasRole('superadmin') ?? false;
+        $currentEmployee = $this->getAuthenticatedEmployee();
+
+        $requestedEmpId = $request->empid;
+
+        if (! $isSuperadmin) {
+            abort_unless($currentEmployee, 403, 'Employee record not found for the current user.');
+            $requestedEmpId = $currentEmployee->empid;
+        }
+
+        $sql = PersonalInfo::with(['designation', 'department'])
+            ->where('empid', $requestedEmpId)
+            ->where('active', 1)
+            ->firstOrFail();
         $daysInMonth = date('t', mktime(0, 0, 0, $request->monthname, 1, $request->yearname));
 
         $reportData = [];
@@ -129,11 +207,11 @@ class HRreportsController extends Controller
                 ];
             } else {
                 //In Time
-                $inquery = Attendance::getAttendanceIn($request->empid, $currentDate);
+                $inquery = Attendance::getAttendanceIn($requestedEmpId, $currentDate);
                 $intime = $inquery->record_time ?? null;
                 $in = $intime ? date('h:i:s A', strtotime($intime)) : '---';
                 //Out Time
-                $outquery = Attendance::getAttendanceOut($request->empid, $currentDate);
+                $outquery = Attendance::getAttendanceOut($requestedEmpId, $currentDate);
                 $outtime = $outquery->record_time ?? null;
 
                 $outtimeRaw = $outtime ? Carbon::parse($outtime) : null;
@@ -142,7 +220,7 @@ class HRreportsController extends Controller
                 $out = $outtime ? date('h:i:s A', strtotime($outtime)) : '---';
 
                 //Status
-                $status = Attendance::getAttendanceStatus($request->empid, $currentDate);
+                $status = Attendance::getAttendanceStatus($requestedEmpId, $currentDate);
                 $statusname = $status->TimeName ?? '---';
                 // Work hours calculation
                 $workHours = '---';
@@ -332,10 +410,29 @@ class HRreportsController extends Controller
             ]);
         }
 
+        $authUser = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $authUser */
+        $isSuperadmin = $authUser?->hasRole('superadmin') ?? false;
+        $currentEmployee = $this->getAuthenticatedEmployee();
+
+        $employeeQuery = PersonalInfo::where('active', 1);
+        $branchQuery = Branch::where('active', 1);
+
+        if (! $isSuperadmin) {
+            if ($currentEmployee) {
+                $employeeQuery->where('id', $currentEmployee->id);
+                $branchQuery->where('id', $currentEmployee->branch_id);
+            } else {
+                $employeeQuery->whereRaw('1 = 0');
+                $branchQuery->whereRaw('1 = 0');
+            }
+        }
 
         return Inertia::render('allpages/reports/hrreports/dailyattendance', [
-            'employee' => PersonalInfo::where('active', 1)->get(),
-            'branch' => Branch::where('active', 1)->get(),
+            'employee' => $employeeQuery->get(),
+            'currentEmployee' => $currentEmployee,
+            'isSuperadmin' => $isSuperadmin,
+            'branch' => $branchQuery->get(),
         ]);
     }
 
@@ -350,14 +447,38 @@ class HRreportsController extends Controller
             ]);
         }
 
+        $authUser = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $authUser */
+        $isSuperadmin = $authUser?->hasRole('superadmin') ?? false;
+        $currentEmployee = $this->getAuthenticatedEmployee();
+
+        $requestedBranchId = $request->branch_id;
+        $requestedEmployeeId = $request->empid;
+
+        if (! $isSuperadmin) {
+            abort_unless($currentEmployee, 403, 'Employee record not found for the current user.');
+            $requestedBranchId = $currentEmployee->branch_id;
+            $requestedEmployeeId = $currentEmployee->id;
+        }
 
         $sql = '';
-        if ($request->empid) {
-            $sql = PersonalInfo::with(['designation', 'department'])->where('branch_id', $request->branch_id)->where('id', $request->empid)->where('active', 1)->where(DB::raw("(date_format(joindate,'%Y-%m-%d'))"), '<=', $request->datename)->orderBy('id', 'ASC')->get();
+        if ($requestedEmployeeId) {
+            $sql = PersonalInfo::with(['designation', 'department'])
+                ->where('branch_id', $requestedBranchId)
+                ->where('id', $requestedEmployeeId)
+                ->where('active', 1)
+                ->where(DB::raw("(date_format(joindate,'%Y-%m-%d'))"), '<=', $request->datename)
+                ->orderBy('id', 'ASC')
+                ->get();
         } else {
-            $sql = PersonalInfo::with(['designation', 'department'])->where('branch_id', $request->branch_id)->where('active', 1)->where(DB::raw("(date_format(joindate,'%Y-%m-%d'))"), '<=', $request->datename)->orderBy('id', 'ASC')->get();
+            $sql = PersonalInfo::with(['designation', 'department'])
+                ->where('branch_id', $requestedBranchId)
+                ->where('active', 1)
+                ->where(DB::raw("(date_format(joindate,'%Y-%m-%d'))"), '<=', $request->datename)
+                ->orderBy('id', 'ASC')
+                ->get();
         }
-        $branch = Branch::where('id', $request->branch_id)->where('active', 1)->first();
+        $branch = Branch::where('id', $requestedBranchId)->where('active', 1)->first();
         $reportData = [];
 
         foreach ($sql as  $value) {

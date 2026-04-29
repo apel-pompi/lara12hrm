@@ -102,15 +102,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (productsetup: ProductType) => {
-    const newStatus = !Boolean(productsetup.active); // boolean
+const toggleStatus = (productsetup: ProductType, checked: boolean) => {
     router.put(
         route('general.producttypeUpdateStatus', productsetup.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                productsetup.active = newStatus ? 1 : 0; // local update (number)
+                productsetup.active = checked ? 1 : 0;
                 toast.success('Product Type  status update');
             },
         },
@@ -183,7 +182,7 @@ const changePerPage = () => {
                             Product Type
                         </Button>
 
-                         <!-- Refresh -->
+                        <!-- Refresh -->
                         <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-700" variant="outline" size="sm" @click="refresh">
                             <RefreshCcw class="mr-2 h-4 w-4" />
                             Refresh
@@ -233,10 +232,8 @@ const changePerPage = () => {
 
                                 <TableCell class="text-center">
                                     <Switch
-                                        v-model="productsetup.active"
-                                        :checked-value="1"
-                                        :unchecked-value="0"
-                                        @click="toggleStatus(productsetup)"
+                                        :model-value="Boolean(productsetup.active)"
+                                        @update:model-value="(checked) => toggleStatus(productsetup, checked)"
                                     />
                                 </TableCell>
 
@@ -270,7 +267,6 @@ const changePerPage = () => {
                                 {{ size }}
                             </option>
                         </select>
-
                     </div>
 
                     <!-- Right -->

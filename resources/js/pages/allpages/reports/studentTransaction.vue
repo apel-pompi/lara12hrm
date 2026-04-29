@@ -13,7 +13,7 @@ import { computed, ref, watch } from 'vue';
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Student Transaction', href: '/leadreports/ledger' }];
 
 const props = defineProps<{
-    student: { id: number; student_id: string;phone:string; };
+    student: { id: number; student_id: string; phone: string };
 }>();
 
 const selectedStudent = ref<{ id: number; student_id: string; phone: string } | null>(null);
@@ -24,18 +24,13 @@ const queryPhone = ref('');
 
 const filteredStudent = computed(() => {
     if (queryStudent.value === '') return props.student;
-    return props.student.filter((n) =>
-        n.student_id.toLowerCase().includes(queryStudent.value.toLowerCase())
-    );
+    return props.student.filter((n) => n.student_id.toLowerCase().includes(queryStudent.value.toLowerCase()));
 });
 
 const filteredPhone = computed(() => {
     if (queryPhone.value === '') return props.student;
-    return props.student.filter((n) =>
-        n.phone.toLowerCase().includes(queryPhone.value.toLowerCase())
-    );
+    return props.student.filter((n) => n.phone.toLowerCase().includes(queryPhone.value.toLowerCase()));
 });
-
 
 const form = useForm({
     student_id: '',
@@ -79,22 +74,21 @@ const onReport = async () => {
 const onRefresh = () => {
     router.get(route('leadreports.studentTransaction'), {}, { replace: true });
 };
-
-</script> 
+</script>
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Student Transaction" />
         <LeadReportLayout>
-            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md">
                 <!-- Title -->
-                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Student Transaction</h2>
+                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-800">Student Transaction</h2>
                 <div>
                     <div class="space-y-2">
                         <div class="w-full lg:w-auto">
                             <Combobox v-model="selectedStudent" :disabled="isStudentDisabled">
                                 <div class="relative w-full">
                                     <ComboboxInput
-                                        class="w-full rounded-md border px-3 py-2 text-sm"
+                                        class="w-full rounded-md border px-3 py-2 text-sm dark:bg-gray-700 dark:text-gray-200"
                                         placeholder="Select Student ID"
                                         @input="queryStudent = $event.target.value"
                                         :display-value="(c) => c?.student_id ?? ''"
@@ -114,7 +108,7 @@ const onRefresh = () => {
                                             v-for="one in filteredStudent"
                                             :key="one.id"
                                             :value="one"
-                                            class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                            class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none dark:bg-gray-800 dark:text-gray-200"
                                             v-slot="{ selected }"
                                         >
                                             <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
@@ -135,7 +129,7 @@ const onRefresh = () => {
                             <Combobox v-model="selectedPhone" :disabled="isPhoneDisabled">
                                 <div class="relative w-full">
                                     <ComboboxInput
-                                        class="w-full rounded-md border px-3 py-2 text-sm"
+                                        class="w-full rounded-md border px-3 py-2 text-sm dark:bg-gray-700 dark:text-gray-200"
                                         placeholder="Search Student Phone"
                                         @input="queryPhone = $event.target.value"
                                         :display-value="(c) => c?.phone ?? ''"
@@ -145,7 +139,7 @@ const onRefresh = () => {
                                     </ComboboxButton>
 
                                     <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg dark:bg-gray-800 dark:text-gray-200"
                                     >
                                         <div v-if="filteredPhone.length === 0 && queryPhone !== ''" class="px-4 py-2 text-gray-500 select-none">
                                             Nothing found.
@@ -179,13 +173,8 @@ const onRefresh = () => {
                 <!-- Submit -->
                 <div class="flex justify-center">
                     <div class="group relative p-5">
-                        <Button
-                            @click="onRefresh"
-                            class="cursor-pointer"
-                            variant="outline"
-                            size="sm"
-                        >
-                            <RefreshCcw class="text-red-500" />
+                        <Button @click="onRefresh" class="cursor-pointer" variant="outline" size="sm">
+                            <RefreshCcw class="text-red-500 dark:text-red-500" />
                         </Button>
                         <span
                             class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
@@ -194,16 +183,11 @@ const onRefresh = () => {
                         </span>
                     </div>
                     <div class="group relative p-5">
-                        <Button
-                            @click="onReport"
-                            class="cursor-pointer"
-                            variant="outline"
-                            size="sm"
-                        >
-                            <FileText class="text-red-500" />
+                        <Button @click="onReport" class="cursor-pointer" variant="outline" size="sm">
+                            <FileText class="text-red-500 dark:text-red-500" />
                         </Button>
                         <span
-                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100 dark:bg-gray-800 dark:text-gray-200"
                         >
                             Report
                         </span>

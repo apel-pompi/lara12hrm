@@ -373,7 +373,7 @@ class StudentReportController extends Controller
 
         $numberToWords = new NumberToWords();
         $numberTransformer = $numberToWords->getNumberTransformer('en');
-        $pdf = PDF::loadView('exports.studentledger', [
+        $pdf = PDF::loadView('exports.studentTransaction', [
             'student' => $data,
             'company' => $company,
             'service' => $service,
@@ -433,43 +433,39 @@ class StudentReportController extends Controller
         $company = CompanyInfo::firstOrFail();
         $query = StudentInvoiceHD::with([
             'mrdetails.fees',
-            'voucherDetails' => function ($q) {
-                $q->where('notes', 'Cash/Bank');
-            }
         ])
             ->where('student_id', $data->id)
             ->whereRaw("LEFT(insnumber, 4) = 'MR--'")
             ->where('status', 'Confirmed')
-            ->whereHas('voucherDetails', function ($q) {
-                $q->where('notes', 'Cash/Bank');
-            })
             ->get();
 
         $values = [];
         foreach ($query as $invoice) {
             $mrdate = $invoice->insdate;
             $mrno = $invoice->insnumber;
+            $mrstatus = $invoice->note;
             $primeamt = optional($invoice->voucherDetails->first())->primeamt;
             foreach ($invoice->mrdetails as $mr) {
                 $values[] = [
                     'mrdate' => $mrdate ?? '',
                     'feesname' => $mr->fees->name ?? '',
                     'mrno' => $mrno ?? '',
+                    'mrstatus' => $mrstatus ?? '',
                     'primeamt' => $primeamt,
                 ];
             }
         }
-       
 
         $numberToWords = new NumberToWords();
         $numberTransformer = $numberToWords->getNumberTransformer('en');
+        $dataCollection = collect($values);
         $pdf = PDF::loadView('exports.studentledger', [
             'student' => $data,
             'company' => $company,
-            'data'    => $values,
+            'data'    => $dataCollection,
             'numberTransformer' => $numberTransformer
         ])
-            ->setPaper('a4', 'portrait')
+            ->setPaper('a4', 'landscape')
             ->setOption([
                 'margin-top'    => 5,
                 'margin-right'  => 5,

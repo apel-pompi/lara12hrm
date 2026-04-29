@@ -147,15 +147,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (workflow: Workflow) => {
-    const newStatus = !Boolean(workflow.active); // boolean
+const toggleStatus = (workflow: Workflow, checked: boolean) => {
     router.put(
         route('workflow.updateStatus', workflow.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                workflow.active = newStatus ? 1 : 0; // local update (number)
+                workflow.active = checked ? 1 : 0;
                 toast.success('General Services  status update');
             },
         },
@@ -336,13 +335,16 @@ const goToPage = (url: string | null) => {
                                 </TableCell>
 
                                 <TableCell class="text-center">
-                                    <Switch v-model="workflow.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(workflow)" />
+                                    <Switch
+                                        :model-value="Boolean(workflow.active)"
+                                        @update:model-value="(checked) => toggleStatus(workflow, checked)"
+                                    />
                                 </TableCell>
 
                                 <TableCell class="text-center">
                                     <div class="flex justify-center gap-2">
                                         <Button size="sm" variant="outline" @click="onEdit(workflow.id)">
-                                            <SquarePen class="h-4 w-4" />
+                                            <SquarePen class="h-4 w-4 text-indigo-600" />
                                         </Button>
 
                                         <Button size="sm" variant="outline" class="text-blue-600" @click="goToDocumentList(workflow.id)">

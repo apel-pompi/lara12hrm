@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark'=> ($appearance ?? 'system') == 'dark'])>
+
 <head>
     <meta charset="utf-8">
     <title>Trial Balance (Consolidated)</title>
@@ -14,34 +15,60 @@
         /* ===== HEADER ===== */
         .header {
             width: 100%;
-            border-bottom: 2px solid #000;
-            margin-bottom: 10px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .logo img {
+            max-height: 60px;
         }
 
         .company-name {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: bold;
         }
 
         .company-info {
             font-size: 10px;
-            color: #444;
+            line-height: 1.4;
+            color: #555;
         }
 
         /* ===== TITLE ===== */
-        .title {
+        .report-title {
             text-align: center;
             font-size: 14px;
             font-weight: bold;
-            margin: 10px 0 5px;
+            margin: 5px 0 10px;
+            padding: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .report-title-section {
+            margin-bottom: 25px;
+        }
+
+
+        .title-table {
+            width: 100%;
+            background: #D7D7D7;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .title-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
             text-transform: uppercase;
         }
 
-        .subtitle {
-            text-align: center;
-            font-size: 10px;
-            margin-bottom: 15px;
-            color: #555;
+        .title-value {
+            font-size: 12px;
+            color: #1e293b;
+            font-weight: 500;
         }
 
         /* ===== META ===== */
@@ -115,95 +142,95 @@
 
 <body>
 
-<!-- HEADER -->
-<table class="header">
-    <tr>
-        <td width="70%">
-            <div class="company-name">{{ $company->companyname }}</div>
-            <div class="company-info">
-                {{ $company->address_one }}<br>
-                {{ $company->company_phone }} | {{ $company->company_email }}
-            </div>
-        </td>
-        <td align="right">
-            @if($company->companylogo)
-                <img src="{{ public_path('storage/company/'.$company->companylogo) }}" height="50">
-            @endif
-        </td>
-    </tr>
-</table>
-
-<!-- TITLE -->
-<div class="title">Trial Balance (Consolidated)</div>
-<div class="subtitle">
-    For the period {{ date('d M Y', strtotime($startdate)) }}
-    to {{ date('d M Y', strtotime($enddate)) }}
-</div>
-
-<!-- META -->
-<table class="meta-table">
-    <tr>
-        <td width="25%">
-            <span class="meta-label">Branch:</span> {{ $branch->branchname?? 'All Branch' }}
-        </td>
-        <td width="25%">
-            <span class="meta-label">Currency:</span> BDT
-        </td>
-        <td width="25%">
-            <span class="meta-label">Generated:</span> {{ date('d M Y') }}
-        </td>
-    </tr>
-</table>
-
-<!-- TRIAL BALANCE TABLE -->
-<table class="trial-table">
-    <thead>
+    <!-- HEADER -->
+    <table class="header">
         <tr>
-            <th width="15%">Account Code</th>
-            <th width="45%">Account Name</th>
-            <th width="20%">Debit (BDT)</th>
-            <th width="20%">Credit (BDT)</th>
+            <td class="logo" width="30%">
+                @if ($company->companylogo)
+                <img src="{{ public_path('storage/company/' . $company->companylogo) }}">
+                @endif
+            </td>
+            <td align="right">
+                <div class="company-name">{{ $company->companyname }}</div>
+                <div class="company-info">
+                    {{ $company->address_one }}<br>
+                    {{ $company->address_two }}<br>
+                    {{ $company->company_phone }} | {{ $company->company_email }}
+                </div>
+            </td>
         </tr>
-    </thead>
+    </table>
 
-    <tbody>
-        @php
+    <!-- TITLE -->
+    <div class="report-title">
+        Trial Balance (Consolidated)
+    </div>
+    <div class="report-title-section">
+        <table class="title-table">
+            <tr>
+                <td width="50%">
+                    <div class="title-label">Report Period</div>
+                    <div class="title-value">{{ date('M d, Y', strtotime($startdate)) }} - {{ date('M d, Y', strtotime($enddate)) }}</div>
+                </td>
+                <td align="right">
+                    <div class="title-label">Branch</div>
+                    <div class="title-value">{{ $branch->branchname ?? 'All Branches' }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+
+    <!-- TRIAL BALANCE TABLE -->
+    <table class="trial-table">
+        <thead>
+            <tr>
+                <th width="15%">Account Code</th>
+                <th width="45%">Account Name</th>
+                <th width="20%">Debit (BDT)</th>
+                <th width="20%">Credit (BDT)</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @php
             $totalDebit = 0;
             $totalCredit = 0;
-        @endphp
-        @foreach($trialBalance as $row)
+            @endphp
+            @foreach($trialBalance as $row)
             @php
-                $debit = $row->balance > 0 ? $row->balance : 0;
-                $credit = $row->balance < 0 ? abs($row->balance) : 0;
+            $debit = $row->balance > 0 ? $row->balance : 0;
+            $credit = $row->balance < 0 ? abs($row->balance) : 0;
 
                 $totalDebit += $debit;
                 $totalCredit += $credit;
-            @endphp
-            <tr>
-                <td>{{ $row->accountcode }}</td>
-                <td class="account-name">{{ $row->description }}</td>
-                <td class="text-right">{{ $debit }}</td>
-                <td class="text-right">{{ $credit }}</td>
-            </tr>
-        @endforeach
+                @endphp
+                <tr>
+                    <td>{{ $row->accountcode }}</td>
+                    <td class="account-name">{{ $row->description }}</td>
+                    <td class="text-right">{{ number_format($debit, 3) }}</td>
+                    <td class="text-right">{{ number_format($credit, 3) }}</td>
+                </tr>
+                @endforeach
 
-        <!-- TOTAL -->
-        <tr class="total-row">
-            <td colspan="2" align="right">TOTAL</td>
-            <td class="text-right">{{ $totalDebit }}</td>
-            <td class="text-right">{{ $totalCredit }}</td>
+                <!-- TOTAL -->
+                <tr class="total-row">
+                    <td colspan="2" align="right">TOTAL</td>
+                    <td class="text-right">{{ number_format($totalDebit, 3) }}</td>
+                    <td class="text-right">{{ number_format($totalCredit, 3) }}</td>
+                </tr>
+        </tbody>
+    </table>
+
+    <!-- FOOTER -->
+    <table class="footer">
+        <tr>
+            <td class="sign"><span>Prepared By</span></td>
+            <td class="sign"><span>Checked By</span></td>
+            <td class="sign"><span>Approved By</span></td>
         </tr>
-    </tbody>
-</table>
-
-<!-- FOOTER -->
-<table class="footer">
-    <tr>
-        <td class="sign"><span>Prepared By</span></td>
-        <td class="sign"><span>Checked By</span></td>
-        <td class="sign"><span>Approved By</span></td>
-    </tr>
-</table>
+    </table>
 
 </body>
+
 </html>

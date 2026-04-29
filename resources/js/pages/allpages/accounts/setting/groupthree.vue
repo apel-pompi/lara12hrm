@@ -32,6 +32,7 @@ export interface Paginated<T> {
 }
 
 export interface GroupThree {
+    id: number;
     code: string;
     description: string;
     active: number;
@@ -85,7 +86,7 @@ const onEdit = async (id: number) => {
         const data = await res.json();
         Object.assign(form, data.data);
         form.id = data.data.id;
-        
+
         isEditMode.value = true;
         showDialog.value = true;
     } catch (error) {
@@ -102,19 +103,20 @@ const submit = () => {
             setTimeout(() => {
                 form.reset();
                 showDialog.value = false;
-                router.visit(route('accsetting.GroupThree',{
-                    GroupOne: props.groupInfo.groupone,
-                    GroupTwo: props.groupInfo.id,
-                }), {
-                    preserveScroll: true,
-                    preserveState: false,
-                });
+                router.visit(
+                    route('accsetting.GroupThree', {
+                        GroupOne: props.groupInfo.groupone,
+                        GroupTwo: props.groupInfo.id,
+                    }),
+                    {
+                        preserveScroll: true,
+                        preserveState: false,
+                    },
+                );
             }, 200);
             form.reset();
             showDialog.value = false;
-            
         },
-        
 
         onError: (errors) => {
             const firstError = Object.values(errors)[0];
@@ -128,15 +130,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (three: GroupThree) => {
-    const newStatus = !Boolean(three.active); // boolean
+const toggleStatus = (three: GroupThree, checked: boolean) => {
     router.put(
         route('GroupThree.updateStatus', three.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                three.active = newStatus ? 1 : 0; // local update (number)
+                three.active = checked ? 1 : 0;
                 const flash = usePage().props.flash;
                 if (flash?.success) {
                     toast('success', {
@@ -185,8 +186,6 @@ const goToPage = (url: string | null) => {
 const goToGroupTwo = () => {
     router.get(route('accsetting.GroupTwo', { GroupOne: props.groupInfo.groupone }));
 };
-
-
 </script>
 
 <template>
@@ -194,8 +193,9 @@ const goToGroupTwo = () => {
         <Head title="Accounts Setting" />
 
         <AccountsLayout :breadcrumbs="breadcrumbs">
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header / Toolbar -->
+                <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToGroupTwo"
                         ><CornerDownLeft></CornerDownLeft> Back Group Two
                     </Button>
@@ -203,10 +203,15 @@ const goToGroupTwo = () => {
                         ><Plus></Plus> Group Three
                     </Button>
                 </div>
-                <div class="rounded-md border">
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Accounts Group Three List</h2>
+                        <p class="text-sm text-gray-500">Manage all Accounts Group Three from here.</p>
+                    </div>
                     <Table>
                         <TableHeader>
-                            <TableRow>
+                            <TableRow class="bg-gray-100 hover:bg-gray-100">
                                 <TableHead>Sl</TableHead>
                                 <TableHead>Group One</TableHead>
                                 <TableHead>Group Two</TableHead>
@@ -226,11 +231,16 @@ const goToGroupTwo = () => {
                                 <TableCell>{{ three.description }}</TableCell>
                                 <TableCell>{{ three.user.name }}</TableCell>
                                 <TableCell>
-                                    <Switch v-model="three.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(three)"> </Switch>
+                                    <Switch :model-value="Boolean(three.active)" @update:model-value="(checked) => toggleStatus(three, checked)">
+                                    </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button  size="sm" variant="outline" @click="onEdit(three.id)"><SquarePen></SquarePen></Button>
-                                    <Button size="sm" variant="outline" @click="onDelete(three.id)"><Trash></Trash></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(three.id)"
+                                        ><SquarePen class="h-4 w-4 text-indigo-600"
+                                    /></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(three.id)"
+                                        ><Trash class="h-4 w-4 text-red-600"
+                                    /></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>

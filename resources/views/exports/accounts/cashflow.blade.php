@@ -15,33 +15,61 @@
 
         /* ================= HEADER ================= */
         .header {
-            border-bottom: 2px solid #000;
-            padding-bottom: 8px;
+            width: 100%;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
             margin-bottom: 15px;
         }
 
+        .logo img {
+            max-height: 60px;
+        }
+
         .company-name {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: bold;
         }
 
         .company-info {
             font-size: 10px;
+            line-height: 1.4;
             color: #555;
         }
 
         /* ================= TITLE ================= */
-        .title {
+        .report-title {
             text-align: center;
             font-size: 14px;
             font-weight: bold;
-            margin: 15px 0 5px;
+            margin: 5px 0 10px;
+            padding: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .period {
-            text-align: center;
-            font-size: 11px;
-            margin-bottom: 15px;
+        .report-title-section {
+            margin-bottom: 25px;
+        }
+
+
+        .meta-table {
+            width: 100%;
+            background: #D7D7D7;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .meta-value {
+            font-size: 12px;
+            color: #1e293b;
+            font-weight: 500;
         }
 
         /* ================= TABLE ================= */
@@ -108,20 +136,43 @@
 
 <body>
 
-    {{-- HEADER --}}
-    <div class="header">
-        <div class="company-name">{{ $company->companyname }}</div>
-        <div class="company-info">
-            {{ $company->address_one }} | {{ $company->company_phone }}
-        </div>
+    <!-- HEADER -->
+    <table class="header">
+        <tr>
+            <td class="logo" width="30%">
+                @if ($company->companylogo)
+                <img src="{{ public_path('storage/company/' . $company->companylogo) }}">
+                @endif
+            </td>
+            <td align="right">
+                <div class="company-name">{{ $company->companyname }}</div>
+                <div class="company-info">
+                    {{ $company->address_one }}<br>
+                    {{ $company->address_two }}<br>
+                    {{ $company->company_phone }} | {{ $company->company_email }}
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="report-title">
+        Cash Flow Statement Report
+    </div>
+    <div class="report-title-section">
+        <table class="meta-table">
+            <tr>
+                <td width="50%">
+                    <div class="meta-label">Report Period</div>
+                    <div class="meta-value">{{ date('M d, Y', strtotime($from_date)) }} - {{ date('M d, Y', strtotime($to_date)) }}</div>
+                </td>
+                <td align="right">
+                    <div class="meta-label">Branch</div>
+                    <div class="meta-value">{{ $branch->branchname ?? 'All Branches' }}</div>
+                </td>
+            </tr>
+        </table>
     </div>
 
-    {{-- TITLE --}}
-    <div class="title">Cash Flow Statement</div>
-    <div class="period">
-        For the period {{ date('d M Y', strtotime($from_date)) }}
-        to {{ date('d M Y', strtotime($to_date)) }}
-    </div>
     <!-- TABLE -->
     <table>
         <thead>
@@ -136,7 +187,7 @@
             {{-- OPENING --}}
             <tr>
                 <td class="section">Opening Cash & Cash Equivalent</td>
-                <td class="amount">{{ number_format($openingCash, 2) }}</td>
+                <td class="amount">{{ number_format($openingCash, 3) }}</td>
             </tr>
 
             {{-- OPERATING ACTIVITIES --}}
@@ -148,13 +199,13 @@
             @foreach ($operating as $row)
             <tr>
                 <td class="sub">{{ $row->description }}</td>
-                <td class="amount">{{ number_format($row->amount, 2) }}</td>
+                <td class="amount">{{ number_format($row->amount, 3) }}</td>
             </tr>
             @endforeach
 
             <tr class="total">
                 <td>Net Cash from Operating Activities</td>
-                <td class="amount">{{ number_format($netOperating, 2) }}</td>
+                <td class="amount">{{ number_format($netOperating, 3) }}</td>
             </tr>
 
             {{-- INVESTING ACTIVITIES --}}
@@ -166,13 +217,13 @@
             @foreach ($investing as $row)
             <tr>
                 <td class="sub">{{ $row->description }}</td>
-                <td class="amount">{{ number_format($row->amount, 2) }}</td>
+                <td class="amount">{{ number_format($row->amount, 3) }}</td>
             </tr>
             @endforeach
 
             <tr class="total">
                 <td>Net Cash from Investing Activities</td>
-                <td class="amount">{{ number_format($netInvesting, 2) }}</td>
+                <td class="amount">{{ number_format($netInvesting, 3) }}</td>
             </tr>
 
             {{-- FINANCING ACTIVITIES --}}
@@ -184,13 +235,13 @@
             @foreach ($financing as $row)
             <tr>
                 <td class="sub">{{ $row->description }}</td>
-                <td class="amount">{{ number_format($row->amount, 2) }}</td>
+                <td class="amount">{{ number_format($row->amount, 3) }}</td>
             </tr>
             @endforeach
 
             <tr class="total">
                 <td>Net Cash from Financing Activities</td>
-                <td class="amount">{{ number_format($netFinancing, 2) }}</td>
+                <td class="amount">{{ number_format($netFinancing, 3) }}</td>
             </tr>
 
             {{-- CLOSING --}}

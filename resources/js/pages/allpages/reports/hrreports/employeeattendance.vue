@@ -1,27 +1,40 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import Label from '@/components/ui/label/Label.vue';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import HrReportLayout from '@/layouts/settings/hrreportLayout.vue';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm} from '@inertiajs/vue3';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { computed, ref } from 'vue';
+import { Head, useForm } from '@inertiajs/vue3';
 import { FileText } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'HR Reports', href: '/hrreports' }];
 
 const props = defineProps<{
-    employee: { id: number; empname: string }[];
+    employee: { id: number; empid: string; empname: string }[];
+    currentEmployee?: { id: number; empid: string; empname: string } | null;
+    isSuperadmin: boolean;
     months: { id: number; name: string }[];
     years: { id: number; name: string }[];
 }>();
 
-const selecteEmployee = ref(null);
+const selecteEmployee = ref(props.isSuperadmin ? null : (props.currentEmployee ?? null));
 const queryEmployee = ref('');
-const filteredEmployee = computed(() => (queryEmployee.value === '' ? props.employee : props.employee.filter((n) => n.empname)));
+const availableEmployees = computed(() =>
+    props.isSuperadmin ? props.employee : props.employee.filter((emp) => emp.id === props.currentEmployee?.id),
+);
+const filteredEmployee = computed(() => {
+    const employees = availableEmployees.value;
+
+    if (queryEmployee.value === '') {
+        return employees;
+    }
+
+    return employees.filter((emp) => emp.empname.toLowerCase().includes(queryEmployee.value.toLowerCase()));
+});
 
 const form = useForm({
     empid: '',
@@ -58,25 +71,27 @@ const onReport = async () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="HR Reports" />
         <HrReportLayout>
-                    <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md">
                 <!-- Title -->
-                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Daily attendance Reports</h2>
+                <h2 class="text-center text-xl font-semibold text-gray-800">Daily attendance Reports</h2>
 
                 <!-- Input -->
                 <div class="space-y-2">
-                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Employee</Label>
+                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-500">Select Employee</Label>
                     <Combobox v-model="selecteEmployee">
                         <div class="relative">
                             <ComboboxInput
                                 class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                 placeholder="Select Employee"
+                                :disabled="!props.isSuperadmin"
                                 @input="queryEmployee = $event.target.value"
                                 :display-value="(c) => (c ? c.empname : '')"
                             />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2" :disabled="!props.isSuperadmin">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
                             <ComboboxOptions
+                                v-if="props.isSuperadmin"
                                 class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
                             >
                                 <div
@@ -96,12 +111,15 @@ const onReport = async () => {
                             </ComboboxOptions>
                         </div>
                     </Combobox>
+                    <p v-if="!props.isSuperadmin" class="text-xs text-gray-500 dark:text-gray-400">
+                        You can only generate the report for your own employee profile.
+                    </p>
                 </div>
                 <div class="space-y-2">
-                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Year</Label>
+                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-500">Select Year</Label>
                     <Select v-model="form.yearname">
                         <SelectTrigger class="w-full">
-                            <SelectValue placeholder="Select Year" />
+                            <SelectValue placeholder="Select Year" class="dark:text-gray-500" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
@@ -113,10 +131,10 @@ const onReport = async () => {
                     </Select>
                 </div>
                 <div class="space-y-2">
-                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Month</Label>
+                    <Label class="block text-sm font-medium text-gray-700 dark:text-gray-500">Select Month</Label>
                     <Select v-model="form.monthname">
                         <SelectTrigger class="w-full">
-                            <SelectValue placeholder="Select Month" />
+                            <SelectValue placeholder="Select Month" class="dark:text-gray-500" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>

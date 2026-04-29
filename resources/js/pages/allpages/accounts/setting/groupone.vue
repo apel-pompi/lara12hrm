@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import AccountsLayout from '@/layouts/settings/accountLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm, usePage, Link } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { Plus, SquarePen, Trash } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -32,6 +32,7 @@ export interface Paginated<T> {
 }
 
 export interface GroupOne {
+    id: number;
     code: number;
     description: string;
     active: number;
@@ -41,15 +42,13 @@ export interface GroupOne {
     };
 }
 
-
-
 const props = defineProps<{
     groupone: Paginated<GroupOne>;
-    code:number;
+    code: number;
 }>();
 
 const data = props.groupone;
-
+console.log(data);
 const showDialog = ref(false);
 const isEditMode = ref(false);
 
@@ -58,13 +57,12 @@ const form = useForm({
     code: '',
     description: '',
     active: '0',
-    
 });
 
 const showDailogCreate = () => {
     form.reset();
     form.id = null;
-    form.code = props.code.onecode
+    form.code = props.code.onecode;
     isEditMode.value = false;
     showDialog.value = true;
 };
@@ -106,7 +104,7 @@ const submit = () => {
             form.reset();
             showDialog.value = false;
         },
-        
+
         onError: (errors) => {
             const firstError = Object.values(errors)[0];
             const flash = usePage().props.flash;
@@ -119,15 +117,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (one: GroupOne) => {
-    const newStatus = !Boolean(one.active); // boolean
+const toggleStatus = (one: GroupOne, checked: boolean) => {
     router.put(
         route('GroupOne.updateStatus', one.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                one.active = newStatus ? 1 : 0; // local update (number)
+                one.active = checked ? 1 : 0;
                 const flash = usePage().props.flash;
                 if (flash?.success) {
                     toast('success', {
@@ -172,8 +169,6 @@ const goToPage = (url: string | null) => {
         router.get(url, {}, { preserveState: false, replace: true });
     }
 };
-
-
 </script>
 
 <template>
@@ -181,16 +176,22 @@ const goToPage = (url: string | null) => {
         <Head title="Accounts Setting" />
 
         <AccountsLayout :breadcrumbs="breadcrumbs">
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border px-4 md:min-h-min">
-                <div class="flex items-center gap-2 py-4">
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <!-- Header / Toolbar -->
+                <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
                         ><Plus></Plus> Group One
                     </Button>
                 </div>
-                <div class="rounded-md border">
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <!-- Title -->
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Accounts Group One List</h2>
+                        <p class="text-sm text-gray-500">Manage all Accounts Group One from here.</p>
+                    </div>
                     <Table>
                         <TableHeader>
-                            <TableRow>
+                            <TableRow class="bg-gray-100 hover:bg-gray-100">
                                 <TableHead>Sl</TableHead>
                                 <TableHead>Group One Code</TableHead>
                                 <TableHead>Description</TableHead>
@@ -204,15 +205,25 @@ const goToPage = (url: string | null) => {
                                 <TableCell>{{ index + 1 }}</TableCell>
                                 <TableCell>{{ one.code }}</TableCell>
                                 <TableCell>
-                                    <Link :href="route('accsetting.GroupTwo', { GroupOne: one.code })" method="get" class="underline hover:text-blue-500">{{ one.description }}</Link>
+                                    <Link
+                                        :href="route('accsetting.GroupTwo', { GroupOne: one.code })"
+                                        method="get"
+                                        class="underline hover:text-blue-500"
+                                        >{{ one.description }}</Link
+                                    >
                                 </TableCell>
                                 <TableCell>{{ one.user.name }}</TableCell>
                                 <TableCell>
-                                    <Switch v-model="one.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(one)"> </Switch>
+                                    <Switch :model-value="Boolean(one.active)" @update:model-value="(checked) => toggleStatus(one, checked)">
+                                    </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button size="sm" variant="outline" @click="onEdit(one.id)"><SquarePen></SquarePen></Button>
-                                    <Button size="sm" variant="outline" @click="onDelete(one.id)"><Trash></Trash></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(one.id)"
+                                        ><SquarePen class="h-4 w-4 text-indigo-600"></SquarePen
+                                    ></Button>
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(one.id)"
+                                        ><Trash class="h-4 w-4 text-red-600"></Trash
+                                    ></Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -264,7 +275,13 @@ const goToPage = (url: string | null) => {
                         <!-- Description -->
                         <div>
                             <Label for="description" class="text-sm font-medium">Description<span class="text-red-500">*</span></Label>
-                            <Input type="text" id="description" placeholder="Enter Description" v-model="form.description" class="mt-1 w-full uppercase" />
+                            <Input
+                                type="text"
+                                id="description"
+                                placeholder="Enter Description"
+                                v-model="form.description"
+                                class="mt-1 w-full uppercase"
+                            />
                             <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">
                                 {{ form.errors.description }}
                             </p>

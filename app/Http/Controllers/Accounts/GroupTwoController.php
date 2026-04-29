@@ -20,7 +20,7 @@ class GroupTwoController extends Controller
      */
     public function store(StoreGroupTwoRequest $request)
     {
-        
+
         try {
             $this->authorize('GroupTwo.store');
         } catch (AuthorizationException $e) {
@@ -98,7 +98,7 @@ class GroupTwoController extends Controller
         }
 
         $groupTwo->update($request->validated());
-        
+
         if ($groupTwo) {
             return back()->with([
                 'success' => true,
@@ -117,7 +117,7 @@ class GroupTwoController extends Controller
      */
     public function destroy(GroupTwo $groupTwo)
     {
-        
+
         try {
             $this->authorize('GroupTwo.destroy');
         } catch (AuthorizationException $e) {
@@ -140,7 +140,7 @@ class GroupTwoController extends Controller
     public function updateStatus(Request $request, $groupTwo)
     {
         try {
-            $this->authorize('GroupTwo.updateStatus');
+            $this->authorize('GroupTwo.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

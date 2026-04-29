@@ -356,6 +356,17 @@ class RolePermissionSeeder extends Seeder
 
                 ],
             ],
+            //Device
+            [
+                'group_name' => 'Device',
+                'permissions' => [
+                    'device.index',
+                    'device.connect',
+                    'device.sync',
+                    'device.syncRange',
+
+                ],
+            ],
             //Attendance Status         
             [
                 'group_name' => 'Attendance Status',
@@ -778,6 +789,7 @@ class RolePermissionSeeder extends Seeder
                     'accountsreport.index',
                     'accountsreport.chartOfAccountReport',
                     'accountsreport.ActoGL',
+                    'accountsreport.supplierLedger',
                     'accountsreport.CashBook',
                     'accountsreport.CashFlow',
                     'accountsreport.JurnalTransactions',

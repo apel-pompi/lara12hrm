@@ -133,15 +133,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (product: Product) => {
-    const newStatus = !Boolean(product.active); // boolean
+const toggleStatus = (product: Product, checked: boolean) => {
     router.put(
         route('product.updateStatus', product.id),
-        { active: newStatus ? 1 : 0 }, // server expects number
+        { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                product.active = newStatus ? 1 : 0; // local update (number)
+                product.active = checked ? 1 : 0;
                 toast.success('Partner  status update');
             },
         },
@@ -237,7 +236,8 @@ function getAvatarColor(name: string) {
                             {{ b }}
                         </Badge>
                         <TableCell>
-                            <Switch v-model="product.active" :checked-value="1" :unchecked-value="0" @click="toggleStatus(product)"> </Switch>
+                            <Switch :model-value="Boolean(product.active)" @update:model-value="(checked) => toggleStatus(product, checked)">
+                            </Switch>
                         </TableCell>
                         <TableCell class="text-right">
                             <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(product.id)"><Trash></Trash></Button>

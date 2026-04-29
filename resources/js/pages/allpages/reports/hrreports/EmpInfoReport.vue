@@ -13,10 +13,12 @@ import { computed, ref } from 'vue';
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'HR Reports', href: '/hrreports' }];
 
 const props = defineProps<{
-    employee: { id: number; empname: string };
+    employee: { id: number; empname: string }[];
+    currentEmployee?: { id: number; empname: string } | null;
+    isSuperadmin: boolean;
 }>();
 
-const selectedEmployee = ref<any>(null);
+const selectedEmployee = ref<any>(props.isSuperadmin ? null : (props.currentEmployee ?? null));
 const queryEmployee = ref('');
 const filteredEmployee = computed(() =>
     queryEmployee.value ? props.employee.filter((c) => c.empname.toLowerCase().includes(queryEmployee.value.toLowerCase())) : props.employee,
@@ -27,7 +29,6 @@ const form = useForm({
 });
 
 const onReport = async () => {
-    
     if (!selectedEmployee.value || !selectedEmployee.value.id) {
         alert('Employee is not selected');
         return;
@@ -45,9 +46,9 @@ const onReport = async () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="HR Reports" />
         <HrReportLayout>
-            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+            <div class="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md">
                 <!-- Title -->
-                <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Personal Info Reports</h2>
+                <h2 class="text-center text-xl font-semibold text-gray-800">Personal Info Reports</h2>
 
                 <!-- Input -->
                 <div class="space-y-2">
@@ -56,18 +57,25 @@ const onReport = async () => {
                     <Combobox v-model="selectedEmployee">
                         <div class="relative">
                             <ComboboxInput
-                                class="w-full rounded-lg border-gray-300 bg-white py-2 pr-10 pl-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                 placeholder="Search Employee..."
+                                :disabled="!props.isSuperadmin"
                                 @input="queryEmployee = $event.target.value"
                                 :display-value="(c) => (c ? c.empname : '')"
                             />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2" :disabled="!props.isSuperadmin">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
                             <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white py-1 text-sm shadow-lg"
+                                v-if="props.isSuperadmin"
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
                             >
-                                <div v-if="filteredEmployee.length === 0 && queryEmployee !== ''" class="px-4 py-2 text-gray-500">Nothing found.</div>
+                                <div
+                                    v-if="filteredEmployee.length === 0 && queryEmployee !== ''"
+                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                >
+                                    Nothing found.
+                                </div>
                                 <ComboboxOption
                                     v-for="emp in filteredEmployee"
                                     :key="emp.id"
@@ -79,6 +87,9 @@ const onReport = async () => {
                             </ComboboxOptions>
                         </div>
                     </Combobox>
+                    <p v-if="!props.isSuperadmin" class="text-xs text-gray-500 dark:text-gray-400">
+                        You can only generate the report for your own employee profile.
+                    </p>
                 </div>
 
                 <!-- Submit -->
