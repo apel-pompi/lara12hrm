@@ -7,20 +7,21 @@ import { type BreadcrumbItem } from '@/types';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Head, useForm } from '@inertiajs/vue3';
+import { getLocalTimeZone, today } from '@internationalized/date';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 import { FileText } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Accounts Reports', href: '/accountsreports' }];
 
 const props = defineProps<{
     branch: Array<{ id: number; name: string }>;
-    months: { id: number; name: string }[];
-    years: { id: number; name: string }[];
 }>();
 
 const form = useForm({
     branch_id: '',
-    yearname: '',
-    monthname: '',
+    startdate: '',
+    enddate: '',
     type: '',
 });
 
@@ -32,15 +33,33 @@ const filteredBranch = computed(() => {
     return props.branch.filter((n) => n.branchname && n.branchname.toLowerCase().includes(queryBranch.value.toLowerCase()));
 });
 
+const sdate = ref<string | null>(null);
+
+const maxDate = today(getLocalTimeZone());
+
+watch(sdate, (newDate) => {
+    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
+        form.startdate = newDate.toISOString().split('T')[0];
+    }
+});
+
+const edate = ref<string | null>(null);
+
+watch(edate, (newDate) => {
+    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
+        form.enddate = newDate.toISOString().split('T')[0];
+    }
+});
+
 const onReport = async () => {
     // ===== VALIDATION =====
-    if (!form.yearname) {
-        alert('Year is not selected');
+    if (!form.startdate) {
+        alert('Start date is not selected');
         return;
     }
 
-    if (!form.monthname) {
-        alert('Month is not selected');
+    if (!form.enddate) {
+        alert('End date is not selected');
         return;
     }
 
@@ -52,8 +71,8 @@ const onReport = async () => {
     // ===== BUILD URL =====
     const url = route('accountsreport.ProfitLossreport', {
         branch_id: selectedBranch.value ? selectedBranch.value.id : null,
-        yearname: form.yearname,
-        monthname: form.monthname,
+        startdate: form.startdate,
+        enddate: form.enddate,
         type: form.type,
     });
 
@@ -112,32 +131,24 @@ const onReport = async () => {
                 </div>
 
                 <div class="space-y-2">
-                    <Select v-model="form.yearname">
-                        <SelectTrigger class="w-full">
-                            <SelectValue placeholder="Select Year" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem v-for="year in props.years" :key="year.id" :value="year.id">
-                                    {{ year.name }}
-                                </SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+                    <VueDatePicker
+                        v-model="sdate"
+                        :max-date="maxDate"
+                        :format="'yyyy-MM-dd'"
+                        :enable-time-picker="false"
+                        placeholder="Select Date"
+                        auto-apply
+                    />
                 </div>
                 <div class="space-y-2">
-                    <Select v-model="form.monthname">
-                        <SelectTrigger class="w-full">
-                            <SelectValue placeholder="Select Month" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem v-for="month in props.months" :key="month.id" :value="month.id">
-                                    {{ month.name }}
-                                </SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+                    <VueDatePicker
+                        v-model="edate"
+                        :max-date="maxDate"
+                        :format="'yyyy-MM-dd'"
+                        :enable-time-picker="false"
+                        placeholder="Select Date"
+                        auto-apply
+                    />
                 </div>
                 <div class="space-y-2">
                     <Select v-model="form.type">

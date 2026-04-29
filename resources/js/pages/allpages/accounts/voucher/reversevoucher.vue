@@ -122,15 +122,35 @@ const submit = () => {
     const action = isEditMode.value && form.id ? route('voucherheader.reverseUpdate', form.id) : route('voucherheader.reverseStore');
     const method = isEditMode.value ? 'put' : 'post';
 
-    if (!form.referance) { toast('Validation Error', { description: 'Please write referance' }); return; }
-    if (!selectedBranch.value?.id) { toast('Validation Error', { description: 'Please select a branch' }); return; }
-    
-    if (details.value.length === 0) { toast('Validation Error', { description: 'Please add at least one particular' }); return; }
-    if (!selectedCredit.value?.accountcode) { toast('Validation Error', { description: 'Please select a credit account' }); return; }
-    if (!form.notes) { toast('Validation Error', { description: 'Please write notes' }); return; }
+    if (!form.referance) {
+        toast('Validation Error', { description: 'Please write referance' });
+        return;
+    }
+    if (!selectedBranch.value?.id) {
+        toast('Validation Error', { description: 'Please select a branch' });
+        return;
+    }
+
+    if (details.value.length === 0) {
+        toast('Validation Error', { description: 'Please add at least one particular' });
+        return;
+    }
+    if (!selectedCredit.value?.accountcode) {
+        toast('Validation Error', { description: 'Please select a credit account' });
+        return;
+    }
+
+    if (accountBalance.value !== null && accountBalance.value <= 0) {
+        toast('Validation Error', { description: 'Insufficient balance in selected credit account' });
+        return;
+    }
+    if (!form.notes) {
+        toast('Validation Error', { description: 'Please write notes' });
+        return;
+    }
 
     form.branch_id = selectedBranch.value.id;
-    
+
     form.creditAcc = selectedCredit.value.accountcode;
     form.debitAmt = detailsTotal.value;
     form.creditAmt = -detailsTotal.value;
@@ -138,22 +158,28 @@ const submit = () => {
     form.transform((data) => ({ ...data, details: details.value }))[method](action, {
         onSuccess: () => {
             setTimeout(() => {
-                form.reset(); details.value = []; showDialog.value = false;
+                form.reset();
+                details.value = [];
+                showDialog.value = false;
                 router.visit(route('voucherheader.reverse'), { preserveScroll: true, preserveState: false });
             }, 200);
-            form.reset(); details.value = []; showDialog.value = false;
+            form.reset();
+            details.value = [];
+            showDialog.value = false;
         },
         onError: (errors) => {
             const firstError = Object.values(errors)[0];
             const flash = usePage().props.flash;
-            if (flash?.error) { toast('error', { description: flash.error + firstError }); }
+            if (flash?.error) {
+                toast('error', { description: flash.error + firstError });
+            }
         },
     });
 };
 
-const onEdit = async (id: number) => {
+const onEdit = async (reverse: number) => {
     try {
-        const response = await axios.get(route('voucherheader.reverseEdit', id));
+        const response = await axios.get(route('voucherheader.reverseEdit', reverse));
         const voucher = response.data;
 
         // Reset
@@ -189,7 +215,7 @@ const onEdit = async (id: number) => {
 
         isEditMode.value = true;
         selectedDetailDebit.value = null;
-    showDialog.value = true;
+        showDialog.value = true;
     } catch (error) {
         toast('Error', {
             description: 'Unable to load voucher data',
@@ -285,7 +311,28 @@ const onReport = async (vhd: number) => {
     window.open(url, '_blank');
 };
 
+
 const selectedVoucher = ref(null);
+const accountBalance = ref<number | null>(null);
+
+const fetchBalance = async (accountcode: string) => {
+    try {
+        const response = await axios.get(route('voucherheader.balance', accountcode));
+        accountBalance.value = response.data.balance;
+    } catch (error) {
+        console.error('Error fetching balance:', error);
+        accountBalance.value = null;
+    }
+};
+
+watch(selectedCredit, (newVal) => {
+    if (newVal && newVal.accountcode) {
+        fetchBalance(newVal.accountcode);
+    } else {
+        accountBalance.value = null;
+    }
+});
+
 const queryVoucher = ref('');
 const filteredVoucher = computed(() => {
     if (queryVoucher.value === '') return props.allvoucher;
@@ -763,7 +810,9 @@ const goToPage = (url: string | null) => {
             </div>
         </div>
         <Dialog v-model:open="showDialog">
-            <DialogContent class="w-[95vw] max-w-2xl sm:max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white p-4 shadow-xl sm:p-6 dark:border-gray-800 dark:bg-gray-900">
+            <DialogContent
+                class="max-h-[90vh] w-[95vw] max-w-2xl overflow-y-auto rounded-2xl border border-gray-200 bg-white p-4 shadow-xl sm:max-w-2xl sm:p-6 dark:border-gray-800 dark:bg-gray-900"
+            >
                 <!-- Header -->
                 <DialogHeader class="space-y-1 border-b pb-4">
                     <DialogTitle class="text-xl font-semibold tracking-wide">
@@ -896,34 +945,82 @@ const goToPage = (url: string | null) => {
                 <!-- Particulars Table -->
                 <div v-if="details.length" class="mt-3 max-h-48 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
                     <Table>
-                        <TableHeader><TableRow><TableHead class="w-12">SL</TableHead><TableHead>Debit Account</TableHead><TableHead>Notes</TableHead><TableHead class="text-right">Amount</TableHead><TableHead class="w-24 text-center">Action</TableHead></TableRow></TableHeader>
+                        <TableHeader
+                            ><TableRow
+                                ><TableHead class="w-12">SL</TableHead><TableHead>Debit Account</TableHead><TableHead>Notes</TableHead
+                                ><TableHead class="text-right">Amount</TableHead><TableHead class="w-24 text-center">Action</TableHead></TableRow
+                            ></TableHeader
+                        >
                         <TableBody>
                             <TableRow v-for="(row, idx) in details" :key="idx">
                                 <TableCell class="text-xs">{{ idx + 1 }}</TableCell>
-                                <TableCell class="text-sm">{{ row.debitAccName }}</TableCell><TableCell class="text-sm">{{ row.particular }}</TableCell>
+                                <TableCell class="text-sm">{{ row.debitAccName }}</TableCell
+                                ><TableCell class="text-sm">{{ row.particular }}</TableCell>
                                 <TableCell class="text-right text-sm font-medium">{{ row.amount.toLocaleString() }}</TableCell>
-                                <TableCell class="text-center"><div class="flex justify-center gap-1"><Button variant="ghost" size="sm" class="h-7 w-7 p-0" @click="editDetail(idx)"><Pencil class="h-3.5 w-3.5 text-indigo-500" /></Button><Button variant="ghost" size="sm" class="h-7 w-7 p-0" @click="deleteDetail(idx)"><Trash2 class="h-3.5 w-3.5 text-red-500" /></Button></div></TableCell>
+                                <TableCell class="text-center"
+                                    ><div class="flex justify-center gap-1">
+                                        <Button variant="ghost" size="sm" class="h-7 w-7 p-0" @click="editDetail(idx)"
+                                            ><Pencil class="h-3.5 w-3.5 text-indigo-500" /></Button
+                                        ><Button variant="ghost" size="sm" class="h-7 w-7 p-0" @click="deleteDetail(idx)"
+                                            ><Trash2 class="h-3.5 w-3.5 text-red-500"
+                                        /></Button></div
+                                ></TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
-                    <div class="flex items-center justify-between border-t border-indigo-200 bg-indigo-50 px-4 py-3 dark:border-indigo-800 dark:bg-indigo-900/30">
+                    <div
+                        class="flex items-center justify-between border-t border-indigo-200 bg-indigo-50 px-4 py-3 dark:border-indigo-800 dark:bg-indigo-900/30"
+                    >
                         <span class="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Total Debit Amount</span>
                         <span class="text-base font-bold text-indigo-800 dark:text-indigo-200">৳ {{ detailsTotal.toLocaleString() }}</span>
                     </div>
                 </div>
-                <div v-else class="mt-3 rounded-lg border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-400 dark:border-gray-600">No particulars added yet.</div>
-                <!-- Credit Account -->
+                <div
+                    v-else
+                    class="mt-3 rounded-lg border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-400 dark:border-gray-600"
+                >
+                    No particulars added yet.
+                </div>
                 <div>
-                    <Label for="creditAcc" class="text-sm font-medium">Credit Account<span class="text-red-500">*</span></Label>
+                    <div class="flex items-center justify-between">
+                        <Label for="creditAcc" class="text-sm font-medium">Credit Account<span class="text-red-500">*</span></Label>
+                        <span v-if="accountBalance !== null" class="text-xs font-semibold" :class="accountBalance >= 0 ? 'text-green-600' : 'text-red-600'">
+                            Balance: ৳ {{ accountBalance.toLocaleString() }}
+                        </span>
+                    </div>
                     <Combobox v-model="selectedCredit">
                         <div class="relative">
-                            <ComboboxInput class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" placeholder="Select credit account..." :display-value="(credit) => credit?.description ?? ''" @input="queryCredit = $event.target.value" />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2"><ChevronUpDownIcon class="h-5 w-5 text-gray-400" /></ComboboxButton>
-                            <ComboboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
-                                <div v-if="filteredCredit.length === 0 && queryCredit !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">Nothing found.</div>
-                                <ComboboxOption v-for="n in filteredCredit" :key="n.id" :value="n" class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none" v-slot="{ selected }">
+                            <ComboboxInput
+                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                placeholder="Select credit account..."
+                                :display-value="(credit) => credit?.description ?? ''"
+                                @input="queryCredit = $event.target.value"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2"
+                                ><ChevronUpDownIcon class="h-5 w-5 text-gray-400"
+                            /></ComboboxButton>
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                            >
+                                <div
+                                    v-if="filteredCredit.length === 0 && queryCredit !== ''"
+                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                >
+                                    Nothing found.
+                                </div>
+                                <ComboboxOption
+                                    v-for="n in filteredCredit"
+                                    :key="n.id"
+                                    :value="n"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
                                     <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.description }}</span>
-                                    <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"><CheckIcon class="h-5 w-5" /></span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                        ><CheckIcon class="h-5 w-5"
+                                    /></span>
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>

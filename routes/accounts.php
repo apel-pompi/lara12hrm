@@ -181,35 +181,36 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
                 // Opening Voucher Route
                 Route::get('/opening', 'openingVoucher')->name('voucherheader.opening');
                 Route::post('/opening', 'openingStore')->name('voucherheader.openingStore');
-                Route::get('/{opening}/edit', 'openingEdit')->name('voucherheader.openingEdit');
-                Route::put('/{opening}', 'openingUpdate')->name('voucherheader.openingUpdate');
+                Route::get('/{opening}/openingEdit', 'openingEdit')->name('voucherheader.openingEdit');
+                Route::put('/{opening}/openingUpdate', 'openingUpdate')->name('voucherheader.openingUpdate');
                 Route::put('/{opening}/openingStatus', 'openingConfirm')->name('voucherheader.openingConfirm');
                 // Jurnal Voucher Route
                 Route::get('/jurnal', 'jurnalVoucher')->name('voucherheader.jurnal');
                 Route::post('/jurnal', 'jurnalStore')->name('voucherheader.jurnalStore');
-                Route::get('/{jurnal}/edit', 'jurnalEdit')->name('voucherheader.jurnalEdit');
-                Route::put('/{jurnal}', 'jurnalUpdate')->name('voucherheader.jurnalUpdate');
+                Route::get('/{jurnal}/jurnalEdit', 'jurnalEdit')->name('voucherheader.jurnalEdit');
+                Route::put('/{jurnal}/jurnalUpdate', 'jurnalUpdate')->name('voucherheader.jurnalUpdate');
                 Route::put('/{jurnal}/jurnalStatus', 'jurnalConfirm')->name('voucherheader.jurnalConfirm');
                 // Payment Voucher Route
                 Route::get('/payment', 'paymentVoucher')->name('voucherheader.payment');
                 Route::post('/payment', 'paymentStore')->name('voucherheader.paymentStore');
-                Route::get('/{payment}/edit', 'paymentEdit')->name('voucherheader.paymentEdit');
-                Route::put('/{payment}', 'paymentUpdate')->name('voucherheader.paymentUpdate');
+                Route::get('/{payment}/paymentEdit', 'paymentEdit')->name('voucherheader.paymentEdit');
+                Route::put('/{payment}/paymentUpdate', 'paymentUpdate')->name('voucherheader.paymentUpdate');
                 Route::put('/{payment}/paymentStatus', 'paymentConfirm')->name('voucherheader.paymentConfirm');
                 // Receipt Voucher Route
                 Route::get('/receipt', 'receiptVoucher')->name('voucherheader.receipt');
                 Route::post('/receipt', 'receiptStore')->name('voucherheader.receiptStore');
-                Route::get('/{receipt}/edit', 'receiptEdit')->name('voucherheader.receiptEdit');
-                Route::put('/{receipt}', 'receiptUpdate')->name('voucherheader.receiptUpdate');
+                Route::get('/{receipt}/receiptEdit', 'receiptEdit')->name('voucherheader.receiptEdit');
+                Route::put('/{receipt}/receiptUpdate', 'receiptUpdate')->name('voucherheader.receiptUpdate');
                 Route::put('/{receipt}/receiptStatus', 'receiptConfirm')->name('voucherheader.receiptConfirm');
                 // Reverse Voucher Route
                 Route::get('/reverse', 'reverseVoucher')->name('voucherheader.reverse');
                 Route::post('/reverse', 'reverseStore')->name('voucherheader.reverseStore');
-                Route::get('/{reverse}/edit', 'reverseEdit')->name('voucherheader.reverseEdit');
-                Route::put('/{reverse}', 'reverseUpdate')->name('voucherheader.reverseUpdate');
+                Route::get('/{reverse}/reverseEdit', 'reverseEdit')->name('voucherheader.reverseEdit');
+                Route::put('/{reverse}/reverseUpdate', 'reverseUpdate')->name('voucherheader.reverseUpdate');
                 Route::put('/{reverse}/reverseStatus', 'reverseConfirm')->name('voucherheader.reverseConfirm');
                 //single voucher report
                 Route::get('/single/{voucherID}', 'singleReport')->name('voucherheader.singleReport');
+                Route::get('/balance/{accountcode}', 'getAccountBalance')->name('voucherheader.balance');
             }
         );
 

@@ -138,6 +138,11 @@ const submit = () => {
         toast('Validation Error', { description: 'Please select a credit account' });
         return;
     }
+
+    if (accountBalance.value !== null && accountBalance.value <= 0) {
+        toast('Validation Error', { description: 'Insufficient balance in selected credit account' });
+        return;
+    }
     if (!form.notes) {
         toast('Validation Error', { description: 'Please write notes' });
         return;
@@ -176,9 +181,9 @@ const submit = () => {
     });
 };
 
-const onEdit = async (id: number) => {
+const onEdit = async (payment: number) => {
     try {
-        const response = await axios.get(route('voucherheader.paymentEdit', id));
+        const response = await axios.get(route('voucherheader.paymentEdit', payment));
         const voucher = response.data;
         // Reset
         form.reset();
@@ -308,7 +313,28 @@ const onReport = async (vhd: number) => {
     window.open(url, '_blank');
 };
 
+
 const selectedVoucher = ref(null);
+const accountBalance = ref<number | null>(null);
+
+const fetchBalance = async (accountcode: string) => {
+    try {
+        const response = await axios.get(route('voucherheader.balance', accountcode));
+        accountBalance.value = response.data.balance;
+    } catch (error) {
+        console.error('Error fetching balance:', error);
+        accountBalance.value = null;
+    }
+};
+
+watch(selectedCredit, (newVal) => {
+    if (newVal && newVal.accountcode) {
+        fetchBalance(newVal.accountcode);
+    } else {
+        accountBalance.value = null;
+    }
+});
+
 const queryVoucher = ref('');
 const filteredVoucher = computed(() => {
     if (queryVoucher.value === '') return props.allvoucher;
@@ -963,9 +989,13 @@ const goToPage = (url: string | null) => {
                     No particulars added yet. Use the fields above to add.
                 </div>
 
-                <!-- Credit Account -->
                 <div>
-                    <Label for="creditAcc" class="text-sm font-medium">Credit Account<span class="text-red-500">*</span></Label>
+                    <div class="flex items-center justify-between">
+                        <Label for="creditAcc" class="text-sm font-medium">Credit Account<span class="text-red-500">*</span></Label>
+                        <span v-if="accountBalance !== null" class="text-xs font-semibold" :class="accountBalance >= 0 ? 'text-green-600' : 'text-red-600'">
+                            Balance: ৳ {{ accountBalance.toLocaleString() }}
+                        </span>
+                    </div>
                     <Combobox v-model="selectedCredit">
                         <div class="relative">
                             <ComboboxInput

@@ -17,7 +17,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use PhpParser\Node\Expr\Cast\Void_;
 
 class AccountsReportController extends Controller
 {
@@ -783,19 +782,13 @@ class AccountsReportController extends Controller
 
         return Inertia::render('allpages/reports/accounts/balancesheet', [
             'branch' => Branch::where('active', 1)->get(),
-            'months' => collect($this->createMonth())
-                ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
-                ->values()
-                ->toArray(),
-            'years' => collect($this->createYear())
-                ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
-                ->values()
-                ->toArray(),
+
         ]);
     }
 
     public function BalanceSheetReport(Request $request)
     {
+
 
         $company = CompanyInfo::firstOrFail();
         $branch = Branch::where('id', $request->branch_id)->first();
@@ -804,27 +797,26 @@ class AccountsReportController extends Controller
             $sql = DB::select(
                 "
                 SELECT 
-                    b.accounttype,
+                    b.groupone_name,
                     b.grouptwo_name,
                     SUM(a.baseamt) AS balance
                 FROM voucher_balances a
                 JOIN vw_chartofaccs b ON a.accountcode = b.accountcode
-                WHERE b.accounttype IN ('ASSET','LIABILITIES')
-                AND a.yearname = ?
-                AND a.monthname <= ?
+                WHERE b.groupone_name IN ('ASSET','LIABILITIES')
+                AND a.voucherdate BETWEEN ? AND ?
                 AND a.status = 'Post'
                 " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
-                GROUP BY b.accounttype, b.grouptwo_name,b.groupone_code,b.grouptwo_code
-                ORDER BY b.groupone_code, b.grouptwo_code
+                GROUP BY b.groupone_name, b.grouptwo_name
+                ORDER BY b.groupone_name, b.grouptwo_name
             ",
                 $request->filled('branch_id')
-                    ? [$request->yearname, $request->monthname, $request->branch_id]
-                    : [$request->yearname, $request->monthname]
+                    ? [$request->startdate, $request->enddate, $request->branch_id]
+                    : [$request->startdate, $request->enddate]
             );
         } else {
             $sql = DB::select("
                 SELECT 
-                    b.accounttype,
+                    b.groupone_name,
                     b.grouptwo_name,
                     b.accountcode,
                     b.ledger_name,
@@ -832,29 +824,28 @@ class AccountsReportController extends Controller
                 FROM vw_chartofaccs b
                 LEFT JOIN voucher_balances a 
                     ON a.accountcode = b.accountcode
-                    AND a.yearname = ?
-                    AND a.monthname <= ?
+                    AND a.voucherdate BETWEEN ? AND ?
                     AND a.status = 'Post'
                     " . ($request->filled('branch_id') ? " AND a.branch_id = ? " : "") . "
-                WHERE b.accounttype IN ('ASSET','LIABILITIES')
+                WHERE b.groupone_name IN ('ASSET','LIABILITIES')
                 GROUP BY 
-                    b.accounttype,
+                    b.groupone_name,
                     b.accountcode,
                     b.ledger_name,
-                    b.groupone_code,
                     b.grouptwo_name
                     HAVING balance <> 0
                 ORDER BY 
-                    b.groupone_code,
-                    b.grouptwo_code,
+                    b.groupone_name,
+                    b.grouptwo_name,
                     b.accountcode
             ", array_filter([
-                $request->yearname,
-                $request->monthname,
+                $request->startdate,
+                $request->enddate,
                 $request->branch_id ?? null
             ]));
         }
-        $groupedAssets = collect($sql)->groupBy('accounttype')
+
+        $groupedAssets = collect($sql)->groupBy('groupone_name')
             ->map(function ($items) {
                 return $items->groupBy('grouptwo_name');
             });
@@ -863,8 +854,8 @@ class AccountsReportController extends Controller
         $pdf = PDF::loadView('exports.accounts.balancesheet', [
             'company' => $company,
             'branch' => $branch,
-            'monthname' => $request->monthname,
-            'yearname' => $request->yearname,
+            'startdate' => $request->startdate,
+            'enddate' => $request->enddate,
             'groupedAssets' => $groupedAssets
         ])
             ->setPaper('a4', 'landscape')
@@ -891,14 +882,6 @@ class AccountsReportController extends Controller
 
         return Inertia::render('allpages/reports/accounts/profitloss', [
             'branch' => Branch::where('active', 1)->get(),
-            'months' => collect($this->createMonth())
-                ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
-                ->values()
-                ->toArray(),
-            'years' => collect($this->createYear())
-                ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
-                ->values()
-                ->toArray(),
         ]);
     }
 
@@ -912,27 +895,26 @@ class AccountsReportController extends Controller
             $sql = DB::select(
                 "
                 SELECT 
-                    b.accounttype,
+                    b.groupone_name,
                     b.grouptwo_name,
                     SUM(a.baseamt) AS balance
                 FROM voucher_balances a
                 JOIN vw_chartofaccs b ON a.accountcode = b.accountcode
-                WHERE b.accounttype IN ('REVENUES','EXPENDITURES')
-                AND a.yearname = ?
-                AND a.monthname <= ?
+                WHERE b.groupone_name IN ('REVENUES','EXPENDITURES')
+                AND a.voucherdate BETWEEN ? AND ?
                 AND a.status = 'Post'
                 " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
-                GROUP BY b.accounttype, b.grouptwo_name
-                ORDER BY b.groupone_code, b.grouptwo_code
+                GROUP BY b.groupone_name, b.grouptwo_name
+                ORDER BY b.groupone_name, b.grouptwo_name
             ",
                 $request->filled('branch_id')
-                    ? [$request->yearname, $request->monthname, $request->branch_id]
-                    : [$request->yearname, $request->monthname]
+                    ? [$request->startdate, $request->enddate, $request->branch_id]
+                    : [$request->startdate, $request->enddate]
             );
         } else {
             $sql = DB::select("
                 SELECT 
-                    b.accounttype,
+                    b.groupone_name,
                     b.grouptwo_name,
                     b.accountcode,
                     b.ledger_name,
@@ -940,29 +922,28 @@ class AccountsReportController extends Controller
                 FROM vw_chartofaccs b
                 LEFT JOIN voucher_balances a 
                     ON a.accountcode = b.accountcode
-                    AND a.yearname = ?
-                    AND a.monthname <= ?
+                    AND a.voucherdate BETWEEN ? AND ?
                     AND a.status = 'Post'
                     " . ($request->filled('branch_id') ? " AND a.branch_id = ? " : "") . "
-                WHERE b.accounttype IN ('REVENUES','EXPENDITURES')
+                WHERE b.groupone_name IN ('REVENUES','EXPENDITURES')
                 GROUP BY 
-                    b.accounttype,
+                    b.groupone_name,
                     b.accountcode,
                     b.ledger_name,
                     b.groupone_code,
                     b.grouptwo_name
                     HAVING balance <> 0
                 ORDER BY 
-                    b.groupone_code,
-                    b.grouptwo_code,
+                    b.groupone_name,
+                    b.grouptwo_name,
                     b.accountcode
             ", array_filter([
-                $request->yearname,
-                $request->monthname,
+                $request->startdate,
+                $request->enddate,
                 $request->branch_id ?? null
             ]));
         }
-        $groupedAssets = collect($sql)->groupBy('accounttype')
+        $groupedAssets = collect($sql)->groupBy('groupone_name')
             ->map(function ($items) {
                 return $items->groupBy('grouptwo_name');
             });
@@ -971,8 +952,8 @@ class AccountsReportController extends Controller
         $pdf = PDF::loadView('exports.accounts.profitloss', [
             'company' => $company,
             'branch' => $branch,
-            'monthname' => $request->monthname,
-            'yearname' => $request->yearname,
+            'startdate' => $request->startdate,
+            'enddate' => $request->enddate,
             'groupedAssets' => $groupedAssets
         ])
             ->setPaper('a4', 'landscape')
@@ -983,7 +964,7 @@ class AccountsReportController extends Controller
                 'margin-left'   => 5,
             ]);;
 
-        return $pdf->stream("BalanceSheet-Reports.pdf");
+        return $pdf->stream("ProfitLoss-Reports.pdf");
     }
 
     public function createMonth()

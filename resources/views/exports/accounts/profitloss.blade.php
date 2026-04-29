@@ -135,18 +135,14 @@
 <body>
 
     @php
-        $months = [
-        1=>'January',2=>'February',3=>'March',4=>'April',5=>'May',6=>'June',
-        7=>'July',8=>'August',9=>'September',10=>'October',11=>'November',12=>'December'
-        ];
-        $month = $months[$monthname];
+    $yearmonth = date("M Y", strtotime($enddate));
 
-        function formatAmount($amount) {
-        return $amount < 0
-            ? '(' . number_format(abs($amount), 3) . ')'
-            : number_format($amount, 3);
-            }
-    @endphp
+    function formatAmount($amount) {
+    return $amount < 0
+        ? '(' . number_format(abs($amount), 3) . ')'
+        : number_format($amount, 3);
+        }
+        @endphp
 
         {{-- ================= HEADER ================= --}}
         <!--=================HEADER=================-->
@@ -176,18 +172,18 @@
         <div class="report-title-section">
             <table class="meta-table">
                 <tr>
-                    
+
                     <td width="33%">
                         <div class="meta-label">Branch</div>
                         <div class="meta-value">{{ $branch->branchname ?? 'All Branch' }}</div>
                     </td>
                     <td width="33%">
                         <div class="meta-label" align="center">As At</div>
-                        <div class="meta-value" align="center">{{ $month }} {{ $yearname }}</div>
+                        <div class="meta-value" align="center">{{ $yearmonth }}</div>
                     </td>
                     <td width="34%" class="text-right">
-                        <div class="meta-label">Currency</div>
-                        <div class="meta-value">{{ $currency ?? 'BDT' }}</div>
+                        <div class="meta-label">Period</div>
+                        <div class="meta-value">{{ $startdate }} to {{ $enddate }}</div>
                     </td>
                 </tr>
             </table>
@@ -199,17 +195,17 @@
             <thead>
                 <tr>
                     <th class="col-particular">PARTICULARS</th>
-                    <th class="col-amount">CURRENT MONTH</th>
+                    <th class="col-amount">CURRENT PERIOD</th>
                     <th class="col-amount">YEAR-TO-DATE</th>
                 </tr>
             </thead>
 
             <tbody>
-                @foreach($groupedAssets as $accountType => $groups)
+                @foreach($groupedAssets as $groupone_name => $groups)
 
                 {{-- ACCOUNT TYPE --}}
                 <tr>
-                    <td colspan="3" class="account-type">{{ strtoupper($accountType) }}</td>
+                    <td colspan="3" class="account-type">{{ strtoupper($groupone_name) }}</td>
                 </tr>
 
                 @foreach($groups as $groupName => $ledgers)
@@ -238,7 +234,7 @@
 
                 {{-- TOTAL ACCOUNT TYPE --}}
                 <tr class="grand-total">
-                    <td style="text-align:right;">Total {{ strtoupper($accountType) }}</td>
+                    <td style="text-align:right;">Total {{ strtoupper($groupone_name) }}</td>
                     <td class="amount">
                         {{ formatAmount(collect($groups)->flatten()->sum('balance')) }}
                     </td>

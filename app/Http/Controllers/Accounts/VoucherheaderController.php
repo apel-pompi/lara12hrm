@@ -54,9 +54,9 @@ class VoucherheaderController extends Controller
             'allvoucher' => Voucherheader::whereRaw("LEFT(vouchernumber, 4) = 'JV--'")->get(),
             'accountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'REVENUES', 'LIABILITIES', 'EXPENDITURE'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Non-Cash')->get(),
 
-            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'EXPENDITURE'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Non-Cash')->get(),
+            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'EXPENDITURE'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Non-Cash', 'Cash'])->get(),
 
-            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Non-Cash')->get(),
+            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Non-Cash', 'Cash'])->get(),
         ]);
     }
 
@@ -141,11 +141,13 @@ class VoucherheaderController extends Controller
 
     public function jurnalEdit(Voucherheader $jurnal)
     {
+
         return Voucherheader::with(['voucherdt.ChartOFAccount', 'branch'])->findOrFail($jurnal->id);
     }
 
     public function jurnalUpdate(Request $request, $jurnal)
     {
+
         try {
             $this->authorize('voucher.jurnalUpdate');
         } catch (AuthorizationException $e) {
@@ -181,9 +183,13 @@ class VoucherheaderController extends Controller
             ]);
 
             // Delete all existing debit details
-            Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
+            $rows = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
                 ->where('primeamt', '>', 0)
-                ->delete();
+                ->get();
+
+            foreach ($rows as $row) {
+                $row->forceDelete();
+            }
 
             // Re-create debit details
             $totalDebit = 0;
@@ -349,9 +355,9 @@ class VoucherheaderController extends Controller
             'allvoucher' => Voucherheader::whereRaw("LEFT(vouchernumber, 4) = 'PAY-'")->get(),
             'accountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'EXPENDITURE'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Non-Cash', 'Cash'])->get(),
 
-            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'LIABILITIES', 'EXPENDITURE'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Non-Cash')->get(),
+            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'LIABILITIES', 'EXPENDITURE'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Non-Cash', 'Cash'])->get(),
 
-            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Cash')->get(),
+            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Non-Cash', 'Cash'])->get(),
 
         ]);
     }
@@ -481,9 +487,13 @@ class VoucherheaderController extends Controller
             ]);
 
             // Delete all existing debit details (primeamt > 0)
-            Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
+            $rows = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
                 ->where('primeamt', '>', 0)
-                ->delete();
+                ->get();
+
+            foreach ($rows as $row) {
+                $row->forceDelete();
+            }
 
             // Re-create debit details per particular
             $totalDebit = 0;
@@ -605,9 +615,9 @@ class VoucherheaderController extends Controller
             'branch' => Branch::all(),
             'allvoucher' => Voucherheader::whereRaw("LEFT(vouchernumber, 4) = 'RCV-'")->get(),
 
-            'draccountcode' => ChartOfAccount::where('active', '1')->where('accounttype', 'ASSET')->where('accountusage', 'Ledger')->where('analyticalcode', 'Cash')->get(),
+            'draccountcode' => ChartOfAccount::where('active', '1')->where('accounttype', 'ASSET')->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Non-Cash', 'Cash'])->get(),
 
-            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Non-Cash')->get(),
+            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET', 'REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Non-Cash', 'Cash'])->get(),
 
         ]);
     }
@@ -720,9 +730,13 @@ class VoucherheaderController extends Controller
             ]);
 
             // Delete all existing debit details
-            Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
+            $rows = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
                 ->where('primeamt', '>', 0)
-                ->delete();
+                ->get();
+
+            foreach ($rows as $row) {
+                $row->forceDelete();
+            }
 
             // Re-create debit details
             $totalDebit = 0;
@@ -960,9 +974,13 @@ class VoucherheaderController extends Controller
             ]);
 
             // Delete all existing debit details
-            Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
+            $rows = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
                 ->where('primeamt', '>', 0)
-                ->delete();
+                ->get();
+
+            foreach ($rows as $row) {
+                $row->forceDelete();
+            }
 
             // Re-create debit details
             $totalDebit = 0;
@@ -1085,9 +1103,9 @@ class VoucherheaderController extends Controller
             'allvoucher' => Voucherheader::whereRaw("LEFT(vouchernumber, 4) = 'OB--'")->get(),
             'accountcode' => ChartOfAccount::where('active', '1')->where('accountusage', '<>', 'Ledger')->get(),
 
-            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Cash')->get(),
+            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSET'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Non-Cash', 'Cash'])->get(),
 
-            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['LIABILITIES'])->where('accountusage', 'Ledger')->where('analyticalcode', 'Cash')->get(),
+            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['LIABILITIES'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Non-Cash', 'Cash'])->get(),
 
         ]);
     }
@@ -1170,6 +1188,7 @@ class VoucherheaderController extends Controller
 
     public function openingUpdate(Request $request, $opening)
     {
+
         try {
             $this->authorize('voucher.openingUpdate');
         } catch (AuthorizationException $e) {
@@ -1206,9 +1225,13 @@ class VoucherheaderController extends Controller
             ]);
 
             // Delete all existing debit details (primeamt > 0)
-            Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
+            $rows = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
                 ->where('primeamt', '>', 0)
-                ->delete();
+                ->get();
+
+            foreach ($rows as $row) {
+                $row->forceDelete();
+            }
 
             // Re-create debit details per particular
             $totalDebit = 0;
@@ -1396,5 +1419,12 @@ class VoucherheaderController extends Controller
             'success' => true,
             'message' => 'Voucher successfully reverted to Balanced.'
         ]);
+    }
+    public function getAccountBalance($accountcode)
+    {
+        $balance = VoucherBalance::where('accountcode', $accountcode)
+            ->sum('primeamt');
+
+        return response()->json(['balance' => $balance]);
     }
 }
