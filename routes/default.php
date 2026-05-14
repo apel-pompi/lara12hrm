@@ -3,11 +3,12 @@
 use App\Http\Controllers\Default\{
     ExcelImportController,
     TransactionController,
-    ApprovalRequestController
+    ApprovalRequestController,
+    FacebookController
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
+Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(function () {
     //Upload Lead
     Route::controller(ExcelImportController::class)
         ->prefix('imports')
@@ -50,4 +51,7 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
                 Route::put('/{return}/ReturnCancel', 'ReturnCancel')->name('approval.ReturnCancel');
             }
         );
+
+    Route::post('/facebook/webhook', [FacebookController::class, 'handle']);
+    Route::get('/facebook/webhook', [FacebookController::class, 'verify']);
 });

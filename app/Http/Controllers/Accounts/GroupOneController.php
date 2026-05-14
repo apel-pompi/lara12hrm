@@ -126,7 +126,7 @@ class GroupOneController extends Controller
         }
 
         try {
-            $groupOne->delete();
+            $groupOne->forceDelete();
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Group One.',

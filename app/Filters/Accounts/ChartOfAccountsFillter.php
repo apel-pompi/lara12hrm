@@ -10,6 +10,7 @@ use App\Filters\Components\Accounts\Description;
 use App\Filters\Components\Accounts\AccountType;
 use App\Filters\Components\Accounts\AccountUsage;
 use App\Filters\Components\Accounts\AnalyticalCode;
+use App\Filters\Components\Accounts\GroupFour;
 
 class ChartOfAccountsFillter extends BaseFilter
 {
@@ -19,6 +20,7 @@ class ChartOfAccountsFillter extends BaseFilter
             GroupOne::class,
             GroupTwo::class,
             GroupThree::class,
+            GroupFour::class,
             Description::class,
             AccountType::class,
             AccountUsage::class,

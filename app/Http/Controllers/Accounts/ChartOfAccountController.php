@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Accounts\ChartOfAccount;
 use App\Http\Requests\ChartOfAccount\StoreChartOfAccountRequest;
 use App\Http\Requests\ChartOfAccount\UpdateChartOfAccountRequest;
+use App\Models\Accounts\GroupFour;
 use App\Models\Accounts\GroupOne;
 use App\Models\Accounts\GroupThree;
 use App\Models\Accounts\GroupTwo;
@@ -41,6 +42,7 @@ class ChartOfAccountController extends Controller
             'groupone' => GroupOne::where('active', 1)->get(),
             'grouptwo' => GroupTwo::where('active', 1)->get(),
             'groupthree' => GroupThree::where('active', 1)->get(),
+            'groupfour' => GroupFour::where('active', 1)->get(),
             'others' => ChartOfAccount::get(),
         ]);
     }
@@ -158,7 +160,7 @@ class ChartOfAccountController extends Controller
         }
 
         try {
-            $chartOfAccount->delete();
+            $chartOfAccount->forceDelete();
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Chart Of Accounts.',
@@ -219,20 +221,35 @@ class ChartOfAccountController extends Controller
         ]);
     }
 
-    public function generateCode($groupthree)
+    public function getGroupFour($GroupOne, $GroupTwo, $GroupThree)
     {
-        $threecode = GroupThree::where('id', $groupthree)->first();
-        $last = ChartOfAccount::where('groupthree', $groupthree)
+
+        $GroupFour = GroupFour::where('groupone', $GroupOne)->where('grouptwo', $GroupTwo)->where('groupthree', $GroupThree)->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $GroupFour,
+        ]);
+    }
+
+    public function generateCode($groupfour)
+    {
+        $fourcode = GroupFour::find($groupfour);
+        if (!$fourcode) {
+            return response()->json(['accountcode' => '']);
+        }
+
+        $last = ChartOfAccount::where('groupfour', $groupfour)
             ->select(DB::raw("MAX(RIGHT(accountcode, 3)) as last_code"))
             ->first();
 
-        $next = $last->last_code ? intval($last->last_code) + 1 : 1;
+        $next = $last && $last->last_code ? intval($last->last_code) + 1 : 1;
 
         // always 3 digits format
         $nextFormatted = str_pad($next, 3, '0', STR_PAD_LEFT);
 
         return response()->json([
-            'accountcode' => $threecode->code . '-' . $nextFormatted
+            'accountcode' => $fourcode->code . '-' . $nextFormatted
         ]);
     }
 }

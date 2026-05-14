@@ -1,0 +1,404 @@
+﻿<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lara12 HRM Documentation</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.7}
+.container{max-width:1100px;margin:0 auto;padding:20px}
+h1{font-size:2.5em;background:linear-gradient(135deg,#6366f1,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;padding:40px 0 10px}
+h2{color:#a78bfa;border-bottom:2px solid #334155;padding:15px 0 8px;margin:30px 0 15px;font-size:1.6em}
+h3{color:#818cf8;margin:20px 0 10px;font-size:1.2em}
+.hero{background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:16px;padding:40px;text-align:center;margin:20px 0}
+.hero p{color:#c4b5fd;font-size:1.1em;margin:10px 0}
+.badge{display:inline-block;background:#6366f1;color:#fff;padding:4px 12px;border-radius:20px;font-size:.8em;margin:3px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;margin:15px 0}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px}
+.bug{background:#1e293b;border-left:4px solid #ef4444;padding:15px;margin:10px 0;border-radius:0 8px 8px 0}
+.bug-warn{border-left-color:#f59e0b}
+.bug-info{border-left-color:#3b82f6}
+.bug h4{color:#f87171;margin-bottom:5px}.bug-warn h4{color:#fbbf24}.bug-info h4{color:#60a5fa}
+.bug code{background:#0f172a;color:#a78bfa;padding:2px 6px;border-radius:4px;font-size:.9em}
+table{width:100%;border-collapse:collapse;margin:15px 0}
+th{background:#334155;color:#a78bfa;padding:10px;text-align:left}
+td{padding:10px;border-bottom:1px solid #1e293b}
+tr:hover{background:#1e293b}
+.img-wrap{text-align:center;margin:20px 0}
+.img-wrap img{max-width:100%;border-radius:12px;border:2px solid #334155;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.mermaid-wrap{background:#1e293b;border-radius:12px;padding:20px;margin:15px 0;overflow-x:auto}
+.tech{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:15px 0}
+.tech span{background:#334155;padding:8px 16px;border-radius:8px;font-weight:600}
+pre{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:15px;overflow-x:auto;font-size:.85em;color:#a78bfa}
+.footer{text-align:center;padding:30px;color:#64748b;border-top:1px solid #334155;margin-top:40px}
+.toc{background:#1e293b;border-radius:12px;padding:20px;margin:20px 0}
+.toc a{color:#818cf8;text-decoration:none;display:block;padding:4px 0}.toc a:hover{color:#a78bfa}
+.status-ok{color:#34d399}.status-bad{color:#f87171}.status-warn{color:#fbbf24}
+</style></head><body><div class="container">
+<h1>🏢 Lara12 HRM - Complete Documentation</h1>
+<div class="hero">
+<p><strong>Student Management System For Foreign Study</strong></p>
+<p>Built with Laravel 12 + Vue.js 3 + Inertia.js + TailwindCSS 4</p>
+<div class="tech"><span>🐘 PHP 8.2+</span><span>⚡ Laravel 12</span><span>💚 Vue.js 3</span><span>🔗 Inertia.js</span><span>🎨 TailwindCSS 4</span><span>🗄️ MySQL</span><span>🔐 Spatie Permissions</span><span>📊 ApexCharts</span></div>
+</div>
+
+<div class="toc"><h3>📋 Table of Contents</h3>
+<a href="#overview">1. Project Overview</a><a href="#modules">2. System Modules</a><a href="#er">3. ER Diagram</a>
+<a href="#bugs">4. Bug Report & Suggestions</a><a href="#screenshots">5. Screenshots</a><a href="#api">6. API & Routes</a>
+<a href="#install">7. Installation Guide</a><a href="#tech">8. Tech Stack Details</a></div>
+
+<h2 id="overview">1. 📖 Project Overview</h2>
+<div class="card">
+<p><strong>Lara12 HRM</strong> is a comprehensive Student Management & HRM system designed for foreign study consultancy agencies. It manages the entire student lifecycle from Lead → Prospect → OnBoard → Archive, along with complete HRM (attendance, leave, salary) and double-entry accounting modules.</p>
+<h3>Key Features</h3>
+<div class="card-grid">
+<div class="card"><h4>👨‍🎓 Student CRM</h4><p>Lead tracking, pipeline management, quotations, invoices, money receipts, document management</p></div>
+<div class="card"><h4>👥 HRM Module</h4><p>Employee management, ZKTeco attendance sync, leave management, salary setup, holiday calendar</p></div>
+<div class="card"><h4>💰 Accounting</h4><p>Double-entry system, Chart of Accounts (4-level grouping), Journal/Payment/Receipt/Reverse vouchers, Trial Balance, Balance Sheet, P&L</p></div>
+<div class="card"><h4>🏢 Partner Management</h4><p>University/Institution partners, branch management, product/course catalog with fee structures</p></div>
+<div class="card"><h4>🔐 Access Control</h4><p>Spatie role-based permissions, user banning, session tracking</p></div>
+<div class="card"><h4>📊 Reports</h4><p>Attendance reports, revenue reports, student ledger, cash book, cash flow, supplier ledger</p></div>
+</div></div>
+
+<h2 id="modules">2. 🧩 System Modules</h2>
+<table><thead><tr><th>Module</th><th>Models</th><th>Controllers</th><th>Key Features</th></tr></thead><tbody>
+<tr><td>🏢 HRM</td><td>16</td><td>18</td><td>Employee, Branch, Department, Designation, Attendance, Leave, Salary, Holiday, ZKTeco</td></tr>
+<tr><td>👨‍🎓 Student</td><td>14</td><td>16</td><td>Student CRUD, Pipeline stages, Applications, Quotations, Invoices, Money Receipts, Check-in logs</td></tr>
+<tr><td>💰 Accounts</td><td>15</td><td>13</td><td>Chart of Accounts, Vouchers (5 types), Balance Sheet, P&L, Trial Balance, Stored Procedures</td></tr>
+<tr><td>🤝 Partner</td><td>3</td><td>3</td><td>Partners, Partner Branches, Partner Types</td></tr>
+<tr><td>📦 Product</td><td>7</td><td>5</td><td>Products/Courses, Fee structures, Requirements, English/Other tests</td></tr>
+<tr><td>⚙️ Settings</td><td>9</td><td>5</td><td>Workflows, Document types, Master categories, Countries/States/Cities</td></tr>
+<tr><td>👤 Users</td><td>2</td><td>3</td><td>User management, Role/Permission, Active sessions, Ban system</td></tr>
+</tbody></table>
+
+<h2 id="er">3. 📐 ER Diagram (Entity Relationship)</h2>
+<div class="mermaid-wrap"><h3>Database Schema - 83 Migration Files</h3>
+<pre>
+┌─────────────────────────────────────────────────────────────────────┐
+│                        ER DIAGRAM - Lara12 HRM                      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌──────────┐    ┌──────────────┐    ┌────────────┐                │
+│  │  users    │───▶│ personal_    │───▶│ attendances│                │
+│  │          │    │ infos        │    │            │                │
+│  │ id       │    │ empid        │    │ user_id    │                │
+│  │ name     │    │ empname      │    │ record_time│                │
+│  │ email    │    │ branch_id ──┐│    │ device_ip  │                │
+│  │ password │    │ dept_id   ──┼┼─┐  │ state      │                │
+│  │ username │    │ des_id    ──┼┼─┼┐ └────────────┘                │
+│  └────┬─────┘    └──────────────┘ ││                               │
+│       │                           ││  ┌──────────────┐             │
+│       │    ┌───────────┐          │└─▶│ departments  │             │
+│       │    │ branches   │◀────────┘   └──────────────┘             │
+│       │    │ id, name   │             ┌──────────────┐             │
+│       │    │ shortname  │          └──▶│ designations │             │
+│       │    └───────────┘              └──────────────┘             │
+│       │                                                            │
+│       │    ┌───────────┐    ┌──────────────┐                       │
+│       │    │  leaves    │───▶│ leaveplans   │                       │
+│       │    │ empid      │    │ name,leavedays│                      │
+│       │    │ fromdate   │    └──────────────┘                       │
+│       │    │ todate     │                                          │
+│       │    │ status     │    ┌──────────────────┐                  │
+│       │    └───────────┘    │ attendance_       │                  │
+│       │                     │ statuses          │                  │
+│       │                     │ empid,attenmonth  │                  │
+│       │                     │ days(1-31)        │                  │
+│       │                     └──────────────────┘                  │
+│       │                                                            │
+│  ┌────▼─────────────┐                                              │
+│  │    students       │    ┌──────────────────┐                     │
+│  │ id, student_id    │───▶│ student_in_      │                     │
+│  │ fname, lname      │    │ services         │                     │
+│  │ phone, email      │    │ workflow_id      │                     │
+│  │ assain_user ──────┤    │ partner_branch_id│                     │
+│  │ source_id ────────┤    │ product_id ──────┼──┐                  │
+│  │ stage_id ─────────┤    └──────────────────┘  │                  │
+│  │ descountry_id ────┤                          │                  │
+│  │ status(0-4)       │    ┌──────────────────┐  │                  │
+│  └────┬──────────────┘    │ student_         │  │                  │
+│       │                   │ applications     │  │                  │
+│       ├──────────────────▶│ student_id       │  │                  │
+│       │                   │ partner_branch_id│  │                  │
+│       │                   │ product_id ──────┼──┤                  │
+│       │                   │ status           │  │                  │
+│       │                   └──────────────────┘  │                  │
+│       │                                         │                  │
+│       │    ┌──────────────────┐   ┌─────────────▼──┐               │
+│       ├───▶│ student_invoice_ │   │  products      │               │
+│       │    │ hd               │   │ partner_id ────┼──┐            │
+│       │    │ insnumber        │   │ product_type_id│  │            │
+│       │    │ student_id       │   └────────────────┘  │            │
+│       │    │ accountcode      │                       │            │
+│       │    │ netamount        │   ┌───────────────┐   │            │
+│       │    │ status           │   │  partners     │◀──┘            │
+│       │    └───────┬─────────┘   │ name          │               │
+│       │            │             │ workflow_id   │               │
+│       │    ┌───────▼─────────┐   │ partner_type  │               │
+│       │    │ student_invoice_│   │ state_id      │               │
+│       │    │ dt              │   │ city_id       │               │
+│       │    │ invoice_hd_id   │   └───────┬───────┘               │
+│       │    │ feesname        │           │                        │
+│       │    │ amount          │   ┌───────▼───────┐               │
+│       │    └─────────────────┘   │partner_branches│              │
+│       │                          └───────────────┘               │
+│       │    ┌──────────────────┐                                   │
+│       └───▶│ student_money_   │                                   │
+│            │ receipt_dts      │                                   │
+│            │ mrnumber_id      │                                   │
+│            │ amount           │                                   │
+│            └──────────────────┘                                   │
+│                                                                    │
+│  ┌─────────────────── ACCOUNTING MODULE ──────────────────────┐   │
+│  │                                                             │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │   │
+│  │  │group_ones│─▶│group_twos│─▶│group_     │─▶│group_    │  │   │
+│  │  │ code     │  │ groupone │  │threes     │  │fours     │  │   │
+│  │  │ name     │  │ code     │  │ grouptwo  │  │groupthree│  │   │
+│  │  └──────────┘  └──────────┘  │ code      │  │ code     │  │   │
+│  │                              └──────────┘  └─────┬────┘  │   │
+│  │                                                   │       │   │
+│  │                              ┌────────────────────▼────┐  │   │
+│  │                              │  chart_of_accounts      │  │   │
+│  │                              │  accountcode (unique)    │  │   │
+│  │                              │  groupone,two,three,four │  │   │
+│  │                              │  accounttype             │  │   │
+│  │                              │  accountusage            │  │   │
+│  │                              └────────────┬────────────┘  │   │
+│  │                                           │               │   │
+│  │  ┌────────────────┐    ┌──────────────────▼────────────┐  │   │
+│  │  │voucherheaders  │───▶│  voucherdetails               │  │   │
+│  │  │ vouchernumber  │    │  vouchernumber                │  │   │
+│  │  │ voucherdate    │    │  accountcode ─────────────────┤  │   │
+│  │  │ branch_id      │    │  primeamt (+debit/-credit)    │  │   │
+│  │  │ status         │    │  baseamt                      │  │   │
+│  │  └────────────────┘    └──────────────────┬────────────┘  │   │
+│  │                                           │               │   │
+│  │                        ┌──────────────────▼────────────┐  │   │
+│  │                        │  voucher_balances (posted)     │  │   │
+│  │                        │  vouchernumber, accountcode    │  │   │
+│  │                        │  primeamt, voucherdate         │  │   │
+│  │                        │  (populated via sp_am_voucher  │  │   │
+│  │                        │   post stored procedure)       │  │   │
+│  │                        └───────────────────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+</pre></div>
+
+<h2 id="bugs">4. 🐛 Bug Report & Suggestions</h2>
+<h3>🔴 Critical Bugs</h3>
+
+<div class="bug">
+<h4>BUG-01: Duplicate Route - confirmTransfer & confirmonBoard</h4>
+<p><strong>File:</strong> <code>routes/student.php</code> Line 89-90</p>
+<p>Both <code>confirmTransfer</code> and <code>confirmonBoard</code> share the same route <code>PUT /status/transfer</code>. The second route overwrites the first, so <code>confirmTransfer</code> will NEVER be called.</p>
+<pre>Route::put('/status/transfer', 'confirmTransfer');  // ❌ OVERWRITTEN
+Route::put('/status/transfer', 'confirmonBoard');    // ✅ This one wins</pre>
+<p><strong>Fix:</strong> Change onBoard route to <code>Route::put('/status/onboard', 'confirmonBoard')</code></p>
+</div>
+
+<div class="bug">
+<h4>BUG-02: Race Condition in Voucher Number Generation</h4>
+<p><strong>File:</strong> <code>VoucherheaderController.php</code> - All GetXxxNO() methods</p>
+<p>Voucher number generation (GetJurnalNO, GetpaymentNO, etc.) reads <code>lastnumber</code> and increments it outside the DB transaction. Under concurrent requests, two users can get the SAME voucher number, causing data corruption.</p>
+<pre>// Current: Read OUTSIDE transaction, update AFTER transaction
+ = ->GetJurnalNO();  // ❌ Race condition here
+DB::transaction(function() { ... });
+Transaction::update(['lastnumber' => ...]); // ❌ Too late</pre>
+<p><strong>Fix:</strong> Move number generation inside DB::transaction with <code>SELECT ... FOR UPDATE</code> lock.</p>
+</div>
+
+<div class="bug">
+<h4>BUG-03: Wrong Relationship in Student Model - service()</h4>
+<p><strong>File:</strong> <code>app/Models/Student/Student.php</code> Line 108</p>
+<p>The <code>service()</code> relationship uses inverted foreign/local keys:</p>
+<pre>return ->belongsTo(StudentInService::class, 'id', 'student_id');
+// ❌ This says Student.id = StudentInService.student_id but uses belongsTo
+// Should be hasMany or hasOne</pre>
+<p><strong>Fix:</strong> Change to <code>return ->hasMany(StudentInService::class, 'student_id', 'id');</code></p>
+</div>
+
+<div class="bug">
+<h4>BUG-04: SearchPending checks status=0, but Pending is NULL</h4>
+<p><strong>File:</strong> <code>StudentController.php</code> Line 297</p>
+<p>The index method uses <code>SUM(status IS NULL) as countPending</code> but SearchPending filters with <code>where('status', 0)</code>. These will return different results.</p>
+<p><strong>Fix:</strong> Use <code>whereNull('status')</code> instead of <code>where('status', 0)</code></p>
+</div>
+
+<div class="bug">
+<h4>BUG-05: .env File Contains Production Credentials in Git</h4>
+<p><strong>File:</strong> <code>.env</code></p>
+<p>The .env file contains real database password (<code>Root@@Root</code>), mail credentials (<code>MAIL_PASSWORD</code>), and is NOT in .gitignore properly. This is a <strong>SECURITY VULNERABILITY</strong>.</p>
+<p><strong>Fix:</strong> Ensure .env is in .gitignore. Rotate all exposed credentials immediately.</p>
+</div>
+
+<h3>🟡 Medium Severity Issues</h3>
+
+<div class="bug bug-warn">
+<h4>BUG-06: forceDelete() Bypasses SoftDeletes Audit Trail</h4>
+<p><strong>Files:</strong> <code>VoucherheaderController.php</code>, <code>GroupOneController.php</code>, etc. (18+ occurrences)</p>
+<p>Extensive use of <code>forceDelete()</code> on accounting records destroys audit trail permanently. Financial records should NEVER be permanently deleted.</p>
+<p><strong>Fix:</strong> Use soft delete or archive pattern instead. Add authorization check before any force delete.</p>
+</div>
+
+<div class="bug bug-warn">
+<h4>BUG-07: Missing Authorization on Search Endpoints</h4>
+<p><strong>File:</strong> <code>StudentController.php</code> - Search, SearchLead, SearchPending, etc.</p>
+<p>All search methods lack <code>->authorize()</code> checks. Any authenticated user can search ALL students regardless of role.</p>
+<p><strong>Fix:</strong> Add authorization checks and filter by <code>assain_user</code> for non-admin roles.</p>
+</div>
+
+<div class="bug bug-warn">
+<h4>BUG-08: Typo in Success Messages</h4>
+<p><strong>File:</strong> <code>StudentController.php</code> Lines 742, 793</p>
+<p>"Stusent created successfully" and "Stusent update successfully" - should be "Student".</p>
+</div>
+
+<div class="bug bug-warn">
+<h4>BUG-09: Student Create Loads ALL Students Unnecessarily</h4>
+<p><strong>File:</strong> <code>StudentController.php</code> Line 640</p>
+<pre>'student' => Student::orderBy('id', 'desc')->get(),  // ❌ Loads ALL records</pre>
+<p><strong>Fix:</strong> Remove this query or limit it. Create form doesn't need all student records.</p>
+</div>
+
+<div class="bug bug-warn">
+<h4>BUG-10: Duplicate Route for StudentInService edit</h4>
+<p><strong>File:</strong> <code>routes/student.php</code> Lines 134, 137</p>
+<pre>Route::get('/{studentInService}/edit', 'edit');            // Line 134
+Route::get('{studentInService}/edit', 'editApplication');  // Line 137 - CONFLICTS!</pre>
+</div>
+
+<h3>🔵 Suggestions for Improvement</h3>
+
+<div class="bug bug-info">
+<h4>SUG-01: Add Database Indexes</h4>
+<p>Add indexes on frequently queried columns: <code>students.phone</code>, <code>students.assain_user</code>, <code>students.status</code>, <code>voucherdetails.vouchernumber</code>, <code>voucher_balances.accountcode</code></p>
+</div>
+
+<div class="bug bug-info">
+<h4>SUG-02: Implement API Rate Limiting</h4>
+<p>Search endpoints return up to 500 records without rate limiting. Add throttle middleware.</p>
+</div>
+
+<div class="bug bug-info">
+<h4>SUG-03: Add Request Validation for All Update Methods</h4>
+<p>Several update methods use <code>->fieldname</code> directly without Form Request validation classes.</p>
+</div>
+
+<div class="bug bug-info">
+<h4>SUG-04: Consolidate Duplicate Search Methods</h4>
+<p>Search, SearchLead, SearchPending, SearchProspect, SearchOnBoard, SearchArchive are 90% identical. Extract to a single parameterized method.</p>
+</div>
+
+<div class="bug bug-info">
+<h4>SUG-05: Add Unit & Feature Tests</h4>
+<p>The <code>tests/</code> directory appears empty. Critical financial calculations need test coverage.</p>
+</div>
+
+<h2 id="screenshots">5. 📸 Screenshots</h2>
+<div class="img-wrap"><h3>Dashboard</h3><img src="images/dashboard.png" alt="Dashboard Preview"></div>
+<div class="img-wrap"><h3>Student Management</h3><img src="images/student.png" alt="Student Management"></div>
+<div class="img-wrap"><h3>Accounting Module</h3><img src="images/accounts.png" alt="Accounts Module"></div>
+
+<h2 id="api">6. 🛣️ Route Summary</h2>
+<table><thead><tr><th>Module</th><th>Prefix</th><th>Routes</th><th>Auth</th></tr></thead><tbody>
+<tr><td>Dashboard</td><td>/dashboard</td><td>8</td><td>✅ verified+auth+isBanned</td></tr>
+<tr><td>Student</td><td>/student</td><td>14</td><td>✅ verified+auth+isBanned</td></tr>
+<tr><td>Student Activities</td><td>/student/activities/{id}</td><td>6</td><td>✅</td></tr>
+<tr><td>Student Application</td><td>/student/activities/{id}/application</td><td>17</td><td>✅</td></tr>
+<tr><td>Student Quotations</td><td>/student/activities/{id}/quotations</td><td>6</td><td>✅</td></tr>
+<tr><td>Student Accounts</td><td>/student/activities/{id}/accounts</td><td>12</td><td>✅</td></tr>
+<tr><td>Lead Reports</td><td>/leadreports</td><td>11</td><td>✅</td></tr>
+<tr><td>Branch</td><td>/branch</td><td>6</td><td>✅</td></tr>
+<tr><td>Employee</td><td>/personalinfo</td><td>7</td><td>✅</td></tr>
+<tr><td>Attendance</td><td>/attendance, /attendanceStatus</td><td>12</td><td>✅</td></tr>
+<tr><td>Leave</td><td>/leave</td><td>8</td><td>✅</td></tr>
+<tr><td>ZKTeco</td><td>/zkteco</td><td>6</td><td>✅</td></tr>
+<tr><td>Chart of Accounts</td><td>/chartOfAccount</td><td>10</td><td>✅</td></tr>
+<tr><td>Vouchers</td><td>/voucherheader</td><td>27</td><td>✅</td></tr>
+<tr><td>Accounts Reports</td><td>/accountsreport</td><td>18</td><td>✅</td></tr>
+<tr><td>Invoice/MR</td><td>/invoicelist</td><td>8</td><td>✅</td></tr>
+<tr><td>Suppliers</td><td>/suppliers, /suppliersInvoice, /suppliersPayble</td><td>18</td><td>✅</td></tr>
+<tr><td>Partners</td><td>/partner</td><td>10</td><td>✅</td></tr>
+<tr><td>Products</td><td>/product</td><td>8</td><td>✅</td></tr>
+<tr><td>HR Reports</td><td>/hrreports</td><td>8</td><td>✅</td></tr>
+</tbody></table>
+
+<h2 id="install">7. 🚀 Installation Guide</h2>
+<div class="card"><pre>
+# 1. Clone Repository
+git clone &lt;repo-url&gt; lara12hrm
+cd lara12hrm
+
+# 2. Install Dependencies
+composer install
+npm install
+
+# 3. Environment Setup
+cp .env.example .env
+php artisan key:generate
+# Edit .env with your database credentials
+
+# 4. Database Setup
+php artisan migrate --seed
+
+# 5. Storage Link
+php artisan storage:link
+
+# 6. Run Development Server
+composer run dev
+# This starts: PHP server + Queue worker + Vite dev server
+</pre></div>
+
+<h3>System Requirements</h3>
+<table><thead><tr><th>Requirement</th><th>Version</th></tr></thead><tbody>
+<tr><td>PHP</td><td>8.2+</td></tr>
+<tr><td>MySQL</td><td>8.0+</td></tr>
+<tr><td>Node.js</td><td>18+</td></tr>
+<tr><td>Composer</td><td>2.x</td></tr>
+<tr><td>NPM</td><td>9+</td></tr>
+</tbody></table>
+
+<h2 id="tech">8. 🔧 Tech Stack Details</h2>
+<div class="card-grid">
+<div class="card"><h4>Backend</h4><p>Laravel 12, PHP 8.2, Sanctum Auth, Spatie Permissions, DomPDF, Maatwebsite Excel, ZKTeco PHP SDK</p></div>
+<div class="card"><h4>Frontend</h4><p>Vue.js 3, Inertia.js 2, TailwindCSS 4, Shadcn-Vue, HeadlessUI, Lucide Icons, ApexCharts, Chart.js, VueDatepicker</p></div>
+<div class="card"><h4>Database</h4><p>MySQL with Stored Procedures, Triggers (insert/update/delete on voucherdetails), Views (vw_pay_invcs, vw_un_paid_invs, vw_apayables, vw_chartofaccs)</p></div>
+<div class="card"><h4>DevOps</h4><p>Vite 7, TypeScript, ESLint, Prettier, Concurrently for dev server, SSR support</p></div>
+</div>
+
+<h2>9. 📁 Project Structure</h2>
+<div class="card"><pre>
+lara12hrm/
+├── app/
+│   ├── Console/           # Artisan commands
+│   ├── Filters/           # Query filters
+│   ├── Http/
+│   │   ├── Controllers/   # 10 module directories, 70+ controllers
+│   │   ├── Middleware/     # ForbidBannedUser, HandleInertia, UserActivity
+│   │   └── Requests/      # Form Request validation (30+ classes)
+│   ├── Imports/           # Excel imports
+│   ├── Mail/              # Email templates
+│   ├── Models/            # 7 module directories, 60+ models
+│   ├── Providers/         # Service providers
+│   └── Services/          # Business logic services
+├── database/
+│   ├── migrations/        # 83 migration files
+│   └── seeders/           # 13 seeders + JSON data
+├── resources/
+│   └── js/
+│       ├── components/    # Reusable Vue components (Shadcn-Vue)
+│       ├── composables/   # Vue composables
+│       ├── layouts/       # App layouts
+│       ├── pages/         # Vue pages (Dashboard, Auth, All modules)
+│       └── types/         # TypeScript type definitions
+├── routes/                # 14 route files
+│   ├── web.php           # Main routes + middleware groups
+│   ├── student.php       # Student module (260+ lines)
+│   ├── accounts.php      # Accounts module (267 lines)
+│   ├── hrm.php           # HRM module (267 lines)
+│   └── ...               # partner, product, settings, etc.
+└── documentation/         # This documentation
+</pre></div>
+
+<div class="footer">
+<p>📄 <strong>Lara12 HRM Documentation</strong> | Generated: May 14, 2026</p>
+<p>Version 1.0 | Laravel 12 + Vue.js 3 + Inertia.js</p>
+<p>© Glendon Education - All Rights Reserved</p>
+</div>
+</div></body></html>

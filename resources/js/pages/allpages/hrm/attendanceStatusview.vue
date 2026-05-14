@@ -8,7 +8,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
 import { SquarePen } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pay Slip Generate', href: '/attendanceStatus' }];
@@ -26,8 +26,13 @@ const props = defineProps<{
         nethour: string;
         payablehour: string;
         totalhour: string;
-    };
+    }[];
+    monthname: number;
+    yearname: number;
 }>();
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const monthLabel = computed(() => MONTHS[(props.monthname ?? 1) - 1] ?? '');
 
 interface FormErrors {
     hrsurplus?: string;
@@ -89,8 +94,20 @@ const onConfirm = () => {
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                 <!-- Header -->
                 <div class="border-b bg-gray-50 px-5 py-4">
-                    <h2 class="text-lg font-semibold text-gray-800">Employee Attendance Summary</h2>
-                    <p class="text-sm text-gray-500">Monthly working, attendance & payable hours report</p>
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-800">Employee Attendance Summary</h2>
+                            <p class="text-sm text-gray-500">Monthly working, attendance &amp; payable hours report</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">
+                                {{ monthLabel }}
+                            </span>
+                            <span class="inline-flex items-center rounded-full bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-700">
+                                {{ props.yearname }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Responsive Table -->

@@ -90,7 +90,7 @@ class StudentImport implements ToModel, WithHeadingRow
 
         return !$hasData;
     }
-    
+
     private function validateRequiredFields($firstName, $lastName, $gender, $phone, $destinationCountry, $source, $counsilorName)
     {
         $errors = [];
@@ -119,11 +119,15 @@ class StudentImport implements ToModel, WithHeadingRow
 
         // Remove any non-numeric characters except +
         $phone = preg_replace('/[^\d+]/', '', (string)$phone);
+        //Phone no must be exactly 11 digits starting with 0
+        $cleanNumber = str_replace('+', '', $phone);
+        if (strlen($cleanNumber) !== 11) {
+            throw new \Exception("Phone number must be exactly 11 digits: {$phone}");
+        }
 
         if (empty($phone)) {
             throw new \Exception("Phone number is invalid");
         }
-
         return $phone;
     }
 

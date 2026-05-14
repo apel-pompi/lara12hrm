@@ -101,7 +101,7 @@ class WorkHourSetupController extends Controller
     {
         try {
             $this->authorize('worksetup.edit');
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $workHourSetup,
@@ -166,7 +166,7 @@ class WorkHourSetupController extends Controller
     public function updateStatus(Request $request, $workHourSetup)
     {
         try {
-            $this->authorize('worksetup.updateStatus');
+            $this->authorize('worksetup.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

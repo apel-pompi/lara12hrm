@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
@@ -101,10 +102,10 @@ class Student extends Model
     /**
      * Get the service that owns the StudentInvoiceHD
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function service(): BelongsTo
+    public function service(): HasMany
     {
-        return $this->belongsTo(StudentInService::class,'id','student_id');
+        return $this->hasMany(StudentInService::class, 'student_id', 'id');
     }
 }

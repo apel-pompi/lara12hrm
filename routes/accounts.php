@@ -5,6 +5,7 @@ use App\Http\Controllers\Accounts\{
     GroupOneController,
     GroupTwoController,
     GroupThreeController,
+    GroupFourController,
     ChartOfAccountController,
     CodesParamController,
     MoneyReceiptController,
@@ -28,6 +29,8 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
                 Route::get('/{GroupOne}/Grouptwo', 'Grouptwo')->name('accsetting.GroupTwo');
                 // Group Three index Route
                 Route::get('/{GroupOne}/{GroupTwo}/Groupthree', 'Groupthree')->name('accsetting.GroupThree');
+                // Group Four index Route
+                Route::get('/{GroupOne}/{GroupTwo}/{GroupThree}/Groupfour', 'Groupfour')->name('accsetting.GroupFour');
             }
         );
 
@@ -78,6 +81,21 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
                 Route::delete('/show/{groupThree}', 'destroy')->name('GroupThree.destroy');
             }
         );
+    //Group Four Route
+    Route::controller(GroupFourController::class)
+        ->prefix('Groupfour')
+        ->group(
+            function () {
+                Route::post('/store', 'store')->name('GroupFour.store');
+
+                Route::get('/{groupFour}/edit', 'edit')->name('GroupFour.edit');
+                Route::put('/{groupFour}', 'update')->name('GroupFour.update');
+                Route::put('/{groupFour}/status', 'updateStatus')->name('GroupFour.updateStatus');
+
+                Route::get('/{groupFour}', 'show')->name('GroupFour.show');
+                Route::delete('/show/{groupFour}', 'destroy')->name('GroupFour.destroy');
+            }
+        );
     //chart Of Account Route
     Route::controller(ChartOfAccountController::class)
         ->prefix('chartOfAccount')
@@ -87,7 +105,8 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
                 Route::get('/', 'index')->name('chartOfAccount.index');
                 Route::get('/getGroupTwo/{GroupOne}', 'getGroupTwo')->name('chartOfAccount.getGroupTwo');
                 Route::get('/getGroupThree/{GroupOne}/{GroupTwo}', 'getGroupThree')->name('chartOfAccount.getGroupThree');
-                Route::get('/generateAccountCode/{groupthree}', 'generateCode')->name('chartOfAccount.generateCode');
+                Route::get('/getGroupFour/{GroupOne}/{GroupTwo}/{GroupThree}', 'getGroupFour')->name('chartOfAccount.getGroupFour');
+                Route::get('/generateAccountCode/{groupfour}', 'generateCode')->name('chartOfAccount.generateCode');
 
                 Route::post('/store', 'store')->name('chartOfAccount.store');
 

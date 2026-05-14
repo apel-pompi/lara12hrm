@@ -15,7 +15,7 @@ Route::get('/', function () {
 })->name('home');
 
 
-Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
+Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(function () {
     // Dashboard Route
     Route::controller(DashboardController::class)
         ->prefix('/dashboard')
@@ -31,12 +31,11 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
             }
         );
 
-    Route::get('/dashboard', [DashboardController::class,'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 
     Route::get('/users/list', [CountryController::class, 'userlist'])->name('users.list');
     Route::get('/countries/{country}/states', [CountryController::class, 'states']);
     Route::get('/states/{state}/cities', [StateController::class, 'cities']);
-
 });
 
 

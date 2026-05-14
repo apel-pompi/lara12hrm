@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('chart_of_accounts', function (Blueprint $table) {
+        Schema::create('group_fours', function (Blueprint $table) {
             $table->id();
             $table->foreignId('groupone')->constrained('group_ones')
                 ->cascadeOnUpdate()->cascadeOnDelete();
@@ -19,13 +19,8 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('groupthree')->constrained('group_threes')
                 ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('groupfour')->constrained('group_fours')
-                ->cascadeOnUpdate()->cascadeOnDelete();
-            $table->string('accountcode')->unique();
+            $table->string('code')->unique();
             $table->string('description')->unique();
-            $table->string('accounttype', 50);
-            $table->string('accountusage', 50);
-            $table->string('analyticalcode', 50)->nullable();
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->integer('active');
@@ -42,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('chart_of_accounts');
+        Schema::dropIfExists('group_fours');
     }
 };

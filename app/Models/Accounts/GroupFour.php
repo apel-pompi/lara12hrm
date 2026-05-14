@@ -3,13 +3,13 @@
 namespace App\Models\Accounts;
 
 use App\Models\User;
-
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class ChartOfAccount extends Model
+class GroupFour extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -17,19 +17,20 @@ class ChartOfAccount extends Model
         'groupone',
         'grouptwo',
         'groupthree',
-        'groupfour',
-        'accountcode',
+        'code',
         'description',
-        'accounttype',
-        'accountusage',
-        'analyticalcode',
         'user_id',
         'active',
     ];
 
+    // Mutator to automatically convert description to uppercase
+    public function setDescriptionAttribute($value)
+    {
+        $this->attributes['description'] = strtoupper($value);
+    }
 
     /**
-     * Get the GroupOne that owns the ChartOfAccount
+     * Get the GroupOne that owns the GroupTwo
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -39,7 +40,7 @@ class ChartOfAccount extends Model
     }
 
     /**
-     * Get the GroupTwo that owns the ChartOfAccount
+     * Get the GroupTwo that owns the GroupThree
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -49,7 +50,7 @@ class ChartOfAccount extends Model
     }
 
     /**
-     * Get the GroupThree that owns the ChartOfAccount
+     * Get the GroupThree that owns the GroupFour
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -58,18 +59,13 @@ class ChartOfAccount extends Model
         return $this->belongsTo(GroupThree::class, 'groupthree');
     }
 
-    /**
-     * Get the GroupFour that owns the ChartOfAccount
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function GroupFour(): BelongsTo
+    public function chartOfAccounts(): HasMany
     {
-        return $this->belongsTo(GroupFour::class, 'groupfour');
+        return $this->hasMany(ChartOfAccount::class, 'groupfour');
     }
 
     /**
-     * Get the user that owns the ChartOfAccount
+     * Get the user that owns the GroupOne
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */

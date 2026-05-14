@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Default;
 
 use App\Http\Controllers\Controller;
+use App\Mail\LeaveStatusMail;
 use App\Models\Default\ApprovalRequest;
 use App\Models\HRM\Leave;
 use App\Models\Student\Student;
@@ -12,13 +13,14 @@ use App\Models\Student\StudentInvoiceHD;
 use App\Models\Student\StudentQuotationHD;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class ApprovalRequestController extends Controller
 {
     public function studentArchive(Student $student, Request $request)
     {
 
-        if (ApprovalRequest::where('reference_id', $student->id)->where('remarks','Archive')->where('status', null)->exists()) {
+        if (ApprovalRequest::where('reference_id', $student->id)->where('remarks', 'Archive')->where('status', null)->exists()) {
             return back()->with('error', 'Archive request is allready exits');
         }
 
@@ -44,7 +46,7 @@ class ApprovalRequestController extends Controller
     public function studentTransfer(Student $student, Request $request)
     {
 
-        if (ApprovalRequest::where('reference_id', $student->id)->where('remarks','Transfer')->where('status', null)->exists()) {
+        if (ApprovalRequest::where('reference_id', $student->id)->where('remarks', 'Transfer')->where('status', null)->exists()) {
             return back()->with('error', 'Student transfer request is allready exits');
         }
 
@@ -70,7 +72,7 @@ class ApprovalRequestController extends Controller
     public function studentOnBoard(Student $student, Request $request)
     {
 
-        if (ApprovalRequest::where('reference_id', $student->id)->where('remarks','onBoard')->where('status', null)->exists()) {
+        if (ApprovalRequest::where('reference_id', $student->id)->where('remarks', 'onBoard')->where('status', null)->exists()) {
             return back()->with('error', 'Student onBoard request is allready exits');
         }
 
@@ -108,6 +110,7 @@ class ApprovalRequestController extends Controller
 
     public function leaveApproved(Request $request)
     {
+
         $todate        = $request->todate;
         $requestdays   = $request->requestdays;
         $approveddate  = $request->approveddate;
@@ -120,6 +123,19 @@ class ApprovalRequestController extends Controller
                     'approveddays' => $requestdays,
                     'status' => 3,
                 ]);
+            $leave = Leave::where('id', $request->leave_id)->first();
+            $leaveData = [
+                'empname' => $request->empname,
+                'fromdate' => $request->fromdate,
+                'todate' => $request->todate,
+                'requestdays' => $request->requestdays,
+                'approveddate' => $request->approveddate,
+                'approveddays' => $request->approveddays,
+                'substitute' => $request->substitute,
+                'reason' => $request->reason,
+                'status' => 'Approved',
+            ];
+            Mail::to($leave->employee->email)->send(new LeaveStatusMail($leaveData));
         } else {
             Leave::where('id', $request->leave_id)
                 ->update([
@@ -127,6 +143,19 @@ class ApprovalRequestController extends Controller
                     'approveddays' => $approveddays,
                     'status' => 3,
                 ]);
+            $leave = Leave::where('id', $request->leave_id)->first();
+            $leaveData = [
+                'empname' => $request->empname,
+                'fromdate' => $request->fromdate,
+                'todate' => $request->todate,
+                'requestdays' => $request->requestdays,
+                'approveddate' => $request->approveddate,
+                'approveddays' => $request->approveddays,
+                'substitute' => $request->substitute,
+                'reason' => $request->reason,
+                'status' => 'Approved',
+            ];
+            Mail::to($leave->employee->email)->send(new LeaveStatusMail($leaveData));
         }
 
         return back()->with('success', 'Leave request updated successfully.');
@@ -135,6 +164,7 @@ class ApprovalRequestController extends Controller
 
     public function leaveCancel(Request $request)
     {
+
         $request->validate([
             'leave_id' => 'required|exists:leaves,id',
             'status'   => 'required|in:0,1,2,3,4',
@@ -142,7 +172,19 @@ class ApprovalRequestController extends Controller
 
         Leave::where('id', $request->leave_id)
             ->update(['status' => $request->status]);
-
+        $leave = Leave::where('id', $request->leave_id)->first();
+        $leaveData = [
+            'empname' => $leave->employee->empname,
+            'fromdate' => $request->fromdate,
+            'todate' => $request->todate,
+            'requestdays' => $request->requestdays,
+            'approveddate' => $request->approveddate,
+            'approveddays' => $request->approveddays,
+            'substitute' => $request->substitute,
+            'reason' => $request->reason,
+            'status' => 'cancel',
+        ];
+        Mail::to($leave->employee->email)->send(new LeaveStatusMail($leaveData));
         return back()->with('success', 'Leave request cancel successfully.');
     }
 
@@ -191,27 +233,27 @@ class ApprovalRequestController extends Controller
 
     public function ReturnConfirm(Request $request)
     {
-        
+
         $data = ApprovalRequest::find($request->returnId);
         $student_id = $data->reference_id;
         $srid = $data->description;
 
-        $invHd = StudentInvoiceHD::where('student_id', $student_id)->where('id',$srid)
+        $invHd = StudentInvoiceHD::where('student_id', $student_id)->where('id', $srid)
             ->update(['status' => 'Confirmed']);
 
-            if ($invHd) {
-                $data->update(['status' => 1]);
-                StudentActivities::create([
-                    'student_id'    => $student_id,
-                    'title'         => "has approved student amount refund",
-                    'fristactivity' => null,
-                    'lastactivity'  => null,
-                    'user_id'       => Auth::id(),
-                ]);
+        if ($invHd) {
+            $data->update(['status' => 1]);
+            StudentActivities::create([
+                'student_id'    => $student_id,
+                'title'         => "has approved student amount refund",
+                'fristactivity' => null,
+                'lastactivity'  => null,
+                'user_id'       => Auth::id(),
+            ]);
 
             return back()->with(['success' => true, 'message' => 'Invoice Return request confirm successfully.']);
         }
-        
+
 
         return back()->with(['error' => true, 'message' => 'Invalid request']);
     }

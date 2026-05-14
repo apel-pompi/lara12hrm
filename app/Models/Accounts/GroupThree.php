@@ -21,6 +21,12 @@ class GroupThree extends Model
         'user_id',
         'active',
     ];
+    // Mutator to automatically convert description to uppercase
+    public function setDescriptionAttribute($value)
+    {
+        $this->attributes['description'] = strtoupper($value);
+    }
+
 
     /**
      * Get the GroupOne that owns the GroupTwo
@@ -33,13 +39,24 @@ class GroupThree extends Model
     }
 
     /**
-     * Get the GroupTwo that owns the GroupThree
+     * Get the GroupTwo that owns the GroupTwo
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function GroupTwo(): BelongsTo
     {
         return $this->belongsTo(GroupTwo::class, 'grouptwo');
+    }
+
+
+    /**
+     * Get the GroupFour that owns the GroupThree
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function GroupFour(): HasMany
+    {
+        return $this->hasMany(GroupFour::class, 'groupthree');
     }
 
     /**

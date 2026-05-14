@@ -606,6 +606,7 @@ class RolePermissionSeeder extends Seeder
                     'accsetting.GroupOne',
                     'accsetting.GroupTwo',
                     'accsetting.GroupThree',
+                    'accsetting.GroupFour',
                 ],
             ],
             //Group One Setting
@@ -642,6 +643,18 @@ class RolePermissionSeeder extends Seeder
                     'GroupThree.update',
                     'GroupThree.status',
                     'GroupThree.destroy',
+                ],
+            ],
+            //Group Four Setting
+            [
+                'group_name' => 'Group Four',
+                'permissions' => [
+                    'GroupFour.store',
+                    'GroupFour.show',
+                    'GroupFour.edit',
+                    'GroupFour.update',
+                    'GroupFour.status',
+                    'GroupFour.destroy',
                 ],
             ],
             //Chart Of Accounts

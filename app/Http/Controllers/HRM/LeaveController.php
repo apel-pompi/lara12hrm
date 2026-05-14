@@ -62,7 +62,7 @@ class LeaveController extends Controller
             'filters'   => $levaveService->get($request->query()),
             'leaveplan' => $leaveplan,
             'employee'  => PersonalInfo::where('active', 1)->get(),
-            'substitute'=> PersonalInfo::where('active', 1)->latest()->get(),
+            'substitute' => PersonalInfo::where('active', 1)->latest()->get(),
         ]);
     }
 
@@ -171,7 +171,7 @@ class LeaveController extends Controller
     public function confirm(Leave $leave)
     {
         try {
-            $this->authorize('Leave.confirm');
+            $this->authorize('Leave.approve');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

@@ -37,7 +37,10 @@ return new class extends Migration
             g2.description AS grouptwo_name,
 
             g3.code        AS groupthree_code,
-            g3.description AS groupthree_name
+            g3.description AS groupthree_name,
+
+            g4.code        AS groupfour_code,
+            g4.description AS groupfour_name
 
         FROM chart_of_accounts a
         LEFT JOIN group_ones g1 
@@ -47,8 +50,10 @@ return new class extends Migration
             ON a.grouptwo = g2.id
 
         LEFT JOIN group_threes g3 
-            ON a.groupthree = g3.id;
+            ON a.groupthree = g3.id
+
+        LEFT JOIN group_fours g4 
+            ON a.groupfour = g4.id;
         SQL;
     }
 };
-

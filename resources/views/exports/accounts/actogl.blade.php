@@ -6,7 +6,6 @@
     <title>Accounts to General Ledger Report</title>
 
     <style>
-        
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
@@ -199,9 +198,9 @@
         <tbody>
             <!-- B/F Balance -->
             @php
-                $balance = $opening->opening ?? 0;
-                $totalDr = 0;
-                $totalCr = 0;
+            $balance = $opening->opening ?? 0;
+            $totalDr = 0;
+            $totalCr = 0;
             @endphp
             <tr class="bf-row">
                 <td colspan="6" class="text-center">B/F Balance</td>
@@ -219,28 +218,28 @@
                 $dr=abs($item->primeamt);
                 $balance += $dr;
                 $totalDr += $dr;
-            } else {
+                } else {
                 $cr = $item->primeamt;
                 $balance -= $cr;
                 $totalCr += $cr;
-            }
-            @endphp
+                }
+                @endphp
 
                 <tr>
                     <td>{{ $item->voucherheader->vouchernumber }}</td>
                     <td>{{ $item->voucherdate }}</td>
                     <td class="text-center">{{ $item->branch->branchname }}</td>
                     <td>{{ $item->referance }}</td>
-                    <td class="text-right">{{ $dr > 0 ? $dr : '' }}</td>
-                    <td class="text-right">{{ $cr > 0 ? $cr : '' }}</td>
-                    <td class="text-right">{{ $balance }}</td>
+                    <td class="text-right">{{ $dr > 0 ? number_format($dr,3) : '' }}</td>
+                    <td class="text-right">{{ $cr > 0 ? number_format($cr,3) : '' }}</td>
+                    <td class="text-right">{{ number_format($balance,3) }}</td>
                 </tr>
                 @endforeach
                 <!-- Total -->
                 <tr class="total-row">
                     <td colspan="4">Total</td>
-                    <td class="text-right">{{ $totalDr }}</td>
-                    <td class="text-right">{{ $totalCr }}</td>
+                    <td class="text-right">{{ number_format($totalDr,3) }}</td>
+                    <td class="text-right">{{ number_format($totalCr,3) }}</td>
                     <td></td>
                 </tr>
         </tbody>

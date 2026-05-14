@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Accounts;
 
 use App\Http\Controllers\Controller;
+use App\Models\Accounts\ChartOfAccount;
 use App\Models\Accounts\CodesParam;
 use App\Models\Accounts\Voucherdetail;
 use App\Models\Accounts\Voucherheader;
@@ -105,7 +106,7 @@ class MoneyReceiptController extends Controller
         );
 
         return Inertia::render('allpages/accounts/invoicelist/allmoneyreceipt', [
-            'filters'     => $request->only(['insnumber', 'insdate', 'fname', 'lname', 'phone','status']),
+            'filters'     => $request->only(['insnumber', 'insdate', 'fname', 'lname', 'phone', 'status']),
             'invoice'     => $moneyreceipt,
         ]);
     }
@@ -135,11 +136,18 @@ class MoneyReceiptController extends Controller
             'user_id' => Auth::id()
         ]);
 
+        $chartAccounts = ChartOfAccount::where('active', '1')
+            ->where('accounttype', 'ASSETS')
+            ->where('accountusage', 'Ledger')
+            ->select('id', 'accountcode', 'description as accountname')
+            ->get();
+
         return Inertia::render('allpages/accounts/createmr', [
             'invoice' => $invoice,
             'invoicemr' => $invoicemr,
             'invoicemrSum' => $invoicemrSum,
-            'student' => $student
+            'student' => $student,
+            'chartAccounts' => $chartAccounts,
         ]);
     }
 
@@ -158,6 +166,7 @@ class MoneyReceiptController extends Controller
 
     public function storeMR($insnumber, $student, Request $request)
     {
+
 
         try {
             $this->authorize('Accounts.storeMR');
@@ -187,13 +196,32 @@ class MoneyReceiptController extends Controller
         $totalamt = $request->netamount;
         $netamount = $totalamt - $request->discount;
         $notes = substr($insnumber, 0, 4) == 'SR--' ? 'REFUND' : null;
+        $payType = $request->paytype;
+        $bank = '';
+        if ($payType == 'Cash') {
+            $codePharams = CodesParam::where('type', 'Student Advance')->select('cracc')->first();
+            if (! $codePharams || ! $codePharams->cracc) {
+                return back()->with([
+                    'error' => true,
+                    'message' => 'Accounting setup missing for Student Advance'
+                ]);
+            }
+            $accountCode = $codePharams->cracc;
+            $bankname = ChartOfAccount::where('accountcode', $accountCode)->first();
+            $bank = $bankname->description;
+        } else {
+            $bankname = ChartOfAccount::where('accountcode', $request->bankname)->first();
+            $accountCode = $request->bankname;
+            $bank = $bankname->description;
+        }
+
         $header = StudentInvoiceHD::create([
             'insnumber' => $mrNo,
             'insdate' => now(),
             'student_id' => $student,
             'payterms' => $request->paytype,
-            'accountcode' => '104-001',
-            'bankname' => $request->bankname,
+            'accountcode' => $accountCode,
+            'bankname' => $bank,
             'bankbranch' => $request->bankbranch,
             'chequeno' => $request->chequeno,
             'transno' => $request->transactionNo,
@@ -339,13 +367,33 @@ class MoneyReceiptController extends Controller
                 'message' => 'Only open money receipt can be confirmed'
             ]);
         }
-        $codePharams = CodesParam::where('type', 'Student Advance')->select('dracc', 'cracc', 'branch_id')->first();
-        if (! $codePharams || ! $codePharams->dracc || ! $codePharams->cracc) {
-            return back()->with([
-                'error' => true,
-                'message' => 'Accounting setup missing for Student Advance'
-            ]);
+        $dr_account = '';
+        $cr_account = '';
+        $branch_id = '';
+        if ($confirm->payterms == 'Cash') {
+            $codePharams = CodesParam::where('type', 'Student Advance')->select('cracc', 'dracc', 'branch_id')->first();
+            if (! $codePharams || ! $codePharams->cracc || ! $codePharams->dracc || ! $codePharams->branch_id) {
+                return back()->with([
+                    'error' => true,
+                    'message' => 'Accounting setup missing for Student Advance'
+                ]);
+            }
+            $cr_account = $codePharams->cracc;
+            $dr_account = $codePharams->dracc;
+            $branch_id = $codePharams->branch_id;
+        } else {
+            $codePharams = CodesParam::where('type', 'Student Advance')->select('cracc', 'branch_id')->first();
+            if (! $codePharams || ! $codePharams->cracc || ! $codePharams->branch_id) {
+                return back()->with([
+                    'error' => true,
+                    'message' => 'Accounting setup missing for Student Advance'
+                ]);
+            }
+            $cr_account = $codePharams->cracc;
+            $dr_account = $confirm->accountcode;
+            $branch_id = $codePharams->branch_id;
         }
+
         $getstudent_id = Student::where('id', $confirm->student_id)->select('student_id')->first();
         $voucherDate = Carbon::parse($confirm->insdate);
 
@@ -354,26 +402,26 @@ class MoneyReceiptController extends Controller
         $debit_note = '';
         $credit_note = '';
         if ($confirm->note == 'REFUND') {
-            $credit_account = $codePharams->cracc;
-            $debit_account = $codePharams->dracc;
+            $credit_account = $cr_account;
+            $debit_account = $dr_account;
             $debit_note = 'Accounts Liabilities';
             $credit_note = 'Cash/Bank';
         } else {
-            $credit_account = $codePharams->dracc;
-            $debit_account = $codePharams->cracc;
+            $credit_account = $dr_account;
+            $debit_account = $cr_account;
             //notes
             $debit_note = 'Cash/Bank';
             $credit_note = 'Accounts Liabilities';
         }
 
-        DB::transaction(function () use ($confirm, $codePharams, $voucherDate, $getstudent_id, $credit_account, $debit_account,$debit_note,$credit_note) {
+        DB::transaction(function () use ($confirm, $branch_id, $voucherDate, $getstudent_id, $credit_account, $debit_account, $debit_note, $credit_note) {
             Voucherheader::create([
                 'vouchernumber' => $confirm->insnumber,
                 'voucherdate'   => $confirm->insdate,
-                'referance'     => 'This Voucher for Point of Sales ( '.$getstudent_id->student_id.' )',
+                'referance'     => 'This Voucher for Point of Sales ( ' . $getstudent_id->student_id . ' )',
                 'yearname'      => $voucherDate->year,
                 'monthname'     => $voucherDate->month,
-                'branch_id'     => $codePharams->branch_id,
+                'branch_id'     => $branch_id,
                 'notes'         => 'This is Money Receipt',
                 'user_id'       => Auth::id(),
             ]);
@@ -386,7 +434,7 @@ class MoneyReceiptController extends Controller
                     'exchagerate'   => '1.000',
                     'primeamt'      => $confirm->netamount,
                     'baseamt'       => $confirm->netamount,
-                    'branch_id'     => $codePharams->branch_id,
+                    'branch_id'     => $branch_id,
                     'notes'         => $credit_note,
                     'user_id'       => Auth::id(),
                     'created_at'    => now(),
@@ -400,7 +448,7 @@ class MoneyReceiptController extends Controller
                     'exchagerate'   => '1.000',
                     'primeamt'      => abs($confirm->netamount) * -1,
                     'baseamt'       => abs($confirm->netamount) * -1,
-                    'branch_id'     => $codePharams->branch_id,
+                    'branch_id'     => $branch_id,
                     'notes'         => $debit_note,
                     'user_id'       => Auth::id(),
                     'created_at'    => now(),

@@ -7,9 +7,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import Textarea from '@/components/ui/textarea/Textarea.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
+import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { CornerDownLeft, Eye, FileText, LucideEdit, LucideSave, LucideTrash2, Plus, ShieldCheck, X } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -28,7 +30,7 @@ const props = defineProps<{
         totalamt: number;
         netamount: number;
     };
-    invoicemrSum:number;
+    invoicemrSum: number;
     invoice: {
         id: number;
         insnumber: string;
@@ -43,10 +45,28 @@ const props = defineProps<{
         };
     };
     student: { id: number; fname: string; lname: string; student_id: number };
+    chartAccounts: {
+        id: number;
+        accountcode: string;
+        accountname: string;
+    }[];
 }>();
 
-
 const showDialogCreate = ref(false);
+
+// Combobox for bank account selection
+const queryBankAccount = ref('');
+const selectedBankAccount = ref<{ id: number; accountcode: string; accountname: string } | null>(null);
+
+const filteredBankAccounts = computed(() => {
+    if (queryBankAccount.value === '') return props.chartAccounts;
+    const q = queryBankAccount.value.toLowerCase();
+    return props.chartAccounts.filter((acc) => acc.accountname.toLowerCase().includes(q));
+});
+
+watch(selectedBankAccount, (acc) => {
+    feesForm.bankname = acc ? acc.accountcode : '';
+});
 
 const showDailog = () => {
     showDialogCreate.value = true;
@@ -62,7 +82,6 @@ const selectedFees = ref<
         amount: number;
         original_amount: number;
     }>
-    
 >([]);
 
 // Form for payment type and discount
@@ -75,7 +94,7 @@ const feesForm = useForm({
     transactionNo: '',
     discount: 0,
     netamount: 0,
-    shortnote:'',
+    shortnote: '',
 });
 
 // Add fee row to editable box
@@ -127,8 +146,6 @@ const totalReceiveAmount = computed(() => {
     return totalFees - discount;
 });
 
-
-
 const submitMR = () => {
     if (!feesForm.paytype) {
         toast('error', {
@@ -137,13 +154,16 @@ const submitMR = () => {
         return;
     }
 
-    if (feesForm.paytype === 'Bank') {
+    if (feesForm.paytype !== 'Cash') {
         if (!feesForm.bankname || feesForm.bankname.trim() === '') {
             toast('error', {
-                description: 'Please enter the Bank Name.',
+                description: 'Please select a Bank Account.',
             });
             return;
         }
+    }
+
+    if (feesForm.paytype === 'Bank') {
         if (!feesForm.bankbranch || feesForm.bankbranch.trim() === '') {
             toast('error', {
                 description: 'Please enter the Branch Name.',
@@ -153,16 +173,9 @@ const submitMR = () => {
     }
 
     if (feesForm.paytype === 'Cheque') {
-        if (!feesForm.bankname || feesForm.bankname.trim() === '') {
-            toast('error', {
-                description: 'Please enter the Bank Name.',
-            });
-            return;
-        }
-
         if (!feesForm.chequeno || feesForm.chequeno.trim() === '') {
             toast('error', {
-                description: 'Please enter the Check Number.',
+                description: 'Please enter the Cheque Number.',
             });
             return;
         }
@@ -186,15 +199,15 @@ const submitMR = () => {
         return;
     }
 
-    feesForm.fees = selectedFees.value
-    feesForm.paytype = feesForm.paytype
-    feesForm.bankname = feesForm.bankname
-    feesForm.bankbranch = feesForm.bankbranch
-    feesForm.chequeno = feesForm.chequeno
-    feesForm.transactionNo = feesForm.transactionNo
-    feesForm.discount = Number(feesForm.discount) || 0
-    feesForm.netamount = totalAmount
-    
+    feesForm.fees = selectedFees.value;
+    feesForm.paytype = feesForm.paytype;
+    feesForm.bankname = feesForm.bankname;
+    feesForm.bankbranch = feesForm.bankbranch;
+    feesForm.chequeno = feesForm.chequeno;
+    feesForm.transactionNo = feesForm.transactionNo;
+    feesForm.discount = Number(feesForm.discount) || 0;
+    feesForm.netamount = totalAmount;
+
     feesForm.post(
         route('invoicelist.storeMR', {
             insnumber: props.invoice.insnumber,
@@ -203,7 +216,6 @@ const submitMR = () => {
         {
             preserveState: true,
             onSuccess: () => {
-                
                 feesForm.reset();
                 showDialogCreate.value = false;
             },
@@ -211,8 +223,7 @@ const submitMR = () => {
                 console.error(errors);
                 toast('error', { description: 'Something went wrong during submission.' });
             },
-            
-        }
+        },
     );
 };
 
@@ -228,8 +239,8 @@ const viewForm = useForm({
     student_invno: '',
     student_invdate: '',
     student_invby: '',
-    disc_amt:'',
-    netamount:'',
+    disc_amt: '',
+    netamount: '',
     viewfees: [] as {
         feename: string;
         amount: number;
@@ -355,9 +366,7 @@ const goToAccounts = () => {
                         <!-- Header section -->
                         <div class="mb-2 flex items-center justify-between px-2">
                             <h3 class="font-semibold">Money Receive</h3>
-                            <span v-if="props.invoice.netamount==props.invoicemrSum">
-                                Amount receive not pending
-                            </span>
+                            <span v-if="props.invoice.netamount == props.invoicemrSum"> Amount receive not pending </span>
                             <span v-else>
                                 <Button variant="outline" size="sm" @click="showDailog()"> <Plus class="mr-1" /> Create </Button>
                             </span>
@@ -582,14 +591,49 @@ const goToAccounts = () => {
                                 </Select>
                             </div>
 
-                            <div v-if="feesForm.paytype === 'Bank' || feesForm.paytype === 'Cheque'">
-                                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Bank Name</label>
-                                <input
-                                    v-model="feesForm.bankname"
-                                    type="text"
-                                    placeholder="Enter Bank Name"
-                                    class="w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                />
+                            <!-- Bank Account Combobox: shows for non-Cash pay types -->
+                            <div v-if="feesForm.paytype && feesForm.paytype !== 'Cash'">
+                                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Bank Account</label>
+                                <Combobox v-model="selectedBankAccount">
+                                    <div class="relative">
+                                        <ComboboxInput
+                                            class="w-full rounded-lg border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                            placeholder="Search bank account..."
+                                            :display-value="(acc) => (acc ? acc.accountname : '')"
+                                            @input="queryBankAccount = $event.target.value"
+                                        />
+                                        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                        </ComboboxButton>
+                                        <ComboboxOptions
+                                            class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                                        >
+                                            <div
+                                                v-if="filteredBankAccounts.length === 0 && queryBankAccount !== ''"
+                                                class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                            >
+                                                Nothing found.
+                                            </div>
+                                            <ComboboxOption
+                                                v-for="acc in filteredBankAccounts"
+                                                :key="acc.id"
+                                                :value="acc"
+                                                class="relative cursor-pointer py-2 pr-4 pl-10 select-none hover:bg-blue-600 hover:text-white"
+                                                v-slot="{ selected }"
+                                            >
+                                                <span :class="['block truncate', selected ? 'font-semibold' : 'font-normal']">
+                                                    {{ acc.accountname }}
+                                                </span>
+                                                <span
+                                                    v-if="selected"
+                                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 hover:text-white"
+                                                >
+                                                    <CheckIcon class="h-4 w-4" />
+                                                </span>
+                                            </ComboboxOption>
+                                        </ComboboxOptions>
+                                    </div>
+                                </Combobox>
                             </div>
 
                             <div v-if="feesForm.paytype === 'Bank'">
@@ -635,14 +679,14 @@ const goToAccounts = () => {
                             </div>
                         </div>
                         <!-- Note -->
-                            <div class="mt-4 grid gap-2">
-                                <Label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Note</Label>
-                                <Textarea
-                                    v-model="feesForm.shortnote"
-                                    placeholder="Write a short note about this money receive..."
-                                    class="focus:ring-opacity-50 rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-                                />
-                            </div>
+                        <div class="mt-4 grid gap-2">
+                            <Label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Note</Label>
+                            <Textarea
+                                v-model="feesForm.shortnote"
+                                placeholder="Write a short note about this money receive..."
+                                class="focus:ring-opacity-50 rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                        </div>
                         <!-- Grand Total -->
                         <div class="mt-6 flex items-center justify-between rounded-lg bg-blue-50 px-5 py-3 shadow-sm dark:bg-gray-700/40">
                             <p class="text-base font-semibold text-gray-700 dark:text-gray-200">Grand Total (After Discount)</p>

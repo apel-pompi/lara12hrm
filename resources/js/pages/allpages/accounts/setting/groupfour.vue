@@ -15,7 +15,7 @@ import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Accounts Group Three',
+        title: 'Accounts Group Four',
         href: '/accountssetting',
     },
 ];
@@ -31,27 +31,43 @@ export interface Paginated<T> {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
-export interface GroupThree {
+export interface GroupFour {
     id: number;
     code: string;
     description: string;
     active: number;
-    group_one: { groupone: number; description: string };
-    group_two: { grouptwo: number; description: string };
     user: {
         id: number;
         name: string;
     };
+    group_one: { id: number; description: string };
+    group_two: { id: number; description: string };
+    group_three: { id: number; description: string };
 }
 
 const props = defineProps<{
-    groupInfo: { id: number; groupone: number; code: string; description: string; group_one: { code: number; description: string } };
-    code: string;
-    groupthree: Paginated<GroupThree>;
+    groupInfo: {
+        id: number;
+        groupone: number;
+        code: string;
+        description: string;
+        group_one: {
+            id: number;
+            code: number;
+            description: string;
+        };
+        group_two: {
+            id: number;
+            code: number;
+            description: string;
+        };
+    };
+    code: number;
+    groupfour: Paginated<GroupFour>;
 }>();
 
-const data = props.groupthree;
-
+const data = props.groupfour;
+console.log(props.groupInfo);
 const showDialog = ref(false);
 const isEditMode = ref(false);
 
@@ -59,7 +75,8 @@ const form = useForm({
     id: null as number | null,
     groupone: null as number | null,
     grouptwo: null as number | null,
-    code: '',
+    groupthree: null as number | null,
+    code: null as number | null,
     description: '',
     active: '0',
 });
@@ -68,7 +85,8 @@ const showDailogCreate = () => {
     form.reset();
     form.id = null;
     form.groupone = props.groupInfo.group_one.id;
-    form.grouptwo = props.groupInfo.id;
+    form.grouptwo = props.groupInfo.group_two.id;
+    form.groupthree = props.groupInfo.id;
     form.code = props.code;
     isEditMode.value = false;
     showDialog.value = true;
@@ -76,10 +94,10 @@ const showDailogCreate = () => {
 
 const onEdit = async (id: number) => {
     try {
-        const res = await fetch(`/Groupthree/${id}/edit`);
+        const res = await fetch(`/Groupfour/${id}/edit`);
 
         if (!res.ok) {
-            toast.error('Server error while fetching group three details.');
+            toast.error('Server error while fetching group four details.');
             return;
         }
 
@@ -95,7 +113,7 @@ const onEdit = async (id: number) => {
 };
 
 const submit = () => {
-    const action = isEditMode.value && form.id ? route('GroupThree.update', form.id) : route('GroupThree.store');
+    const action = isEditMode.value && form.id ? route('GroupFour.update', form.id) : route('GroupFour.store');
     const method = isEditMode.value ? 'put' : 'post';
 
     form[method](action, {
@@ -104,9 +122,10 @@ const submit = () => {
                 form.reset();
                 showDialog.value = false;
                 router.visit(
-                    route('accsetting.GroupThree', {
-                        GroupOne: props.groupInfo.groupone,
-                        GroupTwo: props.groupInfo.id,
+                    route('accsetting.GroupFour', {
+                        GroupOne: props.groupInfo.group_one.id,
+                        GroupTwo: props.groupInfo.group_two.id,
+                        GroupThree: props.groupInfo.id,
                     }),
                     {
                         preserveScroll: true,
@@ -130,14 +149,14 @@ const submit = () => {
     });
 };
 
-const toggleStatus = (three: GroupThree, checked: boolean) => {
+const toggleStatus = (four: GroupFour, checked: boolean) => {
     router.put(
-        route('GroupThree.updateStatus', three.id),
+        route('GroupFour.updateStatus', four.id),
         { active: checked ? 1 : 0 },
         {
             preserveState: true,
             onSuccess: () => {
-                three.active = checked ? 1 : 0;
+                four.active = checked ? 1 : 0;
                 const flash = usePage().props.flash;
                 if (flash?.success) {
                     toast('success', {
@@ -152,11 +171,11 @@ const toggleStatus = (three: GroupThree, checked: boolean) => {
 const deleteForm = useForm({});
 
 const onDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this group three?')) return;
+    if (!confirm('Are you sure you want to delete this group four?')) return;
 
     if (deleteForm.processing) return;
 
-    deleteForm.delete(`/Groupthree/show/${id}`, {
+    deleteForm.delete(`/Groupfour/show/${id}`, {
         onSuccess: () => {
             const flash = usePage().props.flash;
             if (flash?.success) {
@@ -183,19 +202,9 @@ const goToPage = (url: string | null) => {
     }
 };
 
-const goToGroupTwo = () => {
-    router.get(route('accsetting.GroupTwo', { GroupOne: props.groupInfo.groupone }));
+const goToGroupThree = () => {
+    router.get(route('accsetting.GroupThree', { GroupOne: props.groupInfo.group_one.id, GroupTwo: props.groupInfo.group_two.id }));
 };
-
-function openGroupThree(three: GroupThree) {
-    router.get(
-        route('accsetting.GroupFour', {
-            GroupOne: three.groupone,
-            GroupTwo: three.grouptwo,
-            GroupThree: three.id,
-        }),
-    );
-}
 </script>
 
 <template>
@@ -206,54 +215,51 @@ function openGroupThree(three: GroupThree) {
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
                 <!-- Header / Toolbar -->
                 <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToGroupTwo"
-                        ><CornerDownLeft></CornerDownLeft> Back Group Two
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="goToGroupThree"
+                        ><CornerDownLeft></CornerDownLeft> Back Group Three
                     </Button>
                     <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
-                        ><Plus></Plus> Group Three
+                        ><Plus></Plus> Group Four
                     </Button>
                 </div>
                 <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                     <!-- Title -->
                     <div class="border-b px-6 py-4">
-                        <h2 class="text-lg font-semibold text-gray-800">Accounts Group Three List</h2>
-                        <p class="text-sm text-gray-500">Manage all Accounts Group Three from here.</p>
+                        <h2 class="text-lg font-semibold text-gray-800">Accounts Group Four List</h2>
+                        <p class="text-sm text-gray-500">Manage all Accounts Group Four from here.</p>
                     </div>
                     <Table>
                         <TableHeader>
                             <TableRow class="bg-gray-100 hover:bg-gray-100">
                                 <TableHead>Sl</TableHead>
+                                <TableHead>Group Four Code</TableHead>
                                 <TableHead>Group One</TableHead>
                                 <TableHead>Group Two</TableHead>
-                                <TableHead>Group Three Code</TableHead>
+                                <TableHead>Group Three</TableHead>
                                 <TableHead>Description</TableHead>
                                 <TableHead>Created By</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Action</TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody v-for="(three, index) in data.data ?? []" :key="index">
+                        <TableBody v-for="(four, index) in data.data ?? []" :key="index">
                             <TableRow>
                                 <TableCell>{{ index + 1 }}</TableCell>
-                                <TableCell>{{ three.group_one.description }}</TableCell>
-
-                                <TableCell>{{ three.group_two.description }}</TableCell>
-                                <TableCell>{{ three.code }}</TableCell>
+                                <TableCell>{{ four.code }}</TableCell>
+                                <TableCell>{{ four.group_one.description }}</TableCell>
+                                <TableCell>{{ four.group_two.description }}</TableCell>
+                                <TableCell>{{ four.group_three.description }}</TableCell>
+                                <TableCell>{{ four.description }}</TableCell>
+                                <TableCell>{{ four.user.name }}</TableCell>
                                 <TableCell>
-                                    <button @click="openGroupThree(three)" class="cursor-pointer text-blue-500 underline hover:text-blue-700">
-                                        {{ three.description }}
-                                    </button>
-                                </TableCell>
-                                <TableCell>{{ three.user.name }}</TableCell>
-                                <TableCell>
-                                    <Switch :model-value="Boolean(three.active)" @update:model-value="(checked) => toggleStatus(three, checked)">
+                                    <Switch :model-value="Boolean(four.active)" @update:model-value="(checked) => toggleStatus(four, checked)">
                                     </Switch>
                                 </TableCell>
                                 <TableCell class="text-right">
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(three.id)"
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onEdit(four.id)"
                                         ><SquarePen class="h-4 w-4 text-indigo-600"
                                     /></Button>
-                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(three.id)"
+                                    <Button class="m-[2px]" size="sm" variant="outline" @click="onDelete(four.id)"
                                         ><Trash class="h-4 w-4 text-red-600"
                                     /></Button>
                                 </TableCell>
@@ -286,10 +292,10 @@ function openGroupThree(three: GroupThree) {
                     <!-- Header -->
                     <DialogHeader class="space-y-1 border-b pb-4">
                         <DialogTitle class="text-xl font-semibold tracking-wide">
-                            {{ isEditMode ? 'Edit Group Three' : 'Create Group Three' }}
+                            {{ isEditMode ? 'Edit Group Four' : 'Create Group Four' }}
                         </DialogTitle>
                         <DialogDescription class="text-sm text-gray-500">
-                            {{ isEditMode ? 'Modify the information and click Update.' : 'Fill out the form to add a new Group Three.' }}
+                            {{ isEditMode ? 'Modify the information and click Update.' : 'Fill out the form to add a new Group Four.' }}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -300,15 +306,20 @@ function openGroupThree(three: GroupThree) {
                             <Label for="groupone" class="text-sm font-medium">Group One<span class="text-red-500">*</span></Label>
                             <p>{{ props.groupInfo.group_one.description }}</p>
                         </div>
-                        <!-- Group Two -->
+                        <!-- Group Tow -->
                         <div>
-                            <Label for="grouptwo" class="text-sm font-medium">Group Two<span class="text-red-500">*</span></Label>
+                            <Label for="groupone" class="text-sm font-medium">Group Two<span class="text-red-500">*</span></Label>
+                            <p>{{ props.groupInfo.group_two.description }}</p>
+                        </div>
+                        <!-- Group Three -->
+                        <div>
+                            <Label for="groupone" class="text-sm font-medium">Group Three<span class="text-red-500">*</span></Label>
                             <p>{{ props.groupInfo.description }}</p>
                         </div>
                         <!-- Code -->
                         <div>
                             <Label for="code" class="text-sm font-medium">Code<span class="text-red-500">*</span></Label>
-                            <Input type="text" id="code" v-model="form.code" class="mt-1 w-full uppercase" readonly disabled />
+                            <Input type="text" id="code" v-model="form.code" class="mt-1 w-full" readonly disabled />
                             <p v-if="form.errors.code" class="mt-1 text-sm text-red-600">
                                 {{ form.errors.code }}
                             </p>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Default;
 use App\Http\Controllers\Controller;
 
 use App\Imports\StudentImport;
+use App\Models\Default\Country;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -54,7 +55,6 @@ class ExcelImportController extends Controller
                 'success',
                 "Import completed! Processed: {$processed}, Success: {$success}, Failed: " . ($processed - $success)
             );
-
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $failures = $e->failures();
             $errorMessages = [];
@@ -104,6 +104,7 @@ class ExcelImportController extends Controller
     {
         try {
             $templatePath = public_path('storage/templates');
+
             if (!file_exists($templatePath)) {
                 mkdir($templatePath, 0755, true);
             }
@@ -111,7 +112,12 @@ class ExcelImportController extends Controller
             $filePath = $templatePath . '/student_import_template.xlsx';
 
             $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+
+            /** -------------------------
+             * MAIN SHEET
+             * ------------------------*/
             $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('students');
 
             $headers = [
                 'first_name',
@@ -120,12 +126,12 @@ class ExcelImportController extends Controller
                 'phone',
                 'destination_country',
                 'source',
-                'counsilor_name',
+                'counselor_name',
             ];
 
             $sheet->fromArray($headers, null, 'A1');
 
-            // Header styling
+            /** Header Style */
             $headerStyle = [
                 'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => [
@@ -134,40 +140,85 @@ class ExcelImportController extends Controller
                 ],
                 'alignment' => ['horizontal' => 'center']
             ];
+
             $sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
 
-            // Force Phone column as TEXT
-            $sheet->getStyle('D2:D1000')->getNumberFormat()->setFormatCode('@');
+            /** Phone column as TEXT */
+            $sheet->getStyle('D2:D1000')
+                ->getNumberFormat()
+                ->setFormatCode('@');
 
-            // Gender validation
-            $genderValidation = $sheet->getCell('C2')->getDataValidation();
+            /** Gender Dropdown */
+            $genderList = '"Male,Female,Other"';
+
+            $genderValidation = new \PhpOffice\PhpSpreadsheet\Cell\DataValidation();
             $genderValidation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
-            $genderValidation->setFormula1('"Male,Female,Other"');
+            $genderValidation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP);
             $genderValidation->setAllowBlank(false);
             $genderValidation->setShowDropDown(true);
+            $genderValidation->setFormula1($genderList);
 
             for ($row = 2; $row <= 1000; $row++) {
                 $sheet->getCell("C{$row}")->setDataValidation(clone $genderValidation);
             }
 
-            // Auto-size columns
-            foreach (range('A', 'G') as $column) {
-                $sheet->getColumnDimension($column)->setAutoSize(true);
+            /** Auto size columns */
+            foreach (range('A', 'G') as $col) {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
             }
 
-            // Clear instructions as comment instead of extra columns
+            /** Instruction comment */
             $sheet->getComment('A1')
-                ->getText()->createTextRun("Instructions:\n- All fields required\n- Phone: start with '0\n- Gender: use dropdown");
+                ->getText()->createTextRun(
+                    "Instructions:\n" .
+                        "- All fields are required\n" .
+                        "- Phone must start with 0\n" .
+                        "- Gender uses dropdown\n" .
+                        "- Country must be selected from list"
+                );
 
+            /** -------------------------
+             * COUNTRIES (Hidden Sheet)
+             * ------------------------*/
+            $countries = Country::where('status', 1)
+                ->orderBy('name')
+                ->pluck('name')
+                ->toArray();
+
+            $countrySheet = $spreadsheet->createSheet();
+            $countrySheet->setTitle('countries');
+
+            foreach ($countries as $index => $country) {
+                $countrySheet->setCellValue("A" . ($index + 1), $country);
+            }
+
+            /** Hide country sheet */
+            $countrySheet->setSheetState(
+                \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::SHEETSTATE_HIDDEN
+            );
+
+            /** Country Dropdown */
+            $countryValidation = new \PhpOffice\PhpSpreadsheet\Cell\DataValidation();
+            $countryValidation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+            $countryValidation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP);
+            $countryValidation->setAllowBlank(false);
+            $countryValidation->setShowDropDown(true);
+            $countryValidation->setFormula1('countries!$A$1:$A$' . count($countries));
+
+            for ($row = 2; $row <= 1000; $row++) {
+                $sheet->getCell("E{$row}")->setDataValidation(clone $countryValidation);
+            }
+
+            /** -------------------------
+             * SAVE FILE
+             * ------------------------*/
             $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
             $writer->save($filePath);
 
             return true;
         } catch (\Exception $e) {
-            $e->getMessage();
+            logger()->error('Student Template Error: ' . $e->getMessage());
             return false;
         }
     }
-
-    
 }

@@ -66,7 +66,7 @@ class GroupThreeController extends Controller
      */
     public function edit(GroupThree $groupThree)
     {
-      
+
         try {
             $this->authorize('GroupThree.edit');
 
@@ -98,7 +98,7 @@ class GroupThreeController extends Controller
         }
 
         $groupThree->update($request->validated());
-        
+
         if ($groupThree) {
             return back()->with([
                 'success' => true,
@@ -127,7 +127,7 @@ class GroupThreeController extends Controller
         }
 
         try {
-            $groupThree->delete();
+            $groupThree->forceDelete();
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete Group Three.',

@@ -34,21 +34,23 @@ class CodesParamController extends Controller
 
         return Inertia::render('allpages/accounts/setting/actoglsetup', [
 
-            'actogl' => CodesParam::with('branch','craccount','draccount','taxaccount')->get(),
+            'actogl' => CodesParam::with('branch', 'craccount', 'draccount', 'taxaccount')->get(),
             'supplier' => Supplier::where('active', 1)->get(),
-            'draccountcode' => ChartOfAccount::where('active', 1)->where('accounttype','LIABILITIES')->where('accountusage', ['Ledger','AP'])->get(),
-            'craccountcode' => ChartOfAccount::where('active', 1)->where('accounttype',['ASSET','EXPENDITURES'])->where('accountusage', ['Ledger','AR'])->where('analyticalcode','Cash')->get(),
+            'craccountcode' => ChartOfAccount::where('active', 1)->where('accounttype', 'LIABILITIES')->whereIn('accountusage', ['Ledger', 'AP'])->get(),
+
+            'draccountcode' => ChartOfAccount::where('active', 1)->whereIn('accounttype', ['ASSETS', 'EXPENDITURES'])->whereIn('accountusage', ['Ledger', 'AR'])->where('analyticalcode', 'Cash')->get(),
+
             'branch' => Branch::all(),
         ]);
     }
 
-   
+
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreCodesParamRequest $request)
     {
-        
+
         try {
             $this->authorize('ACToGL.store');
         } catch (AuthorizationException $e) {
@@ -63,12 +65,11 @@ class CodesParamController extends Controller
         $data['user_id'] = Auth::id();
         $store = CodesParam::create($data);
         if ($store) {
-            
+
             return back()->with([
                 'success' => true,
                 'message' => 'CodeParam created successfully'
             ]);
-            
         } else {
             return back()->with([
                 'error' => true,
@@ -77,7 +78,7 @@ class CodesParamController extends Controller
         }
     }
 
-   
+
 
     /**
      * Show the form for editing the specified resource.

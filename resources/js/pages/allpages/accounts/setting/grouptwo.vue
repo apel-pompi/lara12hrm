@@ -147,7 +147,7 @@ const onDelete = async (id: number) => {
 
     if (deleteForm.processing) return;
 
-    deleteForm.delete(`/groupTwo/show/${id}`, {
+    deleteForm.delete(`/Grouptwo/show/${id}`, {
         onSuccess: () => {
             const flash = usePage().props.flash;
             if (flash?.success) {

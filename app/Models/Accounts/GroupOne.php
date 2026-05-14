@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class GroupOne extends Model
 {
-    use HasFactory,SoftDeletes;
-    
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
         'code',
         'description',
@@ -21,6 +21,7 @@ class GroupOne extends Model
         'active',
     ];
 
+    // Mutator to automatically convert description to uppercase
     public function setDescriptionAttribute($value)
     {
         $this->attributes['description'] = strtoupper($value);
@@ -35,7 +36,7 @@ class GroupOne extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-    
+
     /**
      * Get all of the GroupTwo for the GroupOne
      *
@@ -56,7 +57,18 @@ class GroupOne extends Model
         return $this->hasMany(GroupThree::class, 'groupone');
     }
 
-   /**
+    /**
+     * Get all of the GroupFour for the GroupOne
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function GroupFour(): HasMany
+    {
+        return $this->hasMany(GroupFour::class, 'groupone');
+    }
+
+
+    /**
      * Get all of the GroupThree for the GroupOne
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany

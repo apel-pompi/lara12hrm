@@ -44,6 +44,7 @@ export interface ChartOfAccount {
     groupone: { code: number; description: string };
     grouptwo: { code: number; description: string };
     groupthree: { code: string; description: string };
+    groupfour: { code: string; description: string };
     active: number;
     user: {
         id: number;
@@ -57,6 +58,7 @@ const props = defineProps<{
     groupone: { code: number; description: string };
     grouptwo: { code: number; description: string };
     groupthree: { code: string; description: string };
+    groupfour: { code: string; description: string };
     others: [];
 }>();
 
@@ -64,6 +66,7 @@ const data = props.chartofaccount;
 
 const showDialog = ref(false);
 const isEditMode = ref(false);
+const isPopulating = ref(false);
 
 const form = useForm({
     id: null as number | null,
@@ -74,7 +77,8 @@ const form = useForm({
     description: '',
     groupone: null as number | null,
     grouptwo: null as number | null,
-    groupthree: '',
+    groupthree: null as number | null,
+    groupfour: null as number | null,
     active: '0',
 });
 
@@ -82,6 +86,10 @@ const showDailogCreate = () => {
     form.reset();
     form.id = null;
     isEditMode.value = false;
+    GroupOne.value = null;
+    grouptwoOptions.value = [];
+    groupthreeOptions.value = [];
+    groupfourOptions.value = [];
     showDialog.value = true;
 };
 
@@ -97,8 +105,15 @@ const fetchTwo = async () => {
 
 watch(
     () => form.groupone,
-    () => {
-        fetchTwo();
+    (newVal) => {
+        if (!isPopulating.value) {
+            form.grouptwo = null;
+            form.groupthree = null;
+            form.groupfour = null;
+        }
+        if (newVal) {
+            fetchTwo();
+        }
     },
 );
 
@@ -109,31 +124,60 @@ const fetchThree = async () => {
 
     const res = await fetch(`/chartOfAccount/getGroupThree/${form.groupone}/${form.grouptwo}`);
     const data = await res.json();
-    console.log(data);
     groupthreeOptions.value = data.data;
 };
 
 watch(
     () => form.grouptwo,
-    () => {
-        form.groupthree = '';
-        fetchThree();
+    (newVal) => {
+        if (!isPopulating.value) {
+            form.groupthree = null;
+            form.groupfour = null;
+        }
+        if (newVal) {
+            fetchThree();
+        }
+    },
+);
+
+const groupfourOptions = ref([]);
+
+const fetchFour = async () => {
+    if (!form.groupone || !form.grouptwo || !form.groupthree) return; // ensure both selected
+
+    const res = await fetch(`/chartOfAccount/getGroupFour/${form.groupone}/${form.grouptwo}/${form.groupthree}`);
+    const data = await res.json();
+    console.log(data);
+    groupfourOptions.value = data.data;
+};
+console.log(groupfourOptions.value);
+watch(
+    () => form.groupthree,
+    (newVal) => {
+        if (!isPopulating.value) {
+            form.groupfour = null;
+        }
+        if (newVal) {
+            fetchFour();
+        }
     },
 );
 
 const generateAccountCode = async () => {
-    if (!form.groupthree) return;
+    if (!form.groupfour) return;
 
-    const res = await fetch(`/chartOfAccount/generateAccountCode/${form.groupthree}`);
+    const res = await fetch(`/chartOfAccount/generateAccountCode/${form.groupfour}`);
     const data = await res.json();
     form.accountcode = data.accountcode;
 };
 
 watch(
-    () => form.groupthree,
+    () => form.groupfour,
     () => {
-        form.accountcode = ''; // reset
-        generateAccountCode();
+        if (!isPopulating.value) {
+            form.accountcode = ''; // reset
+            generateAccountCode();
+        }
     },
 );
 
@@ -147,15 +191,38 @@ const onEdit = async (id: number) => {
         }
 
         const data = await res.json();
-        Object.assign(form, data.data);
-        form.id = data.data.id;
+        const accountData = data.data;
 
-        // Fetch group three options
-        await fetchThree();
-        form.groupthree = data.data.groupthree;
+        isPopulating.value = true;
         isEditMode.value = true;
+
+        // Find GroupOne object to set the select
+        GroupOne.value = props.groupone.find((g) => g.id == accountData.groupone);
+
+        // Manually assign values and wait for fetches to ensure dropdowns are populated
+        form.id = accountData.id;
+        form.groupone = accountData.groupone;
+        form.accounttype = accountData.accounttype;
+
+        await fetchTwo();
+        form.grouptwo = accountData.grouptwo;
+
+        await fetchThree();
+        form.groupthree = accountData.groupthree;
+
+        await fetchFour();
+        form.groupfour = accountData.groupfour;
+
+        form.accountcode = accountData.accountcode;
+        form.description = accountData.description;
+        form.accountusage = accountData.accountusage;
+        form.analyticalcode = accountData.analyticalcode;
+        form.active = String(accountData.active);
+
         showDialog.value = true;
+        isPopulating.value = false;
     } catch (error) {
+        isPopulating.value = false;
         console.error('Fetch error:', error);
     }
 };
@@ -270,6 +337,14 @@ const filteredGroupThree = computed(() => {
     return props.groupthree.filter((n) => n.description && n.description.toLowerCase().includes(queryGroupThree.value.toLowerCase()));
 });
 
+const selectedGroupFour = ref(null);
+const queryGroupFour = ref('');
+const filteredGroupFour = computed(() => {
+    if (queryGroupFour.value === '') return props.groupfour;
+
+    return props.groupfour.filter((n) => n.description && n.description.toLowerCase().includes(queryGroupFour.value.toLowerCase()));
+});
+
 const selectedDescription = ref(null);
 const queryDescription = ref('');
 const filteredDescription = computed(() => {
@@ -308,6 +383,7 @@ const search = () => {
     if (selectedGroupOne.value) params.groupone = selectedGroupOne.value.id;
     if (selectedGroupTwo.value) params.grouptwo = selectedGroupTwo.value.id;
     if (selectedGroupThree.value) params.groupthree = selectedGroupThree.value.id;
+    if (selectedGroupFour.value) params.groupfour = selectedGroupFour.value.id;
     if (selectedDescription.value) params.description = selectedDescription.value.description;
     if (selectedUsages.value) params.accountusage = selectedUsages.value;
     if (selectedAnalytic.value) params.analyticalcode = selectedAnalytic.value;
@@ -462,6 +538,45 @@ const goToPage = (url: string | null) => {
                             </ComboboxOptions>
                         </div>
                     </Combobox>
+                    <Combobox v-model="selectedGroupFour">
+                        <div class="relative w-full md:w-48">
+                            <ComboboxInput
+                                class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Select GroupFour"
+                                @input="queryGroupFour = $event.target.value"
+                                :display-value="(c) => c?.description ?? ''"
+                            />
+                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                            </ComboboxButton>
+
+                            <ComboboxOptions
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
+                            >
+                                <div v-if="filteredGroupFour.length === 0 && queryGroupFour !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                    Nothing found.
+                                </div>
+
+                                <ComboboxOption
+                                    v-for="four in filteredGroupFour"
+                                    :key="four.id"
+                                    :value="four"
+                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                    v-slot="{ selected }"
+                                >
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                        {{ four.description }}
+                                    </span>
+                                    <span
+                                        v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                    >
+                                        <CheckIcon class="h-5 w-5" />
+                                    </span>
+                                </ComboboxOption>
+                            </ComboboxOptions>
+                        </div>
+                    </Combobox>
                     <Combobox v-model="selectedDescription">
                         <div class="relative w-full md:w-48">
                             <ComboboxInput
@@ -596,6 +711,7 @@ const goToPage = (url: string | null) => {
                                 <TableHead>Group One</TableHead>
                                 <TableHead>Group Two</TableHead>
                                 <TableHead>Group Three</TableHead>
+                                <TableHead>Group Four</TableHead>
                                 <TableHead>Account Code</TableHead>
                                 <TableHead>Description</TableHead>
                                 <TableHead>Account Usage</TableHead>
@@ -610,6 +726,7 @@ const goToPage = (url: string | null) => {
                                 <TableCell>{{ chart.group_one.description }}</TableCell>
                                 <TableCell>{{ chart.group_two.description }}</TableCell>
                                 <TableCell>{{ chart.group_three.description }}</TableCell>
+                                <TableCell>{{ chart.group_four.description }}</TableCell>
                                 <TableCell>{{ chart.accountcode }}</TableCell>
                                 <TableCell>{{ chart.description }}</TableCell>
                                 <TableCell>{{ chart.accountusage }}</TableCell>
@@ -722,6 +839,23 @@ const goToPage = (url: string | null) => {
                                 </SelectContent>
                             </Select>
                             <p v-if="form.errors.groupthree" class="mt-1 text-sm text-red-600">{{ form.errors.groupthree }}</p>
+                        </div>
+                        <!-- Fourth Group -->
+                        <div>
+                            <Label for="groupfour" class="text-sm font-medium">Fourth Group<span class="text-red-500">*</span></Label>
+                            <Select v-model="form.groupfour">
+                                <SelectTrigger class="w-full">
+                                    <SelectValue placeholder="Select Group Four" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem v-for="four in groupfourOptions" :key="four.id" :value="four.id">
+                                            {{ four.description }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <p v-if="form.errors.groupfour" class="mt-1 text-sm text-red-600">{{ form.errors.groupfour }}</p>
                         </div>
 
                         <!-- Account Code -->

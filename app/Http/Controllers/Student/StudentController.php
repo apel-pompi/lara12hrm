@@ -77,6 +77,7 @@ class StudentController extends Controller
         ]);
     }
 
+
     public function Search(Request $request)
     {
         $type = $request->get('type', 'name'); //  name | phone | assain | date | status
@@ -738,7 +739,7 @@ class StudentController extends Controller
 
         return redirect()
             ->route('student.index')
-            ->with('success', 'Stusent created successfully.');
+            ->with('success', 'Student created successfully.');
     }
 
     /**
@@ -789,7 +790,7 @@ class StudentController extends Controller
             ]);
         }
 
-        return back()->with('message', 'Stusent update successfully.');
+        return back()->with('message', 'Student updated successfully.');
     }
 
     /**

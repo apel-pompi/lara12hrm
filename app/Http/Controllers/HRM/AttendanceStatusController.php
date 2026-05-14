@@ -55,210 +55,205 @@ class AttendanceStatusController extends Controller
      */
     public function create(Request $request)
     {
-        $yearmonth = $request->yearname . '-' . $request->monthname;
-        $sql = PersonalInfo::with(['designation', 'department'])->where('branch_id', $request->branch_id)->where('active', 1)->where(DB::raw("(date_format(joindate,'%Y-%m'))"), '<=', $yearmonth)->orderBy('id', 'ASC')->get();
+        $branchId  = $request->branch_id;
+        $yearname  = $request->yearname;
+        $monthname = $request->monthname;
+        $yearmonth = $yearname . '-' . $monthname;
+        $monthPad  = str_pad($monthname, 2, '0', STR_PAD_LEFT);
+        $startDate = "{$yearname}-{$monthPad}-01";
+        $daysInMonth = (int) date('t', mktime(0, 0, 0, $monthname, 1, $yearname));
+        $endDate   = "{$yearname}-{$monthPad}-" . str_pad($daysInMonth, 2, '0', STR_PAD_LEFT);
 
-        $daysInMonth = date('t', mktime(0, 0, 0, $request->monthname, 1, $request->yearname));
+        // ── 1. Employees ────────────────────────────────────────────────────
+        $employees = PersonalInfo::with(['designation', 'department'])
+            ->where('branch_id', $branchId)
+            ->where('active', 1)
+            ->where(DB::raw("(date_format(joindate,'%Y-%m'))"), '<=', $yearmonth)
+            ->orderBy('id', 'ASC')
+            ->get();
+
+        $empIds   = $employees->pluck('empid')->toArray(); // device/attendance user_id
+        $empPkIds = $employees->pluck('id')->toArray();    // PK used in Leave.empid
+
+        // ── 2. Work hour setup (ONCE) ────────────────────────────────────────
+        $working = WorkHourSetup::select('workhour')
+            ->where('branch_id', $branchId)
+            ->where('yearname', $yearname)
+            ->where('monthname', $monthname)
+            ->where('active', 1)
+            ->first();
+
+        // ── 3. Attendance setting (ONCE) ─────────────────────────────────────
+        $attenSetting = DB::table('atten_settings')
+            ->where('branch_id', $branchId)
+            ->first();
+
+        // ── 4. Deduct rules (ONCE) ───────────────────────────────────────────
+        $deductRules = AttenDeduct::where('active', 1)
+            ->where('branch_id', $branchId)
+            ->get();
+
+        // ── 5. All attendance for the month (ONCE) ───────────────────────────
+        // Group by: empid_date  →  collection of records
+        $allAttendances = DB::table('attendances')
+            ->whereIn('user_id', $empIds)
+            ->whereDate('record_time', '>=', $startDate)
+            ->whereDate('record_time', '<=', $endDate)
+            ->get()
+            ->groupBy(fn($r) => $r->user_id . '_' . date('Y-m-d', strtotime($r->record_time)));
+
+        // ── 6. All approved leaves for the month (ONCE) ──────────────────────
+        $allLeaves = Leave::where('status', 3)
+            ->whereIn('empid', $empPkIds)
+            ->where('fromdate', '<=', $endDate)
+            ->where('todate',   '>=', $startDate)
+            ->get();
+
+        // ── Helpers ──────────────────────────────────────────────────────────
+        $getStatus = function (?string $intime) use ($attenSetting): string {
+            if (!$attenSetting || !$intime) return 'Absent';
+            $t = date('H:i:s', strtotime($intime));
+            if ($t <= $attenSetting->ptime) return $attenSetting->pname;
+            if ($t <= $attenSetting->ltime) return $attenSetting->lname;
+            return 'Absent';
+        };
+
+        $getDeductSeconds = function (?string $intime) use ($deductRules): int {
+            if (!$intime) return 0;
+            $t = date('h:i:s', strtotime($intime));
+            $rule = $deductRules->first(
+                fn($r) => $r->starttime <= $t && $r->endtime >= $t
+            );
+            if (!$rule || !$rule->deduct) return 0;
+            if (preg_match('/^(\d{1,2}):(\d{2})$/', $rule->deduct, $m)) {
+                return ($m[1] * 3600) + ($m[2] * 60);
+            }
+            return is_numeric($rule->deduct) ? (int)($rule->deduct * 3600) : 0;
+        };
+
+        $hasLeave = function (int $empPkId, string $date) use ($allLeaves): bool {
+            return $allLeaves->contains(
+                fn($l) => $l->empid == $empPkId && $l->fromdate <= $date && $l->todate >= $date
+            );
+        };
+
+        // ── Process each employee ─────────────────────────────────────────────
         $allSummary = [];
-        foreach ($sql as $key) {
-            $reportData = [];
-            $working = WorkHourSetup::select('workhour')->where('branch_id', $request->branch_id)->where('yearname', $request->yearname)->where('monthname', $request->monthname)->where('active', 1)->first();
+
+        foreach ($employees as $key) {
+            $presentCount = $lateCount = $absentCount = $leaveCount = 0;
+            $totalWorkSec = $totalDeductSec = $totalNetSec = 0;
+
             for ($i = 1; $i <= $daysInMonth; $i++) {
-                $values = str_pad($i, 2, '0', STR_PAD_LEFT);
-                $currentDate = $request->yearname . '-' . $request->monthname . '-' . $values;
-                //In Time
-                $inquery = Attendance::getAttendanceIn($key->empid, $currentDate);
-                $intime = $inquery->record_time ?? null;
-                $in = $intime ? date('h:i:s A', strtotime($intime)) : '---';
-                //Out Time
-                $outquery = Attendance::getAttendanceOut($key->empid, $currentDate);
-                $outtime = $outquery->record_time ?? null;
+                $dayPad      = str_pad($i, 2, '0', STR_PAD_LEFT);
+                $currentDate = "{$yearname}-{$monthPad}-{$dayPad}";
+                $mapKey      = $key->empid . '_' . $currentDate;
 
-                $outtimeRaw = $outtime ? Carbon::parse($outtime) : null;
+                $dayRecords = $allAttendances->get($mapKey, collect());
+                $intime     = optional($dayRecords->sortBy('record_time')->first())->record_time;
+                $outtime    = optional($dayRecords->sortByDesc('record_time')->first())->record_time;
 
+                $statusname = $intime ? $getStatus($intime) : 'Absent';
 
-                $out = $outtime ? date('h:i:s A', strtotime($outtime)) : '---';
-
-                //Status
-                $status = Attendance::getAttendanceStatus($key->empid, $currentDate);
-                $statusname = $status->TimeName ?? '---';
-                // Work hours calculation
-                $workHours = '---';
-                if ($statusname != 'Absent' && $intime && $outtime) {
-                    $start = strtotime($intime);
-                    $end = strtotime($outtime);
-                    $diffSeconds = $end - $start;
-                    $hours = floor($diffSeconds / 3600);
-                    $minutes = floor(($diffSeconds % 3600) / 60);
-                    $workHours = sprintf("%02d:%02d", $hours, $minutes); // format HH:MM
-                }
-
-                if ($outtimeRaw && $outtimeRaw->lt(Carbon::parse($currentDate . '15:00:00'))) {
-                    //$workHours = '00:00';
+                // Out before 15:00 → Absent
+                if ($outtime && Carbon::parse($outtime)->lt(Carbon::parse($currentDate . ' 15:00:00'))) {
                     $statusname = 'Absent';
                 }
 
-                $getintime = $intime ? date('h:i:s', strtotime($intime)) : '---';
-                $deduct = AttenDeduct::getDeductHour($request->branch_id, $getintime);
-
-                if ($deduct == 0) {
-                    $deduct = '---';
-                }
-
-                if ($workHours && preg_match('/^(\d{1,2}):(\d{2})$/', $workHours)) {
-
-                    list($h, $m) = explode(':', $workHours);
-                    $workHoursInSeconds = ($h * 3600) + ($m * 60);
-
-                    // Deduct hour format convert
-                    if ($deduct && preg_match('/^(\d{1,2}):(\d{2})$/', $deduct)) {
-                        list($dh, $dm) = explode(':', $deduct);
-                        $deductSeconds = ($dh * 3600) + ($dm * 60);
-                    } else {
-                        $deductSeconds = 0;  // fallback if deduct is empty
-                    }
-
-                    // net seconds
-                    $netSeconds = max(0, $workHoursInSeconds - $deductSeconds);
-
-                    // convert to HH:MM
-                    $nh = floor($netSeconds / 3600);
-                    $nm = floor(($netSeconds % 3600) / 60);
-
-                    $nethour = sprintf("%02d:%02d", $nh, $nm);
-                } else {
-
-                    $nethour = '---';
-                }
-
-
-                $leave = Leave::where('empid', $key->id)->where('status', 3)->whereDate('fromdate', '<=', $currentDate)->whereDate('todate', '>=', $currentDate)->exists();
-                if ($leave) {
+                // Leave override
+                if ($hasLeave($key->id, $currentDate)) {
                     $statusname = 'Leave';
                 }
 
+                // Work seconds
+                $workSec = 0;
+                if ($statusname !== 'Absent' && $intime && $outtime) {
+                    $workSec = max(0, strtotime($outtime) - strtotime($intime));
+                }
 
-                $reportData[] = [
-                    'empname' => $key->name,
-                    'designation' => $key->designation->desname,
-                    'department' => $key->department->deptname,
-                    'intime' => $in,
-                    'outtime' => $out,
-                    'working' => $working->workhour ?? '---',
-                    'deduct' => $deduct,
-                    'nethour' => $nethour,
-                    'status' => $statusname,
-                    'workhours' => $workHours,
-                ];
+                // Deduct seconds
+                $deductSec = $getDeductSeconds($intime);
+
+                // Net seconds
+                $netSec = max(0, $workSec - $deductSec);
+
+                // Counts
+                match ($statusname) {
+                    'Present' => $presentCount++,
+                    'Late'    => $lateCount++,
+                    'Absent'  => $absentCount++,
+                    'Leave'   => $leaveCount++,
+                    default   => null,
+                };
+
+                $totalWorkSec   += $workSec;
+                $totalDeductSec += $deductSec;
+                $totalNetSec    += $netSec;
             }
 
-            // Summary Calculation
-            $presentCount = 0;
-            $lateCount = 0;
-            $absentCount = 0;
-            $leaveCount = 0;
-            $totalWorkSeconds = 0;
-            $totalDeductSeconds = 0;
-            $totalNetSeconds = 0;
-            foreach ($reportData  as $day) {
+            // Format totals
+            $fmt = fn(int $s) => sprintf('%02d:%02d', floor($s / 3600), floor(($s % 3600) / 60));
 
-                if ($day['status'] == 'Present') {
-                    $presentCount++;
-                } elseif ($day['status'] == 'Late') {
-                    $lateCount++;
-                } elseif ($day['status'] == 'Absent') {
-                    $absentCount++;
-                } elseif ($day['status'] == 'Leave') {
-                    $leaveCount++;
-                }
-
-
-                // Workhours sum
-                if ($day['workhours'] !== '---' && preg_match('/^(\d{2}):(\d{2})$/', $day['workhours'], $m)) {
-                    $totalWorkSeconds += ($m[1] * 3600) + ($m[2] * 60);
-                }
-                // deduct sum
-                if (!empty($day['deduct']) && is_numeric($day['deduct'])) {
-                    $totalDeductSeconds += $day['deduct'] * 3600;
-                }
-                // Net work sum
-                if ($day['nethour'] !== '---' && preg_match('/^(\d{2}):(\d{2})$/', $day['nethour'], $n)) {
-                    $totalNetSeconds += ($n[1] * 3600) + ($n[2] * 60);
-                }
-            }
-            // Total Work Hours output
-            $totalHours = floor($totalWorkSeconds / 3600);
-            $totalMinutes = floor(($totalWorkSeconds % 3600) / 60);
-            $totalWorkHoursFormatted = sprintf("%02d:%02d", $totalHours, $totalMinutes);
-            // Total deduct Hours output
-            $dh = floor($totalDeductSeconds / 3600);
-            $dm = floor(($totalDeductSeconds % 3600) / 60);
-            $totalDeductFormatted = sprintf("%02d:%02d", $dh, $dm);
-
-            // Total Net Hours output
-            $absentSeconds = $absentCount * 8 * 3600;
-
-            $leaveSeconds = $leaveCount * 8 * 3600;
-
-            $finalNetSeconds = $totalNetSeconds - $totalDeductSeconds + $leaveSeconds - $absentSeconds;
-
-            if ($finalNetSeconds < 0) {
-                $finalNetSeconds = 0;
-            }
-            $fnH = floor($finalNetSeconds / 3600);
-            $fnM = floor(($finalNetSeconds % 3600) / 60);
-
-            $totalNetHoursFormatted = sprintf("%02d:%02d", $fnH, $fnM);
-
+            $absentSec      = $absentCount * 8 * 3600;
+            $leaveSec       = $leaveCount  * 8 * 3600;
+            $finalNetSec    = max(0, $totalNetSec - $totalDeductSec + $leaveSec - $absentSec);
 
             $allSummary[] = [
-                'empid'       => $key->empid,
-                'name'        => $key->empname,
-                'department'  => $key->department->deptname,
-                'designation'  => $key->designation->desname,
-                'present'     => $presentCount,
-                'late'        => $lateCount,
-                'absent'      => $absentCount,
-                'leave'       => $leaveCount,
-                'working'     => $working,
-                'total_work'  => $totalWorkHoursFormatted,
-                'total_deduct' => $totalDeductFormatted,
-                'total_net'   => $totalNetHoursFormatted,
+                'empid'        => $key->empid,
+                'absent'       => $absentCount,
+                'leave'        => $leaveCount,
+                'working'      => $working,
+                'total_work'   => $fmt($totalWorkSec),
+                'total_deduct' => $fmt($totalDeductSec),
+                'total_net'    => $fmt($finalNetSec),
             ];
         }
+
+        // ── Bulk insert new records ───────────────────────────────────────────
+        $existingEmpIds = AttendanceStatus::where('branch_id', $branchId)
+            ->where('yearname', $yearname)
+            ->where('monthname', $monthname)
+            ->pluck('empid')
+            ->toArray();
+
+        $toInsert = [];
         foreach ($allSummary as $value) {
-            $totalhour = $value['total_work'];
-            $deducthour = $value['total_deduct'];
-            $nethour = $value['total_net'];
-            $payablehour = $nethour;
-
-            $chk = AttendanceStatus::where('empid', $value['empid'])->where('branch_id', $request->branch_id)->where('yearname', $request->yearname)->where('monthname', $request->monthname)->exists();
-
-            if (!$chk) {
-                AttendanceStatus::create([
-                    'empid' => $value['empid'],
-                    'branch_id' => $request->branch_id,
-                    'yearname' => $request->yearname,
-                    'monthname' => $request->monthname,
-                    'workhour' => $value['working']['workhour'] ?? '---',
-                    'totalhour' => $totalhour,
-                    'deducthour' => $deducthour,
-                    'absent' => $value['absent'],
-                    'leave' => $value['leave'],
-                    'nethour' => $nethour,
-                    'hrsurplus' => null,
-                    'payablehour' => $payablehour,
-                    'salary' => null,
-                    'payment' => null,
-                    'active' => 0,
-                    'user_id' => Auth::id()
-                ]);
+            if (!in_array($value['empid'], $existingEmpIds)) {
+                $toInsert[] = [
+                    'empid'       => $value['empid'],
+                    'branch_id'   => $branchId,
+                    'yearname'    => $yearname,
+                    'monthname'   => $monthname,
+                    'workhour'    => $value['working']->workhour ?? '---',
+                    'totalhour'   => $value['total_work'],
+                    'deducthour'  => $value['total_deduct'],
+                    'absent'      => $value['absent'],
+                    'leave'       => $value['leave'],
+                    'nethour'     => $value['total_net'],
+                    'hrsurplus'   => null,
+                    'payablehour' => $value['total_net'],
+                    'salary'      => null,
+                    'payment'     => null,
+                    'active'      => 0,
+                    'user_id'     => Auth::id(),
+                    'created_at'  => now(),
+                    'updated_at'  => now(),
+                ];
             }
         }
 
+        if (!empty($toInsert)) {
+            AttendanceStatus::insert($toInsert);
+        }
 
         return Inertia::render('allpages/hrm/attendanceStatusview', [
-            'alldata' => AttendanceStatus::with(['employee.designation', 'employee.department'])->where('branch_id', $request->branch_id)->where('yearname', $request->yearname)->where('monthname', $request->monthname)->get()
+            'alldata' => AttendanceStatus::with(['employee.designation', 'employee.department'])
+                ->where('branch_id', $branchId)
+                ->where('yearname', $yearname)
+                ->where('monthname', $monthname)
+                ->get(),
+            'monthname' => $monthname,
+            'yearname'  => $yearname,
         ]);
     }
 

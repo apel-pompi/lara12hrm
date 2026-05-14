@@ -3,26 +3,26 @@
 namespace App\Http\Controllers\Accounts;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Accounts\GroupTwo;
-use App\Http\Requests\GroupTwo\StoreGroupTwoRequest;
-use App\Http\Requests\GroupTwo\UpdateGroupTwoRequest;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\Accounts\GroupFour;
+use App\Http\Requests\GroupFour\StoreGroupFourRequest;
+use App\Http\Requests\GroupFour\UpdateGroupFourRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-class GroupTwoController extends Controller
+class GroupFourController extends Controller
 {
     use AuthorizesRequests;
+
+
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreGroupTwoRequest $request)
+    public function store(StoreGroupFourRequest $request)
     {
-
         try {
-            $this->authorize('GroupTwo.store');
+            $this->authorize('GroupFour.store');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
@@ -32,16 +32,16 @@ class GroupTwoController extends Controller
 
         $data = $request->validated();
         $data['user_id'] = Auth::id();
-        $store = GroupTwo::create($data);
+        $store = GroupFour::create($data);
         if ($store) {
             return back()->with([
                 'success' => true,
-                'message' => 'Group Two created successfully'
+                'message' => 'Group Four created successfully'
             ]);
         } else {
             return back()->with([
                 'error' => true,
-                'message' => 'Group Two not created'
+                'message' => 'Group Four not created'
             ]);
         }
     }
@@ -49,30 +49,30 @@ class GroupTwoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(GroupTwo $groupTwo)
+    public function show(GroupFour $groupFour)
     {
         try {
-            $this->authorize('GroupTwo.show');
+            $this->authorize('GroupThree.four');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-        return response()->json($groupTwo);
+        return response()->json($groupFour);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(GroupTwo $groupTwo)
+    public function edit(GroupFour $groupFour)
     {
         try {
-            $this->authorize('GroupTwo.edit');
+            $this->authorize('GroupFour.edit');
 
             return response()->json([
                 'success' => true,
-                'data' => $groupTwo,
+                'data' => $groupFour,
             ]);
         } catch (AuthorizationException $e) {
             return response()->json([
@@ -86,10 +86,10 @@ class GroupTwoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateGroupTwoRequest $request, GroupTwo $groupTwo)
+    public function update(UpdateGroupFourRequest $request, GroupFour $groupFour)
     {
         try {
-            $this->authorize('GroupTwo.update');
+            $this->authorize('GroupFour.update');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
@@ -97,17 +97,17 @@ class GroupTwoController extends Controller
             ]);
         }
 
-        $groupTwo->update($request->validated());
+        $groupFour->update($request->validated());
 
-        if ($groupTwo) {
+        if ($groupFour) {
             return back()->with([
                 'success' => true,
-                'message' => 'Group Two Update successfully'
+                'message' => 'Group Four Update successfully'
             ]);
         } else {
             return back()->with([
                 'error' => true,
-                'message' => 'Group Two not Updateed'
+                'message' => 'Group Four not Updateed'
             ]);
         }
     }
@@ -115,11 +115,10 @@ class GroupTwoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(GroupTwo $groupTwo)
+    public function destroy(GroupFour $groupFour)
     {
-
         try {
-            $this->authorize('GroupTwo.destroy');
+            $this->authorize('GroupFour.destroy');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
@@ -128,23 +127,19 @@ class GroupTwoController extends Controller
         }
 
         try {
-            $groupTwo->forceDelete();
-            return back()->with([
-                'success' => true,
-                'message' => 'Group Two deleted successfully'
-            ]);
+            $groupFour->forceDelete();
         } catch (\Exception $e) {
-            return back()->with([
-                'error' => true,
-                'message' => 'Failed to delete Group Two.'
-            ]);
+            return response()->json([
+                'message' => 'Failed to delete Group Three.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
-    public function updateStatus(Request $request, $groupTwo)
+    public function updateStatus(Request $request, $groupFour)
     {
         try {
-            $this->authorize('GroupTwo.status');
+            $this->authorize('GroupFour.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
@@ -156,11 +151,11 @@ class GroupTwoController extends Controller
         $validated = $request->validate([
             'active' => 'required|boolean' // or 'integer|in:0,1'
         ]);
-        $groupTwo = GroupTwo::findOrFail($groupTwo);
-        $updated = $groupTwo->update(['active' =>  $validated['active']]);
+        $groupFour = GroupFour::findOrFail($groupFour);
+        $updated = $groupFour->update(['active' =>  $validated['active']]);
         if ($updated) {
             return back()->with([
-                'message' => 'Group Two status updated successfully.'
+                'message' => 'Group Four status updated successfully.'
             ]);
         }
         return back()->with([

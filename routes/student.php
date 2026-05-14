@@ -20,7 +20,7 @@ use App\Http\Controllers\Student\{
 };
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(function () {
+Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(function () {
 
     // Student Stage
     Route::controller(StudentStageController::class)
@@ -86,14 +86,14 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
             function () {
                 Route::get('/', 'index')->name('studentActivities.index');
                 Route::put('/status/archive', 'updateArchive')->name('studentActivities.updateArchive');
-                Route::put('/status/transfer', 'confirmTransfer')->name('studentActivities.confirmTransfer');
-                Route::put('/status/transfer', 'confirmonBoard')->name('studentActivities.confirmonBoard');
+                Route::put('/status/confirmTransfer', 'confirmTransfer')->name('studentActivities.confirmTransfer');
+                Route::put('/status/confirmonBoard', 'confirmonBoard')->name('studentActivities.confirmonBoard');
                 Route::put('/status', 'updateRate')->name('studentActivities.updateRate');
                 Route::post('/assignee', 'updateAssignee')->name('studentActivities.updateAssignee');
             }
         );
-    
-    
+
+
     // Student Application
     Route::controller(StudentApplicationController::class)
         ->prefix('student/activities/{student}/application')
@@ -134,9 +134,9 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
             Route::get('/{studentInService}/edit', 'edit')->name('studentInService.edit');
             Route::put('/{studentInService}', 'update')->name('studentInService.update');
             Route::delete('/show/{studentInService}', 'destroy')->name('studentInService.destroy');
-            Route::get('{studentInService}/edit', 'editApplication')->name('studentInService.editApplication');
+            Route::get('{studentInService}/editApplication', 'editApplication')->name('studentInService.editApplication');
         });
-    
+
     // Student Documents
     Route::controller(StudentDocument::class)
         ->prefix('student/activities/{student}/document')
@@ -247,15 +247,14 @@ Route::middleware(['verified', 'auth','isBanned','UserActivity'])->group(functio
 
                 Route::get('/ledger', 'studentLedger')->name('leadreports.studentLedger');
                 Route::get('/ledger/{student}', 'studentLedgerReport')->name('leadreports.studentLedgerReport');
-                
+
                 Route::get('/revenue', 'studentRevenue')->name('leadreports.studentRevenue');
                 Route::get('/revenue/{formdate}/{todate}/{isAdmin}/{employee?}', 'studentRevenueReport')->name('leadreports.studentRevenueReport');
 
                 Route::get('/refund', 'studentRefund')->name('leadreports.studentRefund');
                 Route::get('/refund/{formdate}/{todate}/{isAdmin}/{employee?}', 'studentRefundReport')->name('leadreports.studentRefundReport');
-                
+
                 Route::get('/emp/{formdate}/{todate}/{isAdmin}/{employee?}', 'MonthlyEmpLeadReport')->name('leadreports.MonthlyEmpLeadReport');
             }
         );
-    
 });

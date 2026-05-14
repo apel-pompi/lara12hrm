@@ -25,6 +25,7 @@ class StoreChartOfAccountRequest extends FormRequest
             'groupone' => ['required', 'integer', 'exists:group_ones,id'],
             'grouptwo' => ['required', 'integer', 'exists:group_twos,id'],
             'groupthree' => ['required', 'integer', 'exists:group_threes,id'],
+            'groupfour' => ['required', 'integer', 'exists:group_fours,id'],
             'accountcode' => ['required', 'string', 'max:255', 'unique:chart_of_accounts,accountcode'],
             'description' => ['required', 'string', 'max:255', 'unique:chart_of_accounts,description'],
             'accounttype' => ['required', 'string', 'max:50'],

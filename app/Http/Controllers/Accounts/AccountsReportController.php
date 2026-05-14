@@ -56,8 +56,8 @@ class AccountsReportController extends Controller
         $accountType = $request->input('accounttype');
 
         $groupOne = GroupOne::with([
-            'GroupTwo.GroupThree.chartOfAccounts' => function ($q) {
-                $q->orderBy('accountcode', 'asc');
+            'GroupTwo.GroupThree.GroupFour.chartOfAccounts' => function ($q) {
+                $q->where('active', 1)->orderBy('accountcode', 'asc');
             }
         ])
             ->where('active', 1)
@@ -68,14 +68,13 @@ class AccountsReportController extends Controller
             ->filter(function ($group) {
                 return $group->GroupTwo
                     ->flatMap->GroupThree
+                    ->flatMap->GroupFour
                     ->flatMap->chartOfAccounts
                     ->isNotEmpty();
             })
             ->values();
 
-
-
-        $pdf = PDF::loadView('exports.accounts.chartofaccounts', [
+        $pdf = Pdf::loadView('exports.accounts.chartofaccounts', [
             'company' => $company,
             'accounts' => $groupOne,
         ])
@@ -85,7 +84,7 @@ class AccountsReportController extends Controller
                 'margin-right'  => 5,
                 'margin-bottom' => 5,
                 'margin-left'   => 5,
-            ]);;
+            ]);
 
         return $pdf->stream("chartofaccounts.pdf");
     }
@@ -373,7 +372,7 @@ class AccountsReportController extends Controller
         /* =============================
          | 1. CASH & BANK ACCOUNT CODES
          ============================= */
-        $cashAccounts = ChartOfAccount::where('accountusage', ['Ledger', 'AR'])
+        $cashAccounts = ChartOfAccount::whereIn('accountusage', ['Ledger', 'AR'])
             ->whereIn('analyticalcode', ['Cash'])
             ->pluck('accountcode');
         /* =============================
@@ -424,7 +423,7 @@ class AccountsReportController extends Controller
             ->join('chart_of_accounts', 'chart_of_accounts.accountcode', '=', 'voucher_balances.accountcode')
             ->whereBetween('voucherdate', [$from, $to])
             ->where('voucher_balances.status', 'Post')
-            ->where('chart_of_accounts.accounttype', 'ASSET')
+            ->where('chart_of_accounts.accounttype', 'ASSETS')
             ->whereNotIn('chart_of_accounts.analyticalcode', ['Cash'])
             ->whereIn('voucher_balances.accountcode', $cashAccounts)
             ->when(
@@ -802,7 +801,7 @@ class AccountsReportController extends Controller
                     SUM(a.baseamt) AS balance
                 FROM voucher_balances a
                 JOIN vw_chartofaccs b ON a.accountcode = b.accountcode
-                WHERE b.groupone_name IN ('ASSET','LIABILITIES')
+                WHERE b.groupone_name IN ('ASSETS','LIABILITIES')
                 AND a.voucherdate BETWEEN ? AND ?
                 AND a.status = 'Post'
                 " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
@@ -827,7 +826,7 @@ class AccountsReportController extends Controller
                     AND a.voucherdate BETWEEN ? AND ?
                     AND a.status = 'Post'
                     " . ($request->filled('branch_id') ? " AND a.branch_id = ? " : "") . "
-                WHERE b.groupone_name IN ('ASSET','LIABILITIES')
+                WHERE b.groupone_name IN ('ASSETS','LIABILITIES')
                 GROUP BY 
                     b.groupone_name,
                     b.accountcode,

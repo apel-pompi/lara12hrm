@@ -69,14 +69,6 @@ const filteredBranch = computed(() => {
     return props.branch.filter((n) => n.branchname && n.branchname.toLowerCase().includes(queryBranch.value.toLowerCase()));
 });
 
-const selectedDebit = ref(null);
-const queryDebit = ref('');
-const filteredDebit = computed(() => {
-    if (queryDebit.value === '') return props.draccountcode;
-
-    return props.draccountcode.filter((n) => n.description && n.description.toLowerCase().includes(queryDebit.value.toLowerCase()));
-});
-
 const selectedCredit = ref(null);
 const queryCredit = ref('');
 const filteredCredit = computed(() => {
@@ -310,7 +302,6 @@ const onReport = async (vhd: number) => {
 
     window.open(url, '_blank');
 };
-
 
 const selectedVoucher = ref(null);
 const accountBalance = ref<number | null>(null);
@@ -984,7 +975,11 @@ const goToPage = (url: string | null) => {
                 <div>
                     <div class="flex items-center justify-between">
                         <Label for="creditAcc" class="text-sm font-medium">Credit Account<span class="text-red-500">*</span></Label>
-                        <span v-if="accountBalance !== null" class="text-xs font-semibold" :class="accountBalance >= 0 ? 'text-green-600' : 'text-red-600'">
+                        <span
+                            v-if="accountBalance !== null"
+                            class="text-xs font-semibold"
+                            :class="accountBalance >= 0 ? 'text-green-600' : 'text-red-600'"
+                        >
                             Balance: ৳ {{ accountBalance.toLocaleString() }}
                         </span>
                     </div>

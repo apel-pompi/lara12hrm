@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Accounts;
 
 use App\Http\Controllers\Controller;
+use App\Models\Accounts\GroupFour;
 use App\Models\Accounts\GroupOne;
 use App\Models\Accounts\GroupTwo;
 use App\Models\Accounts\GroupThree;
@@ -34,7 +35,7 @@ class AccountsSetup extends Controller
 
     public function Grouptwo($GroupOne)
     {
-       
+
         try {
             $this->authorize('accsetting.GroupTwo');
         } catch (AuthorizationException $e) {
@@ -43,7 +44,7 @@ class AccountsSetup extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-        
+
         $idcode = $GroupOne . '0' . +1;
 
         return Inertia::render('allpages/accounts/setting/grouptwo', [
@@ -57,7 +58,7 @@ class AccountsSetup extends Controller
 
     public function Groupthree($GroupOne, $GroupTwo)
     {
-        
+
         try {
             $this->authorize('accsetting.GroupThree');
         } catch (AuthorizationException $e) {
@@ -67,20 +68,20 @@ class AccountsSetup extends Controller
             ]);
         }
 
-        
+
         // If not exist then GroupTwo info only
         $grouptwo = GroupTwo::with('GroupOne')
             ->where('groupone', $GroupOne)
             ->where('id', $GroupTwo)
             ->first();
-        
+
         // Generate auto three code
         $codethree = GroupThree::where('groupone', $GroupOne)
             ->where('grouptwo', $GroupTwo)
             ->selectRaw("IF(MAX(RIGHT(code,3)) IS NULL, 1, MAX(RIGHT(code,3)) + 1) AS threecode")
             ->first()
             ->threecode;
-        
+
         if ($codethree <= 9) {
             $code = "{$grouptwo->code}-00{$codethree}";
         } elseif ($codethree <= 99) {
@@ -88,13 +89,60 @@ class AccountsSetup extends Controller
         } else {
             $code = "{$grouptwo->code}-{$codethree}";
         }
-        
+
         return Inertia::render('allpages/accounts/setting/groupthree', [
             'groupInfo'  => $grouptwo,
             'code'       => $code,
             'groupthree' => GroupThree::with(['GroupOne', 'GroupTwo', 'user'])
                 ->where('groupone', $GroupOne)
                 ->where('grouptwo', $GroupTwo)
+                ->orderBy('id', 'DESC')
+                ->paginate(10),
+        ]);
+    }
+
+    public function Groupfour($GroupOne, $GroupTwo, $GroupThree)
+    {
+
+        try {
+            $this->authorize('accsetting.GroupFour');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+
+
+        // If not exist then GroupThree info only
+        $groupthree = GroupThree::with('GroupOne', 'GroupTwo',)
+            ->where('groupone', $GroupOne)
+            ->where('id', $GroupThree)
+            ->first();
+
+        // Generate auto three code
+        $codefour = GroupFour::where('groupone', $GroupOne)
+            ->where('grouptwo', $GroupTwo)
+            ->where('groupthree', $GroupThree)
+            ->selectRaw("IF(MAX(RIGHT(code,3)) IS NULL, 1, MAX(RIGHT(code,3)) + 1) AS fourcode")
+            ->first()
+            ->fourcode;
+
+        if ($codefour <= 9) {
+            $code = "{$groupthree->code}-00{$codefour}";
+        } elseif ($codefour <= 99) {
+            $code = "{$groupthree->code}-0{$codefour}";
+        } else {
+            $code = "{$groupthree->code}-{$codefour}";
+        }
+
+        return Inertia::render('allpages/accounts/setting/groupfour', [
+            'groupInfo'  => $groupthree,
+            'code'       => $code,
+            'groupfour' => GroupFour::with(['GroupOne', 'GroupTwo', 'GroupThree', 'user'])
+                ->where('groupone', $GroupOne)
+                ->where('grouptwo', $GroupTwo)
+                ->where('groupthree', $GroupThree)
                 ->orderBy('id', 'DESC')
                 ->paginate(10),
         ]);
