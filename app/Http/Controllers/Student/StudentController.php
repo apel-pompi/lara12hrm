@@ -294,7 +294,7 @@ class StudentController extends Controller
         // Base query
         $students = Student::query()
             ->select('id', 'fname', 'lname', 'phone', 'assain_user', 'status', 'created_at')
-            ->where('status', 0)
+            ->whereNull('status')
             ->with(['assainuser:id,name']);
 
         if ($query) {
@@ -637,7 +637,6 @@ class StudentController extends Controller
 
 
         return Inertia::render('allpages/Agency/Student/studentcreate', [
-            'student' => Student::orderBy('id', 'desc')->get(),
             'countries' => Country::where('status', 1)->get(['id', 'name', 'iso3', 'phonecode', 'currency', 'currency_symbol']),
             'studentstage' => StudentStage::where('active', 1)->get(['id', 'name']),
             'users' => User::get(['id', 'name']),

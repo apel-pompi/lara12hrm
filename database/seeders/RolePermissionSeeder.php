@@ -606,7 +606,7 @@ class RolePermissionSeeder extends Seeder
                     'accsetting.GroupOne',
                     'accsetting.GroupTwo',
                     'accsetting.GroupThree',
-                    'accsetting.GroupFour',
+                    'accsetting.    ',
                 ],
             ],
             //Group One Setting
