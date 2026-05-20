@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Student\StudentInService;
 use App\Http\Requests\StudentInService\StoreStudentInServiceRequest;
 use App\Http\Requests\StudentInService\UpdateStudentInServiceRequest;
+use App\Models\Accounts\ChartOfAccount;
+use App\Models\Accounts\CodesParam;
 use App\Models\AgencySetting\Workflow;
 use App\Models\AgencySetting\WorkflowStage;
 use App\Models\Partner\PartnerBranch;
@@ -13,7 +15,7 @@ use App\Models\Product\Product;
 use App\Models\Student\Student;
 use App\Models\Student\StudentActivities;
 use App\Models\Student\StudentApplication;
-use App\Models\Student\StudentQuotation;
+use App\Models\Student\StudentQuotationHD;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
@@ -140,7 +142,47 @@ class StudentInServiceController extends Controller
                 ]);
 
                 $data->update(['status' => 'converted']);
-            }else{
+
+                //chart of account table update 
+                $codesParam = CodesParam::where('type', 'Student Advance')->first();
+                if ($codesParam && $codesParam->cracc) {
+                    $cracc = $codesParam->cracc;
+                    $parts = explode('-', $cracc);
+                    if (count($parts) >= 3) {
+                        $prefix = implode('-', array_slice($parts, 0, 3));
+
+                        // Find next suffix
+                        $maxSuffix = ChartOfAccount::where('accountcode', 'like', "$prefix-%")
+                            ->selectRaw("MAX(CAST(SUBSTRING_INDEX(accountcode, '-', -1) AS UNSIGNED)) as max_val")
+                            ->value('max_val');
+
+                        $nextSuffixVal = $maxSuffix ? ((int)$maxSuffix + 1) : 1;
+                        $nextSuffix = str_pad($nextSuffixVal, 3, '0', STR_PAD_LEFT);
+                        $newAccountCode = $prefix . '-' . $nextSuffix;
+
+                        // Check if account already exists for this student
+                        $existingCOA = ChartOfAccount::where('description', $checkID->student_id)->first();
+                        if (!$existingCOA) {
+                            $originalCOA = ChartOfAccount::where('accountcode', $cracc)->first();
+                            if ($originalCOA) {
+                                ChartOfAccount::create([
+                                    'groupone'       => $originalCOA->groupone,
+                                    'grouptwo'       => $originalCOA->grouptwo,
+                                    'groupthree'     => $originalCOA->groupthree,
+                                    'groupfour'      => $originalCOA->groupfour,
+                                    'accountcode'    => $newAccountCode,
+                                    'description'    => $checkID->student_id,
+                                    'accounttype'    => $originalCOA->accounttype,
+                                    'accountusage'   => $originalCOA->accountusage,
+                                    'analyticalcode' => $originalCOA->analyticalcode,
+                                    'user_id'        => Auth::id(),
+                                    'active'         => 1,
+                                ]);
+                            }
+                        }
+                    }
+                }
+            } else {
                 return back()->with('message', 'Student application is allready created');
             }
 
@@ -153,7 +195,6 @@ class StudentInServiceController extends Controller
             ]);
         }
         return back()->with('message', 'Student application created successfully.');
-        
     }
 
     /**
@@ -222,7 +263,6 @@ class StudentInServiceController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
     }
 
     /**
@@ -238,7 +278,6 @@ class StudentInServiceController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
     }
 
     /**
@@ -254,7 +293,6 @@ class StudentInServiceController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
     }
 
     /**
@@ -286,7 +324,7 @@ class StudentInServiceController extends Controller
                 ], 422);
             }
 
-            $exist = StudentQuotation::where([
+            $exist = StudentQuotationHD::where([
                 'service_id'       => $studentInService->id
             ])->exists();
 

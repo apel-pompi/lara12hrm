@@ -34,9 +34,9 @@ class CodesParamController extends Controller
 
         return Inertia::render('allpages/accounts/setting/actoglsetup', [
 
-            'actogl' => CodesParam::with('branch', 'craccount', 'draccount', 'taxaccount')->get(),
+            'actogl' => CodesParam::with('branch', 'craccount.GroupFour', 'draccount', 'taxaccount')->get(),
             'supplier' => Supplier::where('active', 1)->get(),
-            'craccountcode' => ChartOfAccount::where('active', 1)->where('accounttype', 'LIABILITIES')->whereIn('accountusage', ['Ledger', 'AP'])->get(),
+            'craccountcode' => ChartOfAccount::with('GroupFour')->where('active', 1)->where('accounttype', 'LIABILITIES')->whereIn('accountusage', ['Ledger', 'AP'])->get(),
 
             'draccountcode' => ChartOfAccount::where('active', 1)->whereIn('accounttype', ['ASSETS', 'EXPENDITURES'])->whereIn('accountusage', ['Ledger', 'AR'])->where('analyticalcode', 'Cash')->get(),
 

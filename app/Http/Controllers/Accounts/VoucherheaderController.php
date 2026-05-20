@@ -84,59 +84,89 @@ class VoucherheaderController extends Controller
             ]);
         }
 
-        $jurnalNo = $this->GetJurnalNO();
         $voucherDate = Carbon::parse($request->voucherdate);
         $details = $request->input('details', []);
-        DB::transaction(function () use ($request, $jurnalNo, $voucherDate, $details) {
-            Voucherheader::create([
-                'vouchernumber' => $jurnalNo,
-                'voucherdate'   => $request->voucherdate,
-                'referance'     => $request->referance,
-                'yearname'      => $voucherDate->year,
-                'monthname'     => $voucherDate->month,
-                'branch_id'     => $request->branch_id,
-                'notes'         => $request->notes,
-                'user_id'       => Auth::id(),
-            ]);
+        $creditDetails = $request->input('creditDetails', []);
 
-            $totalDebit = 0;
-            foreach ($details as $detail) {
-                $amt = abs($detail['amount']);
-                $totalDebit += $amt;
-                Voucherdetail::create([
+        $totalDebit = collect($details)->sum('amount');
+        $totalCredit = collect($creditDetails)->sum('amount');
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Total Debit and Total Credit must be equal.'
+            ]);
+        }
+
+        try {
+            DB::transaction(function () use ($request, $voucherDate, $details, $creditDetails) {
+                // Lock the sequence row for update to prevent concurrent duplicate number generation
+                $transaction = Transaction::where('name', 'Journal Voucher')
+                    ->where('active', 1)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$transaction) {
+                    throw new \Exception('Transaction sequence settings not found for Journal Voucher.');
+                }
+
+                $nextCode = $transaction->lastnumber + 1;
+                $jurnalNo = $transaction->trncode . str_pad($nextCode, 9, '0', STR_PAD_LEFT);
+
+                // Update lastnumber immediately
+                $transaction->update(['lastnumber' => $nextCode]);
+
+                Voucherheader::create([
                     'vouchernumber' => $jurnalNo,
-                    'accountcode'   => $detail['accountcode'],
-                    'currency'      => 'BDT',
-                    'exchagerate'   => '1.000',
-                    'primeamt'      => $amt,
-                    'baseamt'       => $amt,
+                    'voucherdate'   => $request->voucherdate,
+                    'referance'     => $request->referance,
+                    'yearname'      => $voucherDate->year,
+                    'monthname'     => $voucherDate->month,
                     'branch_id'     => $request->branch_id,
-                    'notes'         => $detail['particular'],
+                    'notes'         => $request->notes,
                     'user_id'       => Auth::id(),
                 ]);
-            }
 
-            Voucherdetail::create([
-                'vouchernumber' => $jurnalNo,
-                'accountcode'   => $request->creditAcc,
-                'currency'      => 'BDT',
-                'exchagerate'   => '1.000',
-                'primeamt'      => -$totalDebit,
-                'baseamt'       => -$totalDebit,
-                'branch_id'     => $request->branch_id,
-                'notes'         => $request->notes,
-                'user_id'       => Auth::id(),
+                foreach ($details as $detail) {
+                    $amt = abs($detail['amount']);
+                    Voucherdetail::create([
+                        'vouchernumber' => $jurnalNo,
+                        'accountcode'   => $detail['accountcode'],
+                        'currency'      => 'BDT',
+                        'exchagerate'   => '1.000',
+                        'primeamt'      => $amt,
+                        'baseamt'       => $amt,
+                        'branch_id'     => $request->branch_id,
+                        'notes'         => $detail['particular'],
+                        'user_id'       => Auth::id(),
+                    ]);
+                }
+
+                foreach ($creditDetails as $crDetail) {
+                    $amt = abs($crDetail['amount']);
+                    Voucherdetail::create([
+                        'vouchernumber' => $jurnalNo,
+                        'accountcode'   => $crDetail['accountcode'],
+                        'currency'      => 'BDT',
+                        'exchagerate'   => '1.000',
+                        'primeamt'      => -$amt,
+                        'baseamt'       => -$amt,
+                        'branch_id'     => $request->branch_id,
+                        'notes'         => $crDetail['particular'] ?: $request->notes,
+                        'user_id'       => Auth::id(),
+                    ]);
+                }
+            });
+
+            return back()->with([
+                'success' => true,
+                'message' => 'Journal voucher created successfully'
             ]);
-        });
-        $numericPart = (int) preg_replace('/\D/', '', $jurnalNo);
-        Transaction::where('name', 'Journal Voucher')
-            ->where('active', 1)
-            ->update(['lastnumber' => $numericPart]);
-
-        return back()->with([
-            'success' => true,
-            'message' => 'Journal voucher created successfully'
-        ]);
+        } catch (\Throwable $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Failed to save Journal Voucher: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function jurnalEdit(Voucherheader $jurnal)
@@ -160,17 +190,30 @@ class VoucherheaderController extends Controller
             'voucherdate' => 'required|date',
             'referance'   => 'required|string',
             'branch_id'   => 'required|exists:branches,id',
-            'creditAcc'   => 'required|string',
             'notes'       => 'required|string',
             'details'     => 'required|array|min:1',
             'details.*.accountcode' => 'required|string',
             'details.*.particular' => 'nullable|string',
             'details.*.amount'     => 'required|numeric|min:0',
+            'creditDetails' => 'required|array|min:1',
+            'creditDetails.*.accountcode' => 'required|string',
+            'creditDetails.*.particular' => 'nullable|string',
+            'creditDetails.*.amount'     => 'required|numeric|min:0',
         ]);
 
         $details = $request->input('details', []);
+        $creditDetails = $request->input('creditDetails', []);
 
-        DB::transaction(function () use ($request, $jurnal, $details) {
+        $totalDebit = collect($details)->sum('amount');
+        $totalCredit = collect($creditDetails)->sum('amount');
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Total Debit and Total Credit must be equal.'
+            ]);
+        }
+
+        DB::transaction(function () use ($request, $jurnal, $details, $creditDetails) {
             $voucher = Voucherheader::findOrFail($jurnal);
             $voucherDate = Carbon::parse($request->voucherdate);
             $voucher->update([
@@ -182,20 +225,12 @@ class VoucherheaderController extends Controller
                 'notes'       => $request->notes,
             ]);
 
-            // Delete all existing debit details
-            $rows = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
-                ->where('primeamt', '>', 0)
-                ->get();
-
-            foreach ($rows as $row) {
-                $row->forceDelete();
-            }
+            // Delete all existing details (both debit and credit rows)
+            Voucherdetail::where('vouchernumber', $voucher->vouchernumber)->forceDelete();
 
             // Re-create debit details
-            $totalDebit = 0;
             foreach ($details as $detail) {
                 $amt = abs($detail['amount']);
-                $totalDebit += $amt;
                 Voucherdetail::create([
                     'vouchernumber' => $voucher->vouchernumber,
                     'accountcode'   => $detail['accountcode'],
@@ -209,30 +244,18 @@ class VoucherheaderController extends Controller
                 ]);
             }
 
-            // Update or create single credit entry
-            $creditDetail = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
-                ->where('primeamt', '<', 0)
-                ->first();
-
-            if ($creditDetail) {
-                $creditDetail->update([
-                    'accountcode' => $request->creditAcc,
-                    'primeamt'    => -$totalDebit,
-                    'baseamt'     => -$totalDebit,
-                    'branch_id'   => $request->branch_id,
-                    'notes'       => $request->notes,
-                    'user_id'     => Auth::id(),
-                ]);
-            } else {
+            // Re-create credit details
+            foreach ($creditDetails as $crDetail) {
+                $amt = abs($crDetail['amount']);
                 Voucherdetail::create([
                     'vouchernumber' => $voucher->vouchernumber,
-                    'accountcode'   => $request->creditAcc,
+                    'accountcode'   => $crDetail['accountcode'],
                     'currency'      => 'BDT',
                     'exchagerate'   => '1.000',
-                    'primeamt'      => -$totalDebit,
-                    'baseamt'       => -$totalDebit,
+                    'primeamt'      => -$amt,
+                    'baseamt'       => -$amt,
                     'branch_id'     => $request->branch_id,
-                    'notes'         => $request->notes,
+                    'notes'         => $crDetail['particular'] ?: $request->notes,
                     'user_id'       => Auth::id(),
                 ]);
             }
@@ -386,63 +409,89 @@ class VoucherheaderController extends Controller
             ]);
         }
 
-        $paymentNo = $this->GetpaymentNO();
         $voucherDate = Carbon::parse($request->voucherdate);
         $details = $request->input('details', []);
+        $creditDetails = $request->input('creditDetails', []);
 
-        DB::transaction(function () use ($request, $paymentNo, $voucherDate, $details) {
-            Voucherheader::create([
-                'vouchernumber' => $paymentNo,
-                'voucherdate'   => $request->voucherdate,
-                'referance'     => $request->referance,
-                'yearname'      => $voucherDate->year,
-                'monthname'     => $voucherDate->month,
-                'branch_id'     => $request->branch_id,
-                'notes'         => $request->notes,
-                'user_id'       => Auth::id(),
+        $totalDebit = collect($details)->sum('amount');
+        $totalCredit = collect($creditDetails)->sum('amount');
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Total Debit and Total Credit must be equal.'
             ]);
+        }
 
-            // Each particular creates a separate debit voucher detail
-            $totalDebit = 0;
-            foreach ($details as $detail) {
-                $amt = abs($detail['amount']);
-                $totalDebit += $amt;
-                Voucherdetail::create([
+        try {
+            DB::transaction(function () use ($request, $voucherDate, $details, $creditDetails) {
+                // Lock the sequence row for update to prevent concurrent duplicate number generation
+                $transaction = Transaction::where('name', 'Payment Voucher')
+                    ->where('active', 1)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$transaction) {
+                    throw new \Exception('Transaction sequence settings not found for Payment Voucher.');
+                }
+
+                $nextCode = $transaction->lastnumber + 1;
+                $paymentNo = $transaction->trncode . str_pad($nextCode, 9, '0', STR_PAD_LEFT);
+
+                // Update lastnumber immediately
+                $transaction->update(['lastnumber' => $nextCode]);
+
+                Voucherheader::create([
                     'vouchernumber' => $paymentNo,
-                    'accountcode'   => $detail['accountcode'],
-                    'currency'      => 'BDT',
-                    'exchagerate'   => '1.000',
-                    'primeamt'      => $amt,
-                    'baseamt'       => $amt,
+                    'voucherdate'   => $request->voucherdate,
+                    'referance'     => $request->referance,
+                    'yearname'      => $voucherDate->year,
+                    'monthname'     => $voucherDate->month,
                     'branch_id'     => $request->branch_id,
-                    'notes'         => $detail['particular'],
+                    'notes'         => $request->notes,
                     'user_id'       => Auth::id(),
                 ]);
-            }
 
-            // Credit entry is created once with total amount (negative)
-            Voucherdetail::create([
-                'vouchernumber' => $paymentNo,
-                'accountcode'   => $request->creditAcc,
-                'currency'      => 'BDT',
-                'exchagerate'   => '1.000',
-                'primeamt'      => -$totalDebit,
-                'baseamt'       => -$totalDebit,
-                'branch_id'     => $request->branch_id,
-                'notes'         => $request->notes,
-                'user_id'       => Auth::id(),
+                foreach ($details as $detail) {
+                    $amt = abs($detail['amount']);
+                    Voucherdetail::create([
+                        'vouchernumber' => $paymentNo,
+                        'accountcode'   => $detail['accountcode'],
+                        'currency'      => 'BDT',
+                        'exchagerate'   => '1.000',
+                        'primeamt'      => $amt,
+                        'baseamt'       => $amt,
+                        'branch_id'     => $request->branch_id,
+                        'notes'         => $detail['particular'],
+                        'user_id'       => Auth::id(),
+                    ]);
+                }
+
+                foreach ($creditDetails as $crDetail) {
+                    $amt = abs($crDetail['amount']);
+                    Voucherdetail::create([
+                        'vouchernumber' => $paymentNo,
+                        'accountcode'   => $crDetail['accountcode'],
+                        'currency'      => 'BDT',
+                        'exchagerate'   => '1.000',
+                        'primeamt'      => -$amt,
+                        'baseamt'       => -$amt,
+                        'branch_id'     => $request->branch_id,
+                        'notes'         => $crDetail['particular'] ?: $request->notes,
+                        'user_id'       => Auth::id(),
+                    ]);
+                }
+            });
+
+            return back()->with([
+                'success' => true,
+                'message' => 'Payment voucher created successfully'
             ]);
-        });
-
-        $numericPart = (int) preg_replace('/\D/', '', $paymentNo);
-        Transaction::where('name', 'Payment Voucher')
-            ->where('active', 1)
-            ->update(['lastnumber' => $numericPart]);
-
-        return back()->with([
-            'success' => true,
-            'message' => 'Payment voucher created successfully'
-        ]);
+        } catch (\Throwable $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Failed to save Payment Voucher: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function paymentEdit(Voucherheader $payment)
@@ -464,17 +513,30 @@ class VoucherheaderController extends Controller
             'voucherdate' => 'required|date',
             'referance'   => 'required|string',
             'branch_id'   => 'required|exists:branches,id',
-            'creditAcc'   => 'required|string',
             'notes'       => 'required|string',
             'details'     => 'required|array|min:1',
             'details.*.accountcode' => 'required|string',
             'details.*.particular' => 'nullable|string',
             'details.*.amount'     => 'required|numeric|min:0',
+            'creditDetails' => 'required|array|min:1',
+            'creditDetails.*.accountcode' => 'required|string',
+            'creditDetails.*.particular' => 'nullable|string',
+            'creditDetails.*.amount'     => 'required|numeric|min:0',
         ]);
 
         $details = $request->input('details', []);
+        $creditDetails = $request->input('creditDetails', []);
 
-        DB::transaction(function () use ($request, $payment, $details) {
+        $totalDebit = collect($details)->sum('amount');
+        $totalCredit = collect($creditDetails)->sum('amount');
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Total Debit and Total Credit must be equal.'
+            ]);
+        }
+
+        DB::transaction(function () use ($request, $payment, $details, $creditDetails) {
             $voucher = Voucherheader::findOrFail($payment);
             $voucherDate = Carbon::parse($request->voucherdate);
             $voucher->update([
@@ -486,20 +548,12 @@ class VoucherheaderController extends Controller
                 'notes'       => $request->notes,
             ]);
 
-            // Delete all existing debit details (primeamt > 0)
-            $rows = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
-                ->where('primeamt', '>', 0)
-                ->get();
-
-            foreach ($rows as $row) {
-                $row->forceDelete();
-            }
+            // Delete all existing details
+            Voucherdetail::where('vouchernumber', $voucher->vouchernumber)->forceDelete();
 
             // Re-create debit details per particular
-            $totalDebit = 0;
             foreach ($details as $detail) {
                 $amt = abs($detail['amount']);
-                $totalDebit += $amt;
                 Voucherdetail::create([
                     'vouchernumber' => $voucher->vouchernumber,
                     'accountcode'   => $detail['accountcode'],
@@ -513,30 +567,18 @@ class VoucherheaderController extends Controller
                 ]);
             }
 
-            // Update or create the single credit entry
-            $creditDetail = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
-                ->where('primeamt', '<', 0)
-                ->first();
-
-            if ($creditDetail) {
-                $creditDetail->update([
-                    'accountcode' => $request->creditAcc,
-                    'primeamt'    => -$totalDebit,
-                    'baseamt'     => -$totalDebit,
-                    'branch_id'   => $request->branch_id,
-                    'notes'       => $request->notes,
-                    'user_id'     => Auth::id(),
-                ]);
-            } else {
+            // Re-create credit details per particular
+            foreach ($creditDetails as $crDetail) {
+                $amt = abs($crDetail['amount']);
                 Voucherdetail::create([
                     'vouchernumber' => $voucher->vouchernumber,
-                    'accountcode'   => $request->creditAcc,
+                    'accountcode'   => $crDetail['accountcode'],
                     'currency'      => 'BDT',
                     'exchagerate'   => '1.000',
-                    'primeamt'      => -$totalDebit,
-                    'baseamt'       => -$totalDebit,
+                    'primeamt'      => -$amt,
+                    'baseamt'       => -$amt,
                     'branch_id'     => $request->branch_id,
-                    'notes'         => $request->notes,
+                    'notes'         => $crDetail['particular'] ?: $request->notes,
                     'user_id'       => Auth::id(),
                 ]);
             }
@@ -633,59 +675,89 @@ class VoucherheaderController extends Controller
             ]);
         }
 
-        $receiptNo = $this->GetreceiptNO();
         $voucherDate = Carbon::parse($request->voucherdate);
         $details = $request->input('details', []);
-        DB::transaction(function () use ($request, $receiptNo, $voucherDate, $details) {
-            Voucherheader::create([
-                'vouchernumber' => $receiptNo,
-                'voucherdate'   => $request->voucherdate,
-                'referance'     => $request->referance,
-                'yearname'      => $voucherDate->year,
-                'monthname'     => $voucherDate->month,
-                'branch_id'     => $request->branch_id,
-                'notes'         => $request->notes,
-                'user_id'       => Auth::id(),
-            ]);
+        $creditDetails = $request->input('creditDetails', []);
 
-            $totalDebit = 0;
-            foreach ($details as $detail) {
-                $amt = abs($detail['amount']);
-                $totalDebit += $amt;
-                Voucherdetail::create([
+        $totalDebit = collect($details)->sum('amount');
+        $totalCredit = collect($creditDetails)->sum('amount');
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Total Debit and Total Credit must be equal.'
+            ]);
+        }
+
+        try {
+            DB::transaction(function () use ($request, $voucherDate, $details, $creditDetails) {
+                // Lock the sequence row for update to prevent concurrent duplicate number generation
+                $transaction = Transaction::where('name', 'Receipt Voucher')
+                    ->where('active', 1)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$transaction) {
+                    throw new \Exception('Transaction sequence settings not found for Receipt Voucher.');
+                }
+
+                $nextCode = $transaction->lastnumber + 1;
+                $receiptNo = $transaction->trncode . str_pad($nextCode, 9, '0', STR_PAD_LEFT);
+
+                // Update lastnumber immediately
+                $transaction->update(['lastnumber' => $nextCode]);
+
+                Voucherheader::create([
                     'vouchernumber' => $receiptNo,
-                    'accountcode'   => $detail['accountcode'],
-                    'currency'      => 'BDT',
-                    'exchagerate'   => '1.000',
-                    'primeamt'      => $amt,
-                    'baseamt'       => $amt,
+                    'voucherdate'   => $request->voucherdate,
+                    'referance'     => $request->referance,
+                    'yearname'      => $voucherDate->year,
+                    'monthname'     => $voucherDate->month,
                     'branch_id'     => $request->branch_id,
-                    'notes'         => $detail['particular'],
+                    'notes'         => $request->notes,
                     'user_id'       => Auth::id(),
                 ]);
-            }
 
-            Voucherdetail::create([
-                'vouchernumber' => $receiptNo,
-                'accountcode'   => $request->creditAcc,
-                'currency'      => 'BDT',
-                'exchagerate'   => '1.000',
-                'primeamt'      => -$totalDebit,
-                'baseamt'       => -$totalDebit,
-                'branch_id'     => $request->branch_id,
-                'notes'         => $request->notes,
-                'user_id'       => Auth::id(),
+                foreach ($details as $detail) {
+                    $amt = abs($detail['amount']);
+                    Voucherdetail::create([
+                        'vouchernumber' => $receiptNo,
+                        'accountcode'   => $detail['accountcode'],
+                        'currency'      => 'BDT',
+                        'exchagerate'   => '1.000',
+                        'primeamt'      => $amt,
+                        'baseamt'       => $amt,
+                        'branch_id'     => $request->branch_id,
+                        'notes'         => $detail['particular'],
+                        'user_id'       => Auth::id(),
+                    ]);
+                }
+
+                foreach ($creditDetails as $crDetail) {
+                    $amt = abs($crDetail['amount']);
+                    Voucherdetail::create([
+                        'vouchernumber' => $receiptNo,
+                        'accountcode'   => $crDetail['accountcode'],
+                        'currency'      => 'BDT',
+                        'exchagerate'   => '1.000',
+                        'primeamt'      => -$amt,
+                        'baseamt'       => -$amt,
+                        'branch_id'     => $request->branch_id,
+                        'notes'         => $crDetail['particular'] ?: $request->notes,
+                        'user_id'       => Auth::id(),
+                    ]);
+                }
+            });
+
+            return back()->with([
+                'success' => true,
+                'message' => 'Receipt voucher created successfully'
             ]);
-        });
-        $numericPart = (int) preg_replace('/\D/', '', $receiptNo);
-        Transaction::where('name', 'Receipt Voucher')
-            ->where('active', 1)
-            ->update(['lastnumber' => $numericPart]);
-
-        return back()->with([
-            'success' => true,
-            'message' => 'Receipt voucher created successfully'
-        ]);
+        } catch (\Throwable $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Failed to save Receipt Voucher: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function receiptEdit(Voucherheader $receipt)
@@ -707,17 +779,30 @@ class VoucherheaderController extends Controller
             'voucherdate' => 'required|date',
             'referance'   => 'required|string',
             'branch_id'   => 'required|exists:branches,id',
-            'creditAcc'   => 'required|string',
             'notes'       => 'required|string',
             'details'     => 'required|array|min:1',
             'details.*.accountcode' => 'required|string',
             'details.*.particular' => 'nullable|string',
             'details.*.amount'     => 'required|numeric|min:0',
+            'creditDetails' => 'required|array|min:1',
+            'creditDetails.*.accountcode' => 'required|string',
+            'creditDetails.*.particular' => 'nullable|string',
+            'creditDetails.*.amount'     => 'required|numeric|min:0',
         ]);
 
         $details = $request->input('details', []);
+        $creditDetails = $request->input('creditDetails', []);
 
-        DB::transaction(function () use ($request, $receipt, $details) {
+        $totalDebit = collect($details)->sum('amount');
+        $totalCredit = collect($creditDetails)->sum('amount');
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Total Debit and Total Credit must be equal.'
+            ]);
+        }
+
+        DB::transaction(function () use ($request, $receipt, $details, $creditDetails) {
             $voucher = Voucherheader::findOrFail($receipt);
             $voucherDate = Carbon::parse($request->voucherdate);
             $voucher->update([
@@ -729,20 +814,12 @@ class VoucherheaderController extends Controller
                 'notes'       => $request->notes,
             ]);
 
-            // Delete all existing debit details
-            $rows = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
-                ->where('primeamt', '>', 0)
-                ->get();
-
-            foreach ($rows as $row) {
-                $row->forceDelete();
-            }
+            // Delete all existing details
+            Voucherdetail::where('vouchernumber', $voucher->vouchernumber)->forceDelete();
 
             // Re-create debit details
-            $totalDebit = 0;
             foreach ($details as $detail) {
                 $amt = abs($detail['amount']);
-                $totalDebit += $amt;
                 Voucherdetail::create([
                     'vouchernumber' => $voucher->vouchernumber,
                     'accountcode'   => $detail['accountcode'],
@@ -756,30 +833,18 @@ class VoucherheaderController extends Controller
                 ]);
             }
 
-            // Update or create single credit entry
-            $creditDetail = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
-                ->where('primeamt', '<', 0)
-                ->first();
-
-            if ($creditDetail) {
-                $creditDetail->update([
-                    'accountcode' => $request->creditAcc,
-                    'primeamt'    => -$totalDebit,
-                    'baseamt'     => -$totalDebit,
-                    'branch_id'   => $request->branch_id,
-                    'notes'       => $request->notes,
-                    'user_id'     => Auth::id(),
-                ]);
-            } else {
+            // Re-create credit details
+            foreach ($creditDetails as $crDetail) {
+                $amt = abs($crDetail['amount']);
                 Voucherdetail::create([
                     'vouchernumber' => $voucher->vouchernumber,
-                    'accountcode'   => $request->creditAcc,
+                    'accountcode'   => $crDetail['accountcode'],
                     'currency'      => 'BDT',
                     'exchagerate'   => '1.000',
-                    'primeamt'      => -$totalDebit,
-                    'baseamt'       => -$totalDebit,
+                    'primeamt'      => -$amt,
+                    'baseamt'       => -$amt,
                     'branch_id'     => $request->branch_id,
-                    'notes'         => $request->notes,
+                    'notes'         => $crDetail['particular'] ?: $request->notes,
                     'user_id'       => Auth::id(),
                 ]);
             }
@@ -876,59 +941,89 @@ class VoucherheaderController extends Controller
             ]);
         }
 
-        $reverseNo = $this->GetreverseNO();
         $voucherDate = Carbon::parse($request->voucherdate);
         $details = $request->input('details', []);
-        DB::transaction(function () use ($request, $reverseNo, $voucherDate, $details) {
-            Voucherheader::create([
-                'vouchernumber' => $reverseNo,
-                'voucherdate'   => $request->voucherdate,
-                'referance'     => $request->referance,
-                'yearname'      => $voucherDate->year,
-                'monthname'     => $voucherDate->month,
-                'branch_id'     => $request->branch_id,
-                'notes'         => $request->notes,
-                'user_id'       => Auth::id(),
-            ]);
+        $creditDetails = $request->input('creditDetails', []);
 
-            $totalDebit = 0;
-            foreach ($details as $detail) {
-                $amt = abs($detail['amount']);
-                $totalDebit += $amt;
-                Voucherdetail::create([
+        $totalDebit = collect($details)->sum('amount');
+        $totalCredit = collect($creditDetails)->sum('amount');
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Total Debit and Total Credit must be equal.'
+            ]);
+        }
+
+        try {
+            DB::transaction(function () use ($request, $voucherDate, $details, $creditDetails) {
+                // Lock the sequence row for update to prevent concurrent duplicate number generation
+                $transaction = Transaction::where('name', 'Reverse Voucher')
+                    ->where('active', 1)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$transaction) {
+                    throw new \Exception('Transaction sequence settings not found for Reverse Voucher.');
+                }
+
+                $nextCode = $transaction->lastnumber + 1;
+                $reverseNo = $transaction->trncode . str_pad($nextCode, 9, '0', STR_PAD_LEFT);
+
+                // Update lastnumber immediately
+                $transaction->update(['lastnumber' => $nextCode]);
+
+                Voucherheader::create([
                     'vouchernumber' => $reverseNo,
-                    'accountcode'   => $detail['accountcode'],
-                    'currency'      => 'BDT',
-                    'exchagerate'   => '1.000',
-                    'primeamt'      => $amt,
-                    'baseamt'       => $amt,
+                    'voucherdate'   => $request->voucherdate,
+                    'referance'     => $request->referance,
+                    'yearname'      => $voucherDate->year,
+                    'monthname'     => $voucherDate->month,
                     'branch_id'     => $request->branch_id,
-                    'notes'         => $detail['particular'],
+                    'notes'         => $request->notes,
                     'user_id'       => Auth::id(),
                 ]);
-            }
 
-            Voucherdetail::create([
-                'vouchernumber' => $reverseNo,
-                'accountcode'   => $request->creditAcc,
-                'currency'      => 'BDT',
-                'exchagerate'   => '1.000',
-                'primeamt'      => -$totalDebit,
-                'baseamt'       => -$totalDebit,
-                'branch_id'     => $request->branch_id,
-                'notes'         => $request->notes,
-                'user_id'       => Auth::id(),
+                foreach ($details as $detail) {
+                    $amt = abs($detail['amount']);
+                    Voucherdetail::create([
+                        'vouchernumber' => $reverseNo,
+                        'accountcode'   => $detail['accountcode'],
+                        'currency'      => 'BDT',
+                        'exchagerate'   => '1.000',
+                        'primeamt'      => $amt,
+                        'baseamt'       => $amt,
+                        'branch_id'     => $request->branch_id,
+                        'notes'         => $detail['particular'],
+                        'user_id'       => Auth::id(),
+                    ]);
+                }
+
+                foreach ($creditDetails as $crDetail) {
+                    $amt = abs($crDetail['amount']);
+                    Voucherdetail::create([
+                        'vouchernumber' => $reverseNo,
+                        'accountcode'   => $crDetail['accountcode'],
+                        'currency'      => 'BDT',
+                        'exchagerate'   => '1.000',
+                        'primeamt'      => -$amt,
+                        'baseamt'       => -$amt,
+                        'branch_id'     => $request->branch_id,
+                        'notes'         => $crDetail['particular'] ?: $request->notes,
+                        'user_id'       => Auth::id(),
+                    ]);
+                }
+            });
+
+            return back()->with([
+                'success' => true,
+                'message' => 'Reverse voucher created successfully'
             ]);
-        });
-        $numericPart = (int) preg_replace('/\D/', '', $reverseNo);
-        Transaction::where('name', 'Reverse Voucher')
-            ->where('active', 1)
-            ->update(['lastnumber' => $numericPart]);
-
-        return back()->with([
-            'success' => true,
-            'message' => 'Reverse voucher created successfully'
-        ]);
+        } catch (\Throwable $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Failed to save Reverse Voucher: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function reverseEdit(Voucherheader $reverse)
@@ -951,17 +1046,30 @@ class VoucherheaderController extends Controller
             'voucherdate' => 'required|date',
             'referance'   => 'required|string',
             'branch_id'   => 'required|exists:branches,id',
-            'creditAcc'   => 'required|string',
             'notes'       => 'required|string',
             'details'     => 'required|array|min:1',
             'details.*.accountcode' => 'required|string',
             'details.*.particular' => 'nullable|string',
             'details.*.amount'     => 'required|numeric|min:0',
+            'creditDetails' => 'required|array|min:1',
+            'creditDetails.*.accountcode' => 'required|string',
+            'creditDetails.*.particular' => 'nullable|string',
+            'creditDetails.*.amount'     => 'required|numeric|min:0',
         ]);
 
         $details = $request->input('details', []);
+        $creditDetails = $request->input('creditDetails', []);
 
-        DB::transaction(function () use ($request, $reverse, $details) {
+        $totalDebit = collect($details)->sum('amount');
+        $totalCredit = collect($creditDetails)->sum('amount');
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Total Debit and Total Credit must be equal.'
+            ]);
+        }
+
+        DB::transaction(function () use ($request, $reverse, $details, $creditDetails) {
             $voucher = Voucherheader::findOrFail($reverse);
             $voucherDate = Carbon::parse($request->voucherdate);
             $voucher->update([
@@ -973,20 +1081,12 @@ class VoucherheaderController extends Controller
                 'notes'       => $request->notes,
             ]);
 
-            // Delete all existing debit details
-            $rows = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
-                ->where('primeamt', '>', 0)
-                ->get();
-
-            foreach ($rows as $row) {
-                $row->forceDelete();
-            }
+            // Delete all existing details
+            Voucherdetail::where('vouchernumber', $voucher->vouchernumber)->forceDelete();
 
             // Re-create debit details
-            $totalDebit = 0;
             foreach ($details as $detail) {
                 $amt = abs($detail['amount']);
-                $totalDebit += $amt;
                 Voucherdetail::create([
                     'vouchernumber' => $voucher->vouchernumber,
                     'accountcode'   => $detail['accountcode'],
@@ -1000,30 +1100,18 @@ class VoucherheaderController extends Controller
                 ]);
             }
 
-            // Update or create single credit entry
-            $creditDetail = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
-                ->where('primeamt', '<', 0)
-                ->first();
-
-            if ($creditDetail) {
-                $creditDetail->update([
-                    'accountcode' => $request->creditAcc,
-                    'primeamt'    => -$totalDebit,
-                    'baseamt'     => -$totalDebit,
-                    'branch_id'   => $request->branch_id,
-                    'notes'       => $request->notes,
-                    'user_id'     => Auth::id(),
-                ]);
-            } else {
+            // Re-create credit details
+            foreach ($creditDetails as $crDetail) {
+                $amt = abs($crDetail['amount']);
                 Voucherdetail::create([
                     'vouchernumber' => $voucher->vouchernumber,
-                    'accountcode'   => $request->creditAcc,
+                    'accountcode'   => $crDetail['accountcode'],
                     'currency'      => 'BDT',
                     'exchagerate'   => '1.000',
-                    'primeamt'      => -$totalDebit,
-                    'baseamt'       => -$totalDebit,
+                    'primeamt'      => -$amt,
+                    'baseamt'       => -$amt,
                     'branch_id'     => $request->branch_id,
-                    'notes'         => $request->notes,
+                    'notes'         => $crDetail['particular'] ?: $request->notes,
                     'user_id'       => Auth::id(),
                 ]);
             }
@@ -1121,63 +1209,89 @@ class VoucherheaderController extends Controller
             ]);
         }
 
-        $openingNo = $this->GetopeningNO();
         $voucherDate = Carbon::parse($request->voucherdate);
         $details = $request->input('details', []);
-        DB::transaction(function () use ($request, $openingNo, $voucherDate, $details) {
-            Voucherheader::create([
-                'vouchernumber' => $openingNo,
-                'voucherdate'   => $request->voucherdate,
-                'referance'     => $request->referance,
-                'yearname'      => $voucherDate->year,
-                'monthname'     => $voucherDate->month,
-                'branch_id'     => $request->branch_id,
-                'notes'         => $request->notes,
-                'user_id'       => Auth::id(),
-            ]);
+        $creditDetails = $request->input('creditDetails', []);
 
-            // Each particular creates a separate debit voucher detail
-            $totalDebit = 0;
-            foreach ($details as $detail) {
-                $amt = abs($detail['amount']);
-                $totalDebit += $amt;
-                Voucherdetail::create([
+        $totalDebit = collect($details)->sum('amount');
+        $totalCredit = collect($creditDetails)->sum('amount');
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Total Debit and Total Credit must be equal.'
+            ]);
+        }
+
+        try {
+            DB::transaction(function () use ($request, $voucherDate, $details, $creditDetails) {
+                // Lock the sequence row for update to prevent concurrent duplicate number generation
+                $transaction = Transaction::where('name', 'Opening Blance')
+                    ->where('active', 1)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$transaction) {
+                    throw new \Exception('Transaction sequence settings not found for Opening Balance.');
+                }
+
+                $nextCode = $transaction->lastnumber + 1;
+                $openingNo = $transaction->trncode . str_pad($nextCode, 9, '0', STR_PAD_LEFT);
+
+                // Update lastnumber immediately
+                $transaction->update(['lastnumber' => $nextCode]);
+
+                Voucherheader::create([
                     'vouchernumber' => $openingNo,
-                    'accountcode'   => $detail['accountcode'],
-                    'currency'      => 'BDT',
-                    'exchagerate'   => '1.000',
-                    'primeamt'      => $amt,
-                    'baseamt'       => $amt,
+                    'voucherdate'   => $request->voucherdate,
+                    'referance'     => $request->referance,
+                    'yearname'      => $voucherDate->year,
+                    'monthname'     => $voucherDate->month,
                     'branch_id'     => $request->branch_id,
-                    'notes'         => $detail['particular'],
+                    'notes'         => $request->notes,
                     'user_id'       => Auth::id(),
                 ]);
-            }
 
-            // Credit entry is created once with total amount (negative)
-            Voucherdetail::create([
-                'vouchernumber' => $openingNo,
-                'accountcode'   => $request->creditAcc,
-                'currency'      => 'BDT',
-                'exchagerate'   => '1.000',
-                'primeamt'      => -$totalDebit,
-                'baseamt'       => -$totalDebit,
-                'branch_id'     => $request->branch_id,
-                'notes'         => $request->notes,
-                'user_id'       => Auth::id(),
+                foreach ($details as $detail) {
+                    $amt = abs($detail['amount']);
+                    Voucherdetail::create([
+                        'vouchernumber' => $openingNo,
+                        'accountcode'   => $detail['accountcode'],
+                        'currency'      => 'BDT',
+                        'exchagerate'   => '1.000',
+                        'primeamt'      => $amt,
+                        'baseamt'       => $amt,
+                        'branch_id'     => $request->branch_id,
+                        'notes'         => $detail['particular'],
+                        'user_id'       => Auth::id(),
+                    ]);
+                }
+
+                foreach ($creditDetails as $crDetail) {
+                    $amt = abs($crDetail['amount']);
+                    Voucherdetail::create([
+                        'vouchernumber' => $openingNo,
+                        'accountcode'   => $crDetail['accountcode'],
+                        'currency'      => 'BDT',
+                        'exchagerate'   => '1.000',
+                        'primeamt'      => -$amt,
+                        'baseamt'       => -$amt,
+                        'branch_id'     => $request->branch_id,
+                        'notes'         => $crDetail['particular'] ?: $request->notes,
+                        'user_id'       => Auth::id(),
+                    ]);
+                }
+            });
+
+            return back()->with([
+                'success' => true,
+                'message' => 'Opening Balance created successfully'
             ]);
-        });
-
-
-        $numericPart = (int) preg_replace('/\D/', '', $openingNo);
-        Transaction::where('name', 'Opening Blance')
-            ->where('active', 1)
-            ->update(['lastnumber' => $numericPart]);
-
-        return back()->with([
-            'success' => true,
-            'message' => 'Opening Blance created successfully'
-        ]);
+        } catch (\Throwable $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Failed to save Opening Balance: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function openingEdit(Voucherheader $opening)
@@ -1201,18 +1315,31 @@ class VoucherheaderController extends Controller
             'voucherdate' => 'required|date',
             'referance'   => 'required|string',
             'branch_id'   => 'required|exists:branches,id',
-            'creditAcc'   => 'required|string',
             'notes'       => 'required|string',
             'details'     => 'required|array|min:1',
             'details.*.accountcode' => 'required|string',
             'details.*.particular' => 'nullable|string',
             'details.*.amount'     => 'required|numeric|min:0',
+            'creditDetails' => 'required|array|min:1',
+            'creditDetails.*.accountcode' => 'required|string',
+            'creditDetails.*.particular' => 'nullable|string',
+            'creditDetails.*.amount'     => 'required|numeric|min:0',
         ]);
 
 
         $details = $request->input('details', []);
+        $creditDetails = $request->input('creditDetails', []);
 
-        DB::transaction(function () use ($request, $opening, $details) {
+        $totalDebit = collect($details)->sum('amount');
+        $totalCredit = collect($creditDetails)->sum('amount');
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Total Debit and Total Credit must be equal.'
+            ]);
+        }
+
+        DB::transaction(function () use ($request, $opening, $details, $creditDetails) {
             $voucher = Voucherheader::findOrFail($opening);
             $voucherDate = Carbon::parse($request->voucherdate);
             $voucher->update([
@@ -1224,20 +1351,12 @@ class VoucherheaderController extends Controller
                 'notes'       => $request->notes,
             ]);
 
-            // Delete all existing debit details (primeamt > 0)
-            $rows = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
-                ->where('primeamt', '>', 0)
-                ->get();
-
-            foreach ($rows as $row) {
-                $row->forceDelete();
-            }
+            // Delete all existing details
+            Voucherdetail::where('vouchernumber', $voucher->vouchernumber)->forceDelete();
 
             // Re-create debit details per particular
-            $totalDebit = 0;
             foreach ($details as $detail) {
                 $amt = abs($detail['amount']);
-                $totalDebit += $amt;
                 Voucherdetail::create([
                     'vouchernumber' => $voucher->vouchernumber,
                     'accountcode'   => $detail['accountcode'],
@@ -1251,30 +1370,18 @@ class VoucherheaderController extends Controller
                 ]);
             }
 
-            // Update or create the single credit entry
-            $creditDetail = Voucherdetail::where('vouchernumber', $voucher->vouchernumber)
-                ->where('primeamt', '<', 0)
-                ->first();
-
-            if ($creditDetail) {
-                $creditDetail->update([
-                    'accountcode' => $request->creditAcc,
-                    'primeamt'    => -$totalDebit,
-                    'baseamt'     => -$totalDebit,
-                    'branch_id'   => $request->branch_id,
-                    'notes'       => $request->notes,
-                    'user_id'     => Auth::id(),
-                ]);
-            } else {
+            // Re-create credit details per particular
+            foreach ($creditDetails as $crDetail) {
+                $amt = abs($crDetail['amount']);
                 Voucherdetail::create([
                     'vouchernumber' => $voucher->vouchernumber,
-                    'accountcode'   => $request->creditAcc,
+                    'accountcode'   => $crDetail['accountcode'],
                     'currency'      => 'BDT',
                     'exchagerate'   => '1.000',
-                    'primeamt'      => -$totalDebit,
-                    'baseamt'       => -$totalDebit,
+                    'primeamt'      => -$amt,
+                    'baseamt'       => -$amt,
                     'branch_id'     => $request->branch_id,
-                    'notes'         => $request->notes,
+                    'notes'         => $crDetail['particular'] ?: $request->notes,
                     'user_id'       => Auth::id(),
                 ]);
             }

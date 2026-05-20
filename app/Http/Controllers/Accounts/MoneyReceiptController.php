@@ -367,18 +367,22 @@ class MoneyReceiptController extends Controller
                 'message' => 'Only open money receipt can be confirmed'
             ]);
         }
+
+        $getstudent_id = Student::where('id', $confirm->student_id)->select('student_id')->first();
+        $getcrCode = ChartOfAccount::where('description', $getstudent_id->student_id)->first('accountcode');
+
         $dr_account = '';
         $cr_account = '';
         $branch_id = '';
         if ($confirm->payterms == 'Cash') {
-            $codePharams = CodesParam::where('type', 'Student Advance')->select('cracc', 'dracc', 'branch_id')->first();
-            if (! $codePharams || ! $codePharams->cracc || ! $codePharams->dracc || ! $codePharams->branch_id) {
+            $codePharams = CodesParam::where('type', 'Student Advance')->select('dracc', 'branch_id')->first();
+            if (! $codePharams || ! $codePharams->dracc || ! $codePharams->branch_id) {
                 return back()->with([
                     'error' => true,
-                    'message' => 'Accounting setup missing for Student Advance'
+                    'message' => 'Accounting setup missing for Student Ladger'
                 ]);
             }
-            $cr_account = $codePharams->cracc;
+            $cr_account = $getcrCode->accountcode;
             $dr_account = $codePharams->dracc;
             $branch_id = $codePharams->branch_id;
         } else {
@@ -386,39 +390,45 @@ class MoneyReceiptController extends Controller
             if (! $codePharams || ! $codePharams->cracc || ! $codePharams->branch_id) {
                 return back()->with([
                     'error' => true,
-                    'message' => 'Accounting setup missing for Student Advance'
+                    'message' => 'Accounting setup missing for Student Ladger'
                 ]);
             }
-            $cr_account = $codePharams->cracc;
+            $cr_account = $getcrCode->accountcode;
             $dr_account = $confirm->accountcode;
             $branch_id = $codePharams->branch_id;
         }
 
-        $getstudent_id = Student::where('id', $confirm->student_id)->select('student_id')->first();
+
         $voucherDate = Carbon::parse($confirm->insdate);
+
+        $money_reecive = StudentInvoiceHD::with(['mrdetails.fees'])
+            ->where('id', $confirm->id)
+            ->first();
+
+        $notes = $money_reecive->mrdetails
+            ->pluck('fees.name')
+            ->implode(' and ');
+
 
         $credit_account = '';
         $debit_account = '';
-        $debit_note = '';
         $credit_note = '';
         if ($confirm->note == 'REFUND') {
             $credit_account = $cr_account;
             $debit_account = $dr_account;
-            $debit_note = 'Accounts Liabilities';
-            $credit_note = 'Cash/Bank';
+            $credit_note = $notes . ' (REFUND)';
         } else {
             $credit_account = $dr_account;
             $debit_account = $cr_account;
             //notes
-            $debit_note = 'Cash/Bank';
-            $credit_note = 'Accounts Liabilities';
+            $credit_note = $notes;
         }
 
-        DB::transaction(function () use ($confirm, $branch_id, $voucherDate, $getstudent_id, $credit_account, $debit_account, $debit_note, $credit_note) {
+        DB::transaction(function () use ($confirm, $branch_id, $voucherDate, $getstudent_id, $credit_account, $debit_account, $credit_note) {
             Voucherheader::create([
                 'vouchernumber' => $confirm->insnumber,
                 'voucherdate'   => $confirm->insdate,
-                'referance'     => 'This Voucher for Point of Sales ( ' . $getstudent_id->student_id . ' )',
+                'referance'     => 'This Voucher for Point of Sales for ' . $credit_note,
                 'yearname'      => $voucherDate->year,
                 'monthname'     => $voucherDate->month,
                 'branch_id'     => $branch_id,
@@ -449,7 +459,7 @@ class MoneyReceiptController extends Controller
                     'primeamt'      => abs($confirm->netamount) * -1,
                     'baseamt'       => abs($confirm->netamount) * -1,
                     'branch_id'     => $branch_id,
-                    'notes'         => $debit_note,
+                    'notes'         => $credit_note,
                     'user_id'       => Auth::id(),
                     'created_at'    => now(),
                     'updated_at'    => now(),

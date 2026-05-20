@@ -47,7 +47,7 @@ const props = defineProps<{
     supplier: Array<{ id: number; subcode: string; name: string }>;
     branch: Array<{ id: number; branchname: string }>;
     draccountcode: Array<{ accountcode: string; description: string }>;
-    craccountcode: Array<{ accountcode: string; description: string }>;
+    craccountcode: Array<{ accountcode: string; description: string; group_four?: { description: string } }>;
 }>();
 
 const data = props.actogl;
@@ -62,7 +62,10 @@ const queryCrAcc = ref('');
 const filteredCrAcc = computed(() => {
     if (!queryCrAcc.value) return props.craccountcode;
 
-    return props.craccountcode.filter((acc) => acc.description?.toLowerCase().includes(queryCrAcc.value.toLowerCase()));
+    return props.craccountcode.filter((acc) => {
+        const desc = form.type === 'Student Advance' && acc.group_four ? acc.group_four.description : acc.description;
+        return desc?.toLowerCase().includes(queryCrAcc.value.toLowerCase());
+    });
 });
 
 const selecteDrAcc = ref<{ accountcode: string; description: string } | null>(null);
@@ -291,7 +294,7 @@ const onDelete = async (id: number) => {
                                 <TableCell>{{ chart.type }}</TableCell>
                                 <TableCell>{{ chart.code }}</TableCell>
                                 <TableCell>{{ chart.accdisc }}</TableCell>
-                                <TableCell>{{ chart.craccount?.description ?? '' }}</TableCell>
+                                <TableCell>{{ chart.type === 'Student Advance' && chart.craccount?.group_four ? chart.craccount.group_four.description : (chart.craccount?.description ?? '') }}</TableCell>
                                 <TableCell>{{ chart.draccount?.description ?? '' }}</TableCell>
                                 <TableCell>{{ chart.props }}</TableCell>
                                 <TableCell>{{ chart.percent }}</TableCell>
@@ -461,7 +464,7 @@ const onDelete = async (id: number) => {
                                         class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                         placeholder="Select Account"
                                         @input="queryCrAcc = $event.target.value"
-                                        :display-value="(c) => (c ? c.description : '')"
+                                        :display-value="(c) => (c ? (form.type === 'Student Advance' && c.group_four ? c.group_four.description : c.description) : '')"
                                     />
                                     <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
@@ -481,7 +484,7 @@ const onDelete = async (id: number) => {
                                             :value="cracc"
                                             class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
                                         >
-                                            {{ cracc.description }}
+                                            {{ form.type === 'Student Advance' && cracc.group_four ? cracc.group_four.description : cracc.description }}
                                         </ComboboxOption>
                                     </ComboboxOptions>
                                 </div>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark'=> ($appearance ?? 'system') == 'dark'])>
 
 <head>
     <meta charset="utf-8">
@@ -224,34 +224,34 @@
             <tbody>
 
                 @foreach ($dataArray as $key => $item)
-                    <tr>
-                        <td>{{ $key + 1 }}</td>
-                        <td>{{ $item['feename'] ?? 'N/A' }}</td>
-                        <td>{{ number_format($item['amount'] ?? 0, 2) }}</td>
-                        <td>
-                            @if ($item['pay_type'] == 'Revenue')
-                                Non Refundable
-                            @else
-                                {{ $item['pay_type'] ?? 'N/A' }}
-                            @endif
+                <tr>
+                    <td>{{ $key + 1 }}</td>
+                    <td>{{ $item['feename'] ?? 'N/A' }}</td>
+                    <td>{{ number_format($item['amount'] ?? 0, 2) }}</td>
+                    <td>
+                        @if ($item['pay_type'] == 'Revenue')
+                        Non Refundable
+                        @else
+                        {{ $item['pay_type'] ?? 'N/A' }}
+                        @endif
 
-                        </td>
-                        <td>
-                            @if ($item['feename'] == 'File Opening Fee')
-                                At the beginning of process
-                            @elseif($item['feename'] == 'Application Fee')
-                                During process direct payment to University
-                            @elseif($item['feename'] == 'Visa Process Fee')
-                                After offer letter of services needed
-                            @elseif($item['feename'] == 'VISA Fee')
-                                After offer letter direct payment to VFS/Embassy
-                            @elseif($item['feename'] == 'Service Fee')
-                                After Visa
-                            @elseif($item['feename'] == 'Tuition Fee')
-                                Tuition fees are refundable if the visa application is refused**
-                            @endif
-                        </td>
-                    </tr>
+                    </td>
+                    <td>
+                        @if ($item['feename'] == 'File Opening Fee')
+                        At the beginning of process
+                        @elseif($item['feename'] == 'Application Fee')
+                        During process direct payment to University
+                        @elseif($item['feename'] == 'Visa Process Fee')
+                        After offer letter of services needed
+                        @elseif($item['feename'] == 'VISA Fee')
+                        After offer letter direct payment to VFS/Embassy
+                        @elseif($item['feename'] == 'Service Fee')
+                        After Visa
+                        @elseif($item['feename'] == 'Tuition Fee')
+                        Tuition fees are refundable if the visa application is refused**
+                        @endif
+                    </td>
+                </tr>
                 @endforeach
             </tbody>
         </table>
@@ -263,45 +263,48 @@
             <p class="grand-total">Total: {{ number_format($receipt->netamount ?? 0, 2) }}</p>
             <h3>in word: {{ $numberTransformer->toWords($receipt->netamount ?? 0) }} only</h3>
             @if (!empty($receipt->shortnote))
-                <h3>Notes: {{ $receipt->shortnote }}</h3>
+            <h3>Notes: {{ $receipt->shortnote }}</h3>
             @endif
         </div>
         <p><strong>Payment Info:</strong></p>
         @switch($receipt->payterms)
-            @case('Bank')
-                <p>
-                    Bank Name: {{ $receipt->bankname }}<br>
-                    Branch Name: {{ $receipt->bankbranch }}
-                </p>
-            @break
+        @case('Bank')
+        <p>
+            Bank Name: {{ $receipt->bankname }}<br>
+            Branch Name: {{ $receipt->bankbranch }}
+        </p>
+        @break
 
-            @case('Cheque')
-                <p>
-                    Bank Name: {{ $receipt->bankname }}<br>
-                    Cheque No: {{ $receipt->chequeno }}
-                </p>
-            @break
+        @case('Cheque')
+        <p>
+            Bank Name: {{ $receipt->bankname }}<br>
+            Cheque No: {{ $receipt->chequeno }}
+        </p>
+        @break
 
-            @case('Bkash')
-                <p>
-                    Bank Name: {{ $receipt->payterms }}<br>
-                    Transaction No: {{ $receipt->transno }}
-                </p>
-            @break
+        @case('Bkash')
+        <p>
+            Bank Name: {{ $receipt->payterms }}<br>
+            Transaction No: {{ $receipt->transno }}
+        </p>
+        @break
 
-            @case('Nagad')
-                <p>
-                    Bank Name: {{ $receipt->payterms }}<br>
-                    Transaction No: {{ $receipt->transno }}
-                </p>
-            @break
+        @case('Nagad')
+        <p>
+            Bank Name: {{ $receipt->payterms }}<br>
+            Transaction No: {{ $receipt->transno }}
+        </p>
+        @break
 
-            @case('Card')
-                <p>Transaction No: {{ $receipt->transactionNo }}</p>
-            @break
+        @case('Card')
+        <p>
+            Bank Name: {{ $receipt->payterms }}<br>
+            Transaction No: {{ $receipt->transno }}
+        </p>
+        @break
 
-            @default
-                <p>Cash Received</p>
+        @default
+        <p>Cash Received</p>
         @endswitch
 
         <!-- ===== FOOTER ===== -->
@@ -523,34 +526,34 @@
         </thead>
         <tbody>
             @foreach ($dataArray as $key => $item)
-                <tr>
-                    <td>{{ $key + 1 }}</td>
-                    <td>{{ $item['feename'] ?? 'N/A' }}</td>
-                    <td>{{ number_format($item['amount'] ?? 0, 2) }}</td>
-                    <td>
-                        @if ($item['pay_type'] == 'Revenue')
-                            Non Refundable
-                        @else
-                            {{ $item['pay_type'] ?? 'N/A' }}
-                        @endif
+            <tr>
+                <td>{{ $key + 1 }}</td>
+                <td>{{ $item['feename'] ?? 'N/A' }}</td>
+                <td>{{ number_format($item['amount'] ?? 0, 2) }}</td>
+                <td>
+                    @if ($item['pay_type'] == 'Revenue')
+                    Non Refundable
+                    @else
+                    {{ $item['pay_type'] ?? 'N/A' }}
+                    @endif
 
-                    </td>
-                    <td>
-                        @if ($item['feename'] == 'File Opening Fee')
-                            At the beginning of process
-                        @elseif($item['feename'] == 'Application Fee')
-                            During process direct payment to University
-                        @elseif($item['feename'] == 'Visa Process Fee')
-                            After offer letter of services needed
-                        @elseif($item['feename'] == 'VISA Fee')
-                            After offer letter direct payment to VFS/Embassy
-                        @elseif($item['feename'] == 'Service Fee')
-                            After Visa
-                        @elseif($item['feename'] == 'Tuition Fee')
-                            Tuition fees are refundable if the visa application is refused**
-                        @endif
-                    </td>
-                </tr>
+                </td>
+                <td>
+                    @if ($item['feename'] == 'File Opening Fee')
+                    At the beginning of process
+                    @elseif($item['feename'] == 'Application Fee')
+                    During process direct payment to University
+                    @elseif($item['feename'] == 'Visa Process Fee')
+                    After offer letter of services needed
+                    @elseif($item['feename'] == 'VISA Fee')
+                    After offer letter direct payment to VFS/Embassy
+                    @elseif($item['feename'] == 'Service Fee')
+                    After Visa
+                    @elseif($item['feename'] == 'Tuition Fee')
+                    Tuition fees are refundable if the visa application is refused**
+                    @endif
+                </td>
+            </tr>
             @endforeach
         </tbody>
     </table>
@@ -562,31 +565,48 @@
         <p class="grand-total">Total: {{ number_format($receipt->netamount ?? 0, 2) }}</p>
         <h3>in word: {{ $numberTransformer->toWords($receipt->netamount ?? 0) }} only</h3>
         @if (!empty($receipt->shortnote))
-            <h3>Notes: {{ $receipt->shortnote }}</h3>
+        <h3>Notes: {{ $receipt->shortnote }}</h3>
         @endif
     </div>
     <p><strong>Payment Info:</strong></p>
     @switch($receipt->payterms)
-        @case('Bank')
-            <p>
-                Bank Name: {{ $receipt->bankname }}<br>
-                Branch Name: {{ $receipt->bankbranch }}
-            </p>
-        @break
+    @case('Bank')
+    <p>
+        Bank Name: {{ $receipt->bankname }}<br>
+        Branch Name: {{ $receipt->bankbranch }}
+    </p>
+    @break
 
-        @case('Cheque')
-            <p>
-                Bank Name: {{ $receipt->bankname }}<br>
-                Cheque No: {{ $receipt->chequeno }}
-            </p>
-        @break
+    @case('Cheque')
+    <p>
+        Bank Name: {{ $receipt->bankname }}<br>
+        Cheque No: {{ $receipt->chequeno }}
+    </p>
+    @break
 
-        @case('Card')
-            <p>Transaction No: {{ $receipt->transactionNo }}</p>
-        @break
+    @case('Bkash')
+    <p>
+        Bank Name: {{ $receipt->payterms }}<br>
+        Transaction No: {{ $receipt->transno }}
+    </p>
+    @break
 
-        @default
-            <p>Cash Received</p>
+    @case('Nagad')
+    <p>
+        Bank Name: {{ $receipt->payterms }}<br>
+        Transaction No: {{ $receipt->transno }}
+    </p>
+    @break
+
+    @case('Card')
+    <p>
+        Bank Name: {{ $receipt->payterms }}<br>
+        Transaction No: {{ $receipt->transno }}
+    </p>
+    @break
+
+    @default
+    <p>Cash Received</p>
     @endswitch
 
     <!-- ===== FOOTER ===== -->

@@ -69,13 +69,88 @@ const filteredBranch = computed(() => {
     return props.branch.filter((n) => n.branchname && n.branchname.toLowerCase().includes(queryBranch.value.toLowerCase()));
 });
 
-const selectedCredit = ref(null);
-const queryCredit = ref('');
-const filteredCredit = computed(() => {
-    if (queryCredit.value === '') return props.craccountcode;
-
-    return props.craccountcode.filter((n) => n.description && n.description.toLowerCase().includes(queryCredit.value.toLowerCase()));
+const selectedDetailCredit = ref<any>(null);
+const queryDetailCredit = ref('');
+const filteredDetailCredit = computed(() => {
+    if (queryDetailCredit.value === '') return props.craccountcode;
+    return props.craccountcode.filter((n) => n.description && n.description.toLowerCase().includes(queryDetailCredit.value.toLowerCase()));
 });
+const newCreditParticular = ref('');
+const newCreditAmount = ref<number | string>('');
+const editingCreditIndex = ref(-1);
+const creditDetails = ref<Array<{ accountcode: string; creditAccName: string; particular: string; amount: number }>>([]);
+const creditDetailsTotal = computed(() => creditDetails.value.reduce((sum, d) => sum + d.amount, 0));
+const creditAccountBalance = ref<number | null>(null);
+
+const fetchCreditBalance = async (accountcode: string) => {
+    try {
+        const response = await axios.get(route('voucherheader.balance', accountcode));
+        creditAccountBalance.value = response.data.balance;
+    } catch (error) {
+        console.error('Error fetching balance:', error);
+        creditAccountBalance.value = null;
+    }
+};
+
+watch(selectedDetailCredit, (newVal) => {
+    if (newVal && newVal.accountcode) {
+        fetchCreditBalance(newVal.accountcode);
+    } else {
+        creditAccountBalance.value = null;
+    }
+});
+
+const addCreditDetail = () => {
+    if (!selectedDetailCredit.value) {
+        toast('Validation Error', { description: 'Please select a credit account' });
+        return;
+    }
+    if (!newCreditParticular.value.trim()) {
+        toast('Validation Error', { description: 'Please write notes' });
+        return;
+    }
+    if (!newCreditAmount.value || Number(newCreditAmount.value) <= 0) {
+        toast('Validation Error', { description: 'Please enter a valid amount' });
+        return;
+    }
+    if (editingCreditIndex.value >= 0) {
+        creditDetails.value[editingCreditIndex.value] = {
+            accountcode: selectedDetailCredit.value.accountcode,
+            creditAccName: selectedDetailCredit.value.description,
+            particular: newCreditParticular.value.trim(),
+            amount: Number(newCreditAmount.value),
+        };
+        editingCreditIndex.value = -1;
+    } else {
+        creditDetails.value.push({
+            accountcode: selectedDetailCredit.value.accountcode,
+            creditAccName: selectedDetailCredit.value.description,
+            particular: newCreditParticular.value.trim(),
+            amount: Number(newCreditAmount.value),
+        });
+    }
+    newCreditParticular.value = '';
+    newCreditAmount.value = '';
+    selectedDetailCredit.value = null;
+};
+
+const editCreditDetail = (index: number) => {
+    const detail = creditDetails.value[index];
+    selectedDetailCredit.value = props.craccountcode.find((acc) => acc.accountcode === detail.accountcode) || null;
+    newCreditParticular.value = detail.particular;
+    newCreditAmount.value = detail.amount;
+    editingCreditIndex.value = index;
+};
+
+const deleteCreditDetail = (index: number) => {
+    creditDetails.value.splice(index, 1);
+    if (editingCreditIndex.value === index) {
+        editingCreditIndex.value = -1;
+        newCreditParticular.value = '';
+        newCreditAmount.value = '';
+        selectedDetailCredit.value = null;
+    }
+};
 
 const showDialog = ref(false);
 const isEditMode = ref(false);
@@ -103,10 +178,15 @@ const showDailogCreate = () => {
     form.id = null;
     isEditMode.value = false;
     details.value = [];
+    creditDetails.value = [];
     newParticular.value = '';
     newAmount.value = '';
+    newCreditParticular.value = '';
+    newCreditAmount.value = '';
     editingIndex.value = -1;
+    editingCreditIndex.value = -1;
     selectedDetailDebit.value = null;
+    selectedDetailCredit.value = null;
     showDialog.value = true;
 };
 
@@ -124,11 +204,15 @@ const submit = () => {
     }
 
     if (details.value.length === 0) {
-        toast('Validation Error', { description: 'Please add at least one particular' });
+        toast('Validation Error', { description: 'Please add at least one debit detail' });
         return;
     }
-    if (!selectedCredit.value?.accountcode) {
-        toast('Validation Error', { description: 'Please select a credit account' });
+    if (creditDetails.value.length === 0) {
+        toast('Validation Error', { description: 'Please add at least one credit detail' });
+        return;
+    }
+    if (Math.abs(detailsTotal.value - creditDetailsTotal.value) > 0.01) {
+        toast('Validation Error', { description: 'Total Debit and Total Credit must be equal' });
         return;
     }
     if (!form.notes) {
@@ -137,21 +221,25 @@ const submit = () => {
     }
 
     form.branch_id = selectedBranch.value.id;
-
-    form.creditAcc = selectedCredit.value.accountcode;
     form.debitAmt = detailsTotal.value;
-    form.creditAmt = -detailsTotal.value;
+    form.creditAmt = -creditDetailsTotal.value;
 
-    form.transform((data) => ({ ...data, details: details.value }))[method](action, {
+    form.transform((data) => ({
+        ...data,
+        details: details.value,
+        creditDetails: creditDetails.value,
+    }))[method](action, {
         onSuccess: () => {
             setTimeout(() => {
                 form.reset();
                 details.value = [];
+                creditDetails.value = [];
                 showDialog.value = false;
                 router.visit(route('voucherheader.opening'), { preserveScroll: true, preserveState: false });
             }, 200);
             form.reset();
             details.value = [];
+            creditDetails.value = [];
             showDialog.value = false;
         },
         onError: (errors) => {
@@ -181,19 +269,20 @@ const onEdit = async (opening: number) => {
         vdate.value = new Date(voucher.voucherdate);
         selectedBranch.value = voucher.branch;
         const debitRows = voucher.voucherdt.filter((d: any) => d.primeamt > 0);
-        const creditRow = voucher.voucherdt.find((d: any) => d.primeamt < 0);
+        const creditRows = voucher.voucherdt.filter((d: any) => d.primeamt < 0);
         details.value = debitRows.map((d: any) => ({
             accountcode: d.accountcode,
             debitAccName: d.chart_o_f_account ? d.chart_o_f_account.description : '',
             particular: d.notes || '',
             amount: Number(d.primeamt),
         }));
+        creditDetails.value = creditRows.map((d: any) => ({
+            accountcode: d.accountcode,
+            creditAccName: d.chart_o_f_account ? d.chart_o_f_account.description : '',
+            particular: d.notes || '',
+            amount: Math.abs(Number(d.primeamt)),
+        }));
         form.debitAmt = detailsTotal.value;
-        if (creditRow) {
-            selectedCredit.value = creditRow.chart_o_f_account;
-            form.creditAcc = creditRow.accountcode;
-            form.creditAmt = -Math.abs(creditRow.primeamt);
-        }
         newParticular.value = '';
         newAmount.value = '';
         selectedDetailDebit.value = null;
@@ -298,25 +387,6 @@ const onReport = async (vhd: number) => {
 };
 
 const selectedVoucher = ref(null);
-const accountBalance = ref<number | null>(null);
-
-const fetchBalance = async (accountcode: string) => {
-    try {
-        const response = await axios.get(route('voucherheader.balance', accountcode));
-        accountBalance.value = response.data.balance;
-    } catch (error) {
-        console.error('Error fetching balance:', error);
-        accountBalance.value = null;
-    }
-};
-
-watch(selectedCredit, (newVal) => {
-    if (newVal && newVal.accountcode) {
-        fetchBalance(newVal.accountcode);
-    } else {
-        accountBalance.value = null;
-    }
-});
 
 const queryVoucher = ref('');
 const filteredVoucher = computed(() => {
@@ -967,62 +1037,119 @@ const goToPage = (url: string | null) => {
                 >
                     No particulars added yet.
                 </div>
-                <div>
-                    <div class="flex items-center justify-between">
-                        <Label for="creditAcc" class="text-sm font-medium">Credit Account<span class="text-red-500">*</span></Label>
-                        <span
-                            v-if="accountBalance !== null"
-                            class="text-xs font-semibold"
-                            :class="accountBalance >= 0 ? 'text-green-600' : 'text-red-600'"
-                        >
-                            Balance: ৳ {{ accountBalance.toLocaleString() }}
-                        </span>
-                    </div>
-                    <Combobox v-model="selectedCredit">
-                        <div class="relative">
-                            <ComboboxInput
-                                class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select credit account..."
-                                :display-value="(credit) => credit?.description ?? ''"
-                                @input="queryCredit = $event.target.value"
-                            />
-                            <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2"
-                                ><ChevronUpDownIcon class="h-5 w-5 text-gray-400"
-                            /></ComboboxButton>
-                            <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div
-                                    v-if="filteredCredit.length === 0 && queryCredit !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
+                <!-- Detail Credit Input -->
+                <div class="rounded-lg border border-gray-200 bg-gray-50/50 p-4 dark:border-gray-700/50 dark:bg-gray-800/50">
+                    <h3 class="mb-4 text-sm font-semibold text-emerald-900 dark:text-emerald-300">Add Credit Details</h3>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+                        <div class="md:col-span-12">
+                            <div class="flex items-center justify-between">
+                                <Label class="text-sm font-medium">Credit Account<span class="text-red-500">*</span></Label>
+                                <span
+                                    v-if="creditAccountBalance !== null"
+                                    class="text-xs font-semibold"
+                                    :class="creditAccountBalance >= 0 ? 'text-green-600' : 'text-red-600'"
                                 >
-                                    Nothing found.
+                                    Balance: ৳ {{ creditAccountBalance.toLocaleString() }}
+                                </span>
+                            </div>
+                            <Combobox v-model="selectedDetailCredit">
+                                <div class="relative mt-1">
+                                    <ComboboxInput
+                                        class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                        placeholder="Select account..."
+                                        :display-value="(credit) => credit?.description ?? ''"
+                                        @input="queryDetailCredit = $event.target.value"
+                                    />
+                                    <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
+                                    </ComboboxButton>
+                                    <ComboboxOptions
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
+                                    >
+                                        <div
+                                            v-if="filteredDetailCredit.length === 0 && queryDetailCredit !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
+                                        >
+                                            Nothing found.
+                                        </div>
+                                        <ComboboxOption
+                                            v-for="n in filteredDetailCredit"
+                                            :key="n.id"
+                                            :value="n"
+                                            class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
+                                            v-slot="{ selected }"
+                                        >
+                                            <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.description }}</span>
+                                            <span
+                                                v-if="selected"
+                                                class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
+                                            >
+                                                <CheckIcon class="h-5 w-5" />
+                                            </span>
+                                        </ComboboxOption>
+                                    </ComboboxOptions>
                                 </div>
-                                <ComboboxOption
-                                    v-for="n in filteredCredit"
-                                    :key="n.id"
-                                    :value="n"
-                                    class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.description }}</span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                        ><CheckIcon class="h-5 w-5"
-                                    /></span>
-                                </ComboboxOption>
-                            </ComboboxOptions>
+                            </Combobox>
                         </div>
-                    </Combobox>
-                    <p v-if="form.errors.creditAcc" class="mt-1 text-sm text-red-600">{{ form.errors.creditAcc }}</p>
-                </div>
-                <!-- Credit Amount (auto-calculated) -->
-                <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 dark:border-green-800 dark:bg-green-900/30">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm font-semibold text-green-700 dark:text-green-300">Total Credit Amount</span>
-                        <span class="text-base font-bold text-green-800 dark:text-green-200">৳ -{{ detailsTotal.toLocaleString() }}</span>
+                        <div class="md:col-span-6 lg:col-span-7">
+                            <Label class="text-sm font-medium">Notes<span class="text-red-500">*</span></Label>
+                            <Textarea v-model="newCreditParticular" class="mt-1 w-full" placeholder="Write notes" rows="2"></Textarea>
+                        </div>
+                        <div class="mt-3 md:col-span-4 lg:col-span-3">
+                            <Label class="text-sm font-medium">Amount<span class="text-red-500">*</span></Label>
+                            <Input type="number" v-model="newCreditAmount" class="mt-1 w-full" placeholder="Enter Amount" />
+                        </div>
+                        <div class="mt-3 flex items-center md:col-span-2 lg:col-span-2">
+                            <Button @click="addCreditDetail" size="sm" class="w-full">
+                                <Plus class="mr-1 h-4 w-4" />{{ editingCreditIndex >= 0 ? 'Update' : 'Add' }}
+                            </Button>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Credit Particulars Table -->
+                <div v-if="creditDetails.length" class="mt-3 max-h-48 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead class="w-12">SL</TableHead>
+                                <TableHead>Credit Account</TableHead>
+                                <TableHead>Notes</TableHead>
+                                <TableHead class="text-right">Amount</TableHead>
+                                <TableHead class="w-24 text-center">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow v-for="(row, idx) in creditDetails" :key="idx">
+                                <TableCell class="text-xs">{{ idx + 1 }}</TableCell>
+                                <TableCell class="text-sm">{{ row.creditAccName }}</TableCell>
+                                <TableCell class="text-sm">{{ row.particular }}</TableCell>
+                                <TableCell class="text-right text-sm font-medium">{{ row.amount.toLocaleString() }}</TableCell>
+                                <TableCell class="text-center">
+                                    <div class="flex justify-center gap-1">
+                                        <Button variant="ghost" size="sm" class="h-7 w-7 p-0" @click="editCreditDetail(idx)">
+                                            <Pencil class="h-3.5 w-3.5 text-indigo-500" />
+                                        </Button>
+                                        <Button variant="ghost" size="sm" class="h-7 w-7 p-0" @click="deleteCreditDetail(idx)">
+                                            <Trash2 class="h-3.5 w-3.5 text-red-500" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                    <div
+                        class="flex items-center justify-between border-t border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-900/30"
+                    >
+                        <span class="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Total Credit Amount</span>
+                        <span class="text-base font-bold text-emerald-800 dark:text-emerald-200">৳ {{ creditDetailsTotal.toLocaleString() }}</span>
+                    </div>
+                </div>
+                <div
+                    v-else
+                    class="mt-3 rounded-lg border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-400 dark:border-gray-600"
+                >
+                    No credit particulars added yet.
                 </div>
 
                 <!-- Notes -->

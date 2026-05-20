@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Default\ApprovalRequest;
-use App\Models\Default\Country;
 use App\Models\Student\StudentActivities;
 use App\Models\Default\Transaction;
 use App\Models\Student\Student;
 use App\Models\Student\StudentApplication;
 use App\Models\Student\StudentInService;
 
+use App\Models\Accounts\CodesParam;
+use App\Models\Accounts\ChartOfAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -134,6 +135,46 @@ class StudentActivitiesController extends Controller
             'status'      => 2,
         ]);
 
+        //chart of account table update 
+        $codesParam = CodesParam::where('type', 'Student Advance')->first();
+        if ($codesParam && $codesParam->cracc) {
+            $cracc = $codesParam->cracc;
+            $parts = explode('-', $cracc);
+            if (count($parts) >= 3) {
+                $prefix = implode('-', array_slice($parts, 0, 3));
+
+                // Find next suffix
+                $maxSuffix = ChartOfAccount::where('accountcode', 'like', "$prefix-%")
+                    ->selectRaw("MAX(CAST(SUBSTRING_INDEX(accountcode, '-', -1) AS UNSIGNED)) as max_val")
+                    ->value('max_val');
+
+                $nextSuffixVal = $maxSuffix ? ((int)$maxSuffix + 1) : 1;
+                $nextSuffix = str_pad($nextSuffixVal, 3, '0', STR_PAD_LEFT);
+                $newAccountCode = $prefix . '-' . $nextSuffix;
+
+                // Check if account already exists for this student
+                $existingCOA = ChartOfAccount::where('description', $studentID)->first();
+                if (!$existingCOA) {
+                    $originalCOA = ChartOfAccount::where('accountcode', $cracc)->first();
+                    if ($originalCOA) {
+                        ChartOfAccount::create([
+                            'groupone'       => $originalCOA->groupone,
+                            'grouptwo'       => $originalCOA->grouptwo,
+                            'groupthree'     => $originalCOA->groupthree,
+                            'groupfour'      => $originalCOA->groupfour,
+                            'accountcode'    => $newAccountCode,
+                            'description'    => $studentID,
+                            'accounttype'    => $originalCOA->accounttype,
+                            'accountusage'   => $originalCOA->accountusage,
+                            'analyticalcode' => $originalCOA->analyticalcode,
+                            'user_id'        => Auth::id(),
+                            'active'         => 1,
+                        ]);
+                    }
+                }
+            }
+        }
+
         // Update lastnumber in transactions table
         if ($transaction = Transaction::where('name', 'Student ID')->where('active', 1)->first()) {
             $numericPart = preg_replace('/\D/', '', $studentID); // digits only
@@ -154,7 +195,7 @@ class StudentActivitiesController extends Controller
 
     public function confirmonBoard(Request $request)
     {
-       
+
         $request->validate([
             'student_id' => 'required|exists:students,id',
             'status' => 'required',
@@ -165,7 +206,7 @@ class StudentActivitiesController extends Controller
 
         ApprovalRequest::where('reference_id', $request->student_id)
             ->update(['status' => 1]);
-        
+
         // Record activity
         StudentActivities::create([
             'student_id'    => $request->student_id,
