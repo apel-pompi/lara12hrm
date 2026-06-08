@@ -216,11 +216,11 @@
 
             if ($item->primeamt < 0) {
                 $dr=abs($item->primeamt);
-                $balance += $dr;
+                $balance -= $dr;
                 $totalDr += $dr;
                 } else {
                 $cr = $item->primeamt;
-                $balance -= $cr;
+                $balance += $cr;
                 $totalCr += $cr;
                 }
                 @endphp

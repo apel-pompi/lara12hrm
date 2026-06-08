@@ -118,13 +118,12 @@ class AccountsReportController extends Controller
             ]);
         }
 
-        $opening = VoucherBalance::with(['ChartOFAccount', 'branch'])
+        $opening = VoucherBalance::with(['branch'])
             ->where('voucherdate', '<', $request->startdate)
             ->where('status', 'Post')
-            ->whereRaw("LEFT(vouchernumber, 4) = 'OB--'")
             ->where('accountcode', $request->account)
             ->when($request->filled('branch_id'), function ($q) use ($request) {
-                $q->where('voucher_balances.branch_id', $request->branch_id);
+                $q->where('branch_id', $request->branch_id);
             })
             ->select(
                 'accountcode',
@@ -135,7 +134,7 @@ class AccountsReportController extends Controller
             ->groupBy('accountcode', 'branch_id', 'currency')
             ->first();
         if (!$opening) {
-            $opening = VoucherBalance::with(['ChartOFAccount', 'branch'])
+            $opening = VoucherBalance::with(['branch'])
                 ->where('accountcode', $request->account)
                 ->when($request->filled('branch_id'), function ($q) use ($request) {
                     $q->where('branch_id', $request->branch_id);
@@ -290,7 +289,7 @@ class AccountsReportController extends Controller
             ->where('voucher_balances.voucherdate', '<', $request->startdate)
             ->where('voucher_balances.status', 'Post')
             ->where('voucher_balances.primeamt', '>', 0)
-            ->whereRaw("LEFT(voucher_balances.vouchernumber, 4) = 'OB--'")
+            //->whereRaw("LEFT(voucher_balances.vouchernumber, 4) = 'OB--'")
             ->when($request->filled('branch_id'), function ($q) use ($request) {
                 $q->where('voucher_balances.branch_id', $request->branch_id);
             })
@@ -798,6 +797,8 @@ class AccountsReportController extends Controller
                 SELECT 
                     b.groupone_name,
                     b.grouptwo_name,
+                    b.groupthree_name,
+                    b.groupfour_name,
                     SUM(a.baseamt) AS balance
                 FROM voucher_balances a
                 JOIN vw_chartofaccs b ON a.accountcode = b.accountcode
@@ -805,8 +806,8 @@ class AccountsReportController extends Controller
                 AND a.voucherdate BETWEEN ? AND ?
                 AND a.status = 'Post'
                 " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
-                GROUP BY b.groupone_name, b.grouptwo_name
-                ORDER BY b.groupone_name, b.grouptwo_name
+                GROUP BY b.groupone_name, b.grouptwo_name, b.groupthree_name, b.groupfour_name
+                ORDER BY b.groupone_name, b.grouptwo_name, b.groupthree_name, b.groupfour_name
             ",
                 $request->filled('branch_id')
                     ? [$request->startdate, $request->enddate, $request->branch_id]
@@ -817,6 +818,8 @@ class AccountsReportController extends Controller
                 SELECT 
                     b.groupone_name,
                     b.grouptwo_name,
+                    b.groupthree_name,
+                    b.groupfour_name,
                     b.accountcode,
                     b.ledger_name,
                     IFNULL(SUM(a.baseamt),0) AS balance
@@ -829,13 +832,17 @@ class AccountsReportController extends Controller
                 WHERE b.groupone_name IN ('ASSETS','LIABILITIES')
                 GROUP BY 
                     b.groupone_name,
+                    b.grouptwo_name,
+                    b.groupthree_name,
+                    b.groupfour_name,
                     b.accountcode,
-                    b.ledger_name,
-                    b.grouptwo_name
+                    b.ledger_name
                     HAVING balance <> 0
                 ORDER BY 
                     b.groupone_name,
                     b.grouptwo_name,
+                    b.groupthree_name,
+                    b.groupfour_name,
                     b.accountcode
             ", array_filter([
                 $request->startdate,
@@ -846,7 +853,13 @@ class AccountsReportController extends Controller
 
         $groupedAssets = collect($sql)->groupBy('groupone_name')
             ->map(function ($items) {
-                return $items->groupBy('grouptwo_name');
+                return $items->groupBy('grouptwo_name')
+                    ->map(function ($items) {
+                        return $items->groupBy('groupthree_name')
+                            ->map(function ($items) {
+                                return $items->groupBy('groupfour_name');
+                            });
+                    });
             });
 
 
@@ -896,6 +909,8 @@ class AccountsReportController extends Controller
                 SELECT 
                     b.groupone_name,
                     b.grouptwo_name,
+                    b.groupthree_name,
+                    b.groupfour_name,
                     SUM(a.baseamt) AS balance
                 FROM voucher_balances a
                 JOIN vw_chartofaccs b ON a.accountcode = b.accountcode
@@ -903,8 +918,8 @@ class AccountsReportController extends Controller
                 AND a.voucherdate BETWEEN ? AND ?
                 AND a.status = 'Post'
                 " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
-                GROUP BY b.groupone_name, b.grouptwo_name
-                ORDER BY b.groupone_name, b.grouptwo_name
+                GROUP BY b.groupone_name, b.grouptwo_name, b.groupthree_name, b.groupfour_name
+                ORDER BY b.groupone_name, b.grouptwo_name, b.groupthree_name, b.groupfour_name
             ",
                 $request->filled('branch_id')
                     ? [$request->startdate, $request->enddate, $request->branch_id]
@@ -915,6 +930,8 @@ class AccountsReportController extends Controller
                 SELECT 
                     b.groupone_name,
                     b.grouptwo_name,
+                    b.groupthree_name,
+                    b.groupfour_name,
                     b.accountcode,
                     b.ledger_name,
                     IFNULL(SUM(a.baseamt),0) AS balance
@@ -927,14 +944,17 @@ class AccountsReportController extends Controller
                 WHERE b.groupone_name IN ('REVENUES','EXPENDITURES')
                 GROUP BY 
                     b.groupone_name,
+                    b.grouptwo_name,
+                    b.groupthree_name,
+                    b.groupfour_name,
                     b.accountcode,
-                    b.ledger_name,
-                    b.groupone_code,
-                    b.grouptwo_name
+                    b.ledger_name
                     HAVING balance <> 0
                 ORDER BY 
                     b.groupone_name,
                     b.grouptwo_name,
+                    b.groupthree_name,
+                    b.groupfour_name,
                     b.accountcode
             ", array_filter([
                 $request->startdate,
@@ -944,7 +964,13 @@ class AccountsReportController extends Controller
         }
         $groupedAssets = collect($sql)->groupBy('groupone_name')
             ->map(function ($items) {
-                return $items->groupBy('grouptwo_name');
+                return $items->groupBy('grouptwo_name')
+                    ->map(function ($items) {
+                        return $items->groupBy('groupthree_name')
+                            ->map(function ($items) {
+                                return $items->groupBy('groupfour_name');
+                            });
+                    });
             });
 
 

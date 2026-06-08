@@ -187,7 +187,11 @@
                 </td>
                 <td class="header-right">
                     <div class="title">
-                        {{ substr($receipt->refe_code, 0, 4) == 'SR--' ? 'REFUND RECEIPT' : 'MONEY RECEIPT' }}
+                        <span
+                            style="color: {{ substr($receipt->refe_code, 0, 4) == 'SR--' ? '#dc3545' : '#000' }};
+                            font-weight: bold;">
+                            {{ substr($receipt->refe_code, 0, 4) == 'SR--' ? 'REFUND RECEIPT' : 'MONEY RECEIPT' }}
+                        </span>
                         <br>
                         <span style="font-size: 12px">Office Copy</span>
                     </div>
@@ -489,7 +493,11 @@
             </td>
             <td class="header-right">
                 <div class="title">
-                    {{ substr($receipt->refe_code, 0, 4) == 'SR--' ? 'REFUND RECEIPT' : 'MONEY RECEIPT' }}
+                    <span
+                        style="color: {{ substr($receipt->refe_code, 0, 4) == 'SR--' ? '#dc3545' : '#000' }};
+                            font-weight: bold;">
+                        {{ substr($receipt->refe_code, 0, 4) == 'SR--' ? 'REFUND RECEIPT' : 'MONEY RECEIPT' }}
+                    </span>
                     <br>
                     <span style="font-size: 12px">Student Copy</span>
                 </div>

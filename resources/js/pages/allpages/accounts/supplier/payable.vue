@@ -96,7 +96,6 @@ const search = () => {
     if (selectedBranch.value) params.branch = selectedBranch.value.id;
     if (selectedSupplier.value) params.suppliercode = selectedSupplier.value.suppliercode;
     if (selectedPerson.value) params.contact_person = selectedPerson.value.contact_person;
-    console.log('Search Params:', params);
     router.get(route('suppliersPayble.index'), params, {
         preserveState: false,
         preserveScroll: true,

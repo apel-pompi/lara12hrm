@@ -109,8 +109,24 @@
             padding-top: 6px;
         }
 
+        .group-three-name {
+            font-size: 13px;
+            font-weight: bold;
+            padding-left: 20px;
+            padding-top: 4px;
+            color: #333;
+        }
+
+        .group-four-name {
+            font-size: 12px;
+            font-weight: bold;
+            padding-left: 32px;
+            padding-top: 3px;
+            color: #444;
+        }
+
         .ledger-name {
-            padding-left: 30px;
+            padding-left: 48px;
         }
 
         .amount {
@@ -201,49 +217,81 @@
             </thead>
 
             <tbody>
-                @foreach($groupedAssets as $groupone_name => $groups)
+                @foreach($groupedAssets as $groupone_name => $groupTwos)
 
-                {{-- ACCOUNT TYPE --}}
+                {{-- LEVEL 1: ACCOUNT TYPE (ASSETS / LIABILITIES) --}}
                 <tr>
                     <td colspan="3" class="account-type">{{ strtoupper($groupone_name) }}</td>
                 </tr>
 
-                @foreach($groups as $groupName => $ledgers)
+                @foreach($groupTwos as $groupTwoName => $groupThrees)
 
-                {{-- GROUP NAME --}}
+                {{-- LEVEL 2: GROUP TWO --}}
                 <tr>
-                    <td colspan="3" class="group-name">{{ strtoupper($groupName) }}</td>
+                    <td colspan="3" class="group-name">{{ strtoupper($groupTwoName) }}</td>
                 </tr>
 
-                {{-- DETAILS (skip this block for summary) --}}
+                @foreach($groupThrees as $groupThreeName => $groupFours)
+
+                {{-- LEVEL 3: GROUP THREE --}}
+                <tr>
+                    <td colspan="3" class="group-three-name">{{ strtoupper($groupThreeName) }}</td>
+                </tr>
+
+                @foreach($groupFours as $groupFourName => $ledgers)
+
+                {{-- LEVEL 4: GROUP FOUR --}}
+                <tr>
+                    <td colspan="3" class="group-four-name">{{ strtoupper($groupFourName) }}</td>
+                </tr>
+
+                {{-- LEDGER ITEMS --}}
                 @foreach($ledgers as $row)
+                @if(isset($row->ledger_name))
                 <tr>
-                    <td class="ledger-name">
-                        {{ $row->ledger_name ?? $row->grouptwo_name }}
+                    <td class="ledger-name">{{ $row->ledger_name }}</td>
+                    <td class="amount">{{ formatAmount($row->balance) }}</td>
+                    <td class="amount">{{ formatAmount($row->balance) }}</td>
+                </tr>
+                @else
+                {{-- Summary mode: show balance at groupfour level --}}
+                <tr>
+                    <td class="ledger-name"></td>
+                    <td class="amount">{{ formatAmount($row->balance) }}</td>
+                    <td class="amount">{{ formatAmount($row->balance) }}</td>
+                </tr>
+                @endif
+                @endforeach
+
+                @endforeach {{-- end groupFours --}}
+
+                @endforeach {{-- end groupThrees --}}
+
+                {{-- SUBTOTAL: GROUP TWO --}}
+                <tr class="total-row">
+                    <td style="text-align:right; padding-left:10px;">Total {{ strtoupper($groupTwoName) }}</td>
+                    <td class="amount">
+                        {{ formatAmount(collect($groupThrees)->flatten()->sum('balance')) }}
                     </td>
                     <td class="amount">
-                        {{ formatAmount($row->balance) }}
-                    </td>
-                    <td class="amount">
-                        {{ formatAmount($row->balance) }}
+                        {{ formatAmount(collect($groupThrees)->flatten()->sum('balance')) }}
                     </td>
                 </tr>
-                @endforeach
 
-                @endforeach
+                @endforeach {{-- end groupTwos --}}
 
-                {{-- TOTAL ACCOUNT TYPE --}}
+                {{-- GRAND TOTAL: ACCOUNT TYPE --}}
                 <tr class="grand-total">
                     <td style="text-align:right;">Total {{ strtoupper($groupone_name) }}</td>
                     <td class="amount">
-                        {{ formatAmount(collect($groups)->flatten()->sum('balance')) }}
+                        {{ formatAmount(collect($groupTwos)->flatten()->sum('balance')) }}
                     </td>
                     <td class="amount">
-                        {{ formatAmount(collect($groups)->flatten()->sum('balance')) }}
+                        {{ formatAmount(collect($groupTwos)->flatten()->sum('balance')) }}
                     </td>
                 </tr>
 
-                @endforeach
+                @endforeach {{-- end groupedAssets --}}
             </tbody>
         </table>
 
