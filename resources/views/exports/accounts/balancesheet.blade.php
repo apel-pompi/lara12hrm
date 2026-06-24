@@ -155,8 +155,8 @@
 
     function formatAmount($amount) {
     return $amount < 0
-        ? '(' . number_format(abs($amount), 3) . ')'
-        : number_format($amount, 3);
+        ? '(' . number_format(abs($amount), 2) . ')'
+        : number_format($amount, 2);
         }
         @endphp
 

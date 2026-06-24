@@ -237,12 +237,12 @@
             <!-- TOTAL -->
             <tr class="total-row">
                 <td colspan="2">Total</td>
-                <td class="text-right">{{ number_format($totBfDr,3) }}</td>
-                <td class="text-right">{{ number_format($totBfCr,3) }}</td>
-                <td class="text-right">{{ number_format($totCurDr,3) }}</td>
-                <td class="text-right">{{ number_format($totCurCr,3) }}</td>
-                <td class="text-right">{{ number_format($totCfDr,3) }}</td>
-                <td class="text-right">{{ number_format($totCfCr,3) }}</td>
+                <td class="text-right">{{ number_format($totBfDr,2) }}</td>
+                <td class="text-right">{{ number_format($totBfCr,2) }}</td>
+                <td class="text-right">{{ number_format($totCurDr,2) }}</td>
+                <td class="text-right">{{ number_format($totCurCr,2) }}</td>
+                <td class="text-right">{{ number_format($totCfDr,2) }}</td>
+                <td class="text-right">{{ number_format($totCfCr,2) }}
             </tr>
         </tbody>
     </table>

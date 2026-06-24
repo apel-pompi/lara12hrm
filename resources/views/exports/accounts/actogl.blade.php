@@ -230,16 +230,16 @@
                     <td>{{ $item->voucherdate }}</td>
                     <td class="text-center">{{ $item->branch->branchname }}</td>
                     <td>{{ $item->referance }}</td>
-                    <td class="text-right">{{ $dr > 0 ? number_format($dr,3) : '' }}</td>
-                    <td class="text-right">{{ $cr > 0 ? number_format($cr,3) : '' }}</td>
-                    <td class="text-right">{{ number_format($balance,3) }}</td>
+                    <td class="text-right">{{ $dr > 0 ? number_format($dr,2) : '' }}</td>
+                    <td class="text-right">{{ $cr > 0 ? number_format($cr,2) : '' }}</td>
+                    <td class="text-right">{{ number_format($balance,2) }}</td>
                 </tr>
                 @endforeach
                 <!-- Total -->
                 <tr class="total-row">
                     <td colspan="4">Total</td>
-                    <td class="text-right">{{ number_format($totalDr,3) }}</td>
-                    <td class="text-right">{{ number_format($totalCr,3) }}</td>
+                    <td class="text-right">{{ number_format($totalDr,2) }}</td>
+                    <td class="text-right">{{ number_format($totalCr,2) }}</td>
                     <td></td>
                 </tr>
         </tbody>

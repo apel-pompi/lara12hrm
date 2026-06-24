@@ -46,6 +46,7 @@ import {
     UserCog,
     Wallet,
     WalletMinimal,
+    Presentation,
 } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
@@ -84,6 +85,7 @@ const systemAdmin = [
             { title: 'CRM Configuration', href: '/general', icon: MonitorCog },
             { title: 'HR Configuration', href: '/companyinfo', icon: CalendarCog },
             { title: 'Accounting Configuration', href: '/accountssetting', icon: BadgeCent },
+            { title: 'Social Media Setup', href: '/social-media-setup', icon: Presentation },
         ],
     },
 ];

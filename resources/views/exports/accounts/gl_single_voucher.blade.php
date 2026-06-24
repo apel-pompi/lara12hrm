@@ -218,14 +218,14 @@
                 <td>{{ $row['accountcode'] }}</td>
                 <td>{{ $row['description'] }}</td>
                 <td>{{ $row['notes'] }}</td>
-                <td class="text-right">{{ $row['debit'] ? number_format($row['debit'], 3) : '' }}</td>
-                <td class="text-right">{{ $row['credit'] ? number_format($row['credit'], 3) : '' }}</td>
+                <td class="text-right">{{ $row['debit'] ? number_format($row['debit'], 2) : '' }}</td>
+                <td class="text-right">{{ $row['credit'] ? number_format($row['credit'], 2) : '' }}</td>
             </tr>
             @endforeach
             <tr class="total-row">
                 <th colspan="3" class="text-right">Grand Total</th>
-                <th class="text-right">{{ number_format($totalDebit, 3) }}</th>
-                <th class="text-right">{{ number_format($totalCredit, 3) }}</th>
+                <th class="text-right">{{ number_format($totalDebit, 2) }}</th>
+                <th class="text-right">{{ number_format($totalCredit, 2) }}</th>
             </tr>
         </tbody>
     </table>

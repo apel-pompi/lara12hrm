@@ -919,7 +919,7 @@ class AccountsReportController extends Controller
                 AND a.status = 'Post'
                 " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
                 GROUP BY b.groupone_name, b.grouptwo_name, b.groupthree_name, b.groupfour_name
-                ORDER BY b.groupone_name, b.grouptwo_name, b.groupthree_name, b.groupfour_name
+                ORDER BY b.groupone_code,b.groupone_name, b.grouptwo_name, b.groupthree_name, b.groupfour_name
             ",
                 $request->filled('branch_id')
                     ? [$request->startdate, $request->enddate, $request->branch_id]
@@ -951,6 +951,7 @@ class AccountsReportController extends Controller
                     b.ledger_name
                     HAVING balance <> 0
                 ORDER BY 
+                    b.groupone_code,
                     b.groupone_name,
                     b.grouptwo_name,
                     b.groupthree_name,

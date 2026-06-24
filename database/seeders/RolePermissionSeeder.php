@@ -317,6 +317,48 @@ class RolePermissionSeeder extends Seeder
 
                 ],
             ],
+            //Social Media Setup      
+            [
+                'group_name' => 'Social Media Setup',
+                'permissions' => [
+                    'SocialMediaSetup.index',
+                    'SocialMediaSetup.store',
+                    'SocialMediaSetup.update',
+                    'SocialMediaSetup.destroy',
+
+                ],
+            ],
+            //Facebook Form    
+            [
+                'group_name' => 'Facebook Form',
+                'permissions' => [
+                    'facebookForm.index',
+                    'facebookForm.sync',
+                    'facebookForm.destroy',
+                ],
+            ],
+            //User Wise Form    
+            [
+                'group_name' => 'User Wise Form',
+                'permissions' => [
+                    'userform.index',
+                    'userform.store',
+                    'userform.show',
+                    'userform.edit',
+                    'userform.update',
+                    'userform.destroy',
+                ],
+            ],
+            //Attendance Setting         
+            [
+                'group_name' => 'AttendanceSetting',
+                'permissions' => [
+                    'attendanmst.index',
+                    'SocialMediaSetup.update',
+                    'SocialMediaSetup.destroy',
+
+                ],
+            ],
             //Attendance Setting         
             [
                 'group_name' => 'AttendanceSetting',

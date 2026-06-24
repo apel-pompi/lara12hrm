@@ -1,0 +1,196 @@
+<script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue';
+import AgencyLayout from '@/layouts/settings/socialmediaLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, RefreshCcw, SquarePen, Trash } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
+
+export interface SocialMediaItem {
+    id: number;
+    page_id: string;
+    access_token?: string;
+    verify_token?: string;
+}
+
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Social Media Setup', href: '/social-media-setup' }];
+
+const props = defineProps<{
+    socialMediaSetups: SocialMediaItem[];
+}>();
+
+// normalize to data-like object for table/pagination UI
+const data = computed(() => ({ data: props.socialMediaSetups || [], links: [] }));
+
+const showDialog = ref(false);
+const isEditMode = ref(false);
+
+const form = useForm({ id: null as number | null, page_id: '', access_token: '', verify_token: '' });
+
+const showDialogCreate = () => {
+    form.reset();
+    form.id = null;
+    isEditMode.value = false;
+    showDialog.value = true;
+};
+
+const openEdit = (item: SocialMediaItem) => {
+    form.reset();
+    form.id = item.id;
+    form.page_id = item.page_id;
+    form.access_token = item.access_token ?? '';
+    form.verify_token = item.verify_token ?? '';
+    isEditMode.value = true;
+    showDialog.value = true;
+};
+
+const submit = () => {
+    if (form.id) {
+        form.put(route('social-media-setup.update', form.id), {
+            preserveState: true,
+            onSuccess: () => {
+                toast.success('Social media updated');
+                showDialog.value = false;
+            },
+            onError: (errors) => {
+                const first = Object.values(errors)[0];
+                toast('Validation Error', { description: first });
+            },
+        });
+    } else {
+        form.post(route('social-media-setup.store'), {
+            preserveState: true,
+            onSuccess: () => {
+                toast.success('Social media created');
+                showDialog.value = false;
+            },
+            onError: (errors) => {
+                const first = Object.values(errors)[0];
+                toast('Validation Error', { description: first });
+            },
+        });
+    }
+};
+
+const deleteForm = useForm({});
+const onDelete = (id: number) => {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+    deleteForm.delete(route('social-media-setup.destroy', id), {
+        onSuccess: () => {
+            toast.success('Deleted successfully');
+        },
+        onError: () => {
+            toast.error('Failed to delete');
+        },
+    });
+};
+
+const refresh = () => router.get(route('social-media-setup.index'), {}, { replace: true });
+
+const truncateToken = (token?: string) => {
+    if (!token || token.length <= 20) return token || '-';
+    const start = token.slice(0, 10);
+    const end = token.slice(-10);
+    return `${start}....${end}`;
+};
+</script>
+
+<template>
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <Head title="Social Media Setup" />
+        <AgencyLayout>
+            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+                <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div class="flex items-center gap-3">
+                        <Button class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500" size="sm" @click="showDialogCreate">
+                            <Plus class="mr-2 h-4 w-4" />
+                            Create
+                        </Button>
+
+                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-700" variant="outline" size="sm" @click="refresh">
+                            <RefreshCcw class="mr-2 h-4 w-4" />
+                            Refresh
+                        </Button>
+                    </div>
+                </div>
+
+                <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <div class="border-b px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Facebook Pages setup</h2>
+                        <p class="text-sm text-gray-500">Facebook page settings</p>
+                    </div>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Facebook Page ID</TableHead>
+                                <TableHead>Facebook Page Access Token</TableHead>
+                                <TableHead>Facebook Verify Token</TableHead>
+                                <TableHead class="text-center">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow v-for="(item, index) in data.data" :key="item.id ?? index">
+                                <TableCell>{{ item.page_id }}</TableCell>
+                                <TableCell>{{ truncateToken(item.access_token) }}</TableCell>
+                                <TableCell>{{ truncateToken(item.verify_token) }}</TableCell>
+                                <TableCell class="text-right">
+                                    <Button size="sm" variant="outline" class="ml-2" @click="openEdit(item)">
+                                        <SquarePen />
+                                    </Button>
+                                    <Button size="sm" variant="destructive" class="ml-2" @click="onDelete(item.id)">
+                                        <Trash />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <div class="mt-5 text-sm text-gray-600">Showing {{ data.data.length }} results</div>
+
+                <Dialog v-model:open="showDialog">
+                    <DialogContent class="max-w-lg rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl">
+                        <DialogHeader class="border-b pb-3">
+                            <DialogTitle class="text-lg font-semibold">{{ isEditMode ? 'Edit' : 'Create' }} Social Media</DialogTitle>
+                            <DialogDescription class="text-sm text-gray-500">{{ isEditMode ? 'Update the social media settings.' : 'Fill the fields to create a new social media setting.' }}</DialogDescription>
+                        </DialogHeader>
+
+                        <div class="grid grid-cols-1 gap-6 py-4 md:grid-cols-2">
+                            <div class="grid gap-2">
+                                <Label for="page_id" class="font-medium">Facebook Page ID<span class="text-red-500">*</span></Label>
+                                <Input id="page_id" v-model="form.page_id" class="w-full" />
+                                <p v-if="form.errors.page_id" class="text-sm text-red-600">{{ form.errors.page_id }}</p>
+                            </div>
+
+                            <div class="grid gap-2">
+                                <Label for="access_token" class="font-medium">Facebook Page Access Token</Label>
+                                <Input id="access_token" v-model="form.access_token" class="w-full" />
+                                <p v-if="form.errors.access_token" class="text-sm text-red-600">{{ form.errors.access_token }}</p>
+                            </div>
+
+                            <div class="grid gap-2 md:col-span-2">
+                                <Label for="verify_token" class="font-medium">Facebook Verify Token</Label>
+                                <Input id="verify_token" v-model="form.verify_token" class="w-full" />
+                                <p v-if="form.errors.verify_token" class="text-sm text-red-600">{{ form.errors.verify_token }}</p>
+                            </div>
+                        </div>
+
+                        <DialogFooter class="flex justify-end space-x-2 border-t pt-4">
+                            <DialogClose as-child>
+                                <Button type="button" variant="secondary">Cancel</Button>
+                            </DialogClose>
+                            <Button :disabled="form.processing" @click="submit">{{ isEditMode ? 'Update' : 'Save' }}</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        </AgencyLayout>
+    </AppLayout>
+</template>

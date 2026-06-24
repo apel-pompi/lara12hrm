@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Student\StudentActivities;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
@@ -107,5 +108,13 @@ class Student extends Model
     public function service(): HasMany
     {
         return $this->hasMany(StudentInService::class, 'student_id', 'id');
+    }
+
+    /**
+     * Get all activities for the Student
+     */
+    public function activities(): HasMany
+    {
+        return $this->hasMany(StudentActivities::class, 'student_id', 'id');
     }
 }

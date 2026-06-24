@@ -130,6 +130,55 @@ class DashboardController extends Controller
                 'lateCount' => $lateCount,
                 'absentCount' => $absentCount,
                 'leaveCount' => $leaveCount,
+                // Inactive lead counts
+                'countInactive1Month' => call_user_func(function() {
+                    $maxActivityDates = DB::table('student_activities')
+                        ->whereNull('deleted_at')
+                        ->groupBy('student_id')
+                        ->select('student_id', DB::raw('MAX(created_at) as max_act_date'))
+                        ->pluck('max_act_date', 'student_id')
+                        ->toArray();
+                    $students = Student::where('status', 1)->select('id', 'created_at')->get();
+                    $cutoff = Carbon::now()->subMonth();
+                    $count = 0;
+                    foreach ($students as $student) {
+                        $lastActStr = $maxActivityDates[$student->id] ?? '1900-01-01';
+                        if (Carbon::parse($lastActStr)->lt($cutoff)) $count++;
+                    }
+                    return $count;
+                }),
+                'countInactive3Month' => call_user_func(function() {
+                    $maxActivityDates = DB::table('student_activities')
+                        ->whereNull('deleted_at')
+                        ->groupBy('student_id')
+                        ->select('student_id', DB::raw('MAX(created_at) as max_act_date'))
+                        ->pluck('max_act_date', 'student_id')
+                        ->toArray();
+                    $students = Student::where('status', 1)->select('id', 'created_at')->get();
+                    $cutoff = Carbon::now()->subMonths(3);
+                    $count = 0;
+                    foreach ($students as $student) {
+                        $lastActStr = $maxActivityDates[$student->id] ?? '1900-01-01';
+                        if (Carbon::parse($lastActStr)->lt($cutoff)) $count++;
+                    }
+                    return $count;
+                }),
+                'countInactive6Month' => call_user_func(function() {
+                    $maxActivityDates = DB::table('student_activities')
+                        ->whereNull('deleted_at')
+                        ->groupBy('student_id')
+                        ->select('student_id', DB::raw('MAX(created_at) as max_act_date'))
+                        ->pluck('max_act_date', 'student_id')
+                        ->toArray();
+                    $students = Student::where('status', 1)->select('id', 'created_at')->get();
+                    $cutoff = Carbon::now()->subMonths(6);
+                    $count = 0;
+                    foreach ($students as $student) {
+                        $lastActStr = $maxActivityDates[$student->id] ?? '1900-01-01';
+                        if (Carbon::parse($lastActStr)->lt($cutoff)) $count++;
+                    }
+                    return $count;
+                }),
             ]);
         } else {
             // Check if user is actually authenticated

@@ -417,41 +417,72 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($data as $index => $value)
+            @foreach ($data as $mrno => $items)
             @php
-            $isRefund = (strtoupper($value['mrstatus']) == "REFUND");
+            $rowCount = $items->count();
+            @endphp
+
+            @foreach ($items as $index => $value)
+            @php
+            $isRefund = (strtoupper($value['mrstatus']) == 'REFUND');
+
             if ($isRefund) {
-            $totalRefund += (float)$value['primeamt'];
+            $totalRefund += (float) $value['primeamt'];
             } else {
-            $totalReceived += (float)$value['primeamt'];
+            $totalReceived += (float) $value['primeamt'];
             }
             @endphp
+
             <tr class="{{ $isRefund ? 'refund-row' : '' }}">
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ $value['mrdate'] }}</td>
-                <td>{{ $value['mrno'] }}</td>
+
+                @if($loop->first)
+                <td rowspan="{{ $rowCount }}" class="text-center">
+                    {{ $loop->parent->iteration }}
+                </td>
+
+                <td rowspan="{{ $rowCount }}">
+                    {{ $value['mrdate'] }}
+                </td>
+
+                <td rowspan="{{ $rowCount }}">
+                    {{ $mrno }}
+                </td>
+                @endif
+
                 <td>
                     {{ $value['feesname'] }}
+
                     @if($isRefund)
-                    <small style="color: #991b1b; display: block;">(Refund Adjustment)</small>
+                    <small style="color:#991b1b;display:block;">
+                        (Refund Adjustment)
+                    </small>
                     @endif
                 </td>
+
                 <td class="text-right">
                     {{ !$isRefund ? number_format($value['primeamt'], 2) : '0.00' }}
                 </td>
+
                 <td class="text-right">
                     {{ $isRefund ? number_format($value['primeamt'], 2) : '0.00' }}
                 </td>
-                <td class="text-center">
+
+                @if($loop->first)
+                <td rowspan="{{ $rowCount }}" class="text-center">
                     @if ($value['primeamt'])
                     <span class="badge badge-posted">
                         GL Posted
                     </span>
                     @else
-                    <span class="badge badge-unposted">Unposted</span>
+                    <span class="badge badge-unposted">
+                        Unposted
+                    </span>
                     @endif
                 </td>
+                @endif
+
             </tr>
+            @endforeach
             @endforeach
         </tbody>
     </table>

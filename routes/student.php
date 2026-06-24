@@ -76,6 +76,14 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
                 Route::get('/SearchProspect', 'SearchProspect')->name('student.SearchProspect');
                 Route::get('/SearchOnBoard', 'SearchOnBoard')->name('student.SearchOnBoard');
                 Route::get('/SearchArchive', 'SearchArchive')->name('student.SearchArchive');
+                Route::get('/SearchInactive', 'SearchInactive')->name('student.SearchInactive');
+
+                // Inactive Lead routes
+                Route::get('/inactive/1month', 'inactiveLeads1Month')->name('student.inactive1month');
+                Route::get('/inactive/3month', 'inactiveLeads3Month')->name('student.inactive3month');
+                Route::get('/inactive/6month', 'inactiveLeads6Month')->name('student.inactive6month');
+                Route::post('/inactive/transfer', 'transferInactiveLeads')->name('student.transferInactiveLeads');
+                Route::get('/inactive/transfer-logs', 'transferInactiveLeadLogs')->name('student.transferInactiveLeadLogs');
             }
         );
 

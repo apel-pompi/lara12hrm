@@ -63,6 +63,9 @@ const props = defineProps<{
     lateCount: number;
     absentCount: number;
     leaveCount: number;
+    countInactive1Month: number;
+    countInactive3Month: number;
+    countInactive6Month: number;
 }>();
 
 const labels = [''];
@@ -240,6 +243,72 @@ function eventsForDate(date: Date | null) {
                                 <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Archive</h4>
                                 <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">{{ props.countArchive }}</p>
                             </div>
+                        </Link>
+                    </div>
+                </div>
+
+                <!-- ── Dormant (Inactive) Leads Card ── -->
+                <div class="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm dark:border-orange-900/30 dark:bg-gray-900/50">
+                    <!-- Header -->
+                    <div class="border-b border-orange-100 bg-gradient-to-r from-orange-500 to-amber-500 p-4 dark:border-orange-900/40 dark:from-orange-900 dark:to-amber-900">
+                        <div class="flex items-center gap-2">
+                            <Clock class="h-5 w-5 text-white" />
+                            <h3 class="text-base font-semibold text-white">Dormant Leads</h3>
+                        </div>
+                        <p class="mt-0.5 text-xs text-orange-100">Leads without any activity</p>
+                    </div>
+
+                    <!-- Inactive Summary Grid -->
+                    <div class="grid grid-cols-1 gap-4 p-5">
+                        <!-- 1 Month+ -->
+                        <Link
+                            :href="route('student.inactive1month')"
+                            class="group flex items-center justify-between rounded-xl border border-orange-100 bg-orange-50/60 px-4 py-3 transition-all hover:border-orange-300 hover:bg-orange-50 hover:shadow-sm dark:border-orange-900/30 dark:bg-orange-900/10 dark:hover:bg-orange-900/20"
+                        >
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-400">
+                                    <Clock class="h-4 w-4" />
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-gray-700 dark:text-gray-200">1 Month+ Inactive</div>
+                                    <div class="text-xs text-gray-400">No activity for more than 1 month</div>
+                                </div>
+                            </div>
+                            <span class="rounded-full bg-orange-500 px-3 py-1 text-sm font-bold text-white">{{ props.countInactive1Month }}</span>
+                        </Link>
+
+                        <!-- 3 Month+ -->
+                        <Link
+                            :href="route('student.inactive3month')"
+                            class="group flex items-center justify-between rounded-xl border border-red-100 bg-red-50/60 px-4 py-3 transition-all hover:border-red-300 hover:bg-red-50 hover:shadow-sm dark:border-red-900/30 dark:bg-red-900/10 dark:hover:bg-red-900/20"
+                        >
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400">
+                                    <Clock class="h-4 w-4" />
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-gray-700 dark:text-gray-200">3 Months+ Inactive</div>
+                                    <div class="text-xs text-gray-400">No activity for more than 3 months</div>
+                                </div>
+                            </div>
+                            <span class="rounded-full bg-red-500 px-3 py-1 text-sm font-bold text-white">{{ props.countInactive3Month }}</span>
+                        </Link>
+
+                        <!-- 6 Month+ -->
+                        <Link
+                            :href="route('student.inactive6month')"
+                            class="group flex items-center justify-between rounded-xl border border-rose-100 bg-rose-50/60 px-4 py-3 transition-all hover:border-rose-300 hover:bg-rose-50 hover:shadow-sm dark:border-rose-900/30 dark:bg-rose-900/10 dark:hover:bg-rose-900/20"
+                        >
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-400">
+                                    <XCircle class="h-4 w-4" />
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-gray-700 dark:text-gray-200">6 Months+ Inactive</div>
+                                    <div class="text-xs text-gray-400">No activity for more than 6 months</div>
+                                </div>
+                            </div>
+                            <span class="rounded-full bg-rose-600 px-3 py-1 text-sm font-bold text-white">{{ props.countInactive6Month }}</span>
                         </Link>
                     </div>
                 </div>

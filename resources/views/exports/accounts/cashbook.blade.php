@@ -256,10 +256,10 @@
                         {{ $row->vouchernumber }}
                     </td>
                     <td class="text-right receipt">
-                        {{ $receipt > 0 ? number_format($receipt,3) : '' }}
+                        {{ $receipt > 0 ? number_format($receipt,2) : '' }}
                     </td>
                     <td class="text-right payment">
-                        {{ $payment > 0 ? number_format($payment,3) : '' }}
+                        {{ $payment > 0 ? number_format($payment,2) : '' }}
                     </td>
                     <td class="text-right balance">
                         {{ number_format($balance,3) }}
@@ -270,15 +270,15 @@
                 <!-- Totals -->
                 <tr class="total-row">
                     <td colspan="3">Total</td>
-                    <td class="text-right">{{ number_format($totalReceipt,3) }}</td>
-                    <td class="text-right">{{ number_format($totalPayment,3) }}</td>
+                    <td class="text-right">{{ number_format($totalReceipt,2) }}</td>
+                    <td class="text-right">{{ number_format($totalPayment,2) }}</td>
                     <td></td>
                 </tr>
 
                 <!-- Closing Balance -->
                 <tr class="closing-row">
                     <td colspan="5">Closing Balance</td>
-                    <td class="text-right">{{ number_format($balance,3) }}</td>
+                    <td class="text-right">{{ number_format($balance,2) }}</td>
                 </tr>
         </tbody>
     </table>

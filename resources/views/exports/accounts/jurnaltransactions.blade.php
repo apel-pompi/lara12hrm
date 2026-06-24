@@ -251,16 +251,16 @@
                         {{ $detail->notes }}
                     </td>
 
-                    <td class="text-right">{{ $dr > 0 ? number_format($dr,3) : '' }}</td>
-                    <td class="text-right">{{ $cr > 0 ? number_format($cr,3) : '' }}</td>
+                    <td class="text-right">{{ $dr > 0 ? number_format($dr,2) : '' }}</td>
+                    <td class="text-right">{{ $cr > 0 ? number_format($cr,2) : '' }}</td>
                 </tr>
 
                 @endforeach
 
                 <tr class="total-row">
                     <td colspan="3" class="text-right">Total</td>
-                    <td class="text-right">{{ number_format($totalDr,3) }}</td>
-                    <td class="text-right">{{ number_format($totalCr,3) }}</td>
+                    <td class="text-right">{{ number_format($totalDr,2) }}</td>
+                    <td class="text-right">{{ number_format($totalCr,2) }}</td>
                 </tr>
         </tbody>
     </table>

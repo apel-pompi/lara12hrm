@@ -4,9 +4,12 @@ use App\Http\Controllers\Default\{
     ExcelImportController,
     TransactionController,
     ApprovalRequestController,
-    FacebookController
+    FacebookController,
+    SocialMediaSetupController,
+    UserWiseFormController
 };
 use Illuminate\Support\Facades\Route;
+
 
 Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(function () {
     //Upload Lead
@@ -51,7 +54,38 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
                 Route::put('/{return}/ReturnCancel', 'ReturnCancel')->name('approval.ReturnCancel');
             }
         );
+    //Facebook Route
+    Route::controller(FacebookController::class)
+        ->prefix('facebook')
+        ->group(function () {
+            Route::get('facebookForm', 'facebookForm')->name('facebook.facebookForm');
+            Route::get('/sync', 'syncFacebookForms')->name('facebook.syncFacebookForms');
+            Route::delete('/show/{formId}', 'deleteFacebookForm')->name('facebook.deleteFacebookForm');
+        });
 
-    Route::post('/facebook/webhook', [FacebookController::class, 'handle']);
-    Route::get('/facebook/webhook', [FacebookController::class, 'verify']);
+    //social media setup Route
+    Route::controller(SocialMediaSetupController::class)
+        ->prefix('social-media-setup')
+        ->group(
+            function () {
+                Route::get('/', 'index')->name('social-media-setup.index');
+                Route::post('/store', 'store')->name('social-media-setup.store');
+                Route::put('/{socialMediaSetup}/update', 'update')->name('social-media-setup.update');
+                Route::delete('/{socialMediaSetup}/destroy', 'destroy')->name('social-media-setup.destroy');
+            }
+        );
+    //user wise form Route
+    Route::controller(UserWiseFormController::class)
+        ->prefix('userwise-form')
+        ->group(
+            function () {
+                Route::get('/', 'index')->name('userwise-form.index');
+                Route::get('/create', 'create')->name('userwise-form.create');
+                Route::post('/store', 'store')->name('userwise-form.store');
+                Route::get('/{userWiseForm}', 'show')->name('userwise-form.show');
+                Route::get('/{userWiseForm}/edit', 'edit')->name('userwise-form.edit');
+                Route::put('/{userWiseForm}', 'update')->name('userwise-form.update');
+                Route::delete('/{userWiseForm}', 'destroy')->name('userwise-form.destroy');
+            }
+        );
 });

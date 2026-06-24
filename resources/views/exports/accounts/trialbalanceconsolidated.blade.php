@@ -208,16 +208,16 @@
                 <tr>
                     <td>{{ $row->accountcode }}</td>
                     <td class="account-name">{{ $row->description }}</td>
-                    <td class="text-right">{{ number_format($debit, 3) }}</td>
-                    <td class="text-right">{{ number_format($credit, 3) }}</td>
+                    <td class="text-right">{{ number_format($debit, 2) }}</td>
+                    <td class="text-right">{{ number_format($credit, 2) }}</td>
                 </tr>
                 @endforeach
 
                 <!-- TOTAL -->
                 <tr class="total-row">
                     <td colspan="2" align="right">TOTAL</td>
-                    <td class="text-right">{{ number_format($totalDebit, 3) }}</td>
-                    <td class="text-right">{{ number_format($totalCredit, 3) }}</td>
+                    <td class="text-right">{{ number_format($totalDebit, 2) }}</td>
+                    <td class="text-right">{{ number_format($totalCredit, 2) }}</td>
                 </tr>
         </tbody>
     </table>

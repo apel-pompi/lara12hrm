@@ -13,17 +13,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        //$user = User::where('email', 'admin@admin.com')->first();
+        //$user = User::where('email', 'reifatmia@yahoo.com')->first();
         // if (is_null($user)) {
         //     $user = new User();
         //     $user->name = "Md. Kawsar Ahmed";
-        //     $user->username = "superadmin";
-        //     $user->email = "admin@admin.com";
+        //     $user->username = "admin";
+        //     $user->email = "reifatmia@yahoo.com";
         //     $user->password = Hash::make('Admin@123');
         //     $user->save();
         // }
-        
-         //$this->call(CompanySeeder::class);
+
+        //$this->call(CompanySeeder::class);
         // $this->call(MasterSeeder::class);
         // $this->call(StudentSource::class);
         // $this->call(StudentStage::class);

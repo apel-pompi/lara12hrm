@@ -187,7 +187,7 @@
             {{-- OPENING --}}
             <tr>
                 <td class="section">Opening Cash & Cash Equivalent</td>
-                <td class="amount">{{ number_format($openingCash, 3) }}</td>
+                <td class="amount">{{ number_format($openingCash, 2) }}</td>
             </tr>
 
             {{-- OPERATING ACTIVITIES --}}
@@ -199,13 +199,13 @@
             @foreach ($operating as $row)
             <tr>
                 <td class="sub">{{ $row->description }}</td>
-                <td class="amount">{{ number_format($row->amount, 3) }}</td>
+                <td class="amount">{{ number_format($row->amount, 2) }}</td>
             </tr>
             @endforeach
 
             <tr class="total">
                 <td>Net Cash from Operating Activities</td>
-                <td class="amount">{{ number_format($netOperating, 3) }}</td>
+                <td class="amount">{{ number_format($netOperating, 2) }}</td>
             </tr>
 
             {{-- INVESTING ACTIVITIES --}}
@@ -217,13 +217,13 @@
             @foreach ($investing as $row)
             <tr>
                 <td class="sub">{{ $row->description }}</td>
-                <td class="amount">{{ number_format($row->amount, 3) }}</td>
+                <td class="amount">{{ number_format($row->amount, 2) }}</td>
             </tr>
             @endforeach
 
             <tr class="total">
                 <td>Net Cash from Investing Activities</td>
-                <td class="amount">{{ number_format($netInvesting, 3) }}</td>
+                <td class="amount">{{ number_format($netInvesting, 2) }}</td>
             </tr>
 
             {{-- FINANCING ACTIVITIES --}}
@@ -235,13 +235,13 @@
             @foreach ($financing as $row)
             <tr>
                 <td class="sub">{{ $row->description }}</td>
-                <td class="amount">{{ number_format($row->amount, 3) }}</td>
+                <td class="amount">{{ number_format($row->amount, 2) }}</td>
             </tr>
             @endforeach
 
             <tr class="total">
                 <td>Net Cash from Financing Activities</td>
-                <td class="amount">{{ number_format($netFinancing, 3) }}</td>
+                <td class="amount">{{ number_format($netFinancing, 2) }}</td>
             </tr>
 
             {{-- CLOSING --}}

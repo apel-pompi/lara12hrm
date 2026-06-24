@@ -17,32 +17,27 @@
         }
 
         /* ================= FIXED HEADER ================= */
-        /* হেডার টেবিলের বর্ডার এবং প্যাডিং ফিক্স করা হয়েছে */
         .header-table {
             width: 100%;
             border-collapse: collapse;
             border-bottom: 2px solid #2c3e50;
             margin-bottom: 15px;
             table-layout: fixed;
-            /* কলাম সাইজ ফিক্সড রাখার জন্য */
         }
 
         .header-table td {
             border: none;
-            /* হেডারের ভেতরের বর্ডার রিমুভ করা হয়েছে */
             padding: 0 0 10px 0;
             vertical-align: middle;
         }
 
         .logo-cell {
             width: 30%;
-            /* লোগোর জন্য জায়গা */
             text-align: left;
         }
 
         .company-info-cell {
             width: 70%;
-            /* তথ্যের জন্য জায়গা */
             text-align: right;
         }
 
@@ -209,10 +204,10 @@
             <tr class="bg-light">
                 <td colspan="4" class="right bold">Opening Balance</td>
                 <td class="right bold">
-                    {{ $r['opening'] < 0 ? number_format(abs($r['opening']),3) : '0.000' }}
+                    {{ $r['opening'] < 0 ? number_format(abs($r['opening']),2) : '0.000' }}
                 </td>
                 <td class="right bold">
-                    {{ $r['opening'] > 0 ? number_format($r['opening'],3) : '0.000' }}
+                    {{ $r['opening'] > 0 ? number_format($r['opening'],2) : '0.000' }}
                 </td>
             </tr>
 
@@ -234,24 +229,24 @@
                         <td class="bold">{{ $t->vouchernumber }}</td>
                         <td>{{ $desc }}</td>
                         <td><small>{{ $t->notes }}</small></td>
-                        <td class="right">{{ number_format($pay,3) }}</td>
-                        <td class="right">{{ number_format($paid,3) }}</td>
+                        <td class="right">{{ number_format($pay,2) }}</td>
+                        <td class="right">{{ number_format($paid,2) }}</td>
                     </tr>
                     @endforeach
 
                     <tr class="row-total">
                         <td colspan="4" class="right">Current Period Total</td>
-                        <td class="right">{{ number_format($totalPay,3) }}</td>
-                        <td class="right">{{ number_format($totalPaid,3) }}</td>
+                        <td class="right">{{ number_format($totalPay,2) }}</td>
+                        <td class="right">{{ number_format($totalPaid,2) }}</td>
                     </tr>
 
                     <tr class="row-closing">
                         <td colspan="4" class="right">Final Closing Balance</td>
                         <td class="right">
-                            {{ ($totalPay - $totalPaid) > 0 ? number_format($totalPay - $totalPaid, 3) : '0.000' }}
+                            {{ ($totalPay - $totalPaid) > 0 ? number_format($totalPay - $totalPaid, 2) : '0.000' }}
                         </td>
                         <td class="right">
-                            {{ ($totalPaid - $totalPay) > 0 ? number_format($totalPaid - $totalPay, 3) : '0.000' }}
+                            {{ ($totalPaid - $totalPay) > 0 ? number_format($totalPaid - $totalPay, 2) : '0.000' }}
                         </td>
                     </tr>
         </tbody>

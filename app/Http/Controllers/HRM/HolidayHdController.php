@@ -33,7 +33,7 @@ class HolidayHdController extends Controller
         }
         $perPage = $request->query('per_page', 10);
         return Inertia::render('allpages/hrm/holidayHd', [
-            
+
             'filters'   => $holydayHdService->get($request->query()),
             'holidayHd'   => $holydayHdService->get(array_merge($request->query(), ['per_page' => $perPage])),
             'branch' => Branch::where('active', 1)->get(),
@@ -81,7 +81,7 @@ class HolidayHdController extends Controller
     public function updateStatus(Request $request, $holidayhd)
     {
         try {
-            $this->authorize('holiday.updateStatus');
+            $this->authorize('holiday.status');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,

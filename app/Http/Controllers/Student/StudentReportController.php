@@ -444,14 +444,13 @@ class StudentReportController extends Controller
             $mrdate = $invoice->insdate;
             $mrno = $invoice->insnumber;
             $mrstatus = $invoice->note;
-            $primeamt = optional($invoice->voucherDetails->first())->primeamt;
             foreach ($invoice->mrdetails as $mr) {
                 $values[] = [
                     'mrdate' => $mrdate ?? '',
                     'feesname' => $mr->fees->name ?? '',
                     'mrno' => $mrno ?? '',
                     'mrstatus' => $mrstatus ?? '',
-                    'primeamt' => $primeamt,
+                    'primeamt' => $mr->amount,
                 ];
             }
         }

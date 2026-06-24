@@ -44,6 +44,10 @@ const props = defineProps<{
     countProspect: { countProspect: number };
     countonBoard: { countonBoard: number };
     countArchive: { countArchive: number };
+    countInactive1Month: number;
+    countInactive3Month: number;
+    countInactive6Month: number;
+    showInactiveTabs: boolean;
 }>();
 
 const data = props.student;
@@ -234,14 +238,26 @@ const goToPage = (url: string | null) => {
 const page = usePage();
 const active = ref('all');
 const tabRefs = ref([]);
-const tabs = [
-    { key: 'all', label: 'All', count: props.countAll },
-    { key: 'pending', label: 'Pending', count: props.countPending },
-    { key: 'lead', label: 'Lead', count: props.countLead },
-    { key: 'prospect', label: 'Prospect', count: props.countProspect },
-    { key: 'onboard', label: 'OnBoard', count: props.countonBoard },
-    { key: 'archive', label: 'Archive', count: props.countArchive },
-];
+const tabs = props.showInactiveTabs
+    ? [
+        { key: 'all', label: 'All', count: props.countAll },
+        { key: 'pending', label: 'Pending', count: props.countPending },
+        { key: 'lead', label: 'Lead', count: props.countLead },
+        { key: 'prospect', label: 'Prospect', count: props.countProspect },
+        { key: 'onboard', label: 'OnBoard', count: props.countonBoard },
+        { key: 'archive', label: 'Archive', count: props.countArchive },
+        { key: 'inactive1month', label: '1 Month+ Inactive', count: props.countInactive1Month },
+        { key: 'inactive3month', label: '3 Months+ Inactive', count: props.countInactive3Month },
+        { key: 'inactive6month', label: '6 Months+ Inactive', count: props.countInactive6Month },
+      ]
+    : [
+        { key: 'all', label: 'All', count: props.countAll },
+        { key: 'pending', label: 'Pending', count: props.countPending },
+        { key: 'lead', label: 'Lead', count: props.countLead },
+        { key: 'prospect', label: 'Prospect', count: props.countProspect },
+        { key: 'onboard', label: 'OnBoard', count: props.countonBoard },
+        { key: 'archive', label: 'Archive', count: props.countArchive },
+      ];
 
 const routes = {
     all: 'student.index',
@@ -250,6 +266,9 @@ const routes = {
     prospect: 'student.prospect',
     onboard: 'student.onBoard',
     archive: 'student.archive',
+    inactive1month: 'student.inactive1month',
+    inactive3month: 'student.inactive3month',
+    inactive6month: 'student.inactive6month',
 };
 
 const indicatorStyle = ref({});
@@ -277,7 +296,10 @@ const setActive = async (tab) => {
 const setActiveFromUrl = () => {
     const url = page.url;
 
-    if (url.includes('pending')) active.value = 'pending';
+    if (url.includes('inactive/6month'))      active.value = 'inactive6month';
+    else if (url.includes('inactive/3month')) active.value = 'inactive3month';
+    else if (url.includes('inactive/1month')) active.value = 'inactive1month';
+    else if (url.includes('pending')) active.value = 'pending';
     else if (url.includes('lead')) active.value = 'lead';
     else if (url.includes('prospect')) active.value = 'prospect';
     else if (url.includes('onBoard')) active.value = 'onboard';
@@ -513,7 +535,7 @@ const statusClass = (status) => {
                                 </Link>
                             </TableCell>
                             <TableCell>{{ stud.phone }}</TableCell>
-                            <TableCell>{{ stud.gender == 1 ? 'Male' : stud.gender == 2 ? 'Female' : 'Other' }}</TableCell>
+                            <TableCell>{{ stud.gender == 1 ? 'Male' : stud.gender == 2 ? 'Female' : 'N/A' }}</TableCell>
                             <TableCell>{{ stud.source?.name }}</TableCell>
                             <TableCell>{{ stud.stage?.name ?? 'N/A' }}</TableCell>
                             <TableCell>{{ stud.assainuser?.name }}</TableCell>

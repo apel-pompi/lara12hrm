@@ -1,0 +1,267 @@
+
+> build
+> vite build
+
+[36mvite v7.3.5 [32mbuilding client environment for production...[36m[39m
+transforming...
+[33mnode_modules/@vueuse/core/dist/index.js (3362:0): A comment
+
+"/* #__PURE__ */"
+
+in "node_modules/@vueuse/core/dist/index.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.[39m
+[33mnode_modules/@vueuse/core/dist/index.js (5780:22): A comment
+
+"/* #__PURE__ */"
+
+in "node_modules/@vueuse/core/dist/index.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.[39m
+[32m✓[39m 4422 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mpublic/build/[22m[32mmanifest.json                                                                 [39m[1m[2m261.63 kB[22m[1m[22m[2m │ gzip:  13.19 kB[22m
+[2mpublic/build/[22m[35massets/AuthLayout-CBrKAwbU.css                                                [39m[1m[2m  0.14 kB[22m[1m[22m[2m │ gzip:   0.12 kB[22m
+[2mpublic/build/[22m[35massets/AppLayout-D49zECaX.css                                                 [39m[1m[2m  0.66 kB[22m[1m[22m[2m │ gzip:   0.33 kB[22m
+[2mpublic/build/[22m[35massets/main-D6aGm8zr.css                                                      [39m[1m[2m 23.72 kB[22m[1m[22m[2m │ gzip:   4.49 kB[22m
+[2mpublic/build/[22m[35massets/app-DspzEhzv.css                                                       [39m[1m[2m194.85 kB[22m[1m[22m[2m │ gzip:  28.48 kB[22m
+[2mpublic/build/[22m[36massets/_plugin-vue_export-helper-DlAUqK2U.js                                  [39m[1m[2m  0.09 kB[22m[1m[22m[2m │ gzip:   0.10 kB[22m
+[2mpublic/build/[22m[36massets/check-B9_GGqK0.js                                                      [39m[1m[2m  0.13 kB[22m[1m[22m[2m │ gzip:   0.14 kB[22m
+[2mpublic/build/[22m[36massets/chevron-down-BdifrfmL.js                                               [39m[1m[2m  0.14 kB[22m[1m[22m[2m │ gzip:   0.15 kB[22m
+[2mpublic/build/[22m[36massets/chevron-left-CV9G4tVc.js                                               [39m[1m[2m  0.14 kB[22m[1m[22m[2m │ gzip:   0.15 kB[22m
+[2mpublic/build/[22m[36massets/loader-circle-DYMoiSu8.js                                              [39m[1m[2m  0.15 kB[22m[1m[22m[2m │ gzip:   0.16 kB[22m
+[2mpublic/build/[22m[36massets/plus-7OftaB9H.js                                                       [39m[1m[2m  0.16 kB[22m[1m[22m[2m │ gzip:   0.16 kB[22m
+[2mpublic/build/[22m[36massets/useFormControl-BRO2azGs.js                                             [39m[1m[2m  0.17 kB[22m[1m[22m[2m │ gzip:   0.16 kB[22m
+[2mpublic/build/[22m[36massets/clock-3-Dp-_91WO.js                                                    [39m[1m[2m  0.17 kB[22m[1m[22m[2m │ gzip:   0.17 kB[22m
+[2mpublic/build/[22m[36massets/search-APt431BI.js                                                     [39m[1m[2m  0.18 kB[22m[1m[22m[2m │ gzip:   0.17 kB[22m
+[2mpublic/build/[22m[36massets/corner-down-left-BSQw-Kat.js                                           [39m[1m[2m  0.19 kB[22m[1m[22m[2m │ gzip:   0.18 kB[22m
+[2mpublic/build/[22m[36massets/notification-DdD58NzT.js                                               [39m[1m[2m  0.20 kB[22m[1m[22m[2m │ gzip:   0.18 kB[22m
+[2mpublic/build/[22m[36massets/user-COoCnXOt.js                                                       [39m[1m[2m  0.20 kB[22m[1m[22m[2m │ gzip:   0.19 kB[22m
+[2mpublic/build/[22m[36massets/undo-2-C5NwkMQW.js                                                     [39m[1m[2m  0.22 kB[22m[1m[22m[2m │ gzip:   0.19 kB[22m
+[2mpublic/build/[22m[36massets/mail-BQPAcw9I.js                                                       [39m[1m[2m  0.22 kB[22m[1m[22m[2m │ gzip:   0.21 kB[22m
+[2mpublic/build/[22m[36massets/ellipsis-CcQAE33n.js                                                   [39m[1m[2m  0.23 kB[22m[1m[22m[2m │ gzip:   0.17 kB[22m
+[2mpublic/build/[22m[36massets/studentaccountsLayout-DM71w_N8.js                                      [39m[1m[2m  0.23 kB[22m[1m[22m[2m │ gzip:   0.17 kB[22m
+[2mpublic/build/[22m[36massets/user-check-DVhaVLjV.js                                                 [39m[1m[2m  0.25 kB[22m[1m[22m[2m │ gzip:   0.21 kB[22m
+[2mpublic/build/[22m[36massets/arrow-right-left-CedPR8p5.js                                           [39m[1m[2m  0.26 kB[22m[1m[22m[2m │ gzip:   0.20 kB[22m
+[2mpublic/build/[22m[36massets/circle-alert-BUy3XKQs.js                                               [39m[1m[2m  0.26 kB[22m[1m[22m[2m │ gzip:   0.19 kB[22m
+[2mpublic/build/[22m[36massets/eye-BeehP8Fl.js                                                        [39m[1m[2m  0.26 kB[22m[1m[22m[2m │ gzip:   0.20 kB[22m
+[2mpublic/build/[22m[36massets/cloud-upload-DJJn7WC1.js                                               [39m[1m[2m  0.26 kB[22m[1m[22m[2m │ gzip:   0.22 kB[22m
+[2mpublic/build/[22m[36massets/trash-DEGtiP8u.js                                                      [39m[1m[2m  0.26 kB[22m[1m[22m[2m │ gzip:   0.20 kB[22m
+[2mpublic/build/[22m[36massets/archive-YYcqi34Y.js                                                    [39m[1m[2m  0.26 kB[22m[1m[22m[2m │ gzip:   0.22 kB[22m
+[2mpublic/build/[22m[36massets/link-B2C92ur8.js                                                       [39m[1m[2m  0.26 kB[22m[1m[22m[2m │ gzip:   0.20 kB[22m
+[2mpublic/build/[22m[36massets/pencil-BjGcfqVT.js                                                     [39m[1m[2m  0.28 kB[22m[1m[22m[2m │ gzip:   0.23 kB[22m
+[2mpublic/build/[22m[36massets/InputError.vue_vue_type_script_setup_true_lang-DfV0fRo8.js             [39m[1m[2m  0.29 kB[22m[1m[22m[2m │ gzip:   0.24 kB[22m
+[2mpublic/build/[22m[36massets/users-D9cOidJW.js                                                      [39m[1m[2m  0.31 kB[22m[1m[22m[2m │ gzip:   0.23 kB[22m
+[2mpublic/build/[22m[36massets/square-pen-Dmuwxcvu.js                                                 [39m[1m[2m  0.33 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
+[2mpublic/build/[22m[36massets/shield-check-RJyHcPWH.js                                               [39m[1m[2m  0.33 kB[22m[1m[22m[2m │ gzip:   0.26 kB[22m
+[2mpublic/build/[22m[36massets/refresh-ccw-CnKEzna3.js                                                [39m[1m[2m  0.33 kB[22m[1m[22m[2m │ gzip:   0.23 kB[22m
+[2mpublic/build/[22m[36massets/phone-DAKlrIJP.js                                                      [39m[1m[2m  0.33 kB[22m[1m[22m[2m │ gzip:   0.24 kB[22m
+[2mpublic/build/[22m[36massets/save-B1IszaG_.js                                                       [39m[1m[2m  0.34 kB[22m[1m[22m[2m │ gzip:   0.24 kB[22m
+[2mpublic/build/[22m[36massets/trash-2-ASQJESys.js                                                    [39m[1m[2m  0.34 kB[22m[1m[22m[2m │ gzip:   0.22 kB[22m
+[2mpublic/build/[22m[36massets/CardContent.vue_vue_type_script_setup_true_lang-OH-0Ycw1.js            [39m[1m[2m  0.35 kB[22m[1m[22m[2m │ gzip:   0.28 kB[22m
+[2mpublic/build/[22m[36massets/house-plus-3ty_wHSe.js                                                 [39m[1m[2m  0.36 kB[22m[1m[22m[2m │ gzip:   0.26 kB[22m
+[2mpublic/build/[22m[36massets/AppLogoIcon.vue_vue_type_script_setup_true_lang-BjODnBKa.js            [39m[1m[2m  0.37 kB[22m[1m[22m[2m │ gzip:   0.28 kB[22m
+[2mpublic/build/[22m[36massets/message-circle-more-CeDR1uLK.js                                        [39m[1m[2m  0.37 kB[22m[1m[22m[2m │ gzip:   0.26 kB[22m
+[2mpublic/build/[22m[36massets/Heading.vue_vue_type_script_setup_true_lang-C-3sXePE.js                [39m[1m[2m  0.39 kB[22m[1m[22m[2m │ gzip:   0.29 kB[22m
+[2mpublic/build/[22m[36massets/file-text-CUWNLzBg.js                                                  [39m[1m[2m  0.39 kB[22m[1m[22m[2m │ gzip:   0.26 kB[22m
+[2mpublic/build/[22m[36massets/DialogFooter.vue_vue_type_script_setup_true_lang-BLrF3Npn.js           [39m[1m[2m  0.40 kB[22m[1m[22m[2m │ gzip:   0.31 kB[22m
+[2mpublic/build/[22m[36massets/FormGroup.vue_vue_type_script_setup_true_lang-Cpa1HH7g.js              [39m[1m[2m  0.41 kB[22m[1m[22m[2m │ gzip:   0.31 kB[22m
+[2mpublic/build/[22m[36massets/Card.vue_vue_type_script_setup_true_lang-qbwvcs1T.js                   [39m[1m[2m  0.41 kB[22m[1m[22m[2m │ gzip:   0.32 kB[22m
+[2mpublic/build/[22m[36massets/ApplicationSidebar-Dq8kTFhn.js                                         [39m[1m[2m  0.43 kB[22m[1m[22m[2m │ gzip:   0.27 kB[22m
+[2mpublic/build/[22m[36massets/CheckIcon-KdYg9uKf.js                                                  [39m[1m[2m  0.43 kB[22m[1m[22m[2m │ gzip:   0.31 kB[22m
+[2mpublic/build/[22m[36massets/StudentSidebar-CfDjMkZw.js                                             [39m[1m[2m  0.45 kB[22m[1m[22m[2m │ gzip:   0.28 kB[22m
+[2mpublic/build/[22m[36massets/TextLink.vue_vue_type_script_setup_true_lang-9et8Hdsm.js               [39m[1m[2m  0.52 kB[22m[1m[22m[2m │ gzip:   0.35 kB[22m
+[2mpublic/build/[22m[36massets/square-check-big-fEkqrk39.js                                           [39m[1m[2m  0.60 kB[22m[1m[22m[2m │ gzip:   0.36 kB[22m
+[2mpublic/build/[22m[36massets/clock-CSOa598X.js                                                      [39m[1m[2m  0.61 kB[22m[1m[22m[2m │ gzip:   0.32 kB[22m
+[2mpublic/build/[22m[36massets/CardFooter.vue_vue_type_script_setup_true_lang-BEHCdW_4.js             [39m[1m[2m  0.64 kB[22m[1m[22m[2m │ gzip:   0.35 kB[22m
+[2mpublic/build/[22m[36massets/SelectGroup.vue_vue_type_script_setup_true_lang-Ds7x_MVc.js            [39m[1m[2m  0.73 kB[22m[1m[22m[2m │ gzip:   0.41 kB[22m
+[2mpublic/build/[22m[36massets/CardTitle.vue_vue_type_script_setup_true_lang-D7D1-gso.js              [39m[1m[2m  0.74 kB[22m[1m[22m[2m │ gzip:   0.41 kB[22m
+[2mpublic/build/[22m[36massets/partnerlayout-DIkEVWKv.js                                              [39m[1m[2m  0.79 kB[22m[1m[22m[2m │ gzip:   0.39 kB[22m
+[2mpublic/build/[22m[36massets/studentaccountsLayout.vue_vue_type_script_setup_true_lang-Da-dOoWw.js  [39m[1m[2m  0.98 kB[22m[1m[22m[2m │ gzip:   0.59 kB[22m
+[2mpublic/build/[22m[36massets/Textarea.vue_vue_type_script_setup_true_lang-kNr-2q8c.js               [39m[1m[2m  1.04 kB[22m[1m[22m[2m │ gzip:   0.62 kB[22m
+[2mpublic/build/[22m[36massets/Label.vue_vue_type_script_setup_true_lang-Cc1MqomM.js                  [39m[1m[2m  1.07 kB[22m[1m[22m[2m │ gzip:   0.58 kB[22m
+[2mpublic/build/[22m[36massets/notes-CcLFOu-h.js                                                      [39m[1m[2m  1.15 kB[22m[1m[22m[2m │ gzip:   0.62 kB[22m
+[2mpublic/build/[22m[36massets/tasks-0zoBlW7R.js                                                      [39m[1m[2m  1.15 kB[22m[1m[22m[2m │ gzip:   0.61 kB[22m
+[2mpublic/build/[22m[36massets/others-tCU40M2B.js                                                     [39m[1m[2m  1.15 kB[22m[1m[22m[2m │ gzip:   0.62 kB[22m
+[2mpublic/build/[22m[36massets/accounts-DjYkKGIW.js                                                   [39m[1m[2m  1.15 kB[22m[1m[22m[2m │ gzip:   0.62 kB[22m
+[2mpublic/build/[22m[36massets/contacts-CuS7EBRZ.js                                                   [39m[1m[2m  1.15 kB[22m[1m[22m[2m │ gzip:   0.62 kB[22m
+[2mpublic/build/[22m[36massets/documents-Bry1ivIs.js                                                  [39m[1m[2m  1.15 kB[22m[1m[22m[2m │ gzip:   0.62 kB[22m
+[2mpublic/build/[22m[36massets/aggrements-CxJlPSS0.js                                                 [39m[1m[2m  1.16 kB[22m[1m[22m[2m │ gzip:   0.62 kB[22m
+[2mpublic/build/[22m[36massets/promotions-DUXU79RZ.js                                                 [39m[1m[2m  1.16 kB[22m[1m[22m[2m │ gzip:   0.62 kB[22m
+[2mpublic/build/[22m[36massets/application-Boa2d2-8.js                                                [39m[1m[2m  1.16 kB[22m[1m[22m[2m │ gzip:   0.62 kB[22m
+[2mpublic/build/[22m[36massets/appoinments-D0r3O7r8.js                                                [39m[1m[2m  1.16 kB[22m[1m[22m[2m │ gzip:   0.62 kB[22m
+[2mpublic/build/[22m[36massets/conversations-DJyQQJnx.js                                              [39m[1m[2m  1.16 kB[22m[1m[22m[2m │ gzip:   0.62 kB[22m
+[2mpublic/build/[22m[36massets/SheetTrigger.vue_vue_type_script_setup_true_lang-DM28Wmh9.js           [39m[1m[2m  1.17 kB[22m[1m[22m[2m │ gzip:   0.63 kB[22m
+[2mpublic/build/[22m[36massets/Input.vue_vue_type_script_setup_true_lang-C8KAQonH.js                  [39m[1m[2m  1.22 kB[22m[1m[22m[2m │ gzip:   0.68 kB[22m
+[2mpublic/build/[22m[36massets/createLucideIcon-DIp2DYuR.js                                           [39m[1m[2m  1.25 kB[22m[1m[22m[2m │ gzip:   0.72 kB[22m
+[2mpublic/build/[22m[36massets/DialogTitle.vue_vue_type_script_setup_true_lang-Dty2aQZw.js            [39m[1m[2m  1.31 kB[22m[1m[22m[2m │ gzip:   0.58 kB[22m
+[2mpublic/build/[22m[36massets/index-CUeKu3UV.js                                                      [39m[1m[2m  1.42 kB[22m[1m[22m[2m │ gzip:   0.71 kB[22m
+[2mpublic/build/[22m[36massets/Appearance-sMhC-Ru-.js                                                 [39m[1m[2m  1.49 kB[22m[1m[22m[2m │ gzip:   0.68 kB[22m
+[2mpublic/build/[22m[36massets/productlayout-CAQ9Pj1o.js                                              [39m[1m[2m  1.50 kB[22m[1m[22m[2m │ gzip:   0.60 kB[22m
+[2mpublic/build/[22m[36massets/VerifyEmail-B9VBWm0f.js                                                [39m[1m[2m  1.61 kB[22m[1m[22m[2m │ gzip:   0.87 kB[22m
+[2mpublic/build/[22m[36massets/Button.vue_vue_type_script_setup_true_lang-DlimoRZT.js                 [39m[1m[2m  1.82 kB[22m[1m[22m[2m │ gzip:   0.86 kB[22m
+[2mpublic/build/[22m[36massets/RovingFocusItem-DNbhi_No.js                                            [39m[1m[2m  1.85 kB[22m[1m[22m[2m │ gzip:   0.90 kB[22m
+[2mpublic/build/[22m[36massets/others-DherZkVQ.js                                                     [39m[1m[2m  1.86 kB[22m[1m[22m[2m │ gzip:   0.83 kB[22m
+[2mpublic/build/[22m[36massets/documents-_gLilAAI.js                                                  [39m[1m[2m  1.86 kB[22m[1m[22m[2m │ gzip:   0.83 kB[22m
+[2mpublic/build/[22m[36massets/promotions-CrZXMJYp.js                                                 [39m[1m[2m  1.86 kB[22m[1m[22m[2m │ gzip:   0.83 kB[22m
+[2mpublic/build/[22m[36massets/StudentImageUpload.vue_vue_type_script_setup_true_lang-BN2wMGtJ.js     [39m[1m[2m  1.87 kB[22m[1m[22m[2m │ gzip:   0.97 kB[22m
+[2mpublic/build/[22m[36massets/ConfirmPassword-oVK57Pas.js                                            [39m[1m[2m  1.89 kB[22m[1m[22m[2m │ gzip:   0.93 kB[22m
+[2mpublic/build/[22m[36massets/AuthLayout.vue_vue_type_script_setup_true_lang-CU8tOzT2.js             [39m[1m[2m  1.94 kB[22m[1m[22m[2m │ gzip:   1.02 kB[22m
+[2mpublic/build/[22m[36massets/TableHeader.vue_vue_type_script_setup_true_lang-BEGrReJJ.js            [39m[1m[2m  1.95 kB[22m[1m[22m[2m │ gzip:   0.64 kB[22m
+[2mpublic/build/[22m[36massets/studentlayout-KSdnDWBD.js                                              [39m[1m[2m  1.95 kB[22m[1m[22m[2m │ gzip:   0.77 kB[22m
+[2mpublic/build/[22m[36massets/applicationLayout-zccFLxla.js                                          [39m[1m[2m  2.17 kB[22m[1m[22m[2m │ gzip:   0.83 kB[22m
+[2mpublic/build/[22m[36massets/ForgotPassword-BdwUtImq.js                                             [39m[1m[2m  2.26 kB[22m[1m[22m[2m │ gzip:   1.09 kB[22m
+[2mpublic/build/[22m[36massets/VisuallyHiddenInput-RJwhXyKt.js                                        [39m[1m[2m  2.26 kB[22m[1m[22m[2m │ gzip:   0.93 kB[22m
+[2mpublic/build/[22m[36massets/notes-CsOttys1.js                                                      [39m[1m[2m  2.38 kB[22m[1m[22m[2m │ gzip:   1.02 kB[22m
+[2mpublic/build/[22m[36massets/tasks-vXbozun7.js                                                      [39m[1m[2m  2.38 kB[22m[1m[22m[2m │ gzip:   1.02 kB[22m
+[2mpublic/build/[22m[36massets/documents-DRhmkRuc.js                                                  [39m[1m[2m  2.39 kB[22m[1m[22m[2m │ gzip:   1.02 kB[22m
+[2mpublic/build/[22m[36massets/education-DZH9iKOX.js                                                  [39m[1m[2m  2.39 kB[22m[1m[22m[2m │ gzip:   1.02 kB[22m
+[2mpublic/build/[22m[36massets/ohash.D__AXeF1-C-E83dC9.js                                             [39m[1m[2m  2.62 kB[22m[1m[22m[2m │ gzip:   1.11 kB[22m
+[2mpublic/build/[22m[36massets/index-BoUu9w8v.js                                                      [39m[1m[2m  2.65 kB[22m[1m[22m[2m │ gzip:   1.27 kB[22m
+[2mpublic/build/[22m[36massets/DialogContent.vue_vue_type_script_setup_true_lang-CPvlmvIa.js          [39m[1m[2m  2.71 kB[22m[1m[22m[2m │ gzip:   1.12 kB[22m
+[2mpublic/build/[22m[36massets/applicationnotes-qFAp5eYl.js                                           [39m[1m[2m  2.79 kB[22m[1m[22m[2m │ gzip:   1.11 kB[22m
+[2mpublic/build/[22m[36massets/applicationtasks-DeW9yKja.js                                           [39m[1m[2m  2.79 kB[22m[1m[22m[2m │ gzip:   1.11 kB[22m
+[2mpublic/build/[22m[36massets/applicationpayment-CaLFYPBC.js                                         [39m[1m[2m  2.79 kB[22m[1m[22m[2m │ gzip:   1.12 kB[22m
+[2mpublic/build/[22m[36massets/ResetPassword-CX6R4sfb.js                                              [39m[1m[2m  2.81 kB[22m[1m[22m[2m │ gzip:   1.07 kB[22m
+[2mpublic/build/[22m[36massets/applicationActivities-BfOD05tN.js                                      [39m[1m[2m  3.00 kB[22m[1m[22m[2m │ gzip:   1.19 kB[22m
+[2mpublic/build/[22m[36massets/userLayout.vue_vue_type_script_setup_true_lang-DUwC97BU.js             [39m[1m[2m  3.29 kB[22m[1m[22m[2m │ gzip:   1.38 kB[22m
+[2mpublic/build/[22m[36massets/accountLayout.vue_vue_type_script_setup_true_lang-BX5ndMvJ.js          [39m[1m[2m  3.36 kB[22m[1m[22m[2m │ gzip:   1.42 kB[22m
+[2mpublic/build/[22m[36massets/socialmediaLayout.vue_vue_type_script_setup_true_lang-4w352LfT.js      [39m[1m[2m  3.37 kB[22m[1m[22m[2m │ gzip:   1.43 kB[22m
+[2mpublic/build/[22m[36massets/Register-BemsgRZj.js                                                   [39m[1m[2m  3.45 kB[22m[1m[22m[2m │ gzip:   1.28 kB[22m
+[2mpublic/build/[22m[36massets/hrreportLayout.vue_vue_type_script_setup_true_lang-DfqxYklL.js         [39m[1m[2m  3.45 kB[22m[1m[22m[2m │ gzip:   1.42 kB[22m
+[2mpublic/build/[22m[36massets/leadreportLayout.vue_vue_type_script_setup_true_lang-DbspZxMh.js       [39m[1m[2m  3.46 kB[22m[1m[22m[2m │ gzip:   1.44 kB[22m
+[2mpublic/build/[22m[36massets/agencyLayout.vue_vue_type_script_setup_true_lang-DY6q1WX6.js           [39m[1m[2m  3.59 kB[22m[1m[22m[2m │ gzip:   1.51 kB[22m
+[2mpublic/build/[22m[36massets/hrmLayout.vue_vue_type_script_setup_true_lang-CVLNf59z.js              [39m[1m[2m  3.62 kB[22m[1m[22m[2m │ gzip:   1.48 kB[22m
+[2mpublic/build/[22m[36massets/Layout.vue_vue_type_script_setup_true_lang-BMNvJhyn.js                 [39m[1m[2m  3.66 kB[22m[1m[22m[2m │ gzip:   1.53 kB[22m
+[2mpublic/build/[22m[36massets/Switch.vue_vue_type_script_setup_true_lang-ff28XUSP.js                 [39m[1m[2m  3.83 kB[22m[1m[22m[2m │ gzip:   1.56 kB[22m
+[2mpublic/build/[22m[36massets/accountsReportsLayout.vue_vue_type_script_setup_true_lang-DM30aw5y.js  [39m[1m[2m  3.83 kB[22m[1m[22m[2m │ gzip:   1.54 kB[22m
+[2mpublic/build/[22m[36massets/Profile-DwhuL3Ls.js                                                    [39m[1m[2m  3.94 kB[22m[1m[22m[2m │ gzip:   1.65 kB[22m
+[2mpublic/build/[22m[36massets/onboard-Dug_AlKG.js                                                    [39m[1m[2m  3.96 kB[22m[1m[22m[2m │ gzip:   1.65 kB[22m
+[2mpublic/build/[22m[36massets/EmpInfoReport-MJW57pI8.js                                              [39m[1m[2m  4.07 kB[22m[1m[22m[2m │ gzip:   1.85 kB[22m
+[2mpublic/build/[22m[36massets/Password-CggO68Ex.js                                                   [39m[1m[2m  4.08 kB[22m[1m[22m[2m │ gzip:   1.46 kB[22m
+[2mpublic/build/[22m[36massets/ApplicationSidebar.vue_vue_type_script_setup_true_lang-CBB1f52J.js     [39m[1m[2m  4.14 kB[22m[1m[22m[2m │ gzip:   1.61 kB[22m
+[2mpublic/build/[22m[36massets/LeadInfoReport-BVv5GOuk.js                                             [39m[1m[2m  4.16 kB[22m[1m[22m[2m │ gzip:   1.78 kB[22m
+[2mpublic/build/[22m[36massets/studentRefund-DPypnDkx.js                                              [39m[1m[2m  4.25 kB[22m[1m[22m[2m │ gzip:   1.80 kB[22m
+[2mpublic/build/[22m[36massets/studentRevenue-SOH8Rk7c.js                                             [39m[1m[2m  4.26 kB[22m[1m[22m[2m │ gzip:   1.79 kB[22m
+[2mpublic/build/[22m[36massets/cashbook-0agA-iSR.js                                                   [39m[1m[2m  4.61 kB[22m[1m[22m[2m │ gzip:   2.01 kB[22m
+[2mpublic/build/[22m[36massets/cashflow-Dg41cMli.js                                                   [39m[1m[2m  4.63 kB[22m[1m[22m[2m │ gzip:   2.02 kB[22m
+[2mpublic/build/[22m[36massets/trialbalance--3s1J7aL.js                                               [39m[1m[2m  4.65 kB[22m[1m[22m[2m │ gzip:   2.02 kB[22m
+[2mpublic/build/[22m[36massets/trialbalanceconsolidated-M2FBarok.js                                   [39m[1m[2m  4.67 kB[22m[1m[22m[2m │ gzip:   2.02 kB[22m
+[2mpublic/build/[22m[36massets/archive-Bp62n_Rl.js                                                    [39m[1m[2m  4.73 kB[22m[1m[22m[2m │ gzip:   1.70 kB[22m
+[2mpublic/build/[22m[36massets/attendanceStatus-CRu2lxfg.js                                           [39m[1m[2m  5.26 kB[22m[1m[22m[2m │ gzip:   1.98 kB[22m
+[2mpublic/build/[22m[36massets/monthlyattendace-C-ZyUvlC.js                                           [39m[1m[2m  5.39 kB[22m[1m[22m[2m │ gzip:   2.01 kB[22m
+[2mpublic/build/[22m[36massets/profitloss-4Wn_dNrF.js                                                 [39m[1m[2m  5.51 kB[22m[1m[22m[2m │ gzip:   2.26 kB[22m
+[2mpublic/build/[22m[36massets/balancesheet-RRX-HYNQ.js                                               [39m[1m[2m  5.51 kB[22m[1m[22m[2m │ gzip:   2.26 kB[22m
+[2mpublic/build/[22m[36massets/studentLedger-D7BH_i75.js                                              [39m[1m[2m  5.72 kB[22m[1m[22m[2m │ gzip:   1.95 kB[22m
+[2mpublic/build/[22m[36massets/partnerlayout.vue_vue_type_script_setup_true_lang-DPKm3OOt.js          [39m[1m[2m  5.74 kB[22m[1m[22m[2m │ gzip:   1.96 kB[22m
+[2mpublic/build/[22m[36massets/employeeattendance-BOBLMTEm.js                                         [39m[1m[2m  5.91 kB[22m[1m[22m[2m │ gzip:   2.19 kB[22m
+[2mpublic/build/[22m[36massets/studentTransaction-Bcxu2HPp.js                                         [39m[1m[2m  5.98 kB[22m[1m[22m[2m │ gzip:   1.99 kB[22m
+[2mpublic/build/[22m[36massets/facebook-form--ih9Y9p3.js                                              [39m[1m[2m  6.13 kB[22m[1m[22m[2m │ gzip:   2.50 kB[22m
+[2mpublic/build/[22m[36massets/transfer-D-QcCw5R.js                                                   [39m[1m[2m  6.33 kB[22m[1m[22m[2m │ gzip:   2.40 kB[22m
+[2mpublic/build/[22m[36massets/checkin-CztIAB0p.js                                                    [39m[1m[2m  6.40 kB[22m[1m[22m[2m │ gzip:   2.35 kB[22m
+[2mpublic/build/[22m[36massets/conversations-D7EgCV9A.js                                              [39m[1m[2m  6.45 kB[22m[1m[22m[2m │ gzip:   2.61 kB[22m
+[2mpublic/build/[22m[36massets/supplierledger-BdROrqak.js                                             [39m[1m[2m  6.56 kB[22m[1m[22m[2m │ gzip:   2.31 kB[22m
+[2mpublic/build/[22m[36massets/actogl-Bd-3WJlN.js                                                     [39m[1m[2m  6.58 kB[22m[1m[22m[2m │ gzip:   2.31 kB[22m
+[2mpublic/build/[22m[36massets/calender-CxqsGTwS.js                                                   [39m[1m[2m  6.67 kB[22m[1m[22m[2m │ gzip:   2.45 kB[22m
+[2mpublic/build/[22m[36massets/dailyattendance-DNKv6kHv.js                                            [39m[1m[2m  6.70 kB[22m[1m[22m[2m │ gzip:   2.30 kB[22m
+[2mpublic/build/[22m[36massets/appoinments-CwnWPZyr.js                                                [39m[1m[2m  6.78 kB[22m[1m[22m[2m │ gzip:   2.68 kB[22m
+[2mpublic/build/[22m[36massets/useForwardExpose-BTeCgJnj.js                                           [39m[1m[2m  6.89 kB[22m[1m[22m[2m │ gzip:   3.06 kB[22m
+[2mpublic/build/[22m[36massets/jurnaltransactions-C2E_6Uc1.js                                         [39m[1m[2m  7.12 kB[22m[1m[22m[2m │ gzip:   2.43 kB[22m
+[2mpublic/build/[22m[36massets/RadioGroupItem.vue_vue_type_script_setup_true_lang-Djte4m1-.js         [39m[1m[2m  7.17 kB[22m[1m[22m[2m │ gzip:   2.54 kB[22m
+[2mpublic/build/[22m[36massets/social-media-setup-BJfFmiUe.js                                         [39m[1m[2m  7.40 kB[22m[1m[22m[2m │ gzip:   2.57 kB[22m
+[2mpublic/build/[22m[36massets/documentcheck-BYoR11oK.js                                              [39m[1m[2m  7.81 kB[22m[1m[22m[2m │ gzip:   2.95 kB[22m
+[2mpublic/build/[22m[36massets/groupone-CHRVh3_Z.js                                                   [39m[1m[2m  8.27 kB[22m[1m[22m[2m │ gzip:   3.00 kB[22m
+[2mpublic/build/[22m[36massets/attendanceStatusview-DVZYvs08.js                                       [39m[1m[2m  8.33 kB[22m[1m[22m[2m │ gzip:   2.68 kB[22m
+[2mpublic/build/[22m[36massets/applicationLayout.vue_vue_type_script_setup_true_lang-nQUjEiWP.js      [39m[1m[2m  8.48 kB[22m[1m[22m[2m │ gzip:   2.67 kB[22m
+[2mpublic/build/[22m[36massets/zkteco-wSJoxrgW.js                                                     [39m[1m[2m  8.49 kB[22m[1m[22m[2m │ gzip:   2.90 kB[22m
+[2mpublic/build/[22m[36massets/activites-BGd2JPro.js                                                  [39m[1m[2m  8.57 kB[22m[1m[22m[2m │ gzip:   3.05 kB[22m
+[2mpublic/build/[22m[36massets/Login-BaqDLPnd.js                                                      [39m[1m[2m  8.75 kB[22m[1m[22m[2m │ gzip:   3.25 kB[22m
+[2mpublic/build/[22m[36massets/StudentSidebar.vue_vue_type_script_setup_true_lang-CQ_5m67J.js         [39m[1m[2m  8.78 kB[22m[1m[22m[2m │ gzip:   3.03 kB[22m
+[2mpublic/build/[22m[36massets/grouptwo-eRi0afU3.js                                                   [39m[1m[2m  8.92 kB[22m[1m[22m[2m │ gzip:   3.16 kB[22m
+[2mpublic/build/[22m[36massets/quoatations-5apab_xa.js                                                [39m[1m[2m  9.20 kB[22m[1m[22m[2m │ gzip:   3.30 kB[22m
+[2mpublic/build/[22m[36massets/RovingFocusGroup-BgDjEwik.js                                           [39m[1m[2m  9.37 kB[22m[1m[22m[2m │ gzip:   3.94 kB[22m
+[2mpublic/build/[22m[36massets/groupthree-dqP7gZBe.js                                                 [39m[1m[2m  9.55 kB[22m[1m[22m[2m │ gzip:   3.23 kB[22m
+[2mpublic/build/[22m[36massets/leave-DP392vpQ.js                                                      [39m[1m[2m  9.78 kB[22m[1m[22m[2m │ gzip:   3.14 kB[22m
+[2mpublic/build/[22m[36massets/productsetup-cwFeo8Xl.js                                               [39m[1m[2m  9.79 kB[22m[1m[22m[2m │ gzip:   3.39 kB[22m
+[2mpublic/build/[22m[36massets/partnertype-ChnIlVHl.js                                                [39m[1m[2m  9.81 kB[22m[1m[22m[2m │ gzip:   3.39 kB[22m
+[2mpublic/build/[22m[36massets/groupfour-C9MMn9ns.js                                                  [39m[1m[2m  9.83 kB[22m[1m[22m[2m │ gzip:   3.20 kB[22m
+[2mpublic/build/[22m[36massets/fees-Bt-qssHu.js                                                       [39m[1m[2m 10.37 kB[22m[1m[22m[2m │ gzip:   3.80 kB[22m
+[2mpublic/build/[22m[36massets/documenttype-EOFhs_Kn.js                                               [39m[1m[2m 10.51 kB[22m[1m[22m[2m │ gzip:   3.74 kB[22m
+[2mpublic/build/[22m[36massets/academic-BaUHVot6.js                                                   [39m[1m[2m 10.52 kB[22m[1m[22m[2m │ gzip:   3.82 kB[22m
+[2mpublic/build/[22m[36massets/installment-wOljEW2C.js                                                [39m[1m[2m 10.61 kB[22m[1m[22m[2m │ gzip:   3.82 kB[22m
+[2mpublic/build/[22m[36massets/studentstage-D0_Ko5j-.js                                               [39m[1m[2m 11.01 kB[22m[1m[22m[2m │ gzip:   3.90 kB[22m
+[2mpublic/build/[22m[36massets/studentsource-BlkrGx7V.js                                              [39m[1m[2m 11.04 kB[22m[1m[22m[2m │ gzip:   3.88 kB[22m
+[2mpublic/build/[22m[36massets/invoicereturn-NWYSeF2a.js                                              [39m[1m[2m 11.49 kB[22m[1m[22m[2m │ gzip:   3.52 kB[22m
+[2mpublic/build/[22m[36massets/Import-DGT4ZOC9.js                                                     [39m[1m[2m 12.03 kB[22m[1m[22m[2m │ gzip:   3.76 kB[22m
+[2mpublic/build/[22m[36massets/generalmaster-DPP9siWO.js                                              [39m[1m[2m 12.03 kB[22m[1m[22m[2m │ gzip:   4.24 kB[22m
+[2mpublic/build/[22m[36massets/department-Cd0987Jf.js                                                 [39m[1m[2m 12.28 kB[22m[1m[22m[2m │ gzip:   4.13 kB[22m
+[2mpublic/build/[22m[36massets/designation-CHQGAiYR.js                                                [39m[1m[2m 12.30 kB[22m[1m[22m[2m │ gzip:   4.12 kB[22m
+[2mpublic/build/[22m[36massets/CalendarDate-CCtexWQ2.js                                               [39m[1m[2m 12.64 kB[22m[1m[22m[2m │ gzip:   4.10 kB[22m
+[2mpublic/build/[22m[36massets/holidayDt-CsK5qOCr.js                                                  [39m[1m[2m 12.86 kB[22m[1m[22m[2m │ gzip:   4.53 kB[22m
+[2mpublic/build/[22m[36massets/roles-UGlCHTCf.js                                                      [39m[1m[2m 12.99 kB[22m[1m[22m[2m │ gzip:   4.72 kB[22m
+[2mpublic/build/[22m[36massets/partners-B_hJwia6.js                                                   [39m[1m[2m 13.00 kB[22m[1m[22m[2m │ gzip:   3.52 kB[22m
+[2mpublic/build/[22m[36massets/quotation-D7i0qRKx.js                                                  [39m[1m[2m 13.23 kB[22m[1m[22m[2m │ gzip:   3.97 kB[22m
+[2mpublic/build/[22m[36massets/product-CQ-0bnfP.js                                                    [39m[1m[2m 13.59 kB[22m[1m[22m[2m │ gzip:   4.26 kB[22m
+[2mpublic/build/[22m[36massets/branch-DDsf1Ome.js                                                     [39m[1m[2m 13.87 kB[22m[1m[22m[2m │ gzip:   3.50 kB[22m
+[2mpublic/build/[22m[36massets/application-CBPjMsyv.js                                                [39m[1m[2m 13.98 kB[22m[1m[22m[2m │ gzip:   3.95 kB[22m
+[2mpublic/build/[22m[36massets/product-munbuH-R.js                                                    [39m[1m[2m 14.12 kB[22m[1m[22m[2m │ gzip:   4.21 kB[22m
+[2mpublic/build/[22m[36massets/leaveplan-2b4EujQv.js                                                  [39m[1m[2m 14.19 kB[22m[1m[22m[2m │ gzip:   4.39 kB[22m
+[2mpublic/build/[22m[36massets/fees-BSExQpA5.js                                                       [39m[1m[2m 14.37 kB[22m[1m[22m[2m │ gzip:   4.48 kB[22m
+[2mpublic/build/[22m[36massets/index-ilMIz7Rc.js                                                      [39m[1m[2m 14.63 kB[22m[1m[22m[2m │ gzip:   4.56 kB[22m
+[2mpublic/build/[22m[36massets/workhour-DPXT29KI.js                                                   [39m[1m[2m 14.68 kB[22m[1m[22m[2m │ gzip:   4.12 kB[22m
+[2mpublic/build/[22m[36massets/studentarchive-Ti3Zp57N.js                                             [39m[1m[2m 14.72 kB[22m[1m[22m[2m │ gzip:   4.71 kB[22m
+[2mpublic/build/[22m[36massets/studentlead-CN5ilQd1.js                                                [39m[1m[2m 14.74 kB[22m[1m[22m[2m │ gzip:   4.72 kB[22m
+[2mpublic/build/[22m[36massets/applicationdocument-B_5I_Fbe.js                                        [39m[1m[2m 14.88 kB[22m[1m[22m[2m │ gzip:   5.06 kB[22m
+[2mpublic/build/[22m[36massets/partnerbranch-JpvXU7-_.js                                              [39m[1m[2m 15.02 kB[22m[1m[22m[2m │ gzip:   3.86 kB[22m
+[2mpublic/build/[22m[36massets/allindexlist-n0CNlzKL.js                                               [39m[1m[2m 15.24 kB[22m[1m[22m[2m │ gzip:   3.58 kB[22m
+[2mpublic/build/[22m[36massets/dueinvoicelist-XfWKmhB_.js                                             [39m[1m[2m 15.25 kB[22m[1m[22m[2m │ gzip:   3.60 kB[22m
+[2mpublic/build/[22m[36massets/attensetting-DWXQikNY.js                                               [39m[1m[2m 15.31 kB[22m[1m[22m[2m │ gzip:   4.82 kB[22m
+[2mpublic/build/[22m[36massets/userwise-form-ilfajvIn.js                                              [39m[1m[2m 15.33 kB[22m[1m[22m[2m │ gzip:   4.54 kB[22m
+[2mpublic/build/[22m[36massets/requirement-Dy31sZQ7.js                                                [39m[1m[2m 15.35 kB[22m[1m[22m[2m │ gzip:   4.21 kB[22m
+[2mpublic/build/[22m[36massets/transaction-B4hacvcD.js                                                [39m[1m[2m 15.55 kB[22m[1m[22m[2m │ gzip:   4.52 kB[22m
+[2mpublic/build/[22m[36massets/studentprospect-VFT5MUzk.js                                            [39m[1m[2m 15.77 kB[22m[1m[22m[2m │ gzip:   4.86 kB[22m
+[2mpublic/build/[22m[36massets/studentonboard-Cp2UMf-G.js                                             [39m[1m[2m 15.80 kB[22m[1m[22m[2m │ gzip:   4.86 kB[22m
+[2mpublic/build/[22m[36massets/company-CjN7f3bT.js                                                    [39m[1m[2m 15.87 kB[22m[1m[22m[2m │ gzip:   3.94 kB[22m
+[2mpublic/build/[22m[36massets/attendeduct-CcM-yJji.js                                                [39m[1m[2m 15.94 kB[22m[1m[22m[2m │ gzip:   4.86 kB[22m
+[2mpublic/build/[22m[36massets/student-BZjy9CL2.js                                                    [39m[1m[2m 15.96 kB[22m[1m[22m[2m │ gzip:   4.91 kB[22m
+[2mpublic/build/[22m[36massets/interestedservice-87XHtBOi.js                                          [39m[1m[2m 16.40 kB[22m[1m[22m[2m │ gzip:   4.64 kB[22m
+[2mpublic/build/[22m[36massets/salarytype-Cyk-rXe8.js                                                 [39m[1m[2m 16.58 kB[22m[1m[22m[2m │ gzip:   4.43 kB[22m
+[2mpublic/build/[22m[36massets/productlayout.vue_vue_type_script_setup_true_lang-Bpl-UEse.js          [39m[1m[2m 16.72 kB[22m[1m[22m[2m │ gzip:   4.83 kB[22m
+[2mpublic/build/[22m[36massets/managePayable-BD4fRuo1.js                                              [39m[1m[2m 16.97 kB[22m[1m[22m[2m │ gzip:   3.88 kB[22m
+[2mpublic/build/[22m[36massets/branch-yVl6DcAn.js                                                     [39m[1m[2m 17.56 kB[22m[1m[22m[2m │ gzip:   4.85 kB[22m
+[2mpublic/build/[22m[36massets/holidayHd-CUFNCxEl.js                                                  [39m[1m[2m 17.87 kB[22m[1m[22m[2m │ gzip:   5.02 kB[22m
+[2mpublic/build/[22m[36massets/attendance-BQ0_eAFP.js                                                 [39m[1m[2m 18.44 kB[22m[1m[22m[2m │ gzip:   4.98 kB[22m
+[2mpublic/build/[22m[36massets/userpermission-DdwuIAYi.js                                             [39m[1m[2m 18.50 kB[22m[1m[22m[2m │ gzip:   5.07 kB[22m
+[2mpublic/build/[22m[36massets/UserDashboard-CZ61xN1c.js                                              [39m[1m[2m 19.16 kB[22m[1m[22m[2m │ gzip:   4.64 kB[22m
+[2mpublic/build/[22m[36massets/actoglsetup-BBZwH21B.js                                                [39m[1m[2m 19.47 kB[22m[1m[22m[2m │ gzip:   4.64 kB[22m
+[2mpublic/build/[22m[36massets/allmoneyreceipt-C2N85OWU.js                                            [39m[1m[2m 19.86 kB[22m[1m[22m[2m │ gzip:   4.10 kB[22m
+[2mpublic/build/[22m[36massets/studentpending-CEWTeOZV.js                                             [39m[1m[2m 20.13 kB[22m[1m[22m[2m │ gzip:   6.04 kB[22m
+[2mpublic/build/[22m[36massets/quoatation-Lj2JMdhV.js                                                 [39m[1m[2m 20.19 kB[22m[1m[22m[2m │ gzip:   5.50 kB[22m
+[2mpublic/build/[22m[36massets/studentinactive-BllFeR0l.js                                            [39m[1m[2m 21.09 kB[22m[1m[22m[2m │ gzip:   6.36 kB[22m
+[2mpublic/build/[22m[36massets/amountreturn-XNpsf0E9.js                                               [39m[1m[2m 21.58 kB[22m[1m[22m[2m │ gzip:   5.48 kB[22m
+[2mpublic/build/[22m[36massets/AdminDashboard-CoCLHIvd.js                                             [39m[1m[2m 22.05 kB[22m[1m[22m[2m │ gzip:   4.90 kB[22m
+[2mpublic/build/[22m[36massets/accouts-Bbsk7k5r.js                                                    [39m[1m[2m 22.26 kB[22m[1m[22m[2m │ gzip:   5.52 kB[22m
+[2mpublic/build/[22m[36massets/partnerscreate-BurRa-_U.js                                             [39m[1m[2m 22.78 kB[22m[1m[22m[2m │ gzip:   5.14 kB[22m
+[2mpublic/build/[22m[36massets/createmr-BT6DdgoM.js                                                   [39m[1m[2m 25.44 kB[22m[1m[22m[2m │ gzip:   6.71 kB[22m
+[2mpublic/build/[22m[36massets/payable-TGZ5CWYu.js                                                    [39m[1m[2m 25.55 kB[22m[1m[22m[2m │ gzip:   6.79 kB[22m
+[2mpublic/build/[22m[36massets/studentlayout.vue_vue_type_script_setup_true_lang-DhGRZHjK.js          [39m[1m[2m 25.63 kB[22m[1m[22m[2m │ gzip:   5.32 kB[22m
+[2mpublic/build/[22m[36massets/leave-Rb-w34ql.js                                                      [39m[1m[2m 26.23 kB[22m[1m[22m[2m │ gzip:   6.16 kB[22m
+[2mpublic/build/[22m[36massets/index-CCFc-LzV.js                                                      [39m[1m[2m 26.38 kB[22m[1m[22m[2m │ gzip:   5.93 kB[22m
+[2mpublic/build/[22m[36massets/invoice-D9ZD7xJ1.js                                                    [39m[1m[2m 27.28 kB[22m[1m[22m[2m │ gzip:   6.00 kB[22m
+[2mpublic/build/[22m[36massets/chartofaccount-Bp-_v3Yj.js                                             [39m[1m[2m 27.56 kB[22m[1m[22m[2m │ gzip:   5.85 kB[22m
+[2mpublic/build/[22m[36massets/studentcreate-q9RET5I1.js                                              [39m[1m[2m 27.64 kB[22m[1m[22m[2m │ gzip:   5.27 kB[22m
+[2mpublic/build/[22m[36massets/index-C2tSnE9D.js                                                      [39m[1m[2m 29.10 kB[22m[1m[22m[2m │ gzip:   9.45 kB[22m
+[2mpublic/build/[22m[36massets/allVoucher-ChPUHegV.js                                                 [39m[1m[2m 29.64 kB[22m[1m[22m[2m │ gzip:   6.10 kB[22m
+[2mpublic/build/[22m[36massets/SelectContent.vue_vue_type_script_setup_true_lang-LlIo9bnr.js          [39m[1m[2m 31.08 kB[22m[1m[22m[2m │ gzip:   9.08 kB[22m
+[2mpublic/build/[22m[36massets/personalinfo-CcdrA-2G.js                                               [39m[1m[2m 36.16 kB[22m[1m[22m[2m │ gzip:   8.32 kB[22m
+[2mpublic/build/[22m[36massets/reverseVoucher-DiAAH5gp.js                                             [39m[1m[2m 38.57 kB[22m[1m[22m[2m │ gzip:   7.78 kB[22m
+[2mpublic/build/[22m[36massets/openingVoucher-CLjdes8V.js                                             [39m[1m[2m 38.58 kB[22m[1m[22m[2m │ gzip:   7.79 kB[22m
+[2mpublic/build/[22m[36massets/receiptVoucher-cxdkHY-R.js                                             [39m[1m[2m 38.59 kB[22m[1m[22m[2m │ gzip:   7.78 kB[22m
+[2mpublic/build/[22m[36massets/jurnalVoucher-BtvwvSIo.js                                              [39m[1m[2m 38.62 kB[22m[1m[22m[2m │ gzip:   7.73 kB[22m
+[2mpublic/build/[22m[36massets/paymentVoucher-BDQTbmhr.js                                             [39m[1m[2m 38.73 kB[22m[1m[22m[2m │ gzip:   7.83 kB[22m
+[2mpublic/build/[22m[36massets/Welcome-CD854TSo.js                                                    [39m[1m[2m 47.58 kB[22m[1m[22m[2m │ gzip:   8.79 kB[22m
+[2mpublic/build/[22m[36massets/ChevronUpDownIcon-Dpkh4k6S.js                                          [39m[1m[2m 52.71 kB[22m[1m[22m[2m │ gzip:  16.61 kB[22m
+[2mpublic/build/[22m[36massets/DataTable.vue_vue_type_script_setup_true_lang-Cq7fg7Zy.js              [39m[1m[2m 59.16 kB[22m[1m[22m[2m │ gzip:  16.43 kB[22m
+[2mpublic/build/[22m[36massets/PlaceholderPattern.vue_vue_type_script_setup_true_lang-u5DKrGfb.js     [39m[1m[2m155.93 kB[22m[1m[22m[2m │ gzip:  54.75 kB[22m
+[2mpublic/build/[22m[36massets/AppLayout.vue_vue_type_script_setup_true_lang-C3AoKm1Q.js              [39m[1m[2m172.53 kB[22m[1m[22m[2m │ gzip:  48.01 kB[22m
+[2mpublic/build/[22m[36massets/vue-datepicker-9uLu07wm.js                                             [39m[1m[2m184.57 kB[22m[1m[22m[2m │ gzip:  52.81 kB[22m
+[2mpublic/build/[22m[36massets/workflow-D2w0AYBx.js                                                   [39m[1m[2m190.63 kB[22m[1m[22m[2m │ gzip:  66.42 kB[22m
+[2mpublic/build/[22m[36massets/app-eYn75aER.js                                                        [39m[1m[2m366.10 kB[22m[1m[22m[2m │ gzip: 126.57 kB[22m
+[32m✓ built in 9.98s[39m
