@@ -55,6 +55,7 @@ class UpdateStudentRequest extends FormRequest
             'assain_user'    => ['sometimes', 'required', 'exists:users,id'],
             'source_id'      => ['sometimes', 'required', 'exists:student_sources,id'],
             'status'         => ['nullable', 'boolean'],
+            'form_id'        => ['nullable', 'exists:facebook_forms,id'],
         ];
     }
 

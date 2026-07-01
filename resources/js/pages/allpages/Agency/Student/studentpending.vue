@@ -607,6 +607,7 @@ const submitTransfer = () => {
                                 <TableHead class="th">Phone</TableHead>
                                 <TableHead class="th">Gender</TableHead>
                                 <TableHead class="th">Source</TableHead>
+                                <TableHead class="th">Form Name</TableHead>
                                 <TableHead class="th">Assignee User</TableHead>
                                 <TableHead class="th">Entry Date Time</TableHead>
                                 <TableHead class="th">Status</TableHead>
@@ -658,6 +659,11 @@ const submitTransfer = () => {
                             <TableCell class="td">
                                 <div class="font-medium text-gray-700">
                                     {{ stud.source?.name || '-' }}
+                                </div>
+                            </TableCell>
+                            <TableCell class="td">
+                                <div class="font-medium text-gray-700">
+                                    {{ stud.facebook_form?.form_name || '-' }}
                                 </div>
                             </TableCell>
                             <TableCell class="td">

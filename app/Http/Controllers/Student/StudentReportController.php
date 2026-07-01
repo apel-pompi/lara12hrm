@@ -539,7 +539,7 @@ class StudentReportController extends Controller
     public function studentRevenueReport($formdate, $todate, $isAdmin, $employee = null)
     {
 
-        $query = StudentInvoiceHD::with(['student.service.workflow'])
+        $query = StudentInvoiceHD::with(['student.service'])
             ->where('status', 'Confirmed')
             ->whereBetween('insdate', [$formdate, $todate]);
         if (! $isAdmin && $employee) {
@@ -549,7 +549,7 @@ class StudentReportController extends Controller
         }
         $records = $query->get();
         $grouped = $records->groupBy('student_id');
-
+        dd($grouped);
         $totalStudents = 0;
         $totalInvoiced = 0;
         $totalReceived = 0;

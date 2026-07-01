@@ -54,9 +54,12 @@ class VoucherheaderController extends Controller
             'allvoucher' => Voucherheader::whereRaw("LEFT(vouchernumber, 4) = 'JV--'")->get(),
             'accountcode' => ChartOfAccount::where('active', '1')->get(),
 
-            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSETS', 'EXPENDITURES'])->where('accountusage', 'Ledger')->get(),
+            'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSETS', 'EXPENDITURES', 'REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Cash', 'Non-Cash'])->get(),
+            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSETS', 'EXPENDITURES', 'REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->whereIn('analyticalcode', ['Cash', 'Non-Cash'])->get(),
+            
+            //'draccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['ASSETS', 'EXPENDITURES'])->where('accountusage', 'Ledger')->get(),
 
-            'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->get(),
+            //'craccountcode' => ChartOfAccount::where('active', '1')->whereIn('accounttype', ['REVENUES', 'LIABILITIES'])->where('accountusage', 'Ledger')->get(),
         ]);
     }
 

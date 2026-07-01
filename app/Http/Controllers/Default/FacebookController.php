@@ -232,10 +232,21 @@ class FacebookController extends Controller
             }
 
             $fullName = trim($fields['full_name'] ?? '');
-            $nameParts = explode(' ', $fullName, 2);
-            $firstName = $nameParts[0] ?? null;
-            $lastName  = $nameParts[1] ?? null;
+            if ($fullName === '') {
+                $firstName = 'Unknown';
+                $lastName = 'Unknown';
+            } else {
+                $nameParts = explode(' ', $fullName, 2);
 
+                if (count($nameParts) > 1) {
+                    $firstName = $nameParts[0];
+                    $lastName  = $nameParts[1];
+                } else {
+                    $firstName = $fullName;
+                    $lastName  = $fullName;
+                }
+            }
+            
             $email = $fields['email'] ?? null;
             $phone = $fields['phone'] ?? null;
             if (!$email && !$phone) {
@@ -243,16 +254,18 @@ class FacebookController extends Controller
                 return;
             }
             $student = null;
-            if ($email || $phone) {
-                $student = Student::where(function ($q) use ($email, $phone) {
-                    if ($email) {
-                        $q->where('email', $email);
-                    }
+            if ($form?->id && ($email || $phone)) {
+                $student = Student::where('form_id', $form->id)
+                    ->where(function ($q) use ($email, $phone) {
+                        if ($email) {
+                            $q->where('email', $email);
+                        }
 
-                    if ($phone) {
-                        $q->orWhere('phone', $phone);
-                    }
-                })->first();
+                        if ($phone) {
+                            $q->orWhere('phone', $phone);
+                        }
+                    })
+                    ->first();
             }
 
             $studentData = [
@@ -266,6 +279,7 @@ class FacebookController extends Controller
                 'source_id'      => 9,
                 'assain_user'    => $assain_user,
                 'user_id' => 1,
+                'form_id' => $form?->id,
             ];
             //LOg::info($studentData);
             if ($student) {

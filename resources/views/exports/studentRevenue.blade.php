@@ -163,7 +163,7 @@
                     <td>{{ $i++ }}</td>
                     <td>{{ $rows->first()->student->student_id }}</td>
                     <td>{{ $rows->first()->student->fname }} {{ $rows->first()->student->lname }}</td>
-                    <td>{{ $rows->first()->student->service->workflow->name }}</td>
+                    <td></td>
                     <td class="text-right">{{ $invoice }}</td>
                     <td class="text-right">{{ $receive }}</td>
                     <td class="text-right">{{ $invoice - $receive }}</td>

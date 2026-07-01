@@ -164,7 +164,7 @@
             <tr>
                 <td width="25%">
                     <div class="meta-label">Account Name</div>
-                    <div class="meta-value">{{ $opening->ChartOFAccount->description ?? '' }}</div>
+                    <div class="meta-value">{{ $accname ?? '' }}</div>
                 </td>
                 <td width="25%">
                     <div class="meta-label">Report Period</div>
@@ -172,11 +172,11 @@
                 </td>
                 <td width="25%">
                     <div class="meta-label">Branch</div>
-                    <div class="meta-value">{{ $opening->branch->branchname ?? '' }}</div>
+                    <div class="meta-value">{{ $branchname ?? '' }}</div>
                 </td>
                 <td width="25%" class="text-right">
                     <div class="meta-label">Currency</div>
-                    <div class="meta-value">{{ $opening->currency ?? '' }}</div>
+                    <div class="meta-value">BDT</div>
                 </td>
             </tr>
         </table>
@@ -198,7 +198,7 @@
         <tbody>
             <!-- B/F Balance -->
             @php
-            $balance = $opening->opening ?? 0;
+            $balance = $opening ?? 0;
             $totalDr = 0;
             $totalCr = 0;
             @endphp

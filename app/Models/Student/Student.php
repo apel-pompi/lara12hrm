@@ -5,6 +5,7 @@ namespace App\Models\Student;
 use App\Models\Default\Country;
 use App\Models\Student\StudentSource;
 use App\Models\User;
+use App\Models\Default\FacebookForm;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -49,6 +50,7 @@ class Student extends Model
         'source_id',
         'user_id',
         'status',
+        'form_id',
     ];
 
     /**
@@ -116,5 +118,10 @@ class Student extends Model
     public function activities(): HasMany
     {
         return $this->hasMany(StudentActivities::class, 'student_id', 'id');
+    }
+
+    public function facebookForm()
+    {
+        return $this->belongsTo(FacebookForm::class, 'form_id');
     }
 }

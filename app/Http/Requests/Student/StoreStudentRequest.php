@@ -54,6 +54,7 @@ class StoreStudentRequest extends FormRequest
             'assain_user'    => ['required', 'exists:users,id'],
             'source_id'      => ['required', 'exists:student_sources,id'],
             'status'         => ['nullable', 'boolean'],
+            'form_id'        => ['nullable', 'exists:facebook_forms,id'],
         ];
     }
 
@@ -86,6 +87,7 @@ class StoreStudentRequest extends FormRequest
             'descountry_id' => 'Preferred Destination Country',
             'assain_user'   => 'Assign User',
             'source_id'     => 'Student Source',
+            'form_id'       => 'Form ID',
             'photo' => 'Student Photo'
         ];
     }

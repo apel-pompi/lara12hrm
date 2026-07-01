@@ -117,36 +117,18 @@ class AccountsReportController extends Controller
                 'message' => 'You are not authorized to access this page.'
             ]);
         }
-
-        $opening = VoucherBalance::with(['branch'])
-            ->where('voucherdate', '<', $request->startdate)
+        $accname = ChartOfAccount::where('accountcode', $request->account)->value('description');
+        $branchname = Branch::where('id', $request->branch_id)->value('branchname');
+       $opening = VoucherBalance::where('voucherdate', '<', $request->startdate)
             ->where('status', 'Post')
             ->where('accountcode', $request->account)
             ->when($request->filled('branch_id'), function ($q) use ($request) {
                 $q->where('branch_id', $request->branch_id);
             })
-            ->select(
-                'accountcode',
-                'branch_id',
-                'currency',
-                DB::raw('COALESCE(SUM(primeamt), 0) as opening')
-            )
-            ->groupBy('accountcode', 'branch_id', 'currency')
-            ->first();
-        if (!$opening) {
-            $opening = VoucherBalance::with(['branch'])
-                ->where('accountcode', $request->account)
-                ->when($request->filled('branch_id'), function ($q) use ($request) {
-                    $q->where('branch_id', $request->branch_id);
-                })
-                ->select(
-                    'accountcode',
-                    'branch_id',
-                    DB::raw("'BDT' as currency"),
-                    DB::raw('0 as opening')
-                )
-                ->first();
-        }
+            ->sum('primeamt');
+
+        $opening = $opening ?? 0;
+
 
 
         $voucher = VoucherBalance::with('branch')
@@ -163,6 +145,8 @@ class AccountsReportController extends Controller
         $company = CompanyInfo::firstOrFail();
         $pdf = PDF::loadView('exports.accounts.actogl', [
             'company' => $company,
+            'accname' => $accname,
+            'branchname' => $branchname,
             'opening' => $opening,
             'voucher' => $voucher,
             'startdate' => $request->startdate,
