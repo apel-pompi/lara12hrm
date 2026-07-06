@@ -276,18 +276,18 @@ const submit = () => {
 };
 const onShow = async (id: number) => {
     try {
-        const res = await fetch(`/roles/${id}`);
+        // const res = await fetch(`/roles/${id}`);
 
-        if (!res.ok) {
-            toast.error('Roles show not necessary !');
-            return;
-        }
-        const data = await res.json();
-        Object.assign(form, data);
-        form.id = data.id;
-        isEditMode.value = false;
-        showDialog.value = false;
-        showDialogOpen.value = true;
+        // if (!res.ok) {
+        //     toast.error('Roles show not necessary !');
+        //     return;
+        // }
+        // const data = await res.json();
+        // Object.assign(form, data);
+        // form.id = data.id;
+        // isEditMode.value = false;
+        // showDialog.value = false;
+        // showDialogOpen.value = true;
     } catch (error) {
         console.error('Fetch error:', error);
         toast.error('Roles show not necessary !');

@@ -5,6 +5,8 @@ use App\Http\Controllers\Default\{
     TransactionController,
     ApprovalRequestController,
     FacebookController,
+    WhatsAppController,
+    WhatsAppFormSetupController,
     SocialMediaSetupController,
     UserWiseFormController
 };
@@ -63,6 +65,15 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
             Route::delete('/show/{formId}', 'deleteFacebookForm')->name('facebook.deleteFacebookForm');
         });
 
+    //WhatsApp Route
+    Route::controller(WhatsAppController::class)
+        ->prefix('whatsapp')
+        ->group(function () {
+            Route::get('whatsappSync', 'whatsappSync')->name('whatsapp.whatsappSync');
+            Route::get('/sync', 'syncWhatsAppNumbers')->name('whatsapp.syncWhatsAppNumbers');
+            Route::delete('/show/{numberId}', 'deleteWhatsAppNumber')->name('whatsapp.deleteWhatsAppNumber');
+        });
+
     //social media setup Route
     Route::controller(SocialMediaSetupController::class)
         ->prefix('social-media-setup')
@@ -86,6 +97,21 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
                 Route::get('/{userWiseForm}/edit', 'edit')->name('userwise-form.edit');
                 Route::put('/{userWiseForm}', 'update')->name('userwise-form.update');
                 Route::delete('/{userWiseForm}', 'destroy')->name('userwise-form.destroy');
+            }
+        );
+
+    //WhatsApp form setup Route
+    Route::controller(WhatsAppFormSetupController::class)
+        ->prefix('whatsapp-form-setup')
+        ->group(
+            function () {
+                Route::get('/', 'index')->name('whatsapp-form-setup.index');
+                Route::get('/create', 'create')->name('whatsapp-form-setup.create');
+                Route::post('/store', 'store')->name('whatsapp-form-setup.store');
+                Route::get('/{whatsappFormSetup}', 'show')->name('whatsapp-form-setup.show');
+                Route::get('/{whatsappFormSetup}/edit', 'edit')->name('whatsapp-form-setup.edit');
+                Route::put('/{whatsappFormSetup}', 'update')->name('whatsapp-form-setup.update');
+                Route::delete('/{whatsappFormSetup}', 'destroy')->name('whatsapp-form-setup.destroy');
             }
         );
 });

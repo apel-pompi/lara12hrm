@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->text('whatsapp_url')->nullable()->after('inbox_url');
+        Schema::table('social_media_setups', function (Blueprint $table) {
+            $table->string('page_id')->nullable()->change();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->dropColumn('whatsapp_url');
+        Schema::table('social_media_setups', function (Blueprint $table) {
+            $table->string('page_id')->nullable(false)->change();
         });
     }
 };

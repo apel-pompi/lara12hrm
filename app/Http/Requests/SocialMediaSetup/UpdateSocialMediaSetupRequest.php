@@ -24,7 +24,9 @@ class UpdateSocialMediaSetupRequest extends FormRequest
     {
         $id = $this->route('socialMediaSetup') ? $this->route('socialMediaSetup')->id : null;
         return [
-            'page_id' => ['required', 'string', "unique:social_media_setups,page_id,{$id}"],
+            'platform' => ['required', 'string', 'in:facebook,whatsapp'],
+            'page_id' => ['nullable', 'required_if:platform,facebook', 'string', "unique:social_media_setups,page_id,{$id}"],
+            'whatsapp_business_account_id' => ['nullable', 'string'],
             'access_token' => ['nullable', 'string'],
             'verify_token' => ['nullable', 'string'],
         ];

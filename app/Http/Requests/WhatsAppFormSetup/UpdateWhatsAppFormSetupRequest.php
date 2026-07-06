@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Http\Requests\WhatsAppFormSetup;
+
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class UpdateWhatsAppFormSetupRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'phone_id' => [
+                'required',
+                'exists:whats_apps_numbers,phone_id',
+                Rule::unique('whatsapp_form_setups', 'phone_id')->ignore($this->route('whatsappFormSetup')),
+            ],
+            'team_id' => ['required', 'exists:users,id'],
+            'counsilor_id' => ['required', 'array', 'min:1'],
+            'counsilor_id.*' => ['required', 'exists:users,id'],
+            'status' => ['required', 'in:0,1'],
+        ];
+    }
+}

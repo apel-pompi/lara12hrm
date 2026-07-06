@@ -3,19 +3,22 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import AgencyLayout from '@/layouts/settings/socialmediaLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, RefreshCcw, SquarePen, Trash } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
 export interface SocialMediaItem {
     id: number;
-    page_id: string;
+    platform: 'facebook' | 'whatsapp';
+    page_id?: string | null;
+    whatsapp_business_account_id?: string;
     access_token?: string;
     verify_token?: string;
 }
@@ -32,7 +35,32 @@ const data = computed(() => ({ data: props.socialMediaSetups || [], links: [] })
 const showDialog = ref(false);
 const isEditMode = ref(false);
 
-const form = useForm({ id: null as number | null, page_id: '', access_token: '', verify_token: '' });
+const form = useForm({
+    id: null as number | null,
+    platform: '',
+    page_id: '',
+    whatsapp_business_account_id: '',
+    access_token: '',
+    verify_token: '',
+});
+
+const isFacebook = computed(() => form.platform === 'facebook');
+const isWhatsApp = computed(() => form.platform === 'whatsapp');
+
+watch(
+    () => form.platform,
+    (platform) => {
+        if (platform === 'facebook') {
+            form.whatsapp_business_account_id = '';
+            form.clearErrors('whatsapp_business_account_id');
+        }
+
+        if (platform === 'whatsapp') {
+            form.page_id = '';
+            form.clearErrors('page_id');
+        }
+    },
+);
 
 const showDialogCreate = () => {
     form.reset();
@@ -44,7 +72,9 @@ const showDialogCreate = () => {
 const openEdit = (item: SocialMediaItem) => {
     form.reset();
     form.id = item.id;
+    form.platform = item.platform;
     form.page_id = item.page_id;
+    form.whatsapp_business_account_id = item.whatsapp_business_account_id ?? '';
     form.access_token = item.access_token ?? '';
     form.verify_token = item.verify_token ?? '';
     isEditMode.value = true;
@@ -52,6 +82,14 @@ const openEdit = (item: SocialMediaItem) => {
 };
 
 const submit = () => {
+    if (form.platform === 'facebook') {
+        form.whatsapp_business_account_id = '';
+    }
+
+    if (form.platform === 'whatsapp') {
+        form.page_id = '';
+    }
+
     if (form.id) {
         form.put(route('social-media-setup.update', form.id), {
             preserveState: true,
@@ -100,6 +138,12 @@ const truncateToken = (token?: string) => {
     const end = token.slice(-10);
     return `${start}....${end}`;
 };
+
+const platformLabel = (platform: string) => {
+    if (platform === 'facebook') return 'Facebook';
+    if (platform === 'whatsapp') return 'WhatsApp';
+    return platform || '-';
+};
 </script>
 
 <template>
@@ -109,7 +153,11 @@ const truncateToken = (token?: string) => {
             <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
                 <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div class="flex items-center gap-3">
-                        <Button class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500" size="sm" @click="showDialogCreate">
+                        <Button
+                            class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
+                            size="sm"
+                            @click="showDialogCreate"
+                        >
                             <Plus class="mr-2 h-4 w-4" />
                             Create
                         </Button>
@@ -129,15 +177,19 @@ const truncateToken = (token?: string) => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Facebook Page ID</TableHead>
-                                <TableHead>Facebook Page Access Token</TableHead>
-                                <TableHead>Facebook Verify Token</TableHead>
+                                <TableHead>Platform</TableHead>
+                                <TableHead>Page ID</TableHead>
+                                <TableHead>WhatsApp Business Account ID</TableHead>
+                                <TableHead>Access Token</TableHead>
+                                <TableHead>Verify Token</TableHead>
                                 <TableHead class="text-center">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             <TableRow v-for="(item, index) in data.data" :key="item.id ?? index">
-                                <TableCell>{{ item.page_id }}</TableCell>
+                                <TableCell>{{ platformLabel(item.platform) }}</TableCell>
+                                <TableCell>{{ item.page_id || '-' }}</TableCell>
+                                <TableCell>{{ item.whatsapp_business_account_id || '-' }}</TableCell>
                                 <TableCell>{{ truncateToken(item.access_token) }}</TableCell>
                                 <TableCell>{{ truncateToken(item.verify_token) }}</TableCell>
                                 <TableCell class="text-right">
@@ -159,26 +211,50 @@ const truncateToken = (token?: string) => {
                     <DialogContent class="max-w-lg rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl">
                         <DialogHeader class="border-b pb-3">
                             <DialogTitle class="text-lg font-semibold">{{ isEditMode ? 'Edit' : 'Create' }} Social Media</DialogTitle>
-                            <DialogDescription class="text-sm text-gray-500">{{ isEditMode ? 'Update the social media settings.' : 'Fill the fields to create a new social media setting.' }}</DialogDescription>
+                            <DialogDescription class="text-sm text-gray-500">{{
+                                isEditMode ? 'Update the social media settings.' : 'Fill the fields to create a new social media setting.'
+                            }}</DialogDescription>
                         </DialogHeader>
 
                         <div class="grid grid-cols-1 gap-6 py-4 md:grid-cols-2">
                             <div class="grid gap-2">
-                                <Label for="page_id" class="font-medium">Facebook Page ID<span class="text-red-500">*</span></Label>
+                                <Label for="platform" class="font-medium">Platform<span class="text-red-500">*</span></Label>
+                                <Select id="platform" v-model="form.platform">
+                                    <SelectTrigger class="w-full">
+                                        <SelectValue placeholder="Select Platform" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="facebook">Facebook</SelectItem>
+                                        <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p v-if="form.errors.platform" class="text-sm text-red-600">{{ form.errors.platform }}</p>
+                            </div>
+
+                            <div v-if="isFacebook" class="grid gap-2">
+                                <Label for="page_id" class="font-medium">Page ID<span class="text-red-500">*</span></Label>
                                 <Input id="page_id" v-model="form.page_id" class="w-full" />
                                 <p v-if="form.errors.page_id" class="text-sm text-red-600">{{ form.errors.page_id }}</p>
                             </div>
 
+                            <div v-if="isWhatsApp" class="grid gap-2">
+                                <Label for="whatsapp_business_account_id" class="font-medium">WhatsApp Business Account ID</Label>
+                                <Input id="whatsapp_business_account_id" v-model="form.whatsapp_business_account_id" class="w-full" />
+                                <p v-if="form.errors.whatsapp_business_account_id" class="text-sm text-red-600">
+                                    {{ form.errors.whatsapp_business_account_id }}
+                                </p>
+                            </div>
+
                             <div class="grid gap-2">
-                                <Label for="access_token" class="font-medium">Facebook Page Access Token</Label>
-                                <Input id="access_token" v-model="form.access_token" class="w-full" />
-                                <p v-if="form.errors.access_token" class="text-sm text-red-600">{{ form.errors.access_token }}</p>
+                                <Label for="verify_token" class="font-medium">Verify Token</Label>
+                                <Input id="verify_token" v-model="form.verify_token" class="w-full" />
+                                <p v-if="form.errors.verify_token" class="text-sm text-red-600">{{ form.errors.verify_token }}</p>
                             </div>
 
                             <div class="grid gap-2 md:col-span-2">
-                                <Label for="verify_token" class="font-medium">Facebook Verify Token</Label>
-                                <Input id="verify_token" v-model="form.verify_token" class="w-full" />
-                                <p v-if="form.errors.verify_token" class="text-sm text-red-600">{{ form.errors.verify_token }}</p>
+                                <Label for="access_token" class="font-medium">Access Token</Label>
+                                <Input id="access_token" v-model="form.access_token" class="w-full" />
+                                <p v-if="form.errors.access_token" class="text-sm text-red-600">{{ form.errors.access_token }}</p>
                             </div>
                         </div>
 

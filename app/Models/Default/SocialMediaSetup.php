@@ -10,7 +10,9 @@ class SocialMediaSetup extends Model
     use HasFactory;
 
     protected $fillable = [
+        'platform',
         'page_id',
+        'whatsapp_business_account_id',
         'access_token',
         'verify_token',
     ];

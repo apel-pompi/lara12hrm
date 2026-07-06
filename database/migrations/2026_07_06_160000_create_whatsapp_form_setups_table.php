@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('social_media_setups', function (Blueprint $table) {
+        Schema::create('whatsapp_form_setups', function (Blueprint $table) {
             $table->id();
-            $table->string('page_id')->nullable()->unique();
-            $table->string('access_token')->nullable();
-            $table->string('verify_token')->nullable();
+            $table->string('phone_number');
+            $table->string('phone_id')->unique();
+            $table->string('waba_id');
+            $table->foreignId('team_id')->constrained('users')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->string('counsilor_id')->nullable();
+            $table->integer('status')->nullable()->comment('0 for inactive, 1 for active');
             $table->timestamps();
 
             $table->charset = 'utf8';
@@ -28,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('social_media_setups');
+        Schema::dropIfExists('whatsapp_form_setups');
     }
 };

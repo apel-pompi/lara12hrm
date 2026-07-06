@@ -28,7 +28,7 @@ class FacebookController extends Controller
         $exists = SocialMediaSetup::where(
             'verify_token',
             $token
-        )->exists();
+        )->where('platform', 'facebook')->exists();
 
         if (
             $request->get('hub_mode') === 'subscribe' &&
@@ -69,7 +69,7 @@ class FacebookController extends Controller
             $pageToken = SocialMediaSetup::where(
                 'page_id',
                 $pageId
-            )->value('access_token');
+            )->where('platform', 'facebook')->value('access_token');
 
             if (!$pageToken) {
 
@@ -128,7 +128,7 @@ class FacebookController extends Controller
             ]);
         }
 
-        $pages = SocialMediaSetup::all();
+        $pages = SocialMediaSetup::where('platform', 'facebook')->get();
         $forms = FacebookForm::all();
 
         return Inertia::render('allpages/default/facebook-form', [
@@ -150,7 +150,9 @@ class FacebookController extends Controller
         }
 
         $pageId = $request->input('page_id');
-        $pageToken = SocialMediaSetup::where('page_id', $pageId)->value('access_token');
+        $pageToken = SocialMediaSetup::where('page_id', $pageId)
+            ->where('platform', 'facebook')
+            ->value('access_token');
         $response = Http::get(
             "https://graph.facebook.com/v23.0/{$pageId}/leadgen_forms",
             [

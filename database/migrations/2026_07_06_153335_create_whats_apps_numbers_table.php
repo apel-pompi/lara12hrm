@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('social_media_setups', function (Blueprint $table) {
+        Schema::create('whats_apps_numbers', function (Blueprint $table) {
             $table->id();
-            $table->string('page_id')->nullable()->unique();
-            $table->string('access_token')->nullable();
-            $table->string('verify_token')->nullable();
+            $table->string('waba_id')->unique();
+            $table->string('phone_id')->unique();
+            $table->string('phoneno')->unique();
+            $table->string('verified_name')->nullable();
+            $table->string('status')->nullable();
             $table->timestamps();
-
-            $table->charset = 'utf8';
-            $table->collation = 'utf8_general_ci';
         });
     }
 
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('social_media_setups');
+        Schema::dropIfExists('whats_apps_numbers');
     }
 };

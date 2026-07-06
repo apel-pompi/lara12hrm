@@ -337,6 +337,27 @@ class RolePermissionSeeder extends Seeder
                     'facebookForm.destroy',
                 ],
             ],
+            //WhatsApp Sync
+            [
+                'group_name' => 'WhatsApp Sync',
+                'permissions' => [
+                    'whatsappSync.index',
+                    'whatsappSync.sync',
+                    'whatsappSync.destroy',
+                ],
+            ],
+            //WhatsApp Form Setup
+            [
+                'group_name' => 'WhatsApp Form Setup',
+                'permissions' => [
+                    'whatsappFormSetup.index',
+                    'whatsappFormSetup.store',
+                    'whatsappFormSetup.show',
+                    'whatsappFormSetup.edit',
+                    'whatsappFormSetup.update',
+                    'whatsappFormSetup.destroy',
+                ],
+            ],
             //User Wise Form    
             [
                 'group_name' => 'User Wise Form',

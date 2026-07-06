@@ -16,8 +16,16 @@ const sidebarNavItems: NavItem[] = [
         href: '/facebook/facebookForm',
     },
     {
-        title: 'User Wise Form',
+        title: 'Facebook Form Setup',
         href: '/userwise-form',
+    },
+    {
+        title: 'WhatsApp Sync',
+        href: '/whatsapp/whatsappSync',
+    },
+    {
+        title: 'WhatsApp Form Setup',
+        href: '/whatsapp-form-setup',
     },
 ];
 
