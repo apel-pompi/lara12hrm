@@ -11,7 +11,7 @@ import { type BreadcrumbItem, type NavItem } from '@/types';
 
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { getLocalTimeZone, today } from '@internationalized/date';
-import VueDatePicker  from '@vuepic/vue-datepicker'
+import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import axios from 'axios';
 import { AlertCircle, CornerDownLeft, Loader2, Phone, Save } from 'lucide-vue-next';
@@ -48,6 +48,14 @@ const pending = [
         title: 'Check-in Logs',
         href: route('studentCheckin.index', props.student.id),
     },
+    {
+        title: 'Facebook Chat',
+        href: route('studentChat.index', props.student.id),
+    },
+    {
+        title: 'WhatsApp Chat',
+        href: route('studentWhatsapp.index', props.student.id),
+    },
 ];
 const lead = [
     {
@@ -73,6 +81,14 @@ const lead = [
     {
         title: 'Check-in Logs',
         href: route('studentCheckin.index', props.student.id),
+    },
+    {
+        title: 'Facebook Chat',
+        href: route('studentChat.index', props.student.id),
+    },
+    {
+        title: 'WhatsApp Chat',
+        href: route('studentWhatsapp.index', props.student.id),
     },
 ];
 
@@ -110,6 +126,14 @@ const prospect = [
         title: 'Check-in Logs',
         href: route('studentCheckin.index', props.student.id),
     },
+    {
+        title: 'Facebook Chat',
+        href: route('studentChat.index', props.student.id),
+    },
+    {
+        title: 'WhatsApp Chat',
+        href: route('studentWhatsapp.index', props.student.id),
+    },
 ];
 const onBoard = [
     {
@@ -145,6 +169,14 @@ const onBoard = [
         title: 'Check-in Logs',
         href: route('studentCheckin.index', props.student.id),
     },
+    {
+        title: 'Facebook Chat',
+        href: route('studentChat.index', props.student.id),
+    },
+    {
+        title: 'WhatsApp Chat',
+        href: route('studentWhatsapp.index', props.student.id),
+    },
 ];
 
 const archive = [
@@ -179,6 +211,14 @@ const archive = [
     {
         title: 'Educations',
         href: route('studentEducations.index', props.student.id),
+    },
+    {
+        title: 'Facebook Chat',
+        href: route('studentChat.index', props.student.id),
+    },
+    {
+        title: 'WhatsApp Chat',
+        href: route('studentWhatsapp.index', props.student.id),
     },
 ];
 
@@ -241,15 +281,12 @@ const updateRate = (status: number) => {
     );
 };
 
-
-
 const showTransfer = ref(false);
 const Transferform = useForm({
     details: '',
 });
 const updateTransfer = (studentId: number) => {
-    if (confirm('Transfer this student?'))
-    showTransfer.value = true;
+    if (confirm('Transfer this student?')) showTransfer.value = true;
 };
 const submitTransfer = () => {
     if (!Transferform.details) {
@@ -412,8 +449,7 @@ const onBoardform = useForm({
     details: '',
 });
 const updateonBoard = (studentId: number) => {
-    if (confirm('onBoard this student?'))
-    showonBoard.value = true;
+    if (confirm('onBoard this student?')) showonBoard.value = true;
 };
 const submitonBoard = () => {
     if (!onBoardform.details) {
@@ -557,7 +593,7 @@ const updateStudent = () => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="relative flex-1 bg-gray-50 dark:bg-gray-950 min-h-screen">
+        <div class="relative min-h-screen flex-1 bg-gray-50 dark:bg-gray-950">
             <!-- Page Header -->
             <div class="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
                 <div class="flex flex-wrap items-center justify-between gap-3">
@@ -603,7 +639,8 @@ const updateStudent = () => {
                                 class="relative rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-150"
                                 :class="{
                                     'bg-indigo-600 text-white shadow-sm': isActiveTab(item.href),
-                                    'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200': !isActiveTab(item.href)
+                                    'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200':
+                                        !isActiveTab(item.href),
                                 }"
                             >
                                 {{ item.title }}
@@ -679,7 +716,7 @@ const updateStudent = () => {
                     <div class="grid gap-2">
                         <Label for="doctype">why doing you transfer this student ? <span class="text-red-500">*</span></Label>
                         <Textarea v-model="Transferform.details" id="paddress" placeholder="Please write details" />
-                        <span v-if="Transferform.errors.details" class="text-sm text-red-600">{{ Transferform.errors.details }}</span> 
+                        <span v-if="Transferform.errors.details" class="text-sm text-red-600">{{ Transferform.errors.details }}</span>
                     </div>
                 </div>
 
@@ -923,7 +960,7 @@ const updateStudent = () => {
                     <div class="grid gap-2">
                         <Label for="doctype">why doing you onBoard this student ? <span class="text-red-500">*</span></Label>
                         <Textarea v-model="onBoardform.details" id="paddress" placeholder="Please write details" />
-                        <span v-if="onBoardform.errors.details" class="text-sm text-red-600">{{ onBoardform.errors.details }}</span> 
+                        <span v-if="onBoardform.errors.details" class="text-sm text-red-600">{{ onBoardform.errors.details }}</span>
                     </div>
                 </div>
 

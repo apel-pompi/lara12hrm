@@ -18,16 +18,16 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->integer('yearname');
             $table->integer('monthname');
-            $table->string('workhour',10);
-            $table->string('totalhour',10);
-            $table->string('deducthour',10)->nullable();
+            $table->string('workhour', 10);
+            $table->string('totalhour', 10);
+            $table->string('deducthour', 10)->nullable();
             $table->integer('absent')->nullable();
             $table->integer('leave')->nullable();
-            $table->string('nethour',10);
-            $table->string('hrsurplus',10)->nullable();
-            $table->string('payablehour',10);
-            $table->decimal('salary',20,2)->nullable();
-            $table->decimal('payment',20,2)->nullable();
+            $table->string('nethour', 10);
+            $table->string('hrsurplus', 10)->nullable();
+            $table->string('payablehour', 10)->nullable();
+            $table->decimal('salary', 20, 2)->nullable();
+            $table->decimal('payment', 20, 2)->nullable();
             $table->tinyInteger('active');
             $table->foreignId('user_id')->constrained('users')
                 ->cascadeOnUpdate()->cascadeOnDelete();

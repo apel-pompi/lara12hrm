@@ -74,4 +74,40 @@ class StudentCheckLogController extends Controller
             return back()->with('error', 'Unable to check out');
         }
     }
+
+    public function chat(Student $student)
+    {
+        $student->load('assainuser');
+        return Inertia::render('allpages/Agency/Student/chat', [
+            'student'        => $student,
+            'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get(),
+        ]);
+    }
+
+    public function updateChatUrl(Student $student, Request $request)
+    {
+        $validated = $request->validate([
+            'inbox_url' => 'nullable|url|max:2000',
+        ]);
+        $student->update(['inbox_url' => $validated['inbox_url']]);
+        return back()->with('success', 'Messenger Inbox URL updated successfully.');
+    }
+
+    public function whatsapp(Student $student)
+    {
+        $student->load('assainuser');
+        return Inertia::render('allpages/Agency/Student/whatsapp', [
+            'student'        => $student,
+            'studentService' => StudentInService::with(['productfees'])->where('student_id', $student->id)->get(),
+        ]);
+    }
+
+    public function updateWhatsappUrl(Student $student, Request $request)
+    {
+        $validated = $request->validate([
+            'whatsapp_url' => 'nullable|url|max:2000',
+        ]);
+        $student->update(['whatsapp_url' => $validated['whatsapp_url']]);
+        return back()->with('success', 'WhatsApp URL updated successfully.');
+    }
 }

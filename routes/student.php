@@ -243,6 +243,12 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
                 Route::post('/checkOut', 'checkOut')->name('studentCheckin.checkOut');
             }
         );
+    // Student Facebook Chat
+    Route::get('student/activities/{student}/chat', [StudentCheckLogController::class, 'chat'])->name('studentChat.index');
+    Route::post('student/activities/{student}/chat/update-url', [StudentCheckLogController::class, 'updateChatUrl'])->name('studentChat.updateUrl');
+    // Student WhatsApp Chat
+    Route::get('student/activities/{student}/whatsapp', [StudentCheckLogController::class, 'whatsapp'])->name('studentWhatsapp.index');
+    Route::post('student/activities/{student}/whatsapp/update-url', [StudentCheckLogController::class, 'updateWhatsappUrl'])->name('studentWhatsapp.updateUrl');
     // lead reports
     Route::controller(StudentReportController::class)
         ->prefix('leadreports')

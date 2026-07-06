@@ -246,7 +246,7 @@ class FacebookController extends Controller
                     $lastName  = $fullName;
                 }
             }
-            
+
             $email = $fields['email'] ?? null;
             $phone = $fields['phone'] ?? null;
             if (!$email && !$phone) {
@@ -268,18 +268,27 @@ class FacebookController extends Controller
                     ->first();
             }
 
+            // Build the Meta Business Suite inbox URL for direct Messenger access
+            $inboxUrl = null;
+            if (!empty($leadData['page_id']) && !empty($leadData['id'])) {
+                $inboxUrl = 'https://business.facebook.com/latest/inbox/messenger?asset_id=' . $leadData['page_id'] . '&selected_item_id=' . $leadData['id'];
+            }
+            // Also check if the lead data itself or custom fields carry an explicit inbox/messenger URL
+            $inboxUrl = $fields['inbox_url'] ?? $fields['messenger_url'] ?? $leadData['inbox_url'] ?? $inboxUrl;
+
             $studentData = [
                 'fname'          => $firstName,
                 'lname'          => $lastName,
                 'dateofbirth'    => $fields['date_of_birth'] ?? '1900-01-01',
                 'gender'         => 0,
-                'email'         => $email,
-                'phone'         => $phone,
+                'email'          => $email,
+                'phone'          => $phone,
                 'descountry_id'  => 19,
                 'source_id'      => 9,
                 'assain_user'    => $assain_user,
-                'user_id' => 1,
-                'form_id' => $form?->id,
+                'user_id'        => 1,
+                'form_id'        => $form?->id,
+                'inbox_url'      => $inboxUrl,
             ];
             //LOg::info($studentData);
             if ($student) {

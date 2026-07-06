@@ -51,6 +51,8 @@ class Student extends Model
         'user_id',
         'status',
         'form_id',
+        'inbox_url',
+        'whatsapp_url',
     ];
 
     /**

@@ -580,8 +580,8 @@ class HRreportsController extends Controller
 
         $branch = Branch::where('id', $request->branch_id)->where('active', 1)->first();
         $yearMonth = $request->yearname . '-' . str_pad($request->monthname, 2, '0', STR_PAD_LEFT);
-        $sql = AttendanceStatus::with('employee.designation','employee.department')->where('branch_id',$request->branch_id)->where('yearname',$request->yearname)->where('monthname',$request->monthname)->get();
-        
+        $sql = AttendanceStatus::with('employee.designation', 'employee.department')->where('branch_id', $request->branch_id)->where('yearname', $request->yearname)->where('monthname', $request->monthname)->get();
+
         //dd($sql);
         $pdf = Pdf::loadView('exports.hrreports.monthlyAttendance', [
             'branch' => $branch,

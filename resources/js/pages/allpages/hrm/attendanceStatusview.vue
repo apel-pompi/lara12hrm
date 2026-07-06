@@ -3,11 +3,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
-import { SquarePen } from 'lucide-vue-next';
+import { Check, Loader2, Plus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -15,74 +16,62 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pay Slip Generate', href: '/att
 
 const props = defineProps<{
     alldata: {
-        absent: number;
-        active: number;
-        branch_id: number;
-        deducthour: string;
+        id: number;
         empid: number;
         hrsurplus: string;
-        leave: number;
-        monthname: number;
-        nethour: string;
         payablehour: string;
-        totalhour: string;
+        employee: {
+            empname: string;
+            department: { deptname: string };
+            designation: { desname: string };
+        };
+        totalhour: number;
+        absent: number;
+        leave: number;
+        deducthour: string;
+        nethour: string;
     }[];
     monthname: number;
     yearname: number;
+    branch_id: number;
 }>();
-
+console.log(props.alldata);
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const monthLabel = computed(() => MONTHS[(props.monthname ?? 1) - 1] ?? '');
 
-interface FormErrors {
-    hrsurplus?: string;
-}
-
-const errors = ref<FormErrors>();
+const showDialog = ref(false);
+const selectedRecord = ref<any>(null);
 
 const form = useForm({
-    id: '',
     hrsurplus: '',
-    branch_id: '',
-    monthname: '',
-    yearname: '',
+    branch_id: props.branch_id,
+    monthname: props.monthname,
+    yearname: props.yearname,
 });
 
-const showEditDialog = ref(false);
-
-const onEdit = async (id: number, branch_id: number, monthname: number, yearname: number) => {
-    if (confirm('Are you surplus hour this employee ?')) form.id = id;
-    form.branch_id = branch_id;
-    form.monthname = monthname;
-    form.yearname = yearname;
-
-    showEditDialog.value = true;
+const openDialog = (record: any) => {
+    selectedRecord.value = record;
+    form.hrsurplus = record.hrsurplus ?? '';
+    form.branch_id = props.branch_id;
+    form.monthname = props.monthname;
+    form.yearname = props.yearname;
+    showDialog.value = true;
 };
-const onConfirm = () => {
-    if (form.hrsurplus == '') {
-        alert('surplus hour is not empty');
-        return;
-    }
 
-    form.put(
-        route('attendanceStatus.update', {
-            attendanceStatus: form.id,
-            branch_id: form.branch_id,
-            monthname: form.monthname,
-            yearname: form.yearname,
-        }),
-        {
-            onSuccess: () => {
-                toast.success('Surplus Hour Updated successfully');
-                form.reset();
-                showEditDialog.value = false;
-            },
-            onError: (errors) => {
-                const firstError = Object.values(errors)[0];
-                toast.error(firstError as string);
-            },
+const submit = () => {
+    if (!selectedRecord.value) return;
+    showDialog.value = false;
+    form.put(route('attendanceStatus.update', { attendanceStatus: selectedRecord.value.id }), {
+        preserveScroll: true,
+        onSuccess: () => {
+            form.reset();
+            toast.success('Surplus hours updated');
         },
-    );
+        onError: (errors) => {
+            toast.error('Please check the input value');
+            console.error(errors);
+        },
+    });
 };
 </script>
 
@@ -116,17 +105,17 @@ const onConfirm = () => {
                         <!-- Table Head -->
                         <TableHeader>
                             <TableRow class="bg-gray-50">
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">#</TableHead>
                                 <TableHead class="px-4 py-3 font-semibold text-gray-700">Employee Name</TableHead>
                                 <TableHead class="px-4 py-3 font-semibold text-gray-700">Department</TableHead>
                                 <TableHead class="px-4 py-3 font-semibold text-gray-700">Designation</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Working Hours</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Attend Hours</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Deduct Hours</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Absent</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Leave</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">H.R. Surplus</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Net Hours</TableHead>
-                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Payable Hours</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-700">Total Work</TableHead>
+                                <TableHead class="px-4 py-3 text-center font-semibold text-red-700">Absent</TableHead>
+                                <TableHead class="px-4 py-3 text-center font-semibold text-blue-700">Leave</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-red-600">Total Deduct</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-800">Net Work</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-orange-700">Surplus Hrs</TableHead>
+                                <TableHead class="px-4 py-3 font-semibold text-gray-800">Payable Hour</TableHead>
                                 <TableHead class="px-4 py-3 text-center font-semibold text-gray-700">Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -135,9 +124,12 @@ const onConfirm = () => {
                         <TableBody>
                             <TableRow
                                 v-for="(keydata, index) in props.alldata"
-                                :key="keydata.id ?? index"
+                                :key="keydata.empid ?? index"
                                 class="border-t transition hover:bg-gray-50"
                             >
+                                <!-- # -->
+                                <TableCell class="px-4 py-3 text-gray-500">{{ index + 1 }}</TableCell>
+
                                 <!-- Employee -->
                                 <TableCell class="px-4 py-3 font-medium whitespace-nowrap text-gray-800">
                                     {{ keydata.employee.empname }}
@@ -153,118 +145,106 @@ const onConfirm = () => {
                                     {{ keydata.employee.designation.desname }}
                                 </TableCell>
 
-                                <!-- Work Hour -->
-                                <TableCell class="px-4 py-3 font-medium">
-                                    {{ keydata.workhour }}
+                                <!-- totalhour -->
+                                <TableCell class="px-4 py-3 text-center">
+                                    <Badge variant="secondary" class="bg-green-100 text-green-700">
+                                        {{ keydata.totalhour }}
+                                    </Badge>
                                 </TableCell>
 
-                                <!-- Attend -->
-                                <TableCell class="px-4 py-3 font-semibold text-green-600">
-                                    {{ keydata.totalhour }}
-                                </TableCell>
-
-                                <!-- Deduct -->
-                                <TableCell class="px-4 py-3 font-semibold text-red-500">
-                                    {{ keydata.deducthour }}
-                                </TableCell>
-
-                                <!-- Absent -->
-                                <TableCell class="px-4 py-3">
-                                    <Badge variant="secondary" class="bg-red-100 text-red-700">
+                                <!-- absent -->
+                                <TableCell class="px-4 py-3 text-center">
+                                    <Badge variant="secondary" class="bg-yellow-100 text-yellow-700">
                                         {{ keydata.absent }}
                                     </Badge>
                                 </TableCell>
 
-                                <!-- Leave -->
-                                <TableCell class="px-4 py-3">
-                                    <Badge variant="secondary" class="bg-yellow-100 text-yellow-700">
+                                <!-- leave -->
+                                <TableCell class="px-4 py-3 text-center">
+                                    <Badge variant="secondary" class="bg-red-100 text-red-700">
                                         {{ keydata.leave }}
                                     </Badge>
                                 </TableCell>
 
-                                <!-- Surplus -->
-                                <TableCell class="px-4 py-3 font-medium text-blue-600">
-                                    {{ keydata.hrsurplus }}
-                                </TableCell>
-
-                                <!-- Net -->
-                                <TableCell class="px-4 py-3 font-semibold">
-                                    {{ keydata.nethour }}
-                                </TableCell>
-
-                                <!-- Payable -->
-                                <TableCell class="px-4 py-3">
-                                    <Badge v-if="keydata.payablehour < keydata.workhour" class="bg-red-500 text-white" size="sm">
-                                        {{ keydata.payablehour }}
+                                <!-- deducthour -->
+                                <TableCell class="px-4 py-3 text-center">
+                                    <Badge variant="secondary" class="bg-blue-100 text-blue-700">
+                                        {{ keydata.deducthour }}
                                     </Badge>
+                                </TableCell>
 
-                                    <Badge v-else class="bg-green-500 text-white" size="sm">
+                                <!-- nethour -->
+                                <TableCell class="px-4 py-3 text-center">
+                                    <Badge variant="secondary" class="bg-gray-100 text-gray-600">
+                                        {{ keydata.nethour }}
+                                    </Badge>
+                                </TableCell>
+
+                                <!-- hrsurplus -->
+                                <TableCell class="px-4 py-3 text-center">
+                                    <Badge variant="secondary" class="bg-orange-100 text-orange-700">
+                                        {{ keydata.hrsurplus }}
+                                    </Badge>
+                                </TableCell>
+
+                                <!-- payablehour -->
+                                <TableCell class="px-4 py-3 text-center">
+                                    <Badge variant="secondary" class="bg-emerald-100 text-emerald-700">
                                         {{ keydata.payablehour }}
                                     </Badge>
                                 </TableCell>
 
                                 <!-- Action -->
                                 <TableCell class="px-4 py-3 text-center">
-                                    <div class="group relative inline-block" v-if="keydata.payablehour < keydata.workhour">
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            class="h-9 w-9 text-green-600 hover:bg-green-100"
-                                            @click="onEdit(keydata.id, keydata.branch_id, keydata.monthname, keydata.yearname)"
-                                        >
-                                            <SquarePen class="h-4 w-4" />
-                                        </Button>
-
-                                        <!-- Tooltip -->
-                                        <span
-                                            class="absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 rounded-lg bg-gray-800 px-2 py-1 text-xs text-white group-hover:block"
-                                        >
-                                            Edit Record
-                                        </span>
-                                    </div>
+                                    <Button size="sm" variant="outline" @click="openDialog(keydata)"> Edit </Button>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </div>
             </div>
-        </div>
-        <Dialog v-model:open="showEditDialog">
-            <DialogContent class="max-w-206.25">
-                <!-- Header -->
-                <DialogHeader>
-                    <DialogTitle>H.R Surplus Surplus </DialogTitle>
-                    <DialogDescription> Submit H.R Surplus hour Confirm. Click save when you're done. </DialogDescription>
-                </DialogHeader>
 
-                <!-- Body -->
-                <div class="grid gap-6">
-                    <!-- Select Document Type -->
-                    <div class="grid gap-2">
-                        <Label for="doctype">Input Surplus Hour<span class="text-red-500">*</span></Label>
-                        <Input type="number" id="hrsurplus" placeholder="HH.MM" step="0.01" v-model="form.hrsurplus" class="max-w-sm" autofocus />
+            <!-- Hrsurplus Dialog -->
+            <Dialog v-model:open="showDialog">
+                <DialogContent class="max-w-md rounded-xl border border-gray-200 shadow-2xl">
+                    <DialogHeader class="border-b border-gray-100 pb-4">
+                        <DialogTitle class="text-xl font-bold text-gray-900">Update Surplus Hours</DialogTitle>
+                        <DialogDescription class="mt-1 text-sm text-gray-500">
+                            Adjust payable hours for <span class="font-medium text-gray-700">{{ selectedRecord?.employee?.empname ?? '' }}</span> by
+                            adding surplus hours.
+                        </DialogDescription>
+                    </DialogHeader>
 
-                        <span v-if="errors?.hrsurplus" class="text-sm text-red-600">{{ errors.hrsurplus }}</span>
+                    <div class="space-y-5 py-5">
+                        <div class="space-y-2">
+                            <Label for="hrsurplus" class="text-sm font-semibold text-gray-700">Surplus Hours</Label>
+                            <div class="relative">
+                                <Plus class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                <Input id="hrsurplus" v-model="form.hrsurplus" class="pl-9" placeholder="e.g. 2, 1:30, 1.5" type="text" />
+                            </div>
+                            <p v-if="form.errors.hrsurplus" class="text-sm text-red-500">
+                                {{ form.errors.hrsurplus }}
+                            </p>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Footer -->
-                <DialogFooter class="mt-6 flex items-center justify-between">
-                    <!-- Close Left -->
-                    <DialogClose as-child>
-                        <Button type="button" variant="secondary">Close</Button>
-                    </DialogClose>
-
-                    <!-- Submit Right -->
-                    <Button :disabled="form.processing" @click="onConfirm">
-                        <template v-if="form.processing">
-                            Saving...
-                            <Loader2 class="mr-2 h-4 w-4 animate-spin" />
-                        </template>
-                        <template v-else>Save</template>
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                    <DialogFooter class="flex justify-end gap-3 border-t border-gray-100 pt-5">
+                        <DialogClose as-child>
+                            <Button type="button" variant="ghost" :disabled="form.processing">Cancel</Button>
+                        </DialogClose>
+                        <Button
+                            type="button"
+                            :disabled="form.processing"
+                            class="gap-2 bg-emerald-600 font-medium text-white hover:bg-emerald-700"
+                            @click="submit"
+                        >
+                            <Loader2 v-if="form.processing" class="h-4 w-4 animate-spin" />
+                            <Check v-else class="h-4 w-4" />
+                            {{ form.processing ? 'Saving...' : 'Save' }}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
     </AppLayout>
 </template>

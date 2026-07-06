@@ -51,54 +51,51 @@ class DashboardController extends Controller
             $sql = PersonalInfo::where('empname', 'LIKE', '%' . $userName . '%')
                 ->where('active', 1)
                 ->first();
-            if (!$sql) {
-                return redirect()->back()->with([
-                    'error' => true,
-                    'message' => 'Employee record not found for employee: ' . $userName
-                ]);
-            }
-
-            $query = PersonalInfo::with(['designation', 'department'])->where('branch_id', $sql->branch_id)->where('active', 1)->where(DB::raw("(date_format(joindate,'%Y-%m-%d'))"), '<=', $currentDay)->orderBy('id', 'ASC')->get();
-
-            $reportData = [];
-
-            foreach ($query as $value) {
-
-                $outquery = Attendance::getAttendanceOut($value->empid, $currentDay);
-                $outtime = $outquery->record_time ?? null;
-                $outtimeRaw = $outtime ? Carbon::parse($outtime) : null;
-
-
-                $status = Attendance::getAttendanceStatus($value->empid, $currentDay);
-                $statusname = $status->TimeName ?? '---';
-
-                if ($outtimeRaw && $outtimeRaw->lt(Carbon::parse($currentDay . '15:00:00'))) {
-
-                    $statusname = 'Absent';
-                }
-                $leave = Leave::where('empid', $value->id)->where('status', 3)->whereDate('fromdate', '<=', $currentDay)->whereDate('todate', '>=', $currentDay)->exists();
-                if ($leave) {
-                    $statusname = 'Leave';
-                }
-
-                $reportData[] = [
-                    'status' => $statusname,
-                ];
-            }
 
             $presentCount = 0;
             $lateCount = 0;
             $absentCount = 0;
             $leaveCount = 0;
-            foreach ($reportData as $key) {
-                if ($key['status'] == 'Present') {
-                    $presentCount++;
-                } elseif ($key['status'] == 'Late') {
-                    $lateCount++;
-                } elseif ($key['status'] == 'Absent') {
-                    $absentCount++;
-                } elseif ($key['status'] == 'Leave') {
-                    $leaveCount++;
+
+            if ($sql) {
+                $query = PersonalInfo::with(['designation', 'department'])->where('branch_id', $sql->branch_id)->where('active', 1)->where(DB::raw("(date_format(joindate,'%Y-%m-%d'))"), '<=', $currentDay)->orderBy('id', 'ASC')->get();
+
+                $reportData = [];
+
+                foreach ($query as $value) {
+
+                    $outquery = Attendance::getAttendanceOut($value->empid, $currentDay);
+                    $outtime = $outquery->record_time ?? null;
+                    $outtimeRaw = $outtime ? Carbon::parse($outtime) : null;
+
+
+                    $status = Attendance::getAttendanceStatus($value->empid, $currentDay);
+                    $statusname = $status->TimeName ?? '---';
+
+                    if ($outtimeRaw && $outtimeRaw->lt(Carbon::parse($currentDay . '15:00:00'))) {
+
+                        $statusname = 'Absent';
+                    }
+                    $leave = Leave::where('empid', $value->id)->where('status', 3)->whereDate('fromdate', '<=', $currentDay)->whereDate('todate', '>=', $currentDay)->exists();
+                    if ($leave) {
+                        $statusname = 'Leave';
+                    }
+
+                    $reportData[] = [
+                        'status' => $statusname,
+                    ];
+                }
+
+                foreach ($reportData as $key) {
+                    if ($key['status'] == 'Present') {
+                        $presentCount++;
+                    } elseif ($key['status'] == 'Late') {
+                        $lateCount++;
+                    } elseif ($key['status'] == 'Absent') {
+                        $absentCount++;
+                    } elseif ($key['status'] == 'Leave') {
+                        $leaveCount++;
+                    }
                 }
             }
 
@@ -131,7 +128,7 @@ class DashboardController extends Controller
                 'absentCount' => $absentCount,
                 'leaveCount' => $leaveCount,
                 // Inactive lead counts
-                'countInactive1Month' => call_user_func(function() {
+                'countInactive1Month' => call_user_func(function () {
                     $maxActivityDates = DB::table('student_activities')
                         ->whereNull('deleted_at')
                         ->groupBy('student_id')
@@ -147,7 +144,7 @@ class DashboardController extends Controller
                     }
                     return $count;
                 }),
-                'countInactive3Month' => call_user_func(function() {
+                'countInactive3Month' => call_user_func(function () {
                     $maxActivityDates = DB::table('student_activities')
                         ->whereNull('deleted_at')
                         ->groupBy('student_id')
@@ -163,7 +160,7 @@ class DashboardController extends Controller
                     }
                     return $count;
                 }),
-                'countInactive6Month' => call_user_func(function() {
+                'countInactive6Month' => call_user_func(function () {
                     $maxActivityDates = DB::table('student_activities')
                         ->whereNull('deleted_at')
                         ->groupBy('student_id')
@@ -199,134 +196,138 @@ class DashboardController extends Controller
             $sql = PersonalInfo::where('empname', 'LIKE', '%' . $userName . '%')
                 ->where('active', 1)
                 ->first();
-            if (!$sql) {
-                return redirect()->back()->with([
-                    'error' => true,
-                    'message' => 'Employee record not found for user: ' . $userName
-                ]);
-            }
+
             $current = Carbon::now();
-            $leave = Leave::where('empid', $sql->id)->whereYear('fromdate', $current->year)->whereMonth('fromdate', $current->month)->where('status', 2)->sum('approveddays');
-
-            $daysInMonth = $current->daysInMonth;
-            $reportData = [];
-            for ($i = 1; $i <= $daysInMonth; $i++) {
-                $values = str_pad($i, 2, '0', STR_PAD_LEFT);
-                $currentDate = $current->year . '-' . $current->month . '-' . $values;
-                $displayDate = $values . '-' . $current->month . '-' . $current->year;
-                $holiday = HolidayDt::select('holitypes')->where('holidate', $currentDate)->first();
-                if ($holiday) {
-                    $reportData[] = [
-                        'datename' => $displayDate,
-                        'intime' => '---',
-                        'outtime' => '---',
-                        'status' => '---',
-                        'workhours' => '---',
-                        'holiday_type' => $holiday->holitypes,
-                        'is_holiday' => true
-                    ];
-                } else {
-                    //In Time
-                    $inquery = Attendance::getAttendanceIn($sql->empid, $currentDate);
-                    $intime = $inquery->record_time ?? null;
-                    $in = $intime ? date('h:i:s A', strtotime($intime)) : '---';
-                    //Out Time
-                    $outquery = Attendance::getAttendanceOut($sql->empid, $currentDate);
-                    $outtime = $outquery->record_time ?? null;
-
-                    $outtimeRaw = $outtime ? Carbon::parse($outtime) : null;
-
-
-                    $out = $outtime ? date('h:i:s A', strtotime($outtime)) : '---';
-
-                    //Status
-                    $status = Attendance::getAttendanceStatus($sql->empid, $currentDate);
-                    $statusname = $status->TimeName ?? '---';
-                    // Work hours calculation
-                    $workHours = '---';
-                    if ($statusname != 'Absent' && $intime && $outtime) {
-                        $start = strtotime($intime);
-                        $end = strtotime($outtime);
-                        $diffSeconds = $end - $start;
-                        $hours = floor($diffSeconds / 3600);
-                        $minutes = floor(($diffSeconds % 3600) / 60);
-                        $workHours = sprintf("%02d:%02d", $hours, $minutes); // format HH:MM
-                    }
-                    if ($outtimeRaw && $outtimeRaw->lt(Carbon::parse($currentDate . '15:00:00'))) {
-                        $workHours = '00:00';
-                        $statusname = 'Absent';
-                    }
-
-                    $reportData[] = [
-                        'datename' => $displayDate,
-                        'intime' => $in,
-                        'outtime' => $out,
-                        'status' => $statusname,
-                        'workhours' => $workHours,
-                        'is_holiday' => false,
-                        'holiday_type' => null
-                    ];
-                }
-            }
-            // Summary Calculation
+            $in = '---';
+            $out = '---';
+            $statusname = '---';
+            $workHours = '---';
             $presentCount = 0;
             $lateCount = 0;
             $absentCount = 0;
+            $leave = 0;
             $holidayCount = 0;
-            $totalWorkSeconds = 0;
-            foreach ($reportData  as $day) {
+            $totalWorkHoursFormatted = '00:00';
 
-                if ($day['status'] == 'Present') {
-                    $presentCount++;
-                } elseif ($day['status'] == 'Late') {
-                    $lateCount++;
-                } elseif ($day['status'] == 'Absent') {
-                    $absentCount++;
+            if ($sql) {
+                $leave = Leave::where('empid', $sql->id)->whereYear('fromdate', $current->year)->whereMonth('fromdate', $current->month)->where('status', 2)->sum('approveddays');
+
+                $daysInMonth = $current->daysInMonth;
+                $reportData = [];
+                for ($i = 1; $i <= $daysInMonth; $i++) {
+                    $values = str_pad($i, 2, '0', STR_PAD_LEFT);
+                    $currentDate = $current->year . '-' . $current->month . '-' . $values;
+                    $displayDate = $values . '-' . $current->month . '-' . $current->year;
+                    $holiday = HolidayDt::select('holitypes')->where('holidate', $currentDate)->first();
+                    if ($holiday) {
+                        $reportData[] = [
+                            'datename' => $displayDate,
+                            'intime' => '---',
+                            'outtime' => '---',
+                            'status' => '---',
+                            'workhours' => '---',
+                            'holiday_type' => $holiday->holitypes,
+                            'is_holiday' => true
+                        ];
+                    } else {
+                        //In Time
+                        $inquery = Attendance::getAttendanceIn($sql->empid, $currentDate);
+                        $intime = $inquery->record_time ?? null;
+                        $in = $intime ? date('h:i:s A', strtotime($intime)) : '---';
+                        //Out Time
+                        $outquery = Attendance::getAttendanceOut($sql->empid, $currentDate);
+                        $outtime = $outquery->record_time ?? null;
+
+                        $outtimeRaw = $outtime ? Carbon::parse($outtime) : null;
+
+
+                        $out = $outtime ? date('h:i:s A', strtotime($outtime)) : '---';
+
+                        //Status
+                        $status = Attendance::getAttendanceStatus($sql->empid, $currentDate);
+                        $statusname = $status->TimeName ?? '---';
+                        // Work hours calculation
+                        $workHours = '---';
+                        if ($statusname != 'Absent' && $intime && $outtime) {
+                            $start = strtotime($intime);
+                            $end = strtotime($outtime);
+                            $diffSeconds = $end - $start;
+                            $hours = floor($diffSeconds / 3600);
+                            $minutes = floor(($diffSeconds % 3600) / 60);
+                            $workHours = sprintf("%02d:%02d", $hours, $minutes); // format HH:MM
+                        }
+                        if ($outtimeRaw && $outtimeRaw->lt(Carbon::parse($currentDate . '15:00:00'))) {
+                            $workHours = '00:00';
+                            $statusname = 'Absent';
+                        }
+
+                        $reportData[] = [
+                            'datename' => $displayDate,
+                            'intime' => $in,
+                            'outtime' => $out,
+                            'status' => $statusname,
+                            'workhours' => $workHours,
+                            'is_holiday' => false,
+                            'holiday_type' => null
+                        ];
+                    }
+                }
+                // Summary Calculation
+                $totalWorkSeconds = 0;
+                foreach ($reportData  as $day) {
+
+                    if ($day['status'] == 'Present') {
+                        $presentCount++;
+                    } elseif ($day['status'] == 'Late') {
+                        $lateCount++;
+                    } elseif ($day['status'] == 'Absent') {
+                        $absentCount++;
+                    }
+
+                    if ($day['is_holiday']) {
+                        $holidayCount++;
+                        continue;
+                    }
+
+                    if ($day['workhours'] !== '---' && preg_match('/^(\d{2}):(\d{2})$/', $day['workhours'], $m)) {
+                        $totalWorkSeconds += ($m[1] * 3600) + ($m[2] * 60);
+                    }
+                    $totalHours = floor($totalWorkSeconds / 3600);
+                    $totalMinutes = floor(($totalWorkSeconds % 3600) / 60);
+                    $totalWorkHoursFormatted = sprintf("%02d:%02d", $totalHours, $totalMinutes);
                 }
 
-                if ($day['is_holiday']) {
-                    $holidayCount++;
-                    continue;
+                //In Time
+                $inquery = Attendance::getAttendanceIn($sql->empid, $current);
+                $intime = $inquery->record_time ?? null;
+                $in = $intime ? date('h:i:s', strtotime($intime)) : '---';
+
+                //Out Time
+                $outquery = Attendance::getAttendanceOut($sql->empid, $current);
+                $outtime = $outquery->record_time ?? null;
+
+                $outtimeRaw = $outtime ? Carbon::parse($outtime) : null;
+
+                $out = $outtime ? date('h:i:s', strtotime($outtime)) : '---';
+                //Status
+                $status = Attendance::getAttendanceStatus($sql->empid, $current);
+                $statusname = $status->TimeName ?? '---';
+
+                // Work hours calculation
+                $workHours = '---';
+                if ($statusname != 'Absent' && $intime && $outtime) {
+                    $start = strtotime($intime);
+                    $end = strtotime($outtime);
+                    $diffSeconds = $end - $start;
+                    $hours = floor($diffSeconds / 3600);
+                    $minutes = floor(($diffSeconds % 3600) / 60);
+                    $workHours = sprintf("%02d:%02d", $hours, $minutes); // format HH:MM
                 }
-
-                if ($day['workhours'] !== '---' && preg_match('/^(\d{2}):(\d{2})$/', $day['workhours'], $m)) {
-                    $totalWorkSeconds += ($m[1] * 3600) + ($m[2] * 60);
+                $cutOffTime = $current->copy()->setTime(15, 0, 0);
+                if ($outtimeRaw && $outtimeRaw->lt($cutOffTime)) {
+                    $workHours = '00:00';
+                    $statusname = 'Absent';
                 }
-                $totalHours = floor($totalWorkSeconds / 3600);
-                $totalMinutes = floor(($totalWorkSeconds % 3600) / 60);
-                $totalWorkHoursFormatted = sprintf("%02d:%02d", $totalHours, $totalMinutes);
-            }
-
-            //In Time
-            $inquery = Attendance::getAttendanceIn($sql->empid, $current);
-            $intime = $inquery->record_time ?? null;
-            $in = $intime ? date('h:i:s', strtotime($intime)) : '---';
-
-            //Out Time
-            $outquery = Attendance::getAttendanceOut($sql->empid, $current);
-            $outtime = $outquery->record_time ?? null;
-
-            $outtimeRaw = $outtime ? Carbon::parse($outtime) : null;
-
-            $out = $outtime ? date('h:i:s', strtotime($outtime)) : '---';
-            //Status
-            $status = Attendance::getAttendanceStatus($sql->empid, $current);
-            $statusname = $status->TimeName ?? '---';
-
-            // Work hours calculation
-            $workHours = '---';
-            if ($statusname != 'Absent' && $intime && $outtime) {
-                $start = strtotime($intime);
-                $end = strtotime($outtime);
-                $diffSeconds = $end - $start;
-                $hours = floor($diffSeconds / 3600);
-                $minutes = floor(($diffSeconds % 3600) / 60);
-                $workHours = sprintf("%02d:%02d", $hours, $minutes); // format HH:MM
-            }
-            $cutOffTime = $current->copy()->setTime(15, 0, 0);
-            if ($outtimeRaw && $outtimeRaw->lt($cutOffTime)) {
-                $workHours = '00:00';
-                $statusname = 'Absent';
             }
 
             return Inertia::render('UserDashboard', [
@@ -478,8 +479,6 @@ class DashboardController extends Controller
             'isadmin' => $isAdmin,
             'filters' => $request->only(['student_id', 'id']),
         ]);
-
-        
     }
 
     public function ReturnRequest(Request $request, RefundRequestService $service)

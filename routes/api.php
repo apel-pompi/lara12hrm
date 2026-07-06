@@ -4,7 +4,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Default\{
-    FacebookController
+    FacebookController,
+    WhatsAppController
 };
 
 Route::get('/user', function (Request $request) {
@@ -21,8 +22,16 @@ Route::controller(DeviceController::class)
     });
 
 //Facebook Route
-    Route::controller(FacebookController::class)
+Route::controller(FacebookController::class)
     ->prefix('facebook')
+    ->group(function () {
+        Route::post('/webhook', 'handle');
+        Route::get('/webhook', 'verify');
+    });
+
+//WhatsApp Route
+Route::controller(WhatsAppController::class)
+    ->prefix('whatsapp')
     ->group(function () {
         Route::post('/webhook', 'handle');
         Route::get('/webhook', 'verify');
