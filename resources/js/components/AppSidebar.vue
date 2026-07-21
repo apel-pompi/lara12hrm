@@ -33,9 +33,11 @@ import {
     Flag,
     Handshake,
     LayoutDashboard,
+    MessageCircleHeart,
     MessageCircleOff,
     MonitorCog,
     PanelRightClose,
+    Presentation,
     RadioReceiver,
     Receipt,
     School,
@@ -46,7 +48,6 @@ import {
     UserCog,
     Wallet,
     WalletMinimal,
-    Presentation,
 } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
@@ -141,6 +142,7 @@ const studentMenu = [
         title: 'Student Management',
         icon: Book,
         items: [
+            { href: '/metachat', title: 'Unified Inbox', icon: MessageCircleHeart },
             { href: '/student', title: 'Student Statistics', icon: Book },
             { href: '/student/create', title: 'Add New Student', icon: User },
             { href: '/imports', title: 'Import Students', icon: Upload },

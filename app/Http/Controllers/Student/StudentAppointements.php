@@ -39,10 +39,11 @@ class StudentAppointements extends Controller
             'apdate' => 'required|string',
             'discus' => 'required|string|max:1000',
         ]);
-        $datetime = Carbon::createFromFormat(
-            'm/d/Y, h:i:s A',
-            $request->apdate
-        )->format('Y-m-d H:i:s');
+        $datetime = Carbon::parse($request->apdate)->format('Y-m-d H:i:s');
+        // $datetime = Carbon::createFromFormat(
+        //     'm/d/Y, h:i:s A',
+        //     $request->apdate
+        // )->format('Y-m-d H:i:s');
 
         if (is_null($student->status)) {
 

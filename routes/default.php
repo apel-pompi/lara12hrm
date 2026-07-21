@@ -3,12 +3,15 @@
 use App\Http\Controllers\Default\{
     ExcelImportController,
     TransactionController,
-    ApprovalRequestController,
+    ApprovalRequestController
+};
+
+use App\Http\Controllers\SocialMedia\{
     FacebookController,
     WhatsAppController,
     WhatsAppFormSetupController,
+    UserWiseFormController,
     SocialMediaSetupController,
-    UserWiseFormController
 };
 use Illuminate\Support\Facades\Route;
 

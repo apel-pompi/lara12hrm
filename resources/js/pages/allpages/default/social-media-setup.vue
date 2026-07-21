@@ -16,9 +16,10 @@ import { toast } from 'vue-sonner';
 
 export interface SocialMediaItem {
     id: number;
-    platform: 'facebook' | 'whatsapp';
+    platform: 'facebook' | 'whatsapp' | 'messenger';
     page_id?: string | null;
     whatsapp_business_account_id?: string;
+
     access_token?: string;
     verify_token?: string;
 }
@@ -46,6 +47,7 @@ const form = useForm({
 
 const isFacebook = computed(() => form.platform === 'facebook');
 const isWhatsApp = computed(() => form.platform === 'whatsapp');
+const isMessenger = computed(() => form.platform === 'messenger');
 
 watch(
     () => form.platform,
@@ -56,6 +58,11 @@ watch(
         }
 
         if (platform === 'whatsapp') {
+            form.page_id = '';
+            form.clearErrors('page_id');
+        }
+
+        if (platform == 'messenger') {
             form.page_id = '';
             form.clearErrors('page_id');
         }
@@ -142,6 +149,7 @@ const truncateToken = (token?: string) => {
 const platformLabel = (platform: string) => {
     if (platform === 'facebook') return 'Facebook';
     if (platform === 'whatsapp') return 'WhatsApp';
+    if (platform === 'messenger') return 'Messenger';
     return platform || '-';
 };
 </script>
@@ -171,8 +179,8 @@ const platformLabel = (platform: string) => {
 
                 <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                     <div class="border-b px-6 py-4">
-                        <h2 class="text-lg font-semibold text-gray-800">Facebook Pages setup</h2>
-                        <p class="text-sm text-gray-500">Facebook page settings</p>
+                        <h2 class="text-lg font-semibold text-gray-800">Social Media setup</h2>
+                        <p class="text-sm text-gray-500">Social Media settings</p>
                     </div>
                     <Table>
                         <TableHeader>
@@ -226,6 +234,7 @@ const platformLabel = (platform: string) => {
                                     <SelectContent>
                                         <SelectItem value="facebook">Facebook</SelectItem>
                                         <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                                        <SelectItem value="messenger">Messenger</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <p v-if="form.errors.platform" class="text-sm text-red-600">{{ form.errors.platform }}</p>

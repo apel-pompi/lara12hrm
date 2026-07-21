@@ -249,6 +249,11 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
     // Student WhatsApp Chat
     Route::get('student/activities/{student}/whatsapp', [StudentCheckLogController::class, 'whatsapp'])->name('studentWhatsapp.index');
     Route::post('student/activities/{student}/whatsapp/update-url', [StudentCheckLogController::class, 'updateWhatsappUrl'])->name('studentWhatsapp.updateUrl');
+    Route::get('student/activities/{student}/whatsapp/messages', [StudentCheckLogController::class, 'whatsappMessages'])->name('studentWhatsapp.messages');
+    Route::post('student/activities/{student}/whatsapp/send', [StudentCheckLogController::class, 'sendWhatsappMessage'])->name('studentWhatsapp.send');
+    Route::post('student/activities/{student}/whatsapp/upload', [StudentCheckLogController::class, 'uploadWhatsappMedia'])->name('studentWhatsapp.upload');
+    Route::post('student/activities/{student}/whatsapp/typing', [StudentCheckLogController::class, 'whatsappTyping'])->name('studentWhatsapp.typing');
+    Route::post('student/activities/{student}/whatsapp/read', [StudentCheckLogController::class, 'whatsappMarkRead'])->name('studentWhatsapp.read');
     // lead reports
     Route::controller(StudentReportController::class)
         ->prefix('leadreports')

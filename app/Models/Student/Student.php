@@ -5,7 +5,7 @@ namespace App\Models\Student;
 use App\Models\Default\Country;
 use App\Models\Student\StudentSource;
 use App\Models\User;
-use App\Models\Default\FacebookForm;
+use App\Models\SocialMedia\FacebookForm;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
