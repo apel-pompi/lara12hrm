@@ -139,84 +139,52 @@ class WhatsAppApiService extends MetaApiService
     }
 
     public function sendWhatsappImage(
-
         string $accessToken,
-
         string $phoneNumberId,
-
         string $phone,
-
-        string $url,
-
-        ?string $caption = null
-
+        string $urlOrId,
+        ?string $caption = null,
+        bool $isId = false
     ): array {
+        $imagePayload = $isId ? ["id" => $urlOrId] : ["link" => $urlOrId];
+        if ($caption) {
+            $imagePayload["caption"] = $caption;
+        }
 
         return $this->post(
-
             $accessToken,
-
             "{$phoneNumberId}/messages",
-
             [
-
                 "messaging_product" => "whatsapp",
-
                 "to" => $phone,
-
                 "type" => "image",
-
-                "image" => [
-
-                    "link" => $url,
-
-                    "caption" => $caption
-
-                ]
-
+                "image" => $imagePayload
             ]
-
         );
     }
 
     public function sendWhatsappDocument(
-
         string $accessToken,
-
         string $phoneNumberId,
-
         string $phone,
-
-        string $url,
-
-        ?string $filename = null
-
+        string $urlOrId,
+        ?string $filename = null,
+        bool $isId = false
     ): array {
+        $docPayload = $isId ? ["id" => $urlOrId] : ["link" => $urlOrId];
+        if ($filename) {
+            $docPayload["filename"] = $filename;
+        }
 
         return $this->post(
-
             $accessToken,
-
             "{$phoneNumberId}/messages",
-
             [
-
                 "messaging_product" => "whatsapp",
-
                 "to" => $phone,
-
                 "type" => "document",
-
-                "document" => [
-
-                    "link" => $url,
-
-                    "filename" => $filename
-
-                ]
-
+                "document" => $docPayload
             ]
-
         );
     }
 

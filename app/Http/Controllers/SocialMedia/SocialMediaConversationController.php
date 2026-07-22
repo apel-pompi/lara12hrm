@@ -7,23 +7,27 @@ use App\Models\SocialMedia\SocialMediaConversation;
 use App\Services\SocialMedia\InboxService;
 use App\Services\SocialMedia\MessageService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SocialMediaConversationController extends Controller
 {
+
     public function __construct(
         protected InboxService $inboxService,
         protected MessageService $messageService
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json([
 
+
+        $user = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
+        $isPrivileged = $user->hasAnyRole(['superadmin', 'Admin', 'Manager']);
+        return response()->json(array_merge([
             'success' => true,
-
-            'data' => $this->inboxService->conversationList(),
-
-        ]);
+        ], $this->inboxService->conversationList($request->all(), $user, $isPrivileged)));
     }
 
     public function messages(

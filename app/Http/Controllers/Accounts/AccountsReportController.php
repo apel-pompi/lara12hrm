@@ -11,6 +11,7 @@ use App\Models\Accounts\Voucherheader;
 use App\Models\Default\Transaction;
 use App\Models\HRM\Branch;
 use App\Models\HRM\CompanyInfo;
+use App\Models\Student\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -118,8 +119,19 @@ class AccountsReportController extends Controller
             ]);
         }
         $accname = ChartOfAccount::where('accountcode', $request->account)->value('description');
+
+        if ($accname && str_starts_with($accname, 'STU-')) {
+
+            $student = Student::where('student_id', $accname)
+                ->value(DB::raw("CONCAT(fname, ' ', lname)"));
+
+            if ($student) {
+                $accname = "{$student} ( {$accname} )";
+            }
+        }
+
         $branchname = Branch::where('id', $request->branch_id)->value('branchname');
-       $opening = VoucherBalance::where('voucherdate', '<', $request->startdate)
+        $opening = VoucherBalance::where('voucherdate', '<', $request->startdate)
             ->where('status', 'Post')
             ->where('accountcode', $request->account)
             ->when($request->filled('branch_id'), function ($q) use ($request) {
@@ -129,9 +141,7 @@ class AccountsReportController extends Controller
 
         $opening = $opening ?? 0;
 
-
-
-        $voucher = VoucherBalance::with('branch')
+        $voucher = VoucherBalance::with('branch','voucherDetails')
             ->whereBetween('voucherdate', [$request->startdate, $request->enddate])
             ->where('accountcode', $request->account)
             ->where('status', 'Post')
@@ -141,7 +151,7 @@ class AccountsReportController extends Controller
             })
             ->orderBy('voucherdate', 'asc')
             ->get();
-
+       
         $company = CompanyInfo::firstOrFail();
         $pdf = PDF::loadView('exports.accounts.actogl', [
             'company' => $company,

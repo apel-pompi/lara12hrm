@@ -200,68 +200,87 @@ class InboxService
         });
     }
 
-    public function conversationList()
+    public function conversationList(array $filters = [], $user, $isPrivileged)
     {
-
-
-        return SocialMediaConversation::query()
-
+        $query = SocialMediaConversation::query()
             ->with([
+                'contact.student',
+                'contact.assignedUser',
+                'messages' => function ($q) {
+                    $q->latest();
+                }
+            ]);
 
-                'contact.student'
-
-            ])
-
-            ->latest('last_message_at')
-
-            ->get()
-
-            ->map(function ($conversation) {
-                $lastMessage = $conversation->messages()
-                    ->latest()
-                    ->first();
-                return [
-
-                    'id' => $conversation->id,
-
-                    'platform' => $conversation->platform,
-
-                    'student_id' => optional(
-                        $conversation->contact
-                    )->student_id,
-
-                    'student_name' => optional(
-                        optional($conversation->contact)->student
-                    )->fname . ' ' .
-                        optional(
-                            optional($conversation->contact)->student
-                        )->lname,
-
-                    'social_name' => optional(
-                        $conversation->contact
-                    )->social_name,
-
-                    'phone' => optional(
-                        $conversation->contact
-                    )->phone_number,
-
-                    'profile_picture' => optional(
-                        $conversation->contact
-                    )->profile_picture,
-
-                    'last_message' => $conversation->last_message,
-
-                    'last_message_at' => $conversation->last_message_at,
-
-                    'unread_count' => $conversation->unread_count,
-                    'last_message_status' => optional($lastMessage)->status,
-
-                    'last_message_direction' => optional($lastMessage)->direction,
-
-                    'last_message_type' => optional($lastMessage)->message_type,
-
-                ];
+        if (! $isPrivileged) {
+            $query->whereHas('contact.student', function ($q) use ($user) {
+                $q->where('assain_user', $user->id);
             });
+        }
+
+        if (!empty($filters['platform']) && $filters['platform'] !== 'all') {
+            $query->where('platform', strtolower($filters['platform']));
+        }
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('last_message', 'like', "%{$search}%")
+                    ->orWhereHas('contact', function ($cq) use ($search) {
+                        $cq->where('social_name', 'like', "%{$search}%")
+                            ->orWhere('phone_number', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if (!empty($filters['formdate'])) {
+            $query->whereDate('last_message_at', '>=', $filters['formdate']);
+        }
+
+        if (!empty($filters['todate'])) {
+            $query->whereDate('last_message_at', '<=', $filters['todate']);
+        }
+
+        $sort = $filters['sort'] ?? 'latest';
+        if ($sort === 'oldest') {
+            $query->orderBy('last_message_at', 'asc');
+        } elseif ($sort === 'unread') {
+            $query->orderByDesc('unread_count')->orderByDesc('last_message_at');
+        } else {
+            $query->orderByDesc('last_message_at');
+        }
+
+        $perPage = isset($filters['per_page']) ? (int) $filters['per_page'] : 10;
+        $paginator = $query->paginate($perPage);
+
+        $items = collect($paginator->items())->map(function ($conversation) {
+            $lastMessage = $conversation->messages->first();
+            return [
+                'id' => $conversation->id,
+                'platform' => $conversation->platform,
+                'student_id' => optional($conversation->contact)->student_id,
+                'student_name' => optional(optional($conversation->contact)->student)->fname . ' ' . optional(optional($conversation->contact)->student)->lname,
+                'social_name' => optional($conversation->contact)->social_name,
+                'phone' => optional($conversation->contact)->phone_number,
+                'profile_picture' => optional($conversation->contact)->profile_picture,
+                'last_message' => $conversation->last_message,
+                'last_message_at' => $conversation->last_message_at,
+                'unread_count' => $conversation->unread_count,
+                'last_message_status' => optional($lastMessage)->status,
+                'last_message_direction' => optional($lastMessage)->direction,
+                'last_message_type' => optional($lastMessage)->message_type,
+                'assigned_to' => optional(optional($conversation->contact)->assignedUser)->name,
+            ];
+        });
+
+        return [
+            'data' => $items,
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'per_page' => $paginator->perPage(),
+            ]
+        ];
     }
 
     public function conversationMessages(

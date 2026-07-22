@@ -391,7 +391,9 @@
         </tr>
         <tr>
             <th>Destination</th>
-            <td colspan="3">{{ $student->country->name ?? '-' }}</td>
+            <td>{{ $student->country->name ?? '-' }}</td>
+            <th>Counsilor Name</th>
+            <td>{{ $student->assainuser->name ?? '-' }}</td>
         </tr>
     </table>
 
@@ -419,7 +421,7 @@
         <tbody>
             @foreach ($data as $mrno => $items)
             @php
-            $rowCount = $items->count();
+            $rowCount = count($items);
             @endphp
 
             @foreach ($items as $index => $value)
@@ -427,9 +429,9 @@
             $isRefund = (strtoupper($value['mrstatus']) == 'REFUND');
 
             if ($isRefund) {
-            $totalRefund += (float) $value['primeamt'];
+                $totalRefund += (float) $value['primeamt'];
             } else {
-            $totalReceived += (float) $value['primeamt'];
+                $totalReceived += (float) $value['primeamt'];
             }
             @endphp
 
@@ -441,7 +443,7 @@
                 </td>
 
                 <td rowspan="{{ $rowCount }}">
-                    {{ $value['mrdate'] }}
+                    {{ $value['mrdate'] ?? '' }}
                 </td>
 
                 <td rowspan="{{ $rowCount }}">

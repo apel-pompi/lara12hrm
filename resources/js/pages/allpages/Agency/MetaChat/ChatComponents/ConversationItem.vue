@@ -129,10 +129,6 @@ const firstWords = (text?: string, count = 3) => {
                                 <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px]">
                                     {{ platformName(conversation.platform) }}
                                 </span>
-
-                                <span class="rounded-full px-2 py-0.5 text-[11px]" :class="statusColor(conversation.student_status)">
-                                    {{ conversation.student_status }}
-                                </span>
                             </div>
                         </div>
 
@@ -170,19 +166,6 @@ const firstWords = (text?: string, count = 3) => {
                         >
                             {{ conversation.unread_count }}
                         </span>
-                    </div>
-
-                    <!-- Assigned -->
-
-                    <div class="mt-3">
-                        <span v-if="conversation.assigned_to" class="text-xs text-slate-400">
-                            Assigned :
-                            <span class="font-semibold text-slate-600">
-                                {{ conversation.assigned_to }}
-                            </span>
-                        </span>
-
-                        <span v-else class="text-xs text-red-500"> Unassigned </span>
                     </div>
                 </div>
             </div>

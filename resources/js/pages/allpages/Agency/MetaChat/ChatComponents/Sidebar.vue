@@ -1,100 +1,113 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed } from 'vue';
 
-import { CalendarDaysIcon, ChatBubbleLeftRightIcon, ClockIcon, FlagIcon, InboxIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
+import { ChatBubbleLeftRightIcon, ClockIcon, FlagIcon, InboxIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
 
-const smartViews = ref([
+const props = defineProps({
+    counts: {
+        type: Object,
+        default: () => ({
+            smartViews: {},
+            channels: {},
+            status: {},
+            total: 0,
+            unread: 0,
+            waiting: 0,
+        }),
+    },
+});
+
+const smartViews = computed(() => [
     {
         name: 'All Conversations',
         icon: InboxIcon,
         key: 'all',
-        count: 0,
+        count: props.counts?.smartViews?.all || 0,
         active: true,
     },
     {
         name: 'New Leads',
         icon: UserCircleIcon,
         key: 'new_leads',
-        count: 0,
+        count: props.counts?.smartViews?.new_leads || 0,
     },
     {
         name: 'My Leads',
         icon: UserCircleIcon,
         key: 'my_leads',
-        count: 0,
+        count: props.counts?.smartViews?.my_leads || 0,
     },
     {
         name: 'Waiting Reply',
         icon: ClockIcon,
         key: 'waiting',
-        count: 0,
+        count: props.counts?.smartViews?.waiting || 0,
     },
     {
         name: 'Unread',
         icon: ChatBubbleLeftRightIcon,
         key: 'unread',
-        count: 0,
+        count: props.counts?.smartViews?.unread || 0,
     },
     {
         name: 'High Priority',
         icon: FlagIcon,
         key: 'priority',
-        count: 0,
-    },
-    {
-        name: 'Follow Up Today',
-        icon: CalendarDaysIcon,
-        key: 'followup',
-        count: 0,
+        count: props.counts?.smartViews?.priority || 0,
     },
 ]);
 
-const channels = ref([
+const channels = computed(() => [
     {
         name: 'WhatsApp',
         key: 'whatsapp',
         color: 'bg-green-500',
-        count: 0,
+        count: props.counts?.channels?.whatsapp || 0,
     },
     {
         name: 'Messenger',
         key: 'messenger',
         color: 'bg-blue-600',
-        count: 0,
+        count: props.counts?.channels?.messenger || 0,
     },
     {
         name: 'Instagram',
         key: 'instagram',
         color: 'bg-pink-500',
-        count: 0,
+        count: props.counts?.channels?.instagram || 0,
     },
 ]);
 
-const status = ref([
+const status = computed(() => [
     {
         name: 'Pending',
+        key: 'pending',
         color: 'bg-slate-500',
-        count: 0,
+        count: props.counts?.status?.pending || 0,
     },
     {
-        name: 'Led',
+        name: 'Lead',
+        key: 'lead',
         color: 'bg-yellow-500',
-        count: 0,
+        count: props.counts?.status?.lead || 0,
     },
     {
         name: 'Prospect',
+        key: 'prospect',
         color: 'bg-green-500',
-        count: 0,
+        count: props.counts?.status?.prospect || 0,
     },
     {
         name: 'OnBoard',
+        key: 'onboard',
         color: 'bg-sky-500',
-        count: 0,
+        count: props.counts?.status?.onboard || 0,
     },
     {
         name: 'Archived',
+        key: 'archive',
         color: 'bg-red-500',
-        count: 0,
+        count: props.counts?.status?.archive || 0,
     },
 ]);
 </script>
@@ -104,7 +117,7 @@ const status = ref([
         <!-- Header -->
 
         <div class="border-b px-6 py-5">
-            <h2 class="text-xl font-bold text-slate-800">Unified Inbox</h2>
+            <h2 class="text-center text-xl font-bold text-slate-500">Unified Inbox</h2>
 
             <p class="mt-1 text-sm text-slate-500">Manage all social conversations</p>
         </div>
@@ -187,19 +200,19 @@ const status = ref([
                 <div class="flex items-center justify-between">
                     <span class="text-sm text-slate-500"> Total Conversations </span>
 
-                    <span class="font-bold"> 0 </span>
+                    <span class="font-bold"> {{ props.counts?.total || 0 }} </span>
                 </div>
 
                 <div class="mt-3 flex items-center justify-between">
                     <span class="text-sm text-slate-500"> Unread </span>
 
-                    <span class="font-bold text-red-500"> 0 </span>
+                    <span class="font-bold text-red-500"> {{ props.counts?.smartViews?.unread || 0 }} </span>
                 </div>
 
                 <div class="mt-3 flex items-center justify-between">
                     <span class="text-sm text-slate-500"> Waiting Reply </span>
 
-                    <span class="font-bold text-orange-500"> 0 </span>
+                    <span class="font-bold text-orange-500"> {{ props.counts?.smartViews?.waiting || 0 }} </span>
                 </div>
             </div>
         </div>

@@ -12,6 +12,7 @@ import {
     UserPlusIcon,
 } from '@heroicons/vue/24/outline';
 import { router } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 
 const props = defineProps({
     conversation: Object,
@@ -38,12 +39,10 @@ const lastSeen = (date?: string) => {
 };
 
 const OpenStudent = () => {
-    console.log(props.conversation);
-
     const studentId = props.conversation?.student_id;
 
     if (!studentId) {
-        console.error('Student ID not found');
+        toast.error('Student is Not Found');
         return;
     }
 
@@ -52,98 +51,97 @@ const OpenStudent = () => {
 </script>
 
 <template>
-    <div class="border-b bg-white">
-        <div class="px-6 py-5">
-            <div class="flex justify-between">
-                <div class="flex gap-4">
-                    <div>
-                        <img v-if="conversation.profile_picture" :src="conversation.profile_picture" class="h-16 w-16 rounded-full object-cover" />
-
-                        <div v-else class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-200">
-                            <UserCircleIcon class="h-10 w-10" />
+    <div class="shrink-0 border-b bg-white">
+        <div class="px-3 py-3 sm:px-6 sm:py-5">
+            <div class="flex items-start justify-between gap-2">
+                <!-- Left: Avatar + Info -->
+                <div class="flex min-w-0 gap-3">
+                    <div class="shrink-0">
+                        <img
+                            v-if="conversation.profile_picture"
+                            :src="conversation.profile_picture"
+                            class="h-10 w-10 rounded-full object-cover sm:h-14 sm:w-14"
+                        />
+                        <div v-else class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 sm:h-14 sm:w-14">
+                            <UserCircleIcon class="h-6 w-6 sm:h-9 sm:w-9" />
                         </div>
                     </div>
 
-                    <div>
-                        <h2 class="text-xl font-bold">
+                    <div class="min-w-0">
+                        <h2 class="truncate text-base font-bold sm:text-xl">
                             {{ conversation.social_name }}
                         </h2>
 
-                        <div class="mt-2 flex gap-2">
+                        <!-- Platform channel tabs -->
+                        <div class="mt-1 flex flex-wrap gap-1">
                             <button
                                 v-for="item in channels"
                                 :key="item.id"
                                 @click="$emit('switch', item)"
-                                class="rounded-full px-3 py-1 text-xs"
+                                class="rounded-full px-2 py-0.5 text-xs"
                                 :class="item.id == conversation.id ? 'bg-blue-600 text-white' : 'bg-slate-100 hover:bg-slate-200'"
                             >
                                 {{ item.platform }}
                             </button>
                         </div>
 
-                        <div class="mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                        <!-- Contact details: hidden on xs, grid on sm+ -->
+                        <div class="mt-2 hidden grid-cols-2 gap-x-6 gap-y-1 text-sm text-slate-600 sm:grid">
                             <div class="flex items-center gap-2">
-                                <PhoneIcon class="h-4 w-4" />
-
-                                {{ conversation.phone }}
+                                <PhoneIcon class="h-4 w-4 shrink-0" />
+                                <span class="truncate">{{ conversation.phone }}</span>
                             </div>
 
                             <div class="flex items-center gap-2">
-                                <EnvelopeIcon class="h-4 w-4" />
-
-                                {{ conversation.email }}
+                                <EnvelopeIcon class="h-4 w-4 shrink-0" />
+                                <span class="truncate">{{ conversation.email }}</span>
                             </div>
 
                             <div class="flex items-center gap-2">
-                                <GlobeAltIcon class="h-4 w-4" />
-
-                                {{ conversation.country ?? 'Unknown' }}
+                                <GlobeAltIcon class="h-4 w-4 shrink-0" />
+                                <span class="truncate">{{ conversation.country ?? 'Unknown' }}</span>
                             </div>
 
                             <div class="flex items-center gap-2">
-                                <UserIcon class="h-4 w-4" />
-
-                                {{ conversation.assigned_to ?? 'Unassigned' }}
+                                <UserIcon class="h-4 w-4 shrink-0" />
+                                <span class="truncate">{{ conversation.assigned_to ?? 'Unassigned' }}</span>
                             </div>
 
                             <div class="flex items-center gap-2">
-                                <ClockIcon class="h-4 w-4" />
-
-                                {{ lastSeen(conversation.last_seen_at) }}
+                                <ClockIcon class="h-4 w-4 shrink-0" />
+                                <span>{{ lastSeen(conversation.last_seen_at) }}</span>
                             </div>
                         </div>
 
-                        <div v-if="conversation.tags?.length" class="mt-4 flex flex-wrap gap-2">
-                            <span v-for="tag in conversation.tags" :key="tag" class="rounded-full bg-blue-100 px-2 py-1 text-xs">
+                        <div v-if="conversation.tags?.length" class="mt-2 flex flex-wrap gap-1">
+                            <span v-for="tag in conversation.tags" :key="tag" class="rounded-full bg-blue-100 px-2 py-0.5 text-xs">
                                 {{ tag }}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex items-start gap-2">
-                    <button @click="OpenStudent" class="rounded-xl border px-3 py-2 hover:bg-slate-50">
-                        <ArrowTopRightOnSquareIcon class="mr-1 inline h-4" />
-
-                        Student
+                <!-- Right: Action buttons -->
+                <div class="flex shrink-0 items-center gap-1 sm:gap-2">
+                    <!-- Mobile: icon only -->
+                    <button @click="OpenStudent" class="rounded-xl border p-2 hover:bg-slate-50" title="Open Student">
+                        <ArrowTopRightOnSquareIcon class="h-4 w-4" />
+                        <span class="ml-1 hidden text-sm sm:inline">Student</span>
                     </button>
 
-                    <button class="rounded-xl border px-3 py-2 hover:bg-slate-50">
-                        <ClipboardDocumentListIcon class="mr-1 inline h-4" />
-
-                        Timeline
+                    <button class="rounded-xl border p-2 hover:bg-slate-50" title="Timeline">
+                        <ClipboardDocumentListIcon class="h-4 w-4" />
+                        <span class="ml-1 hidden text-sm sm:inline">Timeline</span>
                     </button>
 
-                    <button class="rounded-xl border px-3 py-2 hover:bg-slate-50">
-                        <PencilSquareIcon class="mr-1 inline h-4" />
-
-                        Notes
+                    <button class="rounded-xl border p-2 hover:bg-slate-50" title="Notes">
+                        <PencilSquareIcon class="h-4 w-4" />
+                        <span class="ml-1 hidden text-sm sm:inline">Notes</span>
                     </button>
 
-                    <button class="rounded-xl border px-3 py-2 hover:bg-slate-50">
-                        <UserPlusIcon class="mr-1 inline h-4" />
-
-                        Assign
+                    <button class="rounded-xl border p-2 hover:bg-slate-50" title="Assign">
+                        <UserPlusIcon class="h-4 w-4" />
+                        <span class="ml-1 hidden text-sm sm:inline">Assign</span>
                     </button>
                 </div>
             </div>

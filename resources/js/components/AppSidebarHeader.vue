@@ -260,7 +260,7 @@ onUnmounted(() => {
 </style>
 <template>
     <header
-        class="grid min-h-16 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-gray-800 px-4 py-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:grid-cols-3 md:px-6"
+        class="bg-background/95 sticky top-0 z-20 grid min-h-16 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-gray-800 px-4 py-2 backdrop-blur transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:grid-cols-3 md:px-6"
     >
         <div class="flex min-w-0 items-center gap-2">
             <SidebarTrigger class="-ml-1" />

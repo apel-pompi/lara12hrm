@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 class VoucherBalance extends Model
 {
     use HasFactory, SoftDeletes;
@@ -48,6 +49,11 @@ class VoucherBalance extends Model
         return $this->belongsTo(Voucherheader::class, 'vouchernumber', 'vouchernumber');
     }
 
+    
+    public function voucherDetails(): HasMany
+    {
+        return $this->hasMany(VoucherDetail::class, 'vouchernumber', 'vouchernumber');
+    }
      /**
      * Get the branch that owns the Voucherdetail
      *

@@ -9,19 +9,15 @@ import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { RefreshCcw, Search } from 'lucide-vue-next';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch,computed } from 'vue';
 
 export interface Student {
     id: number;
-    photo: string;
     student_id: string;
     fname: string;
     lname: string;
     gender: number;
-    email: string;
     phone: string;
-    descountry_id: number;
-    stage_id: number;
     assain_user: number;
     source_id: number;
     user_id: number;
@@ -42,8 +38,6 @@ export interface Paginated<T> {
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Student', href: '/student' }];
 
 const props = defineProps<{
-    allsearch: [];
-    assaignUser: [];
     student: Paginated<Student>;
     filters: { name?: string };
     studentID: { id: number; student_id: string }[];
@@ -56,6 +50,7 @@ const props = defineProps<{
     countInactive1Month: number;
     countInactive3Month: number;
     countInactive6Month: number;
+    showInactiveTabs: boolean;
 }>();
 
 const data = props.student;
@@ -217,36 +212,36 @@ const goToPage = (url: string | null) => {
 };
 
 const page = usePage();
-const active = ref('all');
-const tabRefs = ref([]);
-const tabs = props.showInactiveTabs
-    ? [
-        { key: 'all', label: 'All', count: props.countAll },
-        { key: 'pending', label: 'Pending', count: props.countPending },
-        { key: 'lead', label: 'Lead', count: props.countLead },
-        { key: 'prospect', label: 'Prospect', count: props.countProspect },
-        { key: 'onboard', label: 'OnBoard', count: props.countonBoard },
-        { key: 'archive', label: 'Archive', count: props.countArchive },
-        { key: 'inactive1month', label: '1 Month+ Inactive', count: props.countInactive1Month },
-        { key: 'inactive3month', label: '3 Months+ Inactive', count: props.countInactive3Month },
-        { key: 'inactive6month', label: '6 Months+ Inactive', count: props.countInactive6Month },
-      ]
-    : [
-        { key: 'all', label: 'All', count: props.countAll },
-        { key: 'pending', label: 'Pending', count: props.countPending },
-        { key: 'lead', label: 'Lead', count: props.countLead },
-        { key: 'prospect', label: 'Prospect', count: props.countProspect },
-        { key: 'onboard', label: 'OnBoard', count: props.countonBoard },
-        { key: 'archive', label: 'Archive', count: props.countArchive },
-      ];
+const active = ref('inactive1month');
+const tabRefs = ref<HTMLElement[]>([]);
+const tabs = computed(() => {
+    const baseTabs = [
+        { key: 'all',      label: 'All',     count: props.countAll },
+        { key: 'pending',  label: 'Pending', count: props.countPending },
+        { key: 'lead',     label: 'Lead',    count: props.countLead },
+        { key: 'prospect', label: 'Prospect',count: props.countProspect },
+        { key: 'onboard',  label: 'OnBoard', count: props.countonBoard },
+        { key: 'archive',  label: 'Archive', count: props.countArchive },
+    ];
 
-const routes = {
-    all: 'student.index',
-    pending: 'student.pending',
-    lead: 'student.lead',
-    prospect: 'student.prospect',
-    onboard: 'student.onBoard',
-    archive: 'student.archive',
+    if (!props.showInactiveTabs) {
+        return baseTabs;
+    }
+
+    return baseTabs.concat([
+        { key: 'inactive1month', label: '1 Month+', count: props.countInactive1Month },
+        { key: 'inactive3month', label: '3 Months+', count: props.countInactive3Month },
+        { key: 'inactive6month', label: '6 Months+', count: props.countInactive6Month },
+    ]);
+});
+
+const routes: Record<string, string> = {
+    all:            'student.index',
+    pending:        'student.pending',
+    lead:           'student.lead',
+    prospect:       'student.prospect',
+    onboard:        'student.onBoard',
+    archive:        'student.archive',
     inactive1month: 'student.inactive1month',
     inactive3month: 'student.inactive3month',
     inactive6month: 'student.inactive6month',
@@ -255,15 +250,10 @@ const routes = {
 const indicatorStyle = ref({});
 
 const updateIndicator = () => {
-    const index = tabs.findIndex((t) => t.key === active.value);
+    const index = tabs.value.findIndex((t) => t.key === active.value);
     const el = tabRefs.value[index];
-
     if (!el) return;
-
-    indicatorStyle.value = {
-        width: el.offsetWidth + 'px',
-        transform: `translateX(${el.offsetLeft}px)`,
-    };
+    indicatorStyle.value = { width: el.offsetWidth + 'px', transform: `translateX(${el.offsetLeft}px)` };
 };
 
 const setActive = async (tab) => {

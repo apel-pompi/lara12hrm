@@ -129,6 +129,50 @@ class MetaApiService
     }
 
     /**
+     * UPLOAD Request (Multipart)
+     */
+    protected function upload(
+        string $accessToken,
+        string $endpoint,
+        string $filePath,
+        string $fileParam = 'file',
+        array $payload = []
+    ): array {
+        try {
+            $request = Http::acceptJson()
+                ->withToken($accessToken)
+                ->attach(
+                    $fileParam,
+                    fopen($filePath, 'r'),
+                    basename($filePath)
+                );
+            
+            // For Messenger, we might need to send nested JSON as strings in multipart
+            $formattedPayload = [];
+            foreach ($payload as $key => $value) {
+                if (is_array($value)) {
+                    $formattedPayload[$key] = json_encode($value);
+                } else {
+                    $formattedPayload[$key] = (string) $value;
+                }
+            }
+
+            $response = $request->post(
+                "{$this->baseUrl}/{$this->version}/{$endpoint}",
+                $formattedPayload
+            );
+
+            return $this->response($response);
+        } catch (\Throwable $e) {
+            Log::error('META UPLOAD', [
+                'endpoint' => $endpoint,
+                'message' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
      * DELETE Request
      */
     protected function delete(

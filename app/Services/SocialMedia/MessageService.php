@@ -168,8 +168,8 @@ class MessageService
     public function receiveMessenger(Request $request): ?SocialMediaMessage
     {
         $payload = $request->all();
-        Log::info('this is payload');
-        Log::info($payload);
+        //Log::info('this is payload');
+        //Log::info($payload);
         return DB::transaction(function () use ($payload) {
 
             $event = data_get(
@@ -307,30 +307,79 @@ class MessageService
 
     public function sendWhatsapp(
         int $conversationId,
-        string $text
+        ?string $text,
+        ?string $fileUrl = null,
+        ?string $fileType = null,
+        ?string $filePath = null
     ) {
-        //Log::info('STEP-1 sendWhatsapp called');
-
         $conversation = SocialMediaConversation::with('contact')
             ->findOrFail($conversationId);
-
-        //Log::info('Conversation', $conversation->toArray());
 
         $setup = SocialMediaSetup::where(
             'platform',
             SocialMediaSetup::WHATSAPP
         )->firstOrFail();
 
-        //Log::info('Setup', $setup->toArray());
+        $response = null;
+        $messageType = 'text';
 
-        $response = $this->whatsAppApiService->sendWhatsappMessage(
-            accessToken: $setup->access_token,
-            phoneNumberId: $setup->phone_number_id,
-            phone: $conversation->contact->phone_number,
-            message: $text
-        );
+        if ($fileUrl && $filePath) {
+            $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+            $uploadRes = $this->whatsAppApiService->uploadWhatsappMedia(
+                $setup->access_token,
+                $setup->phone_number_id,
+                $filePath,
+                $mimeType
+            );
+            $mediaId = $uploadRes['id'] ?? null;
 
-        //Log::info('WhatsApp Response', $response);
+            if ($mediaId) {
+                if ($fileType === 'image') {
+                    $response = $this->whatsAppApiService->sendWhatsappImage(
+                        $setup->access_token,
+                        $setup->phone_number_id,
+                        $conversation->contact->phone_number,
+                        $mediaId,
+                        $text, // caption
+                        true // isId
+                    );
+                    $messageType = 'image';
+                } else {
+                    $response = $this->whatsAppApiService->sendWhatsappDocument(
+                        $setup->access_token,
+                        $setup->phone_number_id,
+                        $conversation->contact->phone_number,
+                        $mediaId,
+                        null,
+                        true // isId
+                    );
+                    $messageType = 'document';
+                    
+                    if ($text) {
+                        $this->whatsAppApiService->sendWhatsappMessage(
+                            $setup->access_token,
+                            $setup->phone_number_id,
+                            $conversation->contact->phone_number,
+                            $text
+                        );
+                    }
+                }
+            } else {
+                 $response = $this->whatsAppApiService->sendWhatsappMessage(
+                    $setup->access_token,
+                    $setup->phone_number_id,
+                    $conversation->contact->phone_number,
+                    $text
+                );
+            }
+        } else {
+            $response = $this->whatsAppApiService->sendWhatsappMessage(
+                $setup->access_token,
+                $setup->phone_number_id,
+                $conversation->contact->phone_number,
+                $text
+            );
+        }
 
         $message = SocialMediaMessage::create([
             'conversation_id' => $conversation->id,
@@ -339,8 +388,9 @@ class MessageService
             'meta_message_id' => data_get($response, 'messages.0.id'),
             'direction'       => 'outbound',
             'sender_type'     => 'agent',
-            'message_type'    => 'text',
+            'message_type'    => $messageType,
             'message'         => $text,
+            'attachment'      => $fileUrl,
             'status'          => 'sent',
             'payload'         => $response,
         ]);
@@ -351,16 +401,14 @@ class MessageService
     }
 
     public function sendMessenger(
-
         int $conversationId,
-        string $text
+        ?string $text,
+        ?string $fileUrl = null,
+        ?string $fileType = null,
+        ?string $filePath = null
     ) {
-        //Log::info('STEP-1 sendMessenger called');
-
         $conversation = SocialMediaConversation::with('contact')
             ->findOrFail($conversationId);
-
-        //Log::info('Conversation', $conversation->toArray());
 
         $setup = SocialMediaSetup::where(
             'platform',
@@ -368,15 +416,55 @@ class MessageService
         )
             ->firstOrFail();
 
-        //Log::info('Setup', $setup->toArray());
+        $response = null;
+        $messageType = 'text';
 
-        $response = $this->messengerApiService->sendMessengerMessage(
-            $setup->access_token,
-            $conversation->contact->platform_user_id,
-            $text
-        );
+        if ($fileUrl && $filePath) {
+            $uploadRes = $this->messengerApiService->uploadMessengerMedia(
+                $setup->access_token,
+                $filePath,
+                $fileType === 'image' ? 'image' : 'file'
+            );
+            $attachmentId = $uploadRes['attachment_id'] ?? null;
 
-        //Log::info('Messenger Response', $response);
+            if ($attachmentId) {
+                if ($fileType === 'image') {
+                    $response = $this->messengerApiService->sendMessengerImage(
+                        $setup->access_token,
+                        $conversation->contact->platform_user_id,
+                        $attachmentId
+                    );
+                    $messageType = 'image';
+                } else {
+                    $response = $this->messengerApiService->sendMessengerFile(
+                        $setup->access_token,
+                        $conversation->contact->platform_user_id,
+                        $attachmentId
+                    );
+                    $messageType = 'file';
+                }
+                
+                if ($text) {
+                     $this->messengerApiService->sendMessengerMessage(
+                        $setup->access_token,
+                        $conversation->contact->platform_user_id,
+                        $text
+                    );
+                }
+            } else {
+                $response = $this->messengerApiService->sendMessengerMessage(
+                    $setup->access_token,
+                    $conversation->contact->platform_user_id,
+                    $text
+                );
+            }
+        } else {
+            $response = $this->messengerApiService->sendMessengerMessage(
+                $setup->access_token,
+                $conversation->contact->platform_user_id,
+                $text
+            );
+        }
 
         $message = SocialMediaMessage::create([
             'conversation_id'   => $conversation->id,
@@ -385,8 +473,9 @@ class MessageService
             'meta_message_id'   => $response['message_id'] ?? null,
             'direction'         => 'outbound',
             'sender_type'       => 'agent',
-            'message_type'      => 'text',
+            'message_type'      => $messageType,
             'message'           => $text,
+            'attachment'        => $fileUrl,
             'status'            => 'sent',
             'payload'           => $response,
         ]);
@@ -539,10 +628,14 @@ class MessageService
                 $update['read_at'] = now();
                 break;
         }
+
         $message = SocialMediaMessage::where(
             'meta_message_id',
             $metaMessageId
-        )->first();
+        )
+            ->first();
+        //Log::info('this is message');
+        //Log::info($message);
 
         $message->update($update);
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ArrowTopRightOnSquareIcon, EnvelopeIcon, GlobeAltIcon, PhoneIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
 import { router } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 const props = defineProps({
     conversation: Object,
 });
@@ -38,12 +39,10 @@ const formatDate = (date: string) => {
     });
 };
 const OpenStudent = () => {
-    console.log(props.conversation);
-
     const studentId = props.conversation?.student_id;
 
     if (!studentId) {
-        console.error('Student ID not found');
+        toast.error('Student is Not Found');
         return;
     }
 
@@ -52,7 +51,7 @@ const OpenStudent = () => {
 </script>
 
 <template>
-    <div class="flex h-full flex-col bg-white">
+    <div class="flex h-full flex-col bg-white overflow-y-auto">
         <template v-if="conversation">
             <!-- Profile -->
 

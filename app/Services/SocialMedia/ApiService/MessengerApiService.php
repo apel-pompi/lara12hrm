@@ -346,100 +346,74 @@ class MessengerApiService extends MetaApiService
 |--------------------------------------------------------------------------
 */
 
-    public function sendMessengerImage(
-
+    public function uploadMessengerMedia(
         string $pageToken,
-
-        string $psid,
-
-        string $url
-
+        string $filePath,
+        string $type = 'image'
     ): array {
-
-        return $this->post(
-
+        return $this->upload(
             $pageToken,
-
-            'me/messages',
-
+            'me/message_attachments',
+            $filePath,
+            'filedata',
             [
-
-                'recipient' => [
-
-                    'id' => $psid
-
-                ],
-
                 'message' => [
-
                     'attachment' => [
-
-                        'type' => 'image',
-
+                        'type' => $type,
                         'payload' => [
-
-                            'url' => $url,
-
                             'is_reusable' => true
-
                         ]
-
                     ]
-
                 ]
-
             ]
-
         );
     }
-    /*
-|--------------------------------------------------------------------------
-| Messenger File
-|--------------------------------------------------------------------------
-*/
+
+    public function sendMessengerImage(
+        string $pageToken,
+        string $psid,
+        string $attachmentId
+    ): array {
+        return $this->post(
+            $pageToken,
+            'me/messages',
+            [
+                'recipient' => [
+                    'id' => $psid
+                ],
+                'message' => [
+                    'attachment' => [
+                        'type' => 'image',
+                        'payload' => [
+                            'attachment_id' => $attachmentId
+                        ]
+                    ]
+                ]
+            ]
+        );
+    }
 
     public function sendMessengerFile(
-
         string $pageToken,
-
         string $psid,
-
-        string $url
-
+        string $attachmentId
     ): array {
-
         return $this->post(
-
             $pageToken,
-
             'me/messages',
-
             [
-
                 'recipient' => [
-
                     'id' => $psid
-
                 ],
-
                 'message' => [
-
                     'attachment' => [
-
                         'type' => 'file',
-
                         'payload' => [
-
-                            'url' => $url
-
+                            'attachment_id' => $attachmentId
                         ]
-
                     ]
-
                 ]
-
             ]
-
         );
     }
 }

@@ -19,6 +19,10 @@ const loading = ref(false);
 
 const props = defineProps({
     conversations: Array,
+    counts: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const currentConversation = ref(null);
@@ -120,6 +124,34 @@ watch(currentConversation, async (conversation) => {
     channels.value = data.data;
 });
 
+const filters = ref({
+    search: '',
+    platform: 'all',
+    sort: 'latest',
+});
+const totalConversations = ref(0);
+const conversationListRef = ref(null);
+
+// Mobile: 'list' | 'chat'
+const mobileView = ref<'list' | 'chat'>('list');
+
+const handleFilter = (newFilters: any) => {
+    filters.value = { ...newFilters };
+};
+
+const refreshConversations = () => {
+    conversationListRef.value?.loadConversations();
+};
+
+const selectConversation = (conversation: any) => {
+    currentConversation.value = conversation;
+    mobileView.value = 'chat';
+};
+
+const backToList = () => {
+    mobileView.value = 'list';
+};
+
 const stopListening = () => {
     if (!currentConversation.value) return;
 
@@ -142,43 +174,89 @@ const startListening = (conversationId: number) => {
 <template>
     <Head title="Meta Chat Box" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="overflow-hidden bg-slate-100">
-            <div class="flex h-full">
-                <!-- Left Sidebar -->
-
-                <aside class="hidden w-64 border-r bg-white xl:flex">
-                    <Sidebar />
+        <div class="h-[calc(100vh-6.5rem)] w-full overflow-hidden bg-slate-100">
+            <div class="flex h-full overflow-hidden">
+                <!-- Left Sidebar: xl+ only -->
+                <aside class="hidden h-full w-64 shrink-0 overflow-hidden border-r bg-white xl:flex">
+                    <Sidebar class="h-full w-full" :counts="props.counts" />
                 </aside>
 
-                <!-- Inbox -->
+                <!-- Inbox Section -->
+                <section class="flex h-full min-w-0 flex-1 overflow-hidden">
+                    <!-- Conversation List Panel -->
+                    <!-- Mobile: full width when mobileView='list', hidden when 'chat' -->
+                    <!-- md+: always visible at fixed width, flex-1 on mobile if in list view -->
+                    <div
+                        class="flex h-full flex-col overflow-hidden border-r bg-white transition-all duration-200"
+                        :class="{
+                            'w-full': mobileView === 'list',
+                            hidden: mobileView === 'chat',
+                            'md:flex md:w-[340px] md:shrink-0': true,
+                        }"
+                    >
+                        <Toolbar
+                            :filters="filters"
+                            :total="totalConversations"
+                            @filter="handleFilter"
+                            @refresh="refreshConversations"
+                            class="shrink-0"
+                        />
 
-                <section class="flex flex-1 overflow-hidden">
-                    <!-- Conversation List -->
-
-                    <div class="flex w-[380px] flex-col border-r bg-white">
-                        <Toolbar />
-
-                        <ConversationList v-model="currentConversation" :conversations="conversations" />
+                        <ConversationList
+                            ref="conversationListRef"
+                            v-model="currentConversation"
+                            :filters="filters"
+                            @update:total="totalConversations = $event"
+                            @update:modelValue="selectConversation"
+                            class="min-h-0 flex-1 overflow-hidden"
+                        />
                     </div>
 
-                    <!-- Chat -->
-
-                    <div class="flex flex-1 flex-col bg-slate-50">
+                    <!-- Chat Panel -->
+                    <!-- Mobile: full width when mobileView='chat', hidden when 'list' -->
+                    <!-- md+: always flex-1 -->
+                    <div
+                        class="flex h-full min-w-0 flex-col overflow-hidden bg-slate-50 transition-all duration-200"
+                        :class="{
+                            'flex w-full': mobileView === 'chat',
+                            hidden: mobileView === 'list',
+                            'md:flex md:flex-1': true,
+                        }"
+                    >
                         <template v-if="currentConversation">
-                            <ChatHeader :conversation="currentConversation" :channels="channels" @switch="currentConversation = $event" />
+                            <!-- Mobile back button in chat header area -->
+                            <div class="flex shrink-0 items-center gap-2 border-b bg-white px-4 py-2 md:hidden">
+                                <button
+                                    @click="backToList"
+                                    class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+                                >
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                    Back
+                                </button>
+                                <span class="text-sm font-semibold text-slate-700">{{ currentConversation.social_name }}</span>
+                            </div>
 
-                            <ChatMessages :messages="messages" />
+                            <ChatHeader
+                                :conversation="currentConversation"
+                                :channels="channels"
+                                @switch="currentConversation = $event"
+                                class="shrink-0"
+                            />
 
-                            <Composer :conversation="currentConversation" @sent="appendMessage" />
+                            <ChatMessages :messages="messages" class="min-h-0 flex-1 overflow-y-auto" />
+
+                            <Composer :conversation="currentConversation" @sent="appendMessage" class="shrink-0" />
                         </template>
 
                         <template v-else>
                             <div class="flex flex-1 items-center justify-center">
-                                <div class="text-center">
-                                    <div class="mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-slate-200">
+                                <div class="px-4 text-center">
+                                    <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-slate-200 sm:h-28 sm:w-28">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
-                                            class="h-12 w-12 text-slate-400"
+                                            class="h-10 w-10 text-slate-400 sm:h-12 sm:w-12"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             stroke="currentColor"
@@ -187,18 +265,17 @@ const startListening = (conversationId: number) => {
                                         </svg>
                                     </div>
 
-                                    <h2 class="text-2xl font-semibold text-slate-700">Unified Inbox</h2>
+                                    <h2 class="text-xl font-semibold text-slate-700 sm:text-2xl">Unified Inbox</h2>
 
-                                    <p class="mt-2 text-slate-500">Select a conversation to start chatting.</p>
+                                    <p class="mt-2 text-sm text-slate-500 sm:text-base">Select a conversation to start chatting.</p>
                                 </div>
                             </div>
                         </template>
                     </div>
 
-                    <!-- Profile -->
-
-                    <aside class="hidden w-96 justify-center border-l bg-white 2xl:flex">
-                        <ContactProfile :conversation="currentConversation" />
+                    <!-- Contact Profile: 2xl+ only -->
+                    <aside class="hidden h-full w-80 shrink-0 flex-col overflow-hidden border-l bg-white xl:w-96 2xl:flex">
+                        <ContactProfile :conversation="currentConversation" class="h-full w-full" />
                     </aside>
                 </section>
             </div>

@@ -218,10 +218,12 @@
                 $dr=abs($item->primeamt);
                 $balance -= $dr;
                 $totalDr += $dr;
+                $notes = $item->voucherDetails[0]->notes ?? '';
                 } else {
                 $cr = $item->primeamt;
                 $balance += $cr;
                 $totalCr += $cr;
+                $notes = $item->voucherDetails[1]->notes ?? '';
                 }
                 @endphp
 
@@ -229,7 +231,7 @@
                     <td>{{ $item->voucherheader->vouchernumber }}</td>
                     <td>{{ $item->voucherdate }}</td>
                     <td class="text-center">{{ $item->branch->branchname }}</td>
-                    <td>{{ $item->referance }}</td>
+                    <td>{{ $notes }}</td>
                     <td class="text-right">{{ $dr > 0 ? number_format($dr,2) : '' }}</td>
                     <td class="text-right">{{ $cr > 0 ? number_format($cr,2) : '' }}</td>
                     <td class="text-right">{{ number_format($balance,2) }}</td>

@@ -111,15 +111,8 @@
                 <td><strong>Total Students</strong></td>
                 <td class="text-right">{{$totalStudents}}</td>
 
-                <td><strong>Total Invoiced</strong></td>
-                <td class="text-right">{{ $totalInvoiced }}</td>
-            </tr>
-            <tr>
                 <td><strong>Total Received</strong></td>
                 <td class="text-right">{{ $totalReceived }}</td>
-
-                <td><strong>Total Due</strong></td>
-                <td class="text-right">{{ $totalDue }}</td>
             </tr>
         </table>
     </div>
@@ -130,51 +123,37 @@
                     <th>#</th>
                     <th>Student ID</th>
                     <th>Student Name</th>
-                    <th>Program</th>
-                    <th class="text-right">Invoiced</th>
                     <th class="text-right">Received</th>
-                    <th class="text-right">Due</th>
                 </tr>
             </thead>
             <tbody>
                 @php
                 $i = 1;
-                $grandInvoice = 0;
                 $grandReceive = 0;
                 @endphp
 
                 @foreach ($grouped as $studentId => $rows)
                     @php
-                        $invoice = $rows->filter(fn ($r) =>
-                        str_starts_with($r->insnumber, 'INV-') && $r->sign == 1
-                        )->sum('netamount');
+                        
 
                         $receive = $rows->filter(fn ($r) =>
                             str_starts_with($r->insnumber, 'MR--') && $r->sign == -1 && $r->note <> 'REFUND'
                         )->sum('netamount');
 
-                        $grandInvoice += $invoice;
                         $grandReceive += $receive;
                     @endphp
-                    @if ($invoice == 0 || $receive == 0)
-                        @continue
-                    @endif
+                   
                 <tr>
                     <td>{{ $i++ }}</td>
                     <td>{{ $rows->first()->student->student_id }}</td>
                     <td>{{ $rows->first()->student->fname }} {{ $rows->first()->student->lname }}</td>
-                    <td></td>
-                    <td class="text-right">{{ $invoice }}</td>
                     <td class="text-right">{{ $receive }}</td>
-                    <td class="text-right">{{ $invoice - $receive }}</td>
                 </tr>
                 @endforeach
 
                 <tr class="total-row">
-                    <td colspan="4" class="text-right">Grand Total</td>
-                    <td class="text-right">{{ $grandInvoice }}</td>
+                    <td colspan="3" class="text-right">Grand Total</td>
                     <td class="text-right">{{ $grandReceive }}</td>
-                    <td class="text-right">{{ $grandInvoice - $grandReceive }}</td>
                 </tr>
             </tbody>
         </table>

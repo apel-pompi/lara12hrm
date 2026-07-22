@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppContent from '@/components/AppContent.vue';
+import AppFooter from '@/components/AppFooter.vue';
 import AppHeader from '@/components/AppHeader.vue';
 import AppShell from '@/components/AppShell.vue';
 import type { BreadcrumbItemType } from '@/types';
@@ -17,7 +18,11 @@ withDefaults(defineProps<Props>(), {
     <AppShell class="flex-col">
         <AppHeader :breadcrumbs="breadcrumbs" />
         <AppContent>
-            <slot />
+            <div class="flex-1">
+                <slot />
+            </div>
+            <AppFooter />
         </AppContent>
     </AppShell>
 </template>
+

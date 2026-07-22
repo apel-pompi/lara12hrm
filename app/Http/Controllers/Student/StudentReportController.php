@@ -429,6 +429,7 @@ class StudentReportController extends Controller
 
         $data = Student::find($student);
 
+        $data->load('assainuser');
         $data->load('country');
         $company = CompanyInfo::firstOrFail();
         $query = StudentInvoiceHD::with([
@@ -457,7 +458,7 @@ class StudentReportController extends Controller
 
         $numberToWords = new NumberToWords();
         $numberTransformer = $numberToWords->getNumberTransformer('en');
-        $dataCollection = collect($values);
+        $dataCollection = collect($values)->groupBy('mrno');
         $pdf = PDF::loadView('exports.studentledger', [
             'student' => $data,
             'company' => $company,
@@ -539,7 +540,7 @@ class StudentReportController extends Controller
     public function studentRevenueReport($formdate, $todate, $isAdmin, $employee = null)
     {
 
-        $query = StudentInvoiceHD::with(['student.service'])
+        $query = StudentInvoiceHD::with(['student.service.workflow'])
             ->where('status', 'Confirmed')
             ->whereBetween('insdate', [$formdate, $todate]);
         if (! $isAdmin && $employee) {
@@ -549,7 +550,7 @@ class StudentReportController extends Controller
         }
         $records = $query->get();
         $grouped = $records->groupBy('student_id');
-        dd($grouped);
+
         $totalStudents = 0;
         $totalInvoiced = 0;
         $totalReceived = 0;
