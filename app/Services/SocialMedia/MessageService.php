@@ -64,7 +64,7 @@ class MessageService
     public function receiveWhatsapp(Request $request)
     {
         //Log::info('WHATSAPP RECEIVE START');
-        //Log::info($request->all());
+        Log::info('WHATSAPP RECEIVE START'. $request->all());
         $message = data_get(
             $request->all(),
             'entry.0.changes.0.value.messages.0'
@@ -380,12 +380,21 @@ class MessageService
                 $text
             );
         }
+        $metaId = data_get($response, 'messages.0.id');
 
+        if (!$metaId) {
+        
+            Log::error('WhatsApp message id missing', [
+                'response' => $response,
+            ]);
+        
+            throw new \Exception('Meta did not return message id.');
+        }
         $message = SocialMediaMessage::create([
             'conversation_id' => $conversation->id,
             'contact_id'      => $conversation->contact_id,
             'platform'        => 'whatsapp',
-            'meta_message_id' => data_get($response, 'messages.0.id'),
+            'meta_message_id' => $metaId,
             'direction'       => 'outbound',
             'sender_type'     => 'agent',
             'message_type'    => $messageType,
@@ -599,6 +608,9 @@ class MessageService
 
     public function updateStatus(Request $request)
     {
+        Log::warning('Status Webhook', [
+            'payload' => $request->all(),
+        ]);
         $status = data_get(
             $request->all(),
             'entry.0.changes.0.value.statuses.0'
@@ -611,7 +623,9 @@ class MessageService
         $metaMessageId = $status['id'];
 
         $messageStatus = $status['status'];
-
+        if (!$metaMessageId || !$messageStatus) {
+            return response('EVENT_RECEIVED', 200);
+        }
         $update = [
 
             'status' => $messageStatus,
@@ -634,8 +648,14 @@ class MessageService
             $metaMessageId
         )
             ->first();
-        //Log::info('this is message');
-        //Log::info($message);
+        if (!$message) {
+
+            Log::warning('Message Not Found', [
+                'meta_message_id' => $metaMessageId,
+            ]);
+        
+            return response('EVENT_RECEIVED', 200);
+        }
 
         $message->update($update);
 

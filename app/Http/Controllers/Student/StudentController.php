@@ -14,7 +14,7 @@ use App\Models\Student\StudentSource;
 use App\Models\Student\StudentStage;
 use App\Models\User;
 use App\Models\Student\StudentUtility;
-use App\Models\Default\UserWiseForm;
+use App\Models\SocialMedia\UserWiseForm;
 use App\Services\Agency\Student\Student as AgencyStudent;
 use App\Services\Agency\Student\StudentArchive;
 use App\Services\Agency\Student\StudentLead;

@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('whatsapp_messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('conversation_id')->constrained('whatsapp_conversations')->nullOnDelete();
+            $table->foreignId('conversation_id')
+                ->nullable()
+                ->constrained('whatsapp_conversations')
+                ->nullOnDelete();
             $table->string('meta_message_id')->nullable();
             $table->enum('direction', ['incoming', 'outgoing']);
             $table->enum('message_type', ['text', 'image', 'video', 'document', 'audio', 'location', 'sticker'])->default('text');
