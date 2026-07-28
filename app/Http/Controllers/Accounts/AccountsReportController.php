@@ -151,7 +151,7 @@ class AccountsReportController extends Controller
             })
             ->orderBy('voucherdate', 'asc')
             ->get();
-       
+           
         $company = CompanyInfo::firstOrFail();
         $pdf = PDF::loadView('exports.accounts.actogl', [
             'company' => $company,
@@ -172,6 +172,7 @@ class AccountsReportController extends Controller
 
         return $pdf->stream("AcToGl-Reports.pdf");
     }
+
 
     public function SupplierLedger()
     {

@@ -10,12 +10,10 @@ use Illuminate\Support\Facades\Log;
 
 class MessengerApiService extends MetaApiService
 {
-
     public function send(
         SocialMediaConversation $conversation,
         string $message
     ): array {
-
         $setup = SocialMediaSetup::where(
             'platform',
             SocialMediaSetup::FACEBOOK
@@ -27,324 +25,240 @@ class MessengerApiService extends MetaApiService
             ->firstOrFail();
 
         $response = $this->sendMessengerMessage(
-
             pageToken: $setup->access_token,
-
             psid: $conversation->contact->platform_user_id,
-
             message: $message
-
         );
         // Log::info('META RESPONSE', [
         //     'PSID' => $conversation->contact->platform_user_id,
         //     'PAGE' => $conversation->contact->page_id,
         // ]);
         return [
-
             'message_id' => data_get($response, 'message_id'),
-
             'response' => $response,
-
         ];
     }
+
     /*
-|--------------------------------------------------------------------------
-| Messenger Send Message
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Messenger Send Message
+     * |--------------------------------------------------------------------------
+     */
 
     public function sendMessengerMessage(
-
         string $pageToken,
-
         string $psid,
-
         string $message
-
     ): array {
-
         // Log::info('META SEND REQUEST', [
         //     'token' => $pageToken,
         //     'psid' => $psid,
         //     'message' => $message,
         // ]);
         return $this->post(
-
             $pageToken,
-
             'me/messages',
-
             [
-
                 'recipient' => [
-
                     'id' => $psid
-
                 ],
-
                 'message' => [
-
                     'text' => $message
-
                 ]
-
             ]
-
         );
     }
 
     /*
-|--------------------------------------------------------------------------
-| Messenger User Profile
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Messenger User Profile
+     * |--------------------------------------------------------------------------
+     */
 
     public function getMessengerProfile(
-
         string $pageToken,
-
         string $psid
-
     ): array {
-
         return $this->get(
-
             $pageToken,
-
             $psid,
-
             [
-
                 'fields' =>
-
-                'first_name,last_name,profile_pic'
-
+                    'first_name,last_name,profile_pic'
             ]
-
         );
     }
 
     /*
-|--------------------------------------------------------------------------
-| Page Conversations
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Page Conversations
+     * |--------------------------------------------------------------------------
+     */
 
     public function getMessengerConversations(
-
         string $pageToken,
-
         string $pageId
-
     ): array {
-
         return $this->get(
-
             $pageToken,
-
             "{$pageId}/conversations"
-
         );
     }
 
     /*
-|--------------------------------------------------------------------------
-| Conversation
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Conversation
+     * |--------------------------------------------------------------------------
+     */
 
     public function getMessengerConversation(
-
         string $pageToken,
-
         string $conversationId
-
     ): array {
-
         return $this->get(
-
             $pageToken,
-
             $conversationId
-
         );
     }
 
     /*
-|--------------------------------------------------------------------------
-| Conversation Messages
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Conversation Messages
+     * |--------------------------------------------------------------------------
+     */
 
     public function getMessengerMessages(
-
         string $pageToken,
-
         string $conversationId
-
     ): array {
-
         return $this->get(
-
             $pageToken,
-
             "{$conversationId}/messages"
-
         );
     }
 
     /*
-|--------------------------------------------------------------------------
-| Conversation Participants
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Conversation Participants
+     * |--------------------------------------------------------------------------
+     */
 
     public function getMessengerParticipants(
-
         string $pageToken,
-
         string $conversationId
-
     ): array {
-
         return $this->get(
-
             $pageToken,
-
             $conversationId,
-
             [
-
                 'fields' => 'participants'
-
             ]
-
         );
     }
 
     /*
-|--------------------------------------------------------------------------
-| Mark Seen
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Mark Seen
+     * |--------------------------------------------------------------------------
+     */
     public function markMessengerRead(
         string $pageToken,
         string $psid
     ): array {
-
+        Log::info('markMessengerRead', [
+            'token' => $pageToken,
+            'psid' => $psid,
+        ]);
         return $this->post(
-
             $pageToken,
-
             'me/messages',
-
             [
-
                 'recipient' => [
-
                     'id' => $psid
-
                 ],
-
                 'sender_action' => 'mark_seen'
-
             ]
-
         );
     }
 
     public function markAsRead(
         SocialMediaMessage $message
     ): array {
-
         $setup = SocialMediaSetup::platform(
             SocialMediaSetup::MESSENGER
         );
+        Log::info('Messenger markAsRead', [
+            'message' => $message,
+            'setup' => $setup,
+        ]);
+        try {
+            return $this->markMessengerRead(
+                pageToken: $setup->access_token,
+                psid: $message->conversation->contact->platform_user_id
+            );
+        } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), 'outside of allowed window')) {
+                Log::info('Messenger mark_seen skipped', [
+                    'conversation_id' => $message->conversation_id,
+                    'message_id' => $message->id,
+                ]);
 
-        return $this->markMessengerRead(
+                return [];
+            }
 
-            pageToken: $setup->access_token,
-
-            psid: $message->conversation->contact->platform_user_id
-
-        );
+            throw $e;
+        }
     }
 
     /*
-|--------------------------------------------------------------------------
-| Typing ON
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Typing ON
+     * |--------------------------------------------------------------------------
+     */
 
     public function messengerTypingOn(
-
         string $pageToken,
-
         string $psid
-
     ): array {
-
         return $this->post(
-
             $pageToken,
-
             'me/messages',
-
             [
-
                 'recipient' => [
-
                     'id' => $psid
-
                 ],
-
                 'sender_action' => 'typing_on'
-
             ]
-
         );
     }
 
     /*
-|--------------------------------------------------------------------------
-| Typing OFF
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Typing OFF
+     * |--------------------------------------------------------------------------
+     */
 
     public function messengerTypingOff(
-
         string $pageToken,
-
         string $psid
-
     ): array {
-
         return $this->post(
-
             $pageToken,
-
             'me/messages',
-
             [
-
                 'recipient' => [
-
                     'id' => $psid
-
                 ],
-
                 'sender_action' => 'typing_off'
-
             ]
-
         );
     }
 
     /*
-|--------------------------------------------------------------------------
-| Messenger Image
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Messenger Image
+     * |--------------------------------------------------------------------------
+     */
 
     public function uploadMessengerMedia(
         string $pageToken,

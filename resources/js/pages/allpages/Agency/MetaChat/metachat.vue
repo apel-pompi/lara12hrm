@@ -13,6 +13,7 @@ import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ref, watch } from 'vue';
 
+
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Unified Inbox', href: '/metachat' }];
 
 const loading = ref(false);

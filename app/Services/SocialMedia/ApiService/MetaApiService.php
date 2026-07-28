@@ -3,13 +3,12 @@
 namespace App\Services\SocialMedia\ApiService;
 
 use App\Models\SocialMedia\SocialMediaSetup;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Client\Response;
 
 class MetaApiService
 {
-
     /**
      * Graph Version
      */
@@ -23,11 +22,8 @@ class MetaApiService
     protected function getSetup(string $platform): SocialMediaSetup
     {
         return SocialMediaSetup::where(
-
             'platform',
-
             $platform
-
         )->firstOrFail();
     }
 
@@ -35,38 +31,23 @@ class MetaApiService
      * GET Request
      */
     protected function get(
-
         string $accessToken,
-
         string $endpoint,
-
         array $query = []
-
     ): array {
-
         try {
-
             $response = Http::acceptJson()
-
                 ->withToken($accessToken)
-
                 ->get(
-
                     "{$this->baseUrl}/{$this->version}/{$endpoint}",
-
                     $query
-
                 );
 
             return $this->response($response);
         } catch (\Throwable $e) {
-
             Log::error('META GET', [
-
                 'endpoint' => $endpoint,
-
                 'message' => $e->getMessage(),
-
             ]);
 
             throw $e;
@@ -77,13 +58,9 @@ class MetaApiService
      * POST Request
      */
     protected function post(
-
         string $accessToken,
-
         string $endpoint,
-
         array $payload = []
-
     ): array {
         // Log::info('META SEND REQUEST', [
 
@@ -93,17 +70,11 @@ class MetaApiService
 
         // ]);
         try {
-
             $response = Http::acceptJson()
-
                 ->withToken($accessToken)
-
                 ->post(
-
                     "{$this->baseUrl}/{$this->version}/{$endpoint}",
-
                     $payload
-
                 );
 
             // Log::info('META RESPONSE', [
@@ -115,13 +86,9 @@ class MetaApiService
             // ]);
             return $this->response($response);
         } catch (\Throwable $e) {
-
             Log::error('META POST', [
-
                 'endpoint' => $endpoint,
-
                 'message' => $e->getMessage(),
-
             ]);
 
             throw $e;
@@ -146,7 +113,7 @@ class MetaApiService
                     fopen($filePath, 'r'),
                     basename($filePath)
                 );
-            
+
             // For Messenger, we might need to send nested JSON as strings in multipart
             $formattedPayload = [];
             foreach ($payload as $key => $value) {
@@ -176,21 +143,13 @@ class MetaApiService
      * DELETE Request
      */
     protected function delete(
-
         string $accessToken,
-
         string $endpoint
-
     ): array {
-
         $response = Http::acceptJson()
-
             ->withToken($accessToken)
-
             ->delete(
-
                 "{$this->baseUrl}/{$this->version}/{$endpoint}"
-
             );
 
         return $this->response($response);
@@ -200,25 +159,15 @@ class MetaApiService
      * PUT Request
      */
     protected function put(
-
         string $accessToken,
-
         string $endpoint,
-
         array $payload = []
-
     ): array {
-
         $response = Http::acceptJson()
-
             ->withToken($accessToken)
-
             ->put(
-
                 "{$this->baseUrl}/{$this->version}/{$endpoint}",
-
                 $payload
-
             );
 
         return $this->response($response);
@@ -228,36 +177,23 @@ class MetaApiService
      * Parse Response
      */
     protected function response(
-
         Response $response
-
     ): array {
-
         if ($response->successful()) {
-
             return $response->json();
         }
 
         Log::error(
-
             'META API ERROR',
-
             [
-
                 'status' => $response->status(),
-
                 'body' => $response->json(),
-
             ]
-
         );
 
         throw new \Exception(
-
             $response->json()['error']['message']
-
                 ?? 'Meta API Error'
-
         );
     }
 }

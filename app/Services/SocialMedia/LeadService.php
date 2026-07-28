@@ -5,12 +5,12 @@ namespace App\Services\SocialMedia;
 use App\Models\SocialMedia\FacebookForm;
 use App\Models\SocialMedia\SocialMediaContact;
 use App\Models\SocialMedia\SocialMediaSetup;
-use App\Models\Student\Student;
 use App\Models\SocialMedia\UserWiseForm;
+use App\Models\Student\Student;
+use App\Services\SocialMedia\ApiService\FacebookApiService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
-use App\Services\SocialMedia\ApiService\FacebookApiService;
 
 class LeadService
 {
@@ -23,46 +23,40 @@ class LeadService
      */
     public function save(array $leadData): ?Student
     {
+        // Log::info('Lead Response', [
+        //     'form_id' => $leadData['form_id'],
+        //     'field_data' => data_get($leadData, 'field_data'),
+        // ]);
         DB::beginTransaction();
 
         try {
-
             /*
-            |--------------------------------------------------------------------------
-            | Lead Fields
-            |--------------------------------------------------------------------------
-            */
+             * |--------------------------------------------------------------------------
+             * | Lead Fields
+             * |--------------------------------------------------------------------------
+             */
 
             $fields = collect($leadData['field_data'] ?? [])
                 ->mapWithKeys(function ($item) {
-
                     return [
-
                         $item['name'] => $item['values'][0] ?? null
-
                     ];
                 });
 
             /*
-            |--------------------------------------------------------------------------
-            | Form
-            |--------------------------------------------------------------------------
-            */
+             * |--------------------------------------------------------------------------
+             * | Form
+             * |--------------------------------------------------------------------------
+             */
 
             $facebookForm = FacebookForm::where(
-
                 'facebook_form_id',
-
                 $leadData['form_id'] ?? null
-
             )->first();
 
             if (!$facebookForm) {
-
                 Log::warning('Facebook Form Not Found', [
-
                     'facebook_form_id' => $leadData['form_id']
-
                 ]);
 
                 DB::rollBack();
@@ -71,43 +65,36 @@ class LeadService
             }
 
             /*
-            |--------------------------------------------------------------------------
-            | Assign User
-            |--------------------------------------------------------------------------
-            */
+             * |--------------------------------------------------------------------------
+             * | Assign User
+             * |--------------------------------------------------------------------------
+             */
 
             $assignUser = UserWiseForm::where(
-
                 'form_id',
-
                 $facebookForm->id
-
             )->value('team_id');
 
             /*
-            |--------------------------------------------------------------------------
-            | Name
-            |--------------------------------------------------------------------------
-            */
+             * |--------------------------------------------------------------------------
+             * | Name
+             * |--------------------------------------------------------------------------
+             */
 
             $fullName = trim($fields['full_name'] ?? '');
 
             if ($fullName == '') {
-
                 $firstName = 'Unknown';
 
                 $lastName = 'Unknown';
             } else {
-
                 $parts = explode(' ', $fullName, 2);
 
                 if (count($parts) > 1) {
-
                     $firstName = $parts[0];
 
                     $lastName = $parts[1];
                 } else {
-
                     $firstName = $fullName;
 
                     $lastName = $fullName;
@@ -115,151 +102,118 @@ class LeadService
             }
 
             /*
-            |--------------------------------------------------------------------------
-            | Contact
-            |--------------------------------------------------------------------------
-            */
+             * |--------------------------------------------------------------------------
+             * | Contact
+             * |--------------------------------------------------------------------------
+             */
 
-            $email = $fields['email'] ?? null;
+            $email = $this->getField($fields->toArray(), [
+                'email'
+            ]);
 
-            $phone = $fields['phone'] ?? null;
+            $phone = $this->getField($fields->toArray(), [
+                'phone',
+                'phone_number',
+                'mobile',
+                'mobile_number',
+            ]);
 
             if (!$email && !$phone) {
-
                 DB::rollBack();
 
                 return null;
             }
 
             /*
-            |--------------------------------------------------------------------------
-            | Existing Student
-            |--------------------------------------------------------------------------
-            */
+             * |--------------------------------------------------------------------------
+             * | Existing Student
+             * |--------------------------------------------------------------------------
+             */
 
             $student = Student::where(
-
                 'form_id',
-
                 $facebookForm->id
-
             )
-
                 ->where(function ($q) use ($email, $phone) {
-
                     if ($email) {
-
                         $q->where('email', $email);
                     }
 
                     if ($phone) {
-
                         $q->orWhere('phone', $phone);
                     }
                 })
-
                 ->first();
 
             /*
-            |--------------------------------------------------------------------------
-            | Student Data
-            |--------------------------------------------------------------------------
-            */
+             * |--------------------------------------------------------------------------
+             * | Student Data
+             * |--------------------------------------------------------------------------
+             */
 
             $studentData = [
-
                 'fname' => $firstName,
-
                 'lname' => $lastName,
-
                 'email' => $email,
-
                 'phone' => $phone,
-
                 'dateofbirth' => $fields['date_of_birth'] ?? '1900-01-01',
-
                 'gender' => 0,
-
                 'descountry_id' => 19,
-
                 'source_id' => 9,
-
                 'form_id' => $facebookForm->id,
                 'inbox_url' => $fields['inbox_url'] ?? null,
-
                 'assain_user' => $assignUser,
-
                 'user_id' => 1,
-
             ];
 
             /*
-            |--------------------------------------------------------------------------
-            | Save Student
-            |--------------------------------------------------------------------------
-            */
+             * |--------------------------------------------------------------------------
+             * | Save Student
+             * |--------------------------------------------------------------------------
+             */
 
             if ($student) {
-
                 $student->update($studentData);
             } else {
-
                 $student = Student::create($studentData);
             }
 
             /*
-            |--------------------------------------------------------------------------
-            | Messenger PSID
-            |--------------------------------------------------------------------------
-            */
+             * |--------------------------------------------------------------------------
+             * | Messenger PSID
+             * |--------------------------------------------------------------------------
+             */
 
             $psid = null;
 
             $inboxUrl = $fields['inbox_url'] ?? null;
 
             if (
-
                 $inboxUrl &&
-
                 preg_match('/latest\/(\d+)/', $inboxUrl, $match)
-
             ) {
-
                 $psid = $match[1];
             }
 
             /*
-            |--------------------------------------------------------------------------
-            | Social Contact
-            |--------------------------------------------------------------------------
-            */
+             * |--------------------------------------------------------------------------
+             * | Social Contact
+             * |--------------------------------------------------------------------------
+             */
 
             if ($psid) {
-
                 SocialMediaContact::updateOrCreate(
-
                     [
-
                         'platform' => 'messenger',
-
                         'platform_user_id' => $psid,
-
                     ],
-
                     [
-
                         'student_id' => $student->id,
-
                         'page_id' => $leadData['page_id'] ?? null,
-
                         'social_name' => $fullName,
-
                         'phone_number' => $phone,
-
                         'status' => 1,
-
                     ]
-
                 );
             }
 
@@ -267,17 +221,12 @@ class LeadService
 
             return $student;
         } catch (\Throwable $e) {
-
             DB::rollBack();
 
             Log::error('LeadService Error', [
-
                 'message' => $e->getMessage(),
-
                 'line' => $e->getLine(),
-
                 'file' => $e->getFile()
-
             ]);
 
             return null;
@@ -302,10 +251,10 @@ class LeadService
         );
 
         /*
-    |--------------------------------------------------------------------------
-    | Get Access Token
-    |--------------------------------------------------------------------------
-    */
+         * |--------------------------------------------------------------------------
+         * | Get Access Token
+         * |--------------------------------------------------------------------------
+         */
 
         $token = SocialMediaSetup::where(
             'platform',
@@ -318,41 +267,42 @@ class LeadService
             ->value('access_token');
 
         if (!$token) {
-
             Log::warning('Facebook Token Not Found');
 
             return null;
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | Download Lead
-    |--------------------------------------------------------------------------
-    */
+         * |--------------------------------------------------------------------------
+         * | Download Lead
+         * |--------------------------------------------------------------------------
+         */
 
         $leadData = $this->facebookApi->getLead(
-
             $token,
-
             $leadId
-
         );
         $leadData['form_id'] = $formId;
         $leadData['page_id'] = $pageId;
-        // Log::info('DOWNLOAD LEAD Form Lead Service.php', [
-
-        //     'page_id' => $pageId,
-
-        //     'lead_id' => $leadId,
-
-        //     'token' => substr($token, 0, 20) . '...',
-
+        // Log::info('Lead Response', [
+        //     'form_id' => $leadData['form_id'],
+        //     'field_data' => data_get($leadData, 'field_data'),
         // ]);
         if (!$leadData) {
-
             return null;
         }
 
         return $this->save($leadData);
+    }
+
+    private function getField(array $fields, array $keys): ?string
+    {
+        foreach ($keys as $key) {
+            if (!empty($fields[$key])) {
+                return $fields[$key];
+            }
+        }
+
+        return null;
     }
 }

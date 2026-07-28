@@ -5,8 +5,8 @@ namespace App\Services\SocialMedia;
 use App\Events\SocialMedia\MessageStatusUpdated;
 use App\Events\SocialMedia\NewMessageReceived;
 use App\Models\SocialMedia\SocialMediaContact;
-use App\Models\SocialMedia\SocialMediaMessage;
 use App\Models\SocialMedia\SocialMediaConversation;
+use App\Models\SocialMedia\SocialMediaMessage;
 use App\Models\SocialMedia\SocialMediaSetup;
 use App\Models\Student\Student;
 use App\Services\SocialMedia\ApiService\FacebookApiService;
@@ -15,9 +15,10 @@ use App\Services\SocialMedia\ApiService\MessengerApiService;
 use App\Services\SocialMedia\ApiService\MetaApiService;
 use App\Services\SocialMedia\ApiService\WhatsAppApiService;
 use App\Services\SocialMedia\MetaPlatformService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class MessageService
 {
@@ -30,20 +31,13 @@ class MessageService
     protected FacebookApiService $facebookApiService;
 
     public function __construct(
-
         InboxService $inboxService,
-
         WhatsAppApiService $whatsAppApiService,
-
         MessengerApiService $messengerApiService,
-
         InstagramApiService $instagramApiService,
-
         MetaPlatformService $metaPlatformService,
         FacebookApiService $facebookApiService,
-
     ) {
-
         $this->inboxService = $inboxService;
 
         $this->whatsAppApiService = $whatsAppApiService;
@@ -56,15 +50,17 @@ class MessageService
     }
 
     /*
-|--------------------------------------------------------------------------
-| Receive WhatsApp Message
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Receive WhatsApp Message
+     * |--------------------------------------------------------------------------
+     */
 
     public function receiveWhatsapp(Request $request)
     {
-        //Log::info('WHATSAPP RECEIVE START');
-        Log::info('WHATSAPP RECEIVE START'. $request->all());
+        // Log::info('WHATSAPP RECEIVE START');
+        // Log::info('WHATSAPP RECEIVE START', [
+        //     'payload' => $request->all(),
+        // ]);
         $message = data_get(
             $request->all(),
             'entry.0.changes.0.value.messages.0'
@@ -80,7 +76,6 @@ class MessageService
         $messageId = $message['id'];
         $type = $message['type'] ?? 'text';
         $text = match ($type) {
-
             'text' => data_get($message, 'text.body'),
 
             default => null,
@@ -93,65 +88,37 @@ class MessageService
         // ]);
 
         $inbox = $this->inboxService->getOrCreate(
-
             platform: 'whatsapp',
-
             platformUserId: $phone,
-
             contactData: [
-
                 'social_name' => $profile,
-
                 'phone_number' => $phone,
-
             ]
-
         );
         $this->attachStudentToContact($inbox['contact']);
         $savedMessage = $this->save([
-
             'conversation_id' => $inbox['conversation']->id,
-
             'contact_id' => $inbox['contact']->id,
-
             'platform' => 'whatsapp',
-
             'meta_message_id' => $messageId,
-
             'direction' => 'inbound',
-
             'sender_type' => 'customer',
-
             'message_type' => $type,
-
             'message' => $text,
-
             'attachment' => null,
-
             'attachment_type' => null,
-
             'attachment_size' => null,
-
             'status' => 'received',
-
             'payload' => $request->all(),
-
         ]);
         event(
-
             new \App\Events\SocialMedia\NewMessageReceived(
-
                 $savedMessage
-
             )
-
         );
         $this->inboxService->updateConversation(
-
             $inbox['conversation'],
-
             $savedMessage
-
         );
 
         return response(
@@ -159,19 +126,19 @@ class MessageService
             200
         );
     }
+
     /*
-|--------------------------------------------------------------------------
-| Receive Messenger Message
-|--------------------------------------------------------------------------
-*/
+     * |--------------------------------------------------------------------------
+     * | Receive Messenger Message
+     * |--------------------------------------------------------------------------
+     */
 
     public function receiveMessenger(Request $request): ?SocialMediaMessage
     {
         $payload = $request->all();
-        //Log::info('this is payload');
-        //Log::info($payload);
+        // Log::info('this is payload');
+        // Log::info($payload);
         return DB::transaction(function () use ($payload) {
-
             $event = data_get(
                 $payload,
                 'entry.0.messaging.0'
@@ -181,8 +148,7 @@ class MessageService
                 return null;
             }
             if (isset($event['delivery'])) {
-
-                //Log::info('Messenger delivery event', $event);
+                // Log::info('Messenger delivery event', $event);
 
                 $mids = data_get($event, 'delivery.mids', []);
 
@@ -195,15 +161,18 @@ class MessageService
 
                 return null;
             }
-            $psid = data_get(
-                $event,
-                'sender.id'
-            );
 
-            $pageId = data_get(
-                $event,
-                'recipient.id'
-            );
+            $isEcho = (bool) data_get($event, 'message.is_echo', false);
+
+            if ($isEcho) {
+                // Page -> Customer
+                $psid = data_get($event, 'recipient.id');
+                $pageId = data_get($event, 'sender.id');
+            } else {
+                // Customer -> Page
+                $psid = data_get($event, 'sender.id');
+                $pageId = data_get($event, 'recipient.id');
+            }
 
             $text = data_get(
                 $event,
@@ -224,81 +193,53 @@ class MessageService
             );
 
             /*
-        |--------------------------------------------------------------------------
-        | Contact + Conversation
-        |--------------------------------------------------------------------------
-        */
+             * |--------------------------------------------------------------------------
+             * | Contact + Conversation
+             * |--------------------------------------------------------------------------
+             */
 
             $result = $this->inboxService->getOrCreate(
-
                 'messenger',
-
                 $psid,
-
                 [
-
                     'page_id' => $pageId,
-
                 ],
-
                 $conversationId
-
             );
 
             $this->attachStudentToContact($result['contact']);
+
             /*
-        |--------------------------------------------------------------------------
-        | Save
-        |--------------------------------------------------------------------------
-        */
+             * |--------------------------------------------------------------------------
+             * | Save
+             * |--------------------------------------------------------------------------
+             */
 
             $message = SocialMediaMessage::firstOrCreate(
-
                 [
-
                     'meta_message_id' => $messageId
-
                 ],
-
                 [
-
                     'conversation_id' => $result['conversation']->id,
-
                     'contact_id' => $result['contact']->id,
-
                     'platform' => 'messenger',
-
                     'direction' => 'inbound',
-
                     'sender_type' => 'customer',
-
                     'message_type' => 'text',
-
                     'message' => $text,
-
                     'status' => 'received',
-
                     'payload' => $payload,
-
                 ]
-
             );
 
             event(
-
                 new \App\Events\SocialMedia\NewMessageReceived(
-
                     $message
-
                 )
-
             );
             $this->inboxService->updateConversation(
-
                 $result['conversation'],
-
                 $message
-
             );
 
             return $message;
@@ -340,8 +281,8 @@ class MessageService
                         $setup->phone_number_id,
                         $conversation->contact->phone_number,
                         $mediaId,
-                        $text, // caption
-                        true // isId
+                        $text,  // caption
+                        true  // isId
                     );
                     $messageType = 'image';
                 } else {
@@ -351,10 +292,10 @@ class MessageService
                         $conversation->contact->phone_number,
                         $mediaId,
                         null,
-                        true // isId
+                        true  // isId
                     );
                     $messageType = 'document';
-                    
+
                     if ($text) {
                         $this->whatsAppApiService->sendWhatsappMessage(
                             $setup->access_token,
@@ -365,7 +306,7 @@ class MessageService
                     }
                 }
             } else {
-                 $response = $this->whatsAppApiService->sendWhatsappMessage(
+                $response = $this->whatsAppApiService->sendWhatsappMessage(
                     $setup->access_token,
                     $setup->phone_number_id,
                     $conversation->contact->phone_number,
@@ -383,25 +324,24 @@ class MessageService
         $metaId = data_get($response, 'messages.0.id');
 
         if (!$metaId) {
-        
             Log::error('WhatsApp message id missing', [
                 'response' => $response,
             ]);
-        
+
             throw new \Exception('Meta did not return message id.');
         }
-        $message = SocialMediaMessage::create([
+        $message = SocialMediaMessage::firstOrCreate([
             'conversation_id' => $conversation->id,
-            'contact_id'      => $conversation->contact_id,
-            'platform'        => 'whatsapp',
+            'contact_id' => $conversation->contact_id,
+            'platform' => 'whatsapp',
             'meta_message_id' => $metaId,
-            'direction'       => 'outbound',
-            'sender_type'     => 'agent',
-            'message_type'    => $messageType,
-            'message'         => $text,
-            'attachment'      => $fileUrl,
-            'status'          => 'sent',
-            'payload'         => $response,
+            'direction' => 'outbound',
+            'sender_type' => 'agent',
+            'message_type' => $messageType,
+            'message' => $text,
+            'attachment' => $fileUrl,
+            'status' => 'sent',
+            'payload' => $response,
         ]);
 
         broadcast(new NewMessageReceived($message))->toOthers();
@@ -418,6 +358,20 @@ class MessageService
     ) {
         $conversation = SocialMediaConversation::with('contact')
             ->findOrFail($conversationId);
+
+        $lastInbound = $conversation
+            ->messages()
+            ->where('direction', 'inbound')
+            ->latest('created_at')
+            ->first();
+        if (
+            !$lastInbound ||
+            $lastInbound->created_at->lt(now()->subHours(24))
+        ) {
+            throw ValidationException::withMessages([
+                'message' => 'This Messenger conversation is outside the 24-hour messaging window.'
+            ]);
+        }
 
         $setup = SocialMediaSetup::where(
             'platform',
@@ -452,9 +406,9 @@ class MessageService
                     );
                     $messageType = 'file';
                 }
-                
+
                 if ($text) {
-                     $this->messengerApiService->sendMessengerMessage(
+                    $this->messengerApiService->sendMessengerMessage(
                         $setup->access_token,
                         $conversation->contact->platform_user_id,
                         $text
@@ -475,125 +429,105 @@ class MessageService
             );
         }
 
-        $message = SocialMediaMessage::create([
-            'conversation_id'   => $conversation->id,
-            'contact_id'        => $conversation->contact_id,
-            'platform'          => 'messenger',
-            'meta_message_id'   => $response['message_id'] ?? null,
-            'direction'         => 'outbound',
-            'sender_type'       => 'agent',
-            'message_type'      => $messageType,
-            'message'           => $text,
-            'attachment'        => $fileUrl,
-            'status'            => 'sent',
-            'payload'           => $response,
+        $message = SocialMediaMessage::firstOrCreate([
+            'conversation_id' => $conversation->id,
+            'contact_id' => $conversation->contact_id,
+            'platform' => 'messenger',
+            'meta_message_id' => $response['message_id'] ?? null,
+            'direction' => 'outbound',
+            'sender_type' => 'agent',
+            'message_type' => $messageType,
+            'message' => $text,
+            'attachment' => $fileUrl,
+            'status' => 'sent',
+            'payload' => $response,
         ]);
 
         broadcast(new NewMessageReceived($message))->toOthers();
 
         return $message;
     }
+
     /**
      * Save Message
      */
     public function save(array $data): SocialMediaMessage
     {
         return DB::transaction(function () use ($data) {
-
             $message = SocialMediaMessage::firstOrCreate(
-
                 [
                     'meta_message_id' => $data['meta_message_id']
                 ],
-
                 [
-
                     /*
-                |--------------------------------------------------------------------------
-                | Relations
-                |--------------------------------------------------------------------------
-                */
-
+                     * |--------------------------------------------------------------------------
+                     * | Relations
+                     * |--------------------------------------------------------------------------
+                     */
                     'conversation_id' => $data['conversation_id'],
-
                     'contact_id' => $data['contact_id'],
 
                     /*
-                |--------------------------------------------------------------------------
-                | Platform
-                |--------------------------------------------------------------------------
-                */
-
+                     * |--------------------------------------------------------------------------
+                     * | Platform
+                     * |--------------------------------------------------------------------------
+                     */
                     'platform' => $data['platform'],
 
                     /*
-                |--------------------------------------------------------------------------
-                | Direction
-                |--------------------------------------------------------------------------
-                */
-
+                     * |--------------------------------------------------------------------------
+                     * | Direction
+                     * |--------------------------------------------------------------------------
+                     */
                     'direction' => $data['direction'],
 
                     /*
-                |--------------------------------------------------------------------------
-                | Sender
-                |--------------------------------------------------------------------------
-                */
-
+                     * |--------------------------------------------------------------------------
+                     * | Sender
+                     * |--------------------------------------------------------------------------
+                     */
                     'sender_type' => $data['sender_type'],
 
                     /*
-                |--------------------------------------------------------------------------
-                | Message
-                |--------------------------------------------------------------------------
-                */
-
+                     * |--------------------------------------------------------------------------
+                     * | Message
+                     * |--------------------------------------------------------------------------
+                     */
                     'message_type' => $data['message_type'] ?? 'text',
-
                     'message' => $data['message'] ?? null,
 
                     /*
-                |--------------------------------------------------------------------------
-                | Attachment
-                |--------------------------------------------------------------------------
-                */
-
+                     * |--------------------------------------------------------------------------
+                     * | Attachment
+                     * |--------------------------------------------------------------------------
+                     */
                     'attachment' => $data['attachment'] ?? null,
-
                     'attachment_type' => $data['attachment_type'] ?? null,
-
                     'attachment_size' => $data['attachment_size'] ?? null,
 
                     /*
-                |--------------------------------------------------------------------------
-                | Status
-                |--------------------------------------------------------------------------
-                */
-
+                     * |--------------------------------------------------------------------------
+                     * | Status
+                     * |--------------------------------------------------------------------------
+                     */
                     'status' => $data['status'] ?? 'received',
 
                     /*
-                |--------------------------------------------------------------------------
-                | Payload
-                |--------------------------------------------------------------------------
-                */
-
+                     * |--------------------------------------------------------------------------
+                     * | Payload
+                     * |--------------------------------------------------------------------------
+                     */
                     'payload' => $data['payload'] ?? null,
 
                     /*
-                |--------------------------------------------------------------------------
-                | Date
-                |--------------------------------------------------------------------------
-                */
-
+                     * |--------------------------------------------------------------------------
+                     * | Date
+                     * |--------------------------------------------------------------------------
+                     */
                     'sent_at' => $data['sent_at'] ?? now(),
-
                     'delivered_at' => $data['delivered_at'] ?? null,
-
                     'read_at' => $data['read_at'] ?? null,
-
                 ]
-
             );
 
             return $message->fresh();
@@ -601,10 +535,10 @@ class MessageService
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Update Status
-    |--------------------------------------------------------------------------
-    */
+     * |--------------------------------------------------------------------------
+     * | Update Status
+     * |--------------------------------------------------------------------------
+     */
 
     public function updateStatus(Request $request)
     {
@@ -627,13 +561,10 @@ class MessageService
             return response('EVENT_RECEIVED', 200);
         }
         $update = [
-
             'status' => $messageStatus,
-
         ];
 
         switch ($messageStatus) {
-
             case 'delivered':
                 $update['delivered_at'] = now();
                 break;
@@ -649,11 +580,10 @@ class MessageService
         )
             ->first();
         if (!$message) {
-
             Log::warning('Message Not Found', [
                 'meta_message_id' => $metaMessageId,
             ]);
-        
+
             return response('EVENT_RECEIVED', 200);
         }
 
@@ -668,38 +598,28 @@ class MessageService
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Mark Conversation Read
-    |--------------------------------------------------------------------------
-    */
+     * |--------------------------------------------------------------------------
+     * | Mark Conversation Read
+     * |--------------------------------------------------------------------------
+     */
     public function markConversationRead(
         SocialMediaConversation $conversation
     ): void {
-
-        $messages = $conversation->messages()
-
+        $messages = $conversation
+            ->messages()
             ->where('direction', 'inbound')
-
             ->where('status', 'received')
-
             ->get();
 
         foreach ($messages as $message) {
-
             $this->metaPlatformService->markAsRead(
-
                 $conversation,
-
                 $message
-
             );
 
             $message->update([
-
                 'status' => 'read',
-
                 'read_at' => now(),
-
             ]);
             event(
                 new MessageStatusUpdated(
@@ -709,56 +629,41 @@ class MessageService
         }
 
         $this->inboxService->markConversationAsRead(
-
             $conversation
-
         );
     }
 
-
     /*
-    |--------------------------------------------------------------------------
-    | Last Message
-    |--------------------------------------------------------------------------
-    */
+     * |--------------------------------------------------------------------------
+     * | Last Message
+     * |--------------------------------------------------------------------------
+     */
 
     public function latest(
-
         int $conversationId
-
     ) {
-
         return SocialMediaMessage::where(
-
             'conversation_id',
-
             $conversationId
-
         )
-
             ->latest()
-
             ->first();
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Delete
-    |--------------------------------------------------------------------------
-    */
+     * |--------------------------------------------------------------------------
+     * | Delete
+     * |--------------------------------------------------------------------------
+     */
 
     public function delete(
-
         SocialMediaMessage $message
-
     ): bool {
-
         return $message->delete();
     }
 
     private function attachStudentToContact(SocialMediaContact $contact): void
     {
-
         // Already linked
         if ($contact->student_id) {
             return;
@@ -775,7 +680,8 @@ class MessageService
         }
 
         $student = Student::where(function ($q) use ($phone) {
-            $q->where('phone', $phone)
+            $q
+                ->where('phone', $phone)
                 ->orWhere('phone', '880' . substr($phone, 1))
                 ->orWhere('phone', '+880' . substr($phone, 1));
         })->first();
