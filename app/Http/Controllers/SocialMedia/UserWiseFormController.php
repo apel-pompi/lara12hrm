@@ -31,13 +31,11 @@ class UserWiseFormController extends Controller
         }
 
         return Inertia::render('allpages/default/userwise-form', [
-            //'userWiseForms' => UserWiseForm::all(),
-            'userWiseForms' => UserWiseForm::with('form', 'teamLeader')->get(),
+            'userWiseForms' => UserWiseForm::latest()->with('form', 'teamLeader')->get(),
             'forms' => FacebookForm::whereNotIn(
                 'id',
                 UserWiseForm::pluck('form_id')
             )->get(),
-            //'forms' => FacebookForm::select(['id', 'form_name'])->get(),
             'users' => User::select(['id', 'name'])->whereNull('banned_at')->get(),
         ]);
     }

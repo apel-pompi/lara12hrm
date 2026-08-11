@@ -6,7 +6,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import { RefreshCcw, Search, ArrowRightLeft, Send, CheckSquare, CheckCheck, AlertCircle, Users } from 'lucide-vue-next';
 import { nextTick, onMounted, ref, watch, computed } from 'vue';
@@ -127,13 +127,13 @@ const toggleOne = (id: number) => {
 // Selected values
 const selectedStudent = ref<Student | null>(null);
 const selectedPhone = ref<Student | null>(null);
-const selectedAssain = ref<Student['assain_user'] | null>(null);
+const selectedAssain = ref<UserOption | null>(null);
 const selectedDate = ref<string | null>(null);
 // Query & results
 
 const nameResults = ref<Student[]>([]);
 const phoneResults = ref<Student[]>([]);
-const assainResults = ref<Student['assain_user'][]>([]);
+const assainResults = ref<UserOption[]>([]);
 const dateResults = ref<string[]>([]);
 
 let timer: ReturnType<typeof setTimeout> | null = null;
@@ -154,7 +154,7 @@ const fetchStudents = async (type: 'name' | 'phone' | 'assain' | 'date', query: 
                 break;
             case 'assain':
                 // unique assain users
-                const map = new Map<number, Student['assain_user']>();
+                const map = new Map<number, UserOption>();
                 res.data.forEach((s) => {
                     if (s.assainuser && !map.has(s.assainuser.id)) {
                         map.set(s.assainuser.id, s.assainuser);
@@ -192,11 +192,8 @@ const showAllStudents = (type: 'name' | 'phone' | 'assain' | 'date') => {
 };
 
 const search = () => {
-    const params: Record<string, any> = {};
-    if (selectedStudent.value) params.name = selectedStudent.value.id;
-    if (selectedPhone.value) params.phone = selectedPhone.value.phone;
-    if (selectedAssain.value) params.user = selectedAssain.value.id;
-    if (selectedDate.value) params.created_at = selectedDate.value;
+    const params: Record<string, any> = buildCurrentFilters();
+    params.per_page = perPage.value;
 
     router.get(route('student.pending'), params, {
         preserveState: false,
@@ -208,12 +205,21 @@ const refresh = () => {
     router.get(route('student.pending'), {}, { replace: true });
 };
 
-const perPage = ref(10);
+const perPage = ref(data.per_page ?? 10);
+
+const buildCurrentFilters = () => {
+    const params: Record<string, any> = {};
+    if (selectedStudent.value) params.name = selectedStudent.value.id;
+    if (selectedPhone.value) params.phone = selectedPhone.value.phone;
+    if (selectedAssain.value) params.user = selectedAssain.value.id;
+    if (selectedDate.value) params.created_at = selectedDate.value;
+    return params;
+};
 
 watch(perPage, (value) => {
     router.get(
         route('student.pending'),
-        { per_page: value },
+        { ...buildCurrentFilters(), per_page: value },
         {
             preserveState: false,
             preserveScroll: true,
@@ -223,7 +229,17 @@ watch(perPage, (value) => {
 });
 const goToPage = (url: string | null) => {
     if (url) {
-        router.get(url, {}, { preserveState: false, replace: true });
+        const target = new URL(url, window.location.origin);
+        const current = new URL(window.location.href);
+
+        ['name', 'phone', 'user', 'created_at', 'per_page'].forEach((key) => {
+            const value = current.searchParams.get(key);
+            if (value !== null && !target.searchParams.has(key)) {
+                target.searchParams.set(key, value);
+            }
+        });
+
+        router.get(target.toString(), {}, { preserveState: false, preserveScroll: true, replace: true });
     }
 };
 
@@ -232,12 +248,12 @@ const active = ref('all');
 const tabRefs = ref([]);
 const tabs = computed(() => {
     const baseTabs = [
-        { key: 'all',      label: 'All',     count: props.countAll },
-        { key: 'pending',  label: 'Pending', count: props.countPending },
-        { key: 'lead',     label: 'Lead',    count: props.countLead },
-        { key: 'prospect', label: 'Prospect',count: props.countProspect },
-        { key: 'onboard',  label: 'OnBoard', count: props.countonBoard },
-        { key: 'archive',  label: 'Archive', count: props.countArchive },
+        { key: 'all', label: 'All', count: props.countAll },
+        { key: 'pending', label: 'Pending', count: props.countPending },
+        { key: 'lead', label: 'Lead', count: props.countLead },
+        { key: 'prospect', label: 'Prospect', count: props.countProspect },
+        { key: 'onboard', label: 'OnBoard', count: props.countonBoard },
+        { key: 'archive', label: 'Archive', count: props.countArchive },
     ];
 
     if (!props.showInactiveTabs) {
@@ -252,12 +268,12 @@ const tabs = computed(() => {
 });
 
 const routes: Record<string, string> = {
-    all:            'student.index',
-    pending:        'student.pending',
-    lead:           'student.lead',
-    prospect:       'student.prospect',
-    onboard:        'student.onBoard',
-    archive:        'student.archive',
+    all: 'student.index',
+    pending: 'student.pending',
+    lead: 'student.lead',
+    prospect: 'student.prospect',
+    onboard: 'student.onBoard',
+    archive: 'student.archive',
     inactive1month: 'student.inactive1month',
     inactive3month: 'student.inactive3month',
     inactive6month: 'student.inactive6month',
@@ -283,7 +299,7 @@ const setActive = async (tab) => {
 const setActiveFromUrl = () => {
     const url = page.url;
 
-    if (url.includes('inactive/6month'))      active.value = 'inactive6month';
+    if (url.includes('inactive/6month')) active.value = 'inactive6month';
     else if (url.includes('inactive/3month')) active.value = 'inactive3month';
     else if (url.includes('inactive/1month')) active.value = 'inactive1month';
     else if (url.includes('pending')) active.value = 'pending';
@@ -318,7 +334,7 @@ const statusClass = (status) => {
 };
 
 // ─── Transfer Form (similar to inactive page) ─────────────────
-import { useForm } from '@inertiajs/vue3';
+
 const transferMode = ref<'selected' | 'all'>('selected');
 const transferSuccess = ref('');
 const transferError = ref('');
@@ -371,28 +387,23 @@ const submitTransfer = () => {
 </script>
 
 <template>
+
     <Head title="Student" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]">
             <div class="flex justify-center">
-                <div class="no-scrollbar relative mb-4 flex overflow-x-auto rounded-full bg-gray-100/80 p-1 dark:bg-gray-800/80">
+                <div
+                    class="no-scrollbar relative mb-4 flex overflow-x-auto rounded-full bg-gray-100/80 p-1 dark:bg-gray-800/80">
                     <!-- Sliding Indicator -->
-                    <div
-                        class="absolute top-1 bottom-1 rounded-full bg-white shadow transition-all duration-300 ease-out dark:bg-gray-900"
-                        :style="indicatorStyle"
-                    ></div>
+                    <div class="absolute top-1 bottom-1 rounded-full bg-white shadow transition-all duration-300 ease-out dark:bg-gray-900"
+                        :style="indicatorStyle"></div>
 
                     <!-- Tabs -->
-                    <button
-                        v-for="(tab, index) in tabs"
-                        :key="tab.key"
-                        @click="setActive(tab.key)"
+                    <button v-for="(tab, index) in tabs" :key="tab.key" @click="setActive(tab.key)"
                         :ref="(el) => (tabRefs[index] = el)"
                         class="relative z-10 cursor-pointer px-5 py-1.5 text-sm font-medium whitespace-nowrap transition-all duration-200"
-                        :class="active === tab.key ? 'text-indigo-600' : 'text-gray-600 hover:text-indigo-500 dark:text-gray-300'"
-                    >
+                        :class="active === tab.key ? 'text-indigo-600' : 'text-gray-600 hover:text-indigo-500 dark:text-gray-300'">
                         {{ tab.label }}
                         <span class="ml-1 text-xs opacity-70">({{ tab.count }})</span>
                     </button>
@@ -400,20 +411,16 @@ const submitTransfer = () => {
             </div>
 
             <div
-                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
-            >
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
                 <!--  FILTER GRID -->
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
                     <!--  Name -->
                     <Combobox v-model="selectedStudent" as="div" class="w-full">
                         <div class="relative w-full">
-                            <ComboboxInput
-                                class="input"
-                                placeholder="Search student..."
+                            <ComboboxInput class="input" placeholder="Search student..."
                                 :display-value="(s) => (s ? `${s.fname} ${s.lname}` : '')"
                                 @input="($e) => searchStudents('name', $e.target.value)"
-                                @focus="() => showAllStudents('name')"
-                            />
+                                @focus="() => showAllStudents('name')" />
                             <ComboboxButton class="icon-btn" @click="() => showAllStudents('name')">
                                 <ChevronUpDownIcon class="icon" />
                             </ComboboxButton>
@@ -429,13 +436,10 @@ const submitTransfer = () => {
                     <!--  Phone -->
                     <Combobox v-model="selectedPhone" class="w-full">
                         <div class="relative w-full">
-                            <ComboboxInput
-                                class="input"
-                                placeholder="Search phone..."
+                            <ComboboxInput class="input" placeholder="Search phone..."
                                 :display-value="(s) => s?.phone ?? ''"
                                 @input="($e) => searchStudents('phone', $e.target.value)"
-                                @focus="() => showAllStudents('phone')"
-                            />
+                                @focus="() => showAllStudents('phone')" />
                             <ComboboxButton class="icon-btn" @click="() => showAllStudents('phone')">
                                 <ChevronUpDownIcon class="icon" />
                             </ComboboxButton>
@@ -452,13 +456,10 @@ const submitTransfer = () => {
                     <!-- Assign -->
                     <Combobox v-model="selectedAssain" class="w-full">
                         <div class="relative w-full">
-                            <ComboboxInput
-                                class="input"
-                                placeholder="Assign user..."
+                            <ComboboxInput class="input" placeholder="Assign user..."
                                 :display-value="(s) => s?.name ?? ''"
                                 @input="($e) => searchStudents('assain', $e.target.value)"
-                                @focus="() => showAllStudents('assain')"
-                            />
+                                @focus="() => showAllStudents('assain')" />
                             <ComboboxButton class="icon-btn" @click="() => showAllStudents('assain')">
                                 <ChevronUpDownIcon class="icon" />
                             </ComboboxButton>
@@ -475,13 +476,9 @@ const submitTransfer = () => {
                     <!-- Date -->
                     <Combobox v-model="selectedDate" class="w-full">
                         <div class="relative w-full">
-                            <ComboboxInput
-                                class="input"
-                                placeholder="Entry date..."
-                                :display-value="(d) => d ?? ''"
+                            <ComboboxInput class="input" placeholder="Entry date..." :display-value="(d) => d ?? ''"
                                 @input="($e) => searchStudents('date', $e.target.value)"
-                                @focus="() => showAllStudents('date')"
-                            />
+                                @focus="() => showAllStudents('date')" />
                             <ComboboxButton class="icon-btn" @click="() => showAllStudents('date')">
                                 <ChevronUpDownIcon class="icon" />
                             </ComboboxButton>
@@ -495,16 +492,22 @@ const submitTransfer = () => {
                         </div>
                     </Combobox>
                     <div class="flex flex-col items-stretch justify-end gap-2 sm:flex-row">
-                        <Button class="btn-primary w-full cursor-pointer sm:w-auto" @click="search"><Search class="mr-1 h-4 w-4" /> Search </Button>
-                        <Button class="w-full cursor-pointer sm:w-auto" @click="refresh"><RefreshCcw class="mr-1 h-4 w-4" /> Refresh </Button>
+                        <Button class="btn-primary w-full cursor-pointer sm:w-auto" @click="search">
+                            <Search class="mr-1 h-4 w-4" /> Search
+                        </Button>
+                        <Button class="w-full cursor-pointer sm:w-auto" @click="refresh">
+                            <RefreshCcw class="mr-1 h-4 w-4" /> Refresh
+                        </Button>
                     </div>
                 </div>
             </div>
 
             <!-- ── Lead Transfer Panel (same design as inactive page) ── -->
-            <div class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
+            <div
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
                 <!-- Header -->
-                <div class="flex items-center gap-3 border-b border-orange-100 bg-gradient-to-r from-indigo-500 to-indigo-500 px-6 py-3 dark:border-orange-900/50 dark:from-indigo-900 dark:to-indigo-900">
+                <div
+                    class="flex items-center gap-3 border-b border-orange-100 bg-gradient-to-r from-indigo-500 to-indigo-500 px-6 py-3 dark:border-orange-900/50 dark:from-indigo-900 dark:to-indigo-900">
                     <ArrowRightLeft class="h-5 w-5 text-white" />
                     <h3 class="font-semibold text-white">Lead Transfer — Pending
                         <span class="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs">{{ student.total }} leads</span>
@@ -515,29 +518,24 @@ const submitTransfer = () => {
                 <div class="flex flex-col gap-4 p-5 sm:flex-row sm:items-end sm:flex-wrap">
                     <!-- Transfer Mode -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Transfer Mode</label>
+                        <label class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Transfer
+                            Mode</label>
                         <div class="flex gap-2">
-                            <button
-                                @click="transferMode = 'selected'"
-                                :class="[
-                                    'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition',
-                                    transferMode === 'selected'
-                                        ? 'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
-                                        : 'border-gray-200 bg-white text-gray-600 hover:border-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300',
-                                ]"
-                            >
+                            <button @click="transferMode = 'selected'" :class="[
+                                'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition',
+                                transferMode === 'selected'
+                                    ? 'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+                                    : 'border-gray-200 bg-white text-gray-600 hover:border-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                            ]">
                                 <CheckSquare class="h-4 w-4" />
                                 Selected ({{ selectedIds.length }})
                             </button>
-                            <button
-                                @click="transferMode = 'all'"
-                                :class="[
-                                    'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition',
-                                    transferMode === 'all'
-                                        ? 'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
-                                        : 'border-gray-200 bg-white text-gray-600 hover:border-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300',
-                                ]"
-                            >
+                            <button @click="transferMode = 'all'" :class="[
+                                'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition',
+                                transferMode === 'all'
+                                    ? 'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+                                    : 'border-gray-200 bg-white text-gray-600 hover:border-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                            ]">
                                 <CheckCheck class="h-4 w-4" />
                                 All ({{ student.total }})
                             </button>
@@ -546,9 +544,11 @@ const submitTransfer = () => {
 
                     <!-- Target User -->
                     <div class="flex flex-col gap-1 min-w-48">
-                        <label class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Transfer to →</label>
+                        <label class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Transfer to
+                            →</label>
                         <Select v-model="transferForm.to_user_id">
-                            <SelectTrigger class="h-10 border-gray-200 bg-white text-sm dark:border-gray-700 dark:bg-gray-800">
+                            <SelectTrigger
+                                class="h-10 border-gray-200 bg-white text-sm dark:border-gray-700 dark:bg-gray-800">
                                 <SelectValue placeholder="Select a user..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -560,11 +560,8 @@ const submitTransfer = () => {
                     </div>
 
                     <!-- Submit -->
-                    <Button
-                        @click="submitTransfer"
-                        :disabled="transferForm.processing"
-                        class="flex h-10 cursor-pointer items-center gap-2 bg-indigo-500 text-white hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500"
-                    >
+                    <Button @click="submitTransfer" :disabled="transferForm.processing"
+                        class="flex h-10 cursor-pointer items-center gap-2 bg-indigo-500 text-white hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500">
                         <Send class="h-4 w-4" />
                         {{ transferForm.processing ? 'Processing...' : 'Transfer' }}
                     </Button>
@@ -576,11 +573,13 @@ const submitTransfer = () => {
                 </div>
 
                 <!-- Alerts -->
-                <div v-if="transferSuccess" class="mx-5 mb-4 flex items-center gap-2 rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-300">
+                <div v-if="transferSuccess"
+                    class="mx-5 mb-4 flex items-center gap-2 rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-300">
                     <CheckCheck class="h-4 w-4" />
                     {{ transferSuccess }}
                 </div>
-                <div v-if="transferError" class="mx-5 mb-4 flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
+                <div v-if="transferError"
+                    class="mx-5 mb-4 flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
                     <AlertCircle class="h-4 w-4" />
                     {{ transferError }}
                 </div>
@@ -594,53 +593,47 @@ const submitTransfer = () => {
                 </div>
                 <Table class="w-full min-w-225 text-sm">
                     <TableHeader>
-                            <TableRow class="bg-gray-100 hover:bg-gray-200">
-                                <TableHead class="w-10 px-4">
-                                    <input type="checkbox" :checked="allChecked" @change="toggleAll" class="h-4 w-4 rounded border-gray-300 text-orange-500" />
-                                </TableHead>
-                                <TableHead class="px-4 font-semibold">Student Name</TableHead>
-                                <TableHead class="th">Phone</TableHead>
-                                <TableHead class="th">Gender</TableHead>
-                                <TableHead class="th">Source</TableHead>
-                                <TableHead class="th">Form Name</TableHead>
-                                <TableHead class="th">Assignee User</TableHead>
-                                <TableHead class="th">Entry Date Time</TableHead>
-                                <TableHead class="th">Status</TableHead>
-                            </TableRow>
-                        </TableHeader>
+                        <TableRow class="bg-gray-100 hover:bg-gray-200">
+                            <TableHead class="w-10 px-4">
+                                <input type="checkbox" :checked="allChecked" @change="toggleAll"
+                                    class="h-4 w-4 rounded border-gray-300 text-orange-500" />
+                            </TableHead>
+                            <TableHead class="px-4 font-semibold">Student Name</TableHead>
+                            <TableHead class="th">Phone</TableHead>
+                            <TableHead class="th">Gender</TableHead>
+                            <TableHead class="th">Source</TableHead>
+                            <TableHead class="th">Form Name</TableHead>
+                            <TableHead class="th">Assignee User</TableHead>
+                            <TableHead class="th">Entry Date Time</TableHead>
+                            <TableHead class="th">Status</TableHead>
+                        </TableRow>
+                    </TableHeader>
                     <TableBody>
-                        <TableRow v-for="(stud, index) in data.data" :key="stud.id ?? index" :class="selectedIds.includes(stud.id) ? 'bg-orange-50 dark:bg-orange-900/10' : ''">
+                        <TableRow v-for="(stud, index) in data.data" :key="stud.id ?? index"
+                            :class="selectedIds.includes(stud.id) ? 'bg-orange-50 dark:bg-orange-900/10' : ''">
                             <TableCell class="px-4">
-                                <input
-                                    type="checkbox"
-                                    :checked="selectedIds.includes(stud.id)"
+                                <input type="checkbox" :checked="selectedIds.includes(stud.id)"
                                     @change="() => toggleOne(stud.id)"
-                                    class="h-4 w-4 rounded border-gray-300 text-orange-500"
-                                />
+                                    class="h-4 w-4 rounded border-gray-300 text-orange-500" />
                             </TableCell>
                             <TableCell class="td">
                                 <Link :href="route('studentActivities.index', stud.id)" class="flex items-center gap-3">
                                     <!-- Avatar -->
                                     <div class="relative">
-                                        <img
-                                            v-if="stud.photo"
-                                            :src="`/storage/student/${stud.photo}`"
-                                            class="h-10 w-10 rounded-full object-cover"
-                                            alt=""
-                                        />
-                                        <div
-                                            v-else
-                                            :class="[
-                                                'flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white',
-                                                getAvatarColor(stud.fname + ' ' + stud.lname),
-                                            ]"
-                                        >
-                                            {{ (stud.fname?.charAt(0) || '').toUpperCase() }}{{ (stud.lname?.charAt(0) || '').toUpperCase() }}
+                                        <img v-if="stud.photo" :src="`/storage/student/${stud.photo}`"
+                                            class="h-10 w-10 rounded-full object-cover" alt="" />
+                                        <div v-else :class="[
+                                            'flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white',
+                                            getAvatarColor(stud.fname + ' ' + stud.lname),
+                                        ]">
+                                            {{ (stud.fname?.charAt(0) || '').toUpperCase() }}{{ (stud.lname?.charAt(0)
+                                                || '').toUpperCase() }}
                                         </div>
                                     </div>
                                     <!-- Name -->
                                     <div class="flex flex-col">
-                                        <span class="font-medium text-gray-800 hover:text-blue-600">{{ stud.fname }} {{ stud.lname }}</span>
+                                        <span class="font-medium text-gray-800 hover:text-blue-600">{{ stud.fname }} {{
+                                            stud.lname }}</span>
                                         <span class="text-xs text-gray-500">ID: {{ stud.student_id }}</span>
                                     </div>
                                 </Link>
@@ -649,7 +642,8 @@ const submitTransfer = () => {
                                 <span class="font-medium text-gray-700">{{ stud.phone }}</span>
                             </TableCell>
                             <TableCell class="td">
-                                <span class="font-medium text-gray-700">{{ stud.gender == 1 ? 'Male' : stud.gender == 2 ? 'Female' : 'N/A' }}</span>
+                                <span class="font-medium text-gray-700">{{ stud.gender == 1 ? 'Male' : stud.gender == 2
+                                    ? 'Female' : 'N/A' }}</span>
                             </TableCell>
                             <TableCell class="td">
                                 <div class="font-medium text-gray-700">
@@ -672,7 +666,8 @@ const submitTransfer = () => {
                                 </div>
                             </TableCell>
                             <TableCell class="td">
-                                <span :class="getStatusText(stud.status)?.color + ' rounded-full px-3 py-1 text-xs font-medium'">
+                                <span
+                                    :class="getStatusText(stud.status)?.color + ' rounded-full px-3 py-1 text-xs font-medium'">
                                     {{ getStatusText(stud.status)?.text || '-' }}
                                 </span>
                             </TableCell>
@@ -722,20 +717,14 @@ const submitTransfer = () => {
 
                 <!-- RIGHT SIDE PAGINATION -->
                 <div class="flex flex-wrap justify-center gap-2 md:justify-end">
-                    <button
-                        v-for="(link, index) in student.links"
-                        :key="index"
-                        @click="goToPage(link.url)"
-                        :disabled="!link.url"
-                        v-html="link.label"
-                        :class="[
+                    <button v-for="(link, index) in student.links" :key="index" @click="goToPage(link.url)"
+                        :disabled="!link.url" v-html="link.label" :class="[
                             'rounded-md border px-3 py-1.5 text-sm transition',
                             link.active
                                 ? 'border-indigo-600 bg-indigo-600 text-white shadow'
                                 : 'bg-white text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
                             !link.url ? 'cursor-not-allowed opacity-50' : '',
-                        ]"
-                    ></button>
+                        ]"></button>
                 </div>
             </div>
         </div>

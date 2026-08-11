@@ -67,10 +67,14 @@ class AccountsReportController extends Controller
             })
             ->get()
             ->filter(function ($group) {
-                return $group->GroupTwo
-                    ->flatMap->GroupThree
-                    ->flatMap->GroupFour
-                    ->flatMap->chartOfAccounts
+                return $group
+                    ->GroupTwo
+                    ->flatMap
+                    ->GroupThree
+                    ->flatMap
+                    ->GroupFour
+                    ->flatMap
+                    ->chartOfAccounts
                     ->isNotEmpty();
             })
             ->values();
@@ -81,13 +85,13 @@ class AccountsReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([
-                'margin-top'    => 5,
-                'margin-right'  => 5,
+                'margin-top' => 5,
+                'margin-right' => 5,
                 'margin-bottom' => 5,
-                'margin-left'   => 5,
+                'margin-left' => 5,
             ]);
 
-        return $pdf->stream("chartofaccounts.pdf");
+        return $pdf->stream('chartofaccounts.pdf');
     }
 
     public function ActoGL()
@@ -109,7 +113,6 @@ class AccountsReportController extends Controller
 
     public function ActoGLReport(Request $request)
     {
-
         try {
             $this->authorize('accountsreport.ActoGL');
         } catch (AuthorizationException $e) {
@@ -121,7 +124,6 @@ class AccountsReportController extends Controller
         $accname = ChartOfAccount::where('accountcode', $request->account)->value('description');
 
         if ($accname && str_starts_with($accname, 'STU-')) {
-
             $student = Student::where('student_id', $accname)
                 ->value(DB::raw("CONCAT(fname, ' ', lname)"));
 
@@ -141,17 +143,16 @@ class AccountsReportController extends Controller
 
         $opening = $opening ?? 0;
 
-        $voucher = VoucherBalance::with('branch','voucherDetails')
+        $voucher = VoucherBalance::with('branch', 'voucherDetails')
             ->whereBetween('voucherdate', [$request->startdate, $request->enddate])
             ->where('accountcode', $request->account)
             ->where('status', 'Post')
-
             ->when($request->filled('branch_id'), function ($q) use ($request) {
                 $q->where('branch_id', $request->branch_id);
             })
             ->orderBy('voucherdate', 'asc')
             ->get();
-           
+
         $company = CompanyInfo::firstOrFail();
         $pdf = PDF::loadView('exports.accounts.actogl', [
             'company' => $company,
@@ -164,15 +165,14 @@ class AccountsReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([
-                'margin-top'    => 5,
-                'margin-right'  => 5,
+                'margin-top' => 5,
+                'margin-right' => 5,
                 'margin-bottom' => 5,
-                'margin-left'   => 5,
+                'margin-left' => 5,
             ]);;
 
-        return $pdf->stream("AcToGl-Reports.pdf");
+        return $pdf->stream('AcToGl-Reports.pdf');
     }
-
 
     public function SupplierLedger()
     {
@@ -211,7 +211,6 @@ class AccountsReportController extends Controller
         $report = [];
 
         foreach ($data as $row) {
-
             // Opening Balance
             $opening = DB::table('suppliers as a')
                 ->join('voucherdetails as b', 'a.subcode', '=', 'b.subacccode')
@@ -221,7 +220,7 @@ class AccountsReportController extends Controller
                 ->where('c.voucherdate', '<', $from_date)
                 ->sum('b.baseamt');
 
-            //Transactions
+            // Transactions
             $transactions = DB::table('suppliers as a')
                 ->join('voucherdetails as b', 'a.subcode', '=', 'b.subacccode')
                 ->join('voucherheaders as c', 'b.vouchernumber', '=', 'c.vouchernumber')
@@ -249,13 +248,13 @@ class AccountsReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([
-                'margin-top'    => 5,
-                'margin-right'  => 5,
+                'margin-top' => 5,
+                'margin-right' => 5,
                 'margin-bottom' => 5,
-                'margin-left'   => 5,
+                'margin-left' => 5,
             ]);
 
-        return $pdf->stream("SupplierLedger-Reports.pdf");
+        return $pdf->stream('SupplierLedger-Reports.pdf');
     }
 
     public function CashBook()
@@ -280,11 +279,11 @@ class AccountsReportController extends Controller
             ->join('chart_of_accounts as coa', 'voucher_balances.accountcode', '=', 'coa.accountcode')
             ->join('branches as b', 'voucher_balances.branch_id', '=', 'b.id')
             ->where('coa.accountusage', 'Ledger')
-            ->where('coa.analyticalcode', 'Cash') // Ledger – Cash
+            ->where('coa.analyticalcode', 'Cash')  // Ledger – Cash
             ->where('voucher_balances.voucherdate', '<', $request->startdate)
             ->where('voucher_balances.status', 'Post')
             ->where('voucher_balances.primeamt', '>', 0)
-            //->whereRaw("LEFT(voucher_balances.vouchernumber, 4) = 'OB--'")
+            // ->whereRaw("LEFT(voucher_balances.vouchernumber, 4) = 'OB--'")
             ->when($request->filled('branch_id'), function ($q) use ($request) {
                 $q->where('voucher_balances.branch_id', $request->branch_id);
             })
@@ -294,9 +293,6 @@ class AccountsReportController extends Controller
             )
             ->groupBy('b.branchname')
             ->first();
-
-
-
 
         $cashBook = VoucherBalance::query()
             ->with(['voucherHeader', 'branch'])
@@ -309,7 +305,7 @@ class AccountsReportController extends Controller
             ->where('voucher_balances.status', 'Post')
             ->where('vh.status', 'Posted')
             ->where('coa.accountusage', 'Ledger')
-            ->where('coa.analyticalcode', 'Cash')   // Only Cash & Bank
+            ->where('coa.analyticalcode', 'Cash')  // Only Cash & Bank
             ->when($request->filled('branch_id'), function ($q) use ($request) {
                 $q->where('voucher_balances.branch_id', $request->branch_id);
             })
@@ -332,13 +328,13 @@ class AccountsReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([
-                'margin-top'    => 5,
-                'margin-right'  => 5,
+                'margin-top' => 5,
+                'margin-right' => 5,
                 'margin-bottom' => 5,
-                'margin-left'   => 5,
+                'margin-left' => 5,
             ]);;
 
-        return $pdf->stream("CashBook-Reports.pdf");
+        return $pdf->stream('CashBook-Reports.pdf');
     }
 
     public function CashFlow()
@@ -359,9 +355,8 @@ class AccountsReportController extends Controller
 
     public function CashFlowReport(Request $request)
     {
-
         $from = $request->startdate;
-        $to   = $request->enddate;
+        $to = $request->enddate;
         $branchId = $request->branch_id;
         /* =============================
          | 1. CASH & BANK ACCOUNT CODES
@@ -382,7 +377,7 @@ class AccountsReportController extends Controller
             ->when(
                 $branchId,
                 fn($q) =>
-                $q->where('branch_id', $branchId)
+                    $q->where('branch_id', $branchId)
             )
             ->sum('primeamt');
         /* =============================
@@ -401,7 +396,7 @@ class AccountsReportController extends Controller
             ->when(
                 $branchId,
                 fn($q) =>
-                $q->where('voucher_balances.branch_id', $branchId)
+                    $q->where('voucher_balances.branch_id', $branchId)
             )
             ->groupBy('chart_of_accounts.description')
             ->get();
@@ -423,7 +418,7 @@ class AccountsReportController extends Controller
             ->when(
                 $branchId,
                 fn($q) =>
-                $q->where('voucher_balances.branch_id', $branchId)
+                    $q->where('voucher_balances.branch_id', $branchId)
             )
             ->groupBy('chart_of_accounts.description')
             ->get();
@@ -445,7 +440,7 @@ class AccountsReportController extends Controller
             ->when(
                 $branchId,
                 fn($q) =>
-                $q->where('voucher_balances.branch_id', $branchId)
+                    $q->where('voucher_balances.branch_id', $branchId)
             )
             ->groupBy('chart_of_accounts.description')
             ->get();
@@ -474,13 +469,13 @@ class AccountsReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([
-                'margin-top'    => 5,
-                'margin-right'  => 5,
+                'margin-top' => 5,
+                'margin-right' => 5,
                 'margin-bottom' => 5,
-                'margin-left'   => 5,
+                'margin-left' => 5,
             ]);;
 
-        return $pdf->stream("CashFlow-Reports.pdf");
+        return $pdf->stream('CashFlow-Reports.pdf');
     }
 
     public function JurnalTransactions()
@@ -502,7 +497,6 @@ class AccountsReportController extends Controller
 
     public function JurnalTransactionsReport(Request $request)
     {
-
         try {
             $this->authorize('accountsreport.JurnalTransactions');
         } catch (AuthorizationException $e) {
@@ -519,7 +513,7 @@ class AccountsReportController extends Controller
             })
             ->when($request->filled('transaction_id'), function ($q) use ($request) {
                 $q->whereRaw(
-                    "LEFT(vouchernumber, ?) = ?",
+                    'LEFT(vouchernumber, ?) = ?',
                     [strlen($request->transaction_id), $request->transaction_id]
                 );
             })
@@ -528,7 +522,6 @@ class AccountsReportController extends Controller
             })
             ->orderBy('voucherdate', 'asc')
             ->get();
-
 
         $company = CompanyInfo::firstOrFail();
         $pdf = PDF::loadView('exports.accounts.jurnaltransactions', [
@@ -540,13 +533,13 @@ class AccountsReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([
-                'margin-top'    => 5,
-                'margin-right'  => 5,
+                'margin-top' => 5,
+                'margin-right' => 5,
                 'margin-bottom' => 5,
-                'margin-left'   => 5,
+                'margin-left' => 5,
             ]);;
 
-        return $pdf->stream("JurnalTransactions-Reports.pdf");
+        return $pdf->stream('JurnalTransactions-Reports.pdf');
     }
 
     public function TrialBalanceConsolidated()
@@ -605,13 +598,13 @@ class AccountsReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([
-                'margin-top'    => 5,
-                'margin-right'  => 5,
+                'margin-top' => 5,
+                'margin-right' => 5,
                 'margin-bottom' => 5,
-                'margin-left'   => 5,
+                'margin-left' => 5,
             ]);;
 
-        return $pdf->stream("TrialBalanceConsolidated-Reports.pdf");
+        return $pdf->stream('TrialBalanceConsolidated-Reports.pdf');
     }
 
     public function TrialBalance()
@@ -632,27 +625,22 @@ class AccountsReportController extends Controller
 
     public function TrialBalanceReport(Request $request)
     {
-
         $company = CompanyInfo::firstOrFail();
         $branch = Branch::where('id', $request->branch_id)->first();
         $startdate = $request->startdate;
-        $enddate   = $request->enddate;
-        $branchId  = $request->branch_id;
+        $enddate = $request->enddate;
+        $branchId = $request->branch_id;
         $trialBalance = DB::table('chart_of_accounts as coa')
             ->leftJoin('voucher_balances as vb', 'vb.accountcode', '=', 'coa.accountcode')
             ->leftJoin('voucherheaders as vh', 'vh.vouchernumber', '=', 'vb.vouchernumber')
-
             ->when($branchId, function ($q) use ($branchId) {
                 $q->where('vb.branch_id', $branchId);
             })
-
             ->where('vb.status', 'Post')
             ->where('vh.status', 'Posted')
-
             ->select(
                 'coa.accountcode',
                 'coa.description',
-
                 /* ================= Balance B/F ================= */
                 DB::raw("
                 SUM(
@@ -663,7 +651,6 @@ class AccountsReportController extends Controller
                     END
                 ) AS bf_debit
             "),
-
                 DB::raw("
                 SUM(
                     CASE 
@@ -673,7 +660,6 @@ class AccountsReportController extends Controller
                     END
                 ) AS bf_credit
             "),
-
                 /* ================= Current Period ================= */
                 DB::raw("
                 SUM(
@@ -684,7 +670,6 @@ class AccountsReportController extends Controller
                     END
                 ) AS cur_debit
             "),
-
                 DB::raw("
                 SUM(
                     CASE 
@@ -694,7 +679,6 @@ class AccountsReportController extends Controller
                     END
                 ) AS cur_credit
             "),
-
                 /* ================= Balance C/F ================= */
                 DB::raw("
                 (
@@ -714,7 +698,6 @@ class AccountsReportController extends Controller
                     )
                 ) AS cf_debit
             "),
-
                 DB::raw("
                 (
                     SUM(
@@ -734,7 +717,6 @@ class AccountsReportController extends Controller
                 ) AS cf_credit
             ")
             )
-
             ->groupBy('coa.accountcode', 'coa.description')
             ->havingRaw('
             bf_debit <> 0 OR bf_credit <> 0 
@@ -752,15 +734,14 @@ class AccountsReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([
-                'margin-top'    => 5,
-                'margin-right'  => 5,
+                'margin-top' => 5,
+                'margin-right' => 5,
                 'margin-bottom' => 5,
-                'margin-left'   => 5,
+                'margin-left' => 5,
             ]);;
 
-        return $pdf->stream("TrialBalance-Reports.pdf");
+        return $pdf->stream('TrialBalance-Reports.pdf');
     }
-
 
     public function BalanceSheet()
     {
@@ -775,14 +756,11 @@ class AccountsReportController extends Controller
 
         return Inertia::render('allpages/reports/accounts/balancesheet', [
             'branch' => Branch::where('active', 1)->get(),
-
         ]);
     }
 
     public function BalanceSheetReport(Request $request)
     {
-
-
         $company = CompanyInfo::firstOrFail();
         $branch = Branch::where('id', $request->branch_id)->first();
 
@@ -800,10 +778,10 @@ class AccountsReportController extends Controller
                 WHERE b.groupone_name IN ('ASSETS','LIABILITIES')
                 AND a.voucherdate BETWEEN ? AND ?
                 AND a.status = 'Post'
-                " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
+                " . ($request->filled('branch_id') ? 'AND a.branch_id = ?' : '') . '
                 GROUP BY b.groupone_name, b.grouptwo_name, b.groupthree_name, b.groupfour_name
                 ORDER BY b.groupone_name, b.grouptwo_name, b.groupthree_name, b.groupfour_name
-            ",
+            ',
                 $request->filled('branch_id')
                     ? [$request->startdate, $request->enddate, $request->branch_id]
                     : [$request->startdate, $request->enddate]
@@ -823,7 +801,7 @@ class AccountsReportController extends Controller
                     ON a.accountcode = b.accountcode
                     AND a.voucherdate BETWEEN ? AND ?
                     AND a.status = 'Post'
-                    " . ($request->filled('branch_id') ? " AND a.branch_id = ? " : "") . "
+                    " . ($request->filled('branch_id') ? ' AND a.branch_id = ? ' : '') . "
                 WHERE b.groupone_name IN ('ASSETS','LIABILITIES')
                 GROUP BY 
                     b.groupone_name,
@@ -846,17 +824,19 @@ class AccountsReportController extends Controller
             ]));
         }
 
-        $groupedAssets = collect($sql)->groupBy('groupone_name')
+        $groupedAssets = collect($sql)
+            ->groupBy('groupone_name')
             ->map(function ($items) {
-                return $items->groupBy('grouptwo_name')
+                return $items
+                    ->groupBy('grouptwo_name')
                     ->map(function ($items) {
-                        return $items->groupBy('groupthree_name')
+                        return $items
+                            ->groupBy('groupthree_name')
                             ->map(function ($items) {
                                 return $items->groupBy('groupfour_name');
                             });
                     });
             });
-
 
         $pdf = PDF::loadView('exports.accounts.balancesheet', [
             'company' => $company,
@@ -867,13 +847,13 @@ class AccountsReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([
-                'margin-top'    => 5,
-                'margin-right'  => 5,
+                'margin-top' => 5,
+                'margin-right' => 5,
                 'margin-bottom' => 5,
-                'margin-left'   => 5,
+                'margin-left' => 5,
             ]);;
 
-        return $pdf->stream("BalanceSheet-Reports.pdf");
+        return $pdf->stream('BalanceSheet-Reports.pdf');
     }
 
     public function ProfitLoss()
@@ -894,7 +874,6 @@ class AccountsReportController extends Controller
 
     public function ProfitLossReport(Request $request)
     {
-
         $company = CompanyInfo::firstOrFail();
         $branch = Branch::where('id', $request->branch_id)->first();
 
@@ -912,10 +891,10 @@ class AccountsReportController extends Controller
                 WHERE b.groupone_name IN ('REVENUES','EXPENDITURES')
                 AND a.voucherdate BETWEEN ? AND ?
                 AND a.status = 'Post'
-                " . ($request->filled('branch_id') ? "AND a.branch_id = ?" : "") . "
+                " . ($request->filled('branch_id') ? 'AND a.branch_id = ?' : '') . '
                 GROUP BY b.groupone_name, b.grouptwo_name, b.groupthree_name, b.groupfour_name
                 ORDER BY b.groupone_code,b.groupone_name, b.grouptwo_name, b.groupthree_name, b.groupfour_name
-            ",
+            ',
                 $request->filled('branch_id')
                     ? [$request->startdate, $request->enddate, $request->branch_id]
                     : [$request->startdate, $request->enddate]
@@ -935,7 +914,7 @@ class AccountsReportController extends Controller
                     ON a.accountcode = b.accountcode
                     AND a.voucherdate BETWEEN ? AND ?
                     AND a.status = 'Post'
-                    " . ($request->filled('branch_id') ? " AND a.branch_id = ? " : "") . "
+                    " . ($request->filled('branch_id') ? ' AND a.branch_id = ? ' : '') . "
                 WHERE b.groupone_name IN ('REVENUES','EXPENDITURES')
                 GROUP BY 
                     b.groupone_name,
@@ -958,17 +937,19 @@ class AccountsReportController extends Controller
                 $request->branch_id ?? null
             ]));
         }
-        $groupedAssets = collect($sql)->groupBy('groupone_name')
+        $groupedAssets = collect($sql)
+            ->groupBy('groupone_name')
             ->map(function ($items) {
-                return $items->groupBy('grouptwo_name')
+                return $items
+                    ->groupBy('grouptwo_name')
                     ->map(function ($items) {
-                        return $items->groupBy('groupthree_name')
+                        return $items
+                            ->groupBy('groupthree_name')
                             ->map(function ($items) {
                                 return $items->groupBy('groupfour_name');
                             });
                     });
             });
-
 
         $pdf = PDF::loadView('exports.accounts.profitloss', [
             'company' => $company,
@@ -979,20 +960,20 @@ class AccountsReportController extends Controller
         ])
             ->setPaper('a4', 'landscape')
             ->setOption([
-                'margin-top'    => 5,
-                'margin-right'  => 5,
+                'margin-top' => 5,
+                'margin-right' => 5,
                 'margin-bottom' => 5,
-                'margin-left'   => 5,
+                'margin-left' => 5,
             ]);;
 
-        return $pdf->stream("ProfitLoss-Reports.pdf");
+        return $pdf->stream('ProfitLoss-Reports.pdf');
     }
 
     public function createMonth()
     {
         $a = array();
         for ($i = 1; $i <= 12; $i++) {
-            $a[$i] = date("F", mktime(0, 0, 0, $i, $i));
+            $a[$i] = date('F', mktime(0, 0, 0, $i, $i));
         }
         return $a;
     }

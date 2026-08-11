@@ -45,14 +45,24 @@ const form = useForm({
     verify_token: '',
 });
 
-const isFacebook = computed(() => form.platform === 'facebook');
+const isFacebookOrMessenger = computed(() => form.platform === 'facebook' || form.platform === 'messenger');
 const isWhatsApp = computed(() => form.platform === 'whatsapp');
-const isMessenger = computed(() => form.platform === 'messenger');
+
+const resetFormState = () => {
+    form.reset();
+    form.clearErrors();
+    form.id = null;
+    form.platform = '';
+    form.page_id = '';
+    form.whatsapp_business_account_id = '';
+    form.access_token = '';
+    form.verify_token = '';
+};
 
 watch(
     () => form.platform,
     (platform) => {
-        if (platform === 'facebook') {
+        if (platform === 'facebook' || platform === 'messenger') {
             form.whatsapp_business_account_id = '';
             form.clearErrors('whatsapp_business_account_id');
         }
@@ -61,23 +71,17 @@ watch(
             form.page_id = '';
             form.clearErrors('page_id');
         }
-
-        if (platform == 'messenger') {
-            form.page_id = '';
-            form.clearErrors('page_id');
-        }
     },
 );
 
 const showDialogCreate = () => {
-    form.reset();
-    form.id = null;
+    resetFormState();
     isEditMode.value = false;
     showDialog.value = true;
 };
 
 const openEdit = (item: SocialMediaItem) => {
-    form.reset();
+    resetFormState();
     form.id = item.id;
     form.platform = item.platform;
     form.page_id = item.page_id;
@@ -89,7 +93,7 @@ const openEdit = (item: SocialMediaItem) => {
 };
 
 const submit = () => {
-    if (form.platform === 'facebook') {
+    if (form.platform === 'facebook' || form.platform === 'messenger') {
         form.whatsapp_business_account_id = '';
     }
 
@@ -102,7 +106,9 @@ const submit = () => {
             preserveState: true,
             onSuccess: () => {
                 toast.success('Social media updated');
+                resetFormState();
                 showDialog.value = false;
+                router.reload({ only: ['socialMediaSetups'], preserveScroll: true });
             },
             onError: (errors) => {
                 const first = Object.values(errors)[0];
@@ -114,7 +120,9 @@ const submit = () => {
             preserveState: true,
             onSuccess: () => {
                 toast.success('Social media created');
+                resetFormState();
                 showDialog.value = false;
+                router.reload({ only: ['socialMediaSetups'], preserveScroll: true });
             },
             onError: (errors) => {
                 const first = Object.values(errors)[0];
@@ -156,21 +164,21 @@ const platformLabel = (platform: string) => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
+
         <Head title="Social Media Setup" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+            <div
+                class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
                 <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div class="flex items-center gap-3">
-                        <Button
-                            class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
-                            size="sm"
-                            @click="showDialogCreate"
-                        >
+                        <Button class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
+                            size="sm" @click="showDialogCreate">
                             <Plus class="mr-2 h-4 w-4" />
                             Create
                         </Button>
 
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-700" variant="outline" size="sm" @click="refresh">
+                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-700" variant="outline" size="sm"
+                            @click="refresh">
                             <RefreshCcw class="mr-2 h-4 w-4" />
                             Refresh
                         </Button>
@@ -218,15 +226,17 @@ const platformLabel = (platform: string) => {
                 <Dialog v-model:open="showDialog">
                     <DialogContent class="max-w-lg rounded-2xl shadow-lg sm:max-w-xl md:max-w-2xl">
                         <DialogHeader class="border-b pb-3">
-                            <DialogTitle class="text-lg font-semibold">{{ isEditMode ? 'Edit' : 'Create' }} Social Media</DialogTitle>
-                            <DialogDescription class="text-sm text-gray-500">{{
-                                isEditMode ? 'Update the social media settings.' : 'Fill the fields to create a new social media setting.'
-                            }}</DialogDescription>
+                            <DialogTitle class="text-lg font-semibold">{{ isEditMode ? 'Edit' : 'Create' }} Social Media
+                            </DialogTitle>
+                            <DialogDescription class="text-sm text-gray-500">
+                                {{ isEditMode ? 'Update the social media settings.' : 'Fill the fields to create a new social media setting.' }}
+                            </DialogDescription>
                         </DialogHeader>
 
                         <div class="grid grid-cols-1 gap-6 py-4 md:grid-cols-2">
                             <div class="grid gap-2">
-                                <Label for="platform" class="font-medium">Platform<span class="text-red-500">*</span></Label>
+                                <Label for="platform" class="font-medium">Platform<span
+                                        class="text-red-500">*</span></Label>
                                 <Select id="platform" v-model="form.platform">
                                     <SelectTrigger class="w-full">
                                         <SelectValue placeholder="Select Platform" />
@@ -237,18 +247,21 @@ const platformLabel = (platform: string) => {
                                         <SelectItem value="messenger">Messenger</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <p v-if="form.errors.platform" class="text-sm text-red-600">{{ form.errors.platform }}</p>
+                                <p v-if="form.errors.platform" class="text-sm text-red-600">{{ form.errors.platform }}
+                                </p>
                             </div>
 
-                            <div v-if="isFacebook" class="grid gap-2">
-                                <Label for="page_id" class="font-medium">Page ID<span class="text-red-500">*</span></Label>
+                            <div v-if="isFacebookOrMessenger" class="grid gap-2">
+                                <Label for="page_id" class="font-medium">Page ID<span
+                                        class="text-red-500">*</span></Label>
                                 <Input id="page_id" v-model="form.page_id" class="w-full" />
                                 <p v-if="form.errors.page_id" class="text-sm text-red-600">{{ form.errors.page_id }}</p>
                             </div>
-
                             <div v-if="isWhatsApp" class="grid gap-2">
-                                <Label for="whatsapp_business_account_id" class="font-medium">WhatsApp Business Account ID</Label>
-                                <Input id="whatsapp_business_account_id" v-model="form.whatsapp_business_account_id" class="w-full" />
+                                <Label for="whatsapp_business_account_id" class="font-medium">WhatsApp Business Account
+                                    ID</Label>
+                                <Input id="whatsapp_business_account_id" v-model="form.whatsapp_business_account_id"
+                                    class="w-full" />
                                 <p v-if="form.errors.whatsapp_business_account_id" class="text-sm text-red-600">
                                     {{ form.errors.whatsapp_business_account_id }}
                                 </p>
@@ -257,13 +270,15 @@ const platformLabel = (platform: string) => {
                             <div class="grid gap-2">
                                 <Label for="verify_token" class="font-medium">Verify Token</Label>
                                 <Input id="verify_token" v-model="form.verify_token" class="w-full" />
-                                <p v-if="form.errors.verify_token" class="text-sm text-red-600">{{ form.errors.verify_token }}</p>
+                                <p v-if="form.errors.verify_token" class="text-sm text-red-600">{{
+                                    form.errors.verify_token }}</p>
                             </div>
 
                             <div class="grid gap-2 md:col-span-2">
                                 <Label for="access_token" class="font-medium">Access Token</Label>
                                 <Input id="access_token" v-model="form.access_token" class="w-full" />
-                                <p v-if="form.errors.access_token" class="text-sm text-red-600">{{ form.errors.access_token }}</p>
+                                <p v-if="form.errors.access_token" class="text-sm text-red-600">{{
+                                    form.errors.access_token }}</p>
                             </div>
                         </div>
 
@@ -271,7 +286,8 @@ const platformLabel = (platform: string) => {
                             <DialogClose as-child>
                                 <Button type="button" variant="secondary">Cancel</Button>
                             </DialogClose>
-                            <Button :disabled="form.processing" @click="submit">{{ isEditMode ? 'Update' : 'Save' }}</Button>
+                            <Button :disabled="form.processing" @click="submit">{{ isEditMode ? 'Update' : 'Save'
+                                }}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

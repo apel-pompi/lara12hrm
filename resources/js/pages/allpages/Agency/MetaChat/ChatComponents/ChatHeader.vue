@@ -11,16 +11,56 @@ import {
     UserIcon,
     UserPlusIcon,
 } from '@heroicons/vue/24/outline';
-import { router } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
+import { ref, watch } from 'vue';
+import axios from 'axios';
+import CreateModal from '@/pages/allpages/Agency/MetaChat/FollowUpComponents/CreateModal.vue';
+import FollowUpTimeline from '@/pages/allpages/Agency/MetaChat/FollowUpComponents/FollowUpTimeline.vue';
 
 const props = defineProps({
     conversation: Object,
-
     channels: Array,
+    followUpMasters: Array as () => any[],
+    followUpStatuses: Array as () => any[],
+    users: Array as () => any[],
 });
 
 const emit = defineEmits(['switch']);
+
+const mastersList = ref<any[]>(props.followUpMasters || []);
+const statusesList = ref<any[]>(props.followUpStatuses || []);
+const usersList = ref<any[]>(props.users || []);
+
+watch(() => props.followUpMasters, (newVal) => {
+    if (newVal?.length) mastersList.value = newVal;
+}, { immediate: true });
+
+watch(() => props.followUpStatuses, (newVal) => {
+    if (newVal?.length) statusesList.value = newVal;
+}, { immediate: true });
+
+watch(() => props.users, (newVal) => {
+    if (newVal?.length) usersList.value = newVal;
+}, { immediate: true });
+
+const fetchOptionsIfNeeded = async () => {
+    try {
+        if (!mastersList.value.length) {
+            const res = await axios.get('/follow-up-masters/active');
+            mastersList.value = res.data || [];
+        }
+        if (!statusesList.value.length) {
+            const res = await axios.get('/follow-up-statuses/active');
+            statusesList.value = res.data || [];
+        }
+        if (!usersList.value.length) {
+            const res = await axios.get('/users/list');
+            usersList.value = res.data || [];
+        }
+    } catch (e) {
+        console.error('Failed to load follow up dropdown lists', e);
+    }
+};
 
 const lastSeen = (date?: string) => {
     if (!date) return 'Offline';
@@ -38,7 +78,25 @@ const lastSeen = (date?: string) => {
     return d.toLocaleDateString();
 };
 
-const OpenStudent = () => {
+const showFollowUpModal = ref(false);
+
+const OpenFollowUp = async () => {
+    const studentId = props.conversation?.student_id;
+
+    if (!studentId) {
+        toast.error('Student is not found.');
+        return;
+    }
+
+    await fetchOptionsIfNeeded();
+    showFollowUpModal.value = true;
+};
+
+const handleFollowUpSaved = () => {
+    showFollowUpModal.value = false;
+};
+const showTimelineModal = ref(false);
+const openTimeline = () => {
     const studentId = props.conversation?.student_id;
 
     if (!studentId) {
@@ -46,7 +104,7 @@ const OpenStudent = () => {
         return;
     }
 
-    router.visit(route('studentActivities.index', { student: studentId }));
+    showTimelineModal.value = true;
 };
 </script>
 
@@ -57,12 +115,10 @@ const OpenStudent = () => {
                 <!-- Left: Avatar + Info -->
                 <div class="flex min-w-0 gap-3">
                     <div class="shrink-0">
-                        <img
-                            v-if="conversation.profile_picture"
-                            :src="conversation.profile_picture"
-                            class="h-10 w-10 rounded-full object-cover sm:h-14 sm:w-14"
-                        />
-                        <div v-else class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 sm:h-14 sm:w-14">
+                        <img v-if="conversation.profile_picture" :src="conversation.profile_picture"
+                            class="h-10 w-10 rounded-full object-cover sm:h-14 sm:w-14" />
+                        <div v-else
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 sm:h-14 sm:w-14">
                             <UserCircleIcon class="h-6 w-6 sm:h-9 sm:w-9" />
                         </div>
                     </div>
@@ -74,13 +130,9 @@ const OpenStudent = () => {
 
                         <!-- Platform channel tabs -->
                         <div class="mt-1 flex flex-wrap gap-1">
-                            <button
-                                v-for="item in channels"
-                                :key="item.id"
-                                @click="$emit('switch', item)"
+                            <button v-for="item in channels" :key="item.id" @click="$emit('switch', item)"
                                 class="rounded-full px-2 py-0.5 text-xs"
-                                :class="item.id == conversation.id ? 'bg-blue-600 text-white' : 'bg-slate-100 hover:bg-slate-200'"
-                            >
+                                :class="item.id == conversation.id ? 'bg-blue-600 text-white' : 'bg-slate-100 hover:bg-slate-200'">
                                 {{ item.platform }}
                             </button>
                         </div>
@@ -114,7 +166,8 @@ const OpenStudent = () => {
                         </div>
 
                         <div v-if="conversation.tags?.length" class="mt-2 flex flex-wrap gap-1">
-                            <span v-for="tag in conversation.tags" :key="tag" class="rounded-full bg-blue-100 px-2 py-0.5 text-xs">
+                            <span v-for="tag in conversation.tags" :key="tag"
+                                class="rounded-full bg-blue-100 px-2 py-0.5 text-xs">
                                 {{ tag }}
                             </span>
                         </div>
@@ -124,15 +177,18 @@ const OpenStudent = () => {
                 <!-- Right: Action buttons -->
                 <div class="flex shrink-0 items-center gap-1 sm:gap-2">
                     <!-- Mobile: icon only -->
-                    <button @click="OpenStudent" class="rounded-xl border p-2 hover:bg-slate-50" title="Open Student">
+                    <button @click="OpenFollowUp" class="rounded-xl border p-2 hover:bg-slate-50" title="Open Student">
                         <ArrowTopRightOnSquareIcon class="h-4 w-4" />
-                        <span class="ml-1 hidden text-sm sm:inline">Student</span>
+                        <span class="ml-1 hidden text-sm sm:inline">Follow Up</span>
+                    </button>
+                    <button @click="openTimeline" class="rounded-xl border p-2 hover:bg-slate-50" title="Timeline">
+                        <ClipboardDocumentListIcon class="h-4 w-4" />
+
+                        <span class="ml-1 hidden text-sm sm:inline">
+                            Timeline
+                        </span>
                     </button>
 
-                    <button class="rounded-xl border p-2 hover:bg-slate-50" title="Timeline">
-                        <ClipboardDocumentListIcon class="h-4 w-4" />
-                        <span class="ml-1 hidden text-sm sm:inline">Timeline</span>
-                    </button>
 
                     <button class="rounded-xl border p-2 hover:bg-slate-50" title="Notes">
                         <PencilSquareIcon class="h-4 w-4" />
@@ -146,5 +202,11 @@ const OpenStudent = () => {
                 </div>
             </div>
         </div>
+        <!-- Follow Up Create Modal -->
+        <CreateModal v-if="conversation?.student_id" :show="showFollowUpModal" :student-id="conversation.student_id"
+            :masters="mastersList" :statuses="statusesList" :users="usersList" @close="showFollowUpModal = false"
+            @saved="handleFollowUpSaved" />
+        <FollowUpTimeline v-if="conversation?.student_id" :show="showTimelineModal"
+            :student-id="conversation.student_id" @close="showTimelineModal = false" />
     </div>
 </template>

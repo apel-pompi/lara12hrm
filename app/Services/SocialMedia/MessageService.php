@@ -136,8 +136,8 @@ class MessageService
     public function receiveMessenger(Request $request): ?SocialMediaMessage
     {
         $payload = $request->all();
-        // Log::info('this is payload');
-        // Log::info($payload);
+        Log::info('this is payload');
+        Log::info($payload);
         return DB::transaction(function () use ($payload) {
             $event = data_get(
                 $payload,
@@ -148,7 +148,7 @@ class MessageService
                 return null;
             }
             if (isset($event['delivery'])) {
-                // Log::info('Messenger delivery event', $event);
+                Log::info('Messenger delivery event', $event);
 
                 $mids = data_get($event, 'delivery.mids', []);
 

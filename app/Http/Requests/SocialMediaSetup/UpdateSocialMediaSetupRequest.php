@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\SocialMediaSetup;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,7 +26,14 @@ class UpdateSocialMediaSetupRequest extends FormRequest
         $id = $this->route('socialMediaSetup') ? $this->route('socialMediaSetup')->id : null;
         return [
             'platform' => ['required', 'string', 'in:facebook,whatsapp,messenger'],
-            'page_id' => ['nullable', 'required_if:platform,facebook', 'string', "unique:social_media_setups,page_id,{$id}"],
+            'page_id' => [
+                'nullable',
+                'required_if:platform,facebook,messenger',
+                'string',
+                Rule::unique('social_media_setups', 'page_id')
+                    ->ignore($id)
+                    ->where(fn ($query) => $query->where('platform', $this->input('platform'))),
+            ],
             'whatsapp_business_account_id' => ['nullable', 'string'],
             'access_token' => ['nullable', 'string'],
             'verify_token' => ['nullable', 'string'],

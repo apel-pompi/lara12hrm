@@ -73,10 +73,10 @@ class StudentController extends Controller
     {
         /** @var \Spatie\Permission\Traits\HasRoles $authUser */
         if ($authUser->hasAnyRole(['superadmin', 'Admin', 'Manager'])) {
-            return User::select('id', 'name')->orderBy('name')->get();
+            return User::select('id', 'name')->whereNull('banned_at')->orderBy('name')->get();
         }
 
-        $counsilorJsons = UserWiseForm::whereNotNull('counsilor_id')->pluck('counsilor_id');
+        $counsilorJsons = UserWiseForm::where('team_id', $authUser->id)->pluck('counsilor_id');
 
         $userIds = collect();
         foreach ($counsilorJsons as $json) {
@@ -1000,7 +1000,7 @@ class StudentController extends Controller
     // ─────────────────────────────────────────────
     public function transferInactiveLeads(Request $request)
     {
-        
+
         try {
             $this->authorize('Student.index');
         } catch (AuthorizationException $e) {
@@ -1020,7 +1020,7 @@ class StudentController extends Controller
         $period      = $request->period;
         $studentIds  = $request->student_ids ?? [];
         $note        = $request->note ?? '';
-        
+
 
         $user        = Auth::user();
         // Ensure non-admin users can only transfer to users allowed by user_wise_forms
@@ -1032,9 +1032,9 @@ class StudentController extends Controller
         $transferredStudentIds = [];
         $count = 0;
         $fromUserId = null;
-        if($note=='Pending leads'){
+        if ($note == 'Pending leads') {
             $note = 'Pending leads';
-        }else{
+        } else {
             $note = 'Inactive leads';
         }
 
@@ -1156,10 +1156,10 @@ class StudentController extends Controller
         }
 
         $logs = InactiveLeadTransferLog::with([
-                'fromUser:id,name',
-                'toUser:id,name',
-                'transferredBy:id,name',
-            ])
+            'fromUser:id,name',
+            'toUser:id,name',
+            'transferredBy:id,name',
+        ])
             ->orderByDesc('created_at');
 
         if ($request->filled('from_user_id')) {

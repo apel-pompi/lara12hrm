@@ -284,10 +284,10 @@ class LeadService
         );
         $leadData['form_id'] = $formId;
         $leadData['page_id'] = $pageId;
-        // Log::info('Lead Response', [
-        //     'form_id' => $leadData['form_id'],
-        //     'field_data' => data_get($leadData, 'field_data'),
-        // ]);
+        Log::info('Lead Response', [
+            'form_id' => $leadData['form_id'],
+            'field_data' => data_get($leadData, 'field_data'),
+        ]);
         if (!$leadData) {
             return null;
         }

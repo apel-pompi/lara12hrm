@@ -25,7 +25,7 @@ return new class extends Migration
 
                 'whatsapp',
 
-            ])->unique();
+            ]);
 
             $table->string('page_id')->nullable();
 

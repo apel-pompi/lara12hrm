@@ -33,7 +33,7 @@ class FacebookController extends Controller
         }
 
         $pages = SocialMediaSetup::where('platform', 'facebook')->get();
-        $forms = FacebookForm::all();
+        $forms = FacebookForm::orderByDesc('id')->get();
 
         return Inertia::render('allpages/default/facebook-form', [
             'pageTitle' => 'Facebook Form',
@@ -64,7 +64,13 @@ class FacebookController extends Controller
                 'access_token' => $pageToken
             ]
         );
+        // if ($response->failed()) {
+        //     Log::error('Meta API Error', $response->json());
+        // } else {
+        //     Log::info('Raw Meta Response', $response->json());
+        // }
         $forms = $response->json('data', []);
+
         foreach ($forms as $form) {
             $createdTime = null;
             if (!empty($form['created_time'])) {

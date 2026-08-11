@@ -2,7 +2,6 @@
 import echo from '@/echo';
 import axios from 'axios';
 import { ref } from 'vue';
-import { toast } from 'vue-sonner';
 
 import { FaceSmileIcon, PaperAirplaneIcon, PaperClipIcon, PhotoIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
@@ -72,14 +71,7 @@ const sendMessage = async () => {
         attachment.value = null;
         image.value = null;
     } catch (error) {
-        const error = err as AxiosError<any>;
-
-        const msg =
-            error.response?.data?.errors?.message?.[0] ??
-            error.response?.data?.message ??
-            'Something went wrong';
-
-        toast.error(msg);
+        console.error(error);
     } finally {
         sending.value = false;
     }

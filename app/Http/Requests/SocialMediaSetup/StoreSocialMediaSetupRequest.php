@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\SocialMediaSetup;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -24,8 +25,14 @@ class StoreSocialMediaSetupRequest extends FormRequest
     {
         return [
             'platform' => ['required', 'string', 'in:facebook,whatsapp,messenger'],
-            'page_id' => ['nullable', 'required_if:platform,facebook', 'string', 'unique:social_media_setups,page_id'],
-            'whatsapp_business_account_id' => ['nullable', 'string'],
+            'page_id' => [
+                'nullable',
+                'required_if:platform,facebook,messenger',
+                'string',
+                Rule::unique('social_media_setups', 'page_id')
+                    ->where(fn ($query) => $query->where('platform', $this->input('platform'))),
+            ],
+            'whatsapp_business_account_id' => ['nullable', 'required_if:platform,whatsapp', 'string'],
             'access_token' => ['nullable', 'string'],
             'verify_token' => ['nullable', 'string'],
         ];

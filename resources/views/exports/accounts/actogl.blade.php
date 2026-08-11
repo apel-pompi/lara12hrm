@@ -223,60 +223,18 @@
                 $balance += $cr;
                 $totalCr += $cr;
                 }
-
-                $details = $item->voucherDetails;
-                $rowspan = max($details->count(), 1);
                 @endphp
-                 @forelse($details as $index => $detail)
 
-        <tr>
-
-            @if($index == 0)
-                <td rowspan="{{ $rowspan }}">
-                    {{ $item->voucherheader->vouchernumber }}
-                </td>
-
-                <td rowspan="{{ $rowspan }}">
-                    {{ $item->voucherdate }}
-                </td>
-
-                <td rowspan="{{ $rowspan }}" class="text-center">
-                    {{ $item->branch->branchname }}
-                </td>
-            @endif
-
-            <td>{{ $detail->notes }}</td>
-
-            @if($index == 0)
-                <td rowspan="{{ $rowspan }}" class="text-right">
-                    {{ $dr > 0 ? number_format($dr,2) : '' }}
-                </td>
-
-                <td rowspan="{{ $rowspan }}" class="text-right">
-                    {{ $cr > 0 ? number_format($cr,2) : '' }}
-                </td>
-
-                <td rowspan="{{ $rowspan }}" class="text-right">
-                    {{ number_format($balance,2) }}
-                </td>
-            @endif
-
-        </tr>
-
-    @empty
-
-        <tr>
-            <td>{{ $item->voucherheader->vouchernumber }}</td>
-            <td>{{ $item->voucherdate }}</td>
-            <td>{{ $item->branch->branchname }}</td>
-            <td></td>
-            <td class="text-right">{{ $dr > 0 ? number_format($dr,2) : '' }}</td>
-            <td class="text-right">{{ $cr > 0 ? number_format($cr,2) : '' }}</td>
-            <td class="text-right">{{ number_format($balance,2) }}</td>
-        </tr>
-
-    @endforelse
-    @endforeach
+                <tr>
+                    <td>{{ $item->voucherheader->vouchernumber }}</td>
+                    <td>{{ $item->voucherdate }}</td>
+                    <td class="text-center">{{ $item->branch->branchname }}</td>
+                    <td>{{ $item->referance }}</td>
+                    <td class="text-right">{{ $dr > 0 ? number_format($dr,2) : '' }}</td>
+                    <td class="text-right">{{ $cr > 0 ? number_format($cr,2) : '' }}</td>
+                    <td class="text-right">{{ number_format($balance,2) }}</td>
+                </tr>
+                @endforeach
                 <!-- Total -->
                 <tr class="total-row">
                     <td colspan="4">Total</td>
