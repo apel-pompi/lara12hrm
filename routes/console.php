@@ -12,3 +12,5 @@ Artisan::command('inspire', function () {
 Schedule::call(function () {
     app(FollowUpReminderService::class)->runScheduler();
 })->everyMinute();
+
+Schedule::command('zkteco:auto-sync')->everyMinute();

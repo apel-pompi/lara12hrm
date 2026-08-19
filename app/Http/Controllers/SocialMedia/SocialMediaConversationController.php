@@ -35,27 +35,19 @@ class SocialMediaConversationController extends Controller
         SocialMediaConversation $conversation
 
     ) {
+        $messages = $this->inboxService->conversationMessages($conversation);
 
-        $this->messageService
-
-            ->markConversationRead(
-
-                $conversation
-
-            );
+        try {
+            $this->messageService->markConversationRead($conversation);
+        } catch (\Throwable $e) {
+            // logger()->info('Conversation read update skipped', [
+            //     'conversation_id' => $conversation->id,
+            //     'error' => $e->getMessage(),
+            // ]);
+        }
 
         return response()->json([
-
-            'data' =>
-
-            $this->inboxService
-
-                ->conversationMessages(
-
-                    $conversation
-
-                ),
-
+            'data' => $messages,
         ]);
     }
 

@@ -1,0 +1,91 @@
+[
+    {
+        "data": [
+            {
+                
+                "code": "CALL",
+                "name": "Phone Call",
+                "description": "Follow up with the student by phone call.",
+                "icon": "phone",
+                "color": "#2563EB",
+                "status": "1",
+                "sort_order": "1"
+            },
+            {
+                
+                "code": "EMAIL",
+                "name": "Email",
+                "description": "Follow up with the student through email.",
+                "icon": "mail",
+                "color": "#2563EB",
+                "status": "1",
+                "sort_order": "2"
+            },
+            {
+                "code": "MEETING",
+                "name": "Meeting",
+                "description": "Schedule a meeting with the student.",
+                "icon": "calendar",
+                "color": "#059669",
+                "status": "1",
+                "sort_order": "3"
+            },
+            {
+                "code": "WHATSAPP",
+                "name": "WhatsApp",
+                "description": "Follow up with the student through WhatsApp.",
+                "icon": "chat",
+                "color": "#128C7E",
+                "status": "1",
+                "sort_order": "4"
+            },
+            {
+                "code": "MESSENGER",
+                "name": "Messenger",
+                "description": "Follow up with the student through Messenger.",
+                "icon": "messenger",
+                "color": "#1877F2",
+                "status": "1",
+                "sort_order": "5"
+            },
+            {
+                "code": "DOCUMENT",
+                "name": "Document Follow Up",
+                "description": "Follow up regarding required student documents.",
+                "icon": "document",
+                "color": "#059669",
+                "status": "1",
+                "sort_order": "7"
+            },
+            {
+                
+                "code": "VISA",
+                "name": "Visa Follow Up",
+                "description": "Follow up regarding visa processing for the student.",
+                "icon": "passport",
+                "color": "#EF4444",
+                "status": "1",
+                "sort_order": "8"
+            },
+            {
+                "code": "FEE",
+                "name": "Fee Payment Follow Up",
+                "description": "Follow up with the student regarding fee payment.",
+                "icon": "receipt",
+                "color": "#3B82F6",
+                "status": "1",
+                "sort_order": "9"
+            },
+            {
+                "code": "OTHER",
+                "name": "Other",
+                "description": "Other follow-up type.",
+                "icon": "more",
+                "color": "#9CA3AF",
+                "status": "1",
+                "sort_order": "10"
+            }
+            
+        ]
+    }
+]

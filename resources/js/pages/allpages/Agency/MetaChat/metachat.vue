@@ -61,40 +61,45 @@ watch(
             return;
         }
 
-        const { data } = await axios.get(`/conversations/${conversation.id}/messages`);
+        try {
+            const { data } = await axios.get(`/conversations/${conversation.id}/messages`);
 
-        messages.value = data.data;
+            messages.value = data.data;
 
-        currentChannel = `conversation.${conversation.id}`;
+            currentChannel = `conversation.${conversation.id}`;
 
-        echo.channel(currentChannel)
+            echo.channel(currentChannel)
 
-            .listen('.message.received', (e) => {
-                messages.value.push(e);
-                currentConversation.value.last_message = e.message;
-                currentConversation.value.typing = false;
-            })
-            .listen('.message.status.updated', (e) => {
-                const msg = messages.value.find((m) => m.id === e.id);
+                .listen('.message.received', (e) => {
+                    messages.value.push(e);
+                    currentConversation.value.last_message = e.message;
+                    currentConversation.value.typing = false;
+                })
+                .listen('.message.status.updated', (e) => {
+                    const msg = messages.value.find((m) => m.id === e.id);
 
-                if (!msg) {
-                    return;
-                }
+                    if (!msg) {
+                        return;
+                    }
 
-                msg.status = e.status;
+                    msg.status = e.status;
 
-                msg.read_at = e.read_at;
+                    msg.read_at = e.read_at;
 
-                msg.delivered_at = e.delivered_at;
-            });
+                    msg.delivered_at = e.delivered_at;
+                });
 
-        typingChannel = `private-conversation.${conversation.id}`;
+            typingChannel = `private-conversation.${conversation.id}`;
 
-        echo.private(`conversation.${conversation.id}`)
+            echo.private(`conversation.${conversation.id}`)
 
-            .listenForWhisper('typing', (e) => {
-                conversation.typing = e.typing;
-            });
+                .listenForWhisper('typing', (e) => {
+                    conversation.typing = e.typing;
+                });
+        } catch (error) {
+            console.error('Failed to load conversation messages', error);
+            messages.value = [];
+        }
     },
     {
         immediate: true,
@@ -120,9 +125,14 @@ watch(currentConversation, (conversation) => {
 watch(currentConversation, async (conversation) => {
     if (!conversation) return;
 
-    const { data } = await axios.get(`/conversations/${conversation.id}/channels`);
+    try {
+        const { data } = await axios.get(`/conversations/${conversation.id}/channels`);
 
-    channels.value = data.data;
+        channels.value = data.data;
+    } catch (error) {
+        console.error('Failed to load conversation channels', error);
+        channels.value = [];
+    }
 });
 
 const filters = ref({

@@ -362,15 +362,33 @@ class WhatsAppApiService extends MetaApiService
         //     'status' => $message->status,
 
         // ]);
-        return $this->markWhatsappRead(
+        try {
+            return $this->markWhatsappRead(
 
-            accessToken: $setup->access_token,
+                accessToken: $setup->access_token,
 
-            phoneNumberId: $setup->phone_number_id,
+                phoneNumberId: $setup->phone_number_id,
 
-            messageId: $message->meta_message_id
+                messageId: $message->meta_message_id
 
-        );
+            );
+        } catch (\Throwable $e) {
+            $messageText = $e->getMessage();
+
+            if (
+                str_contains($messageText, 'outside of the 24-hour')
+                || str_contains($messageText, 'outside of allowed window')
+            ) {
+                // Log::info('WhatsApp mark_as_read skipped', [
+                //     'conversation_id' => $message->conversation_id,
+                //     'message_id' => $message->id,
+                // ]);
+
+                return [];
+            }
+
+            throw $e;
+        }
     }
 
     public function uploadWhatsappMedia(

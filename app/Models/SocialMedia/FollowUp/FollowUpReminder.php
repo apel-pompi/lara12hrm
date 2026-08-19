@@ -6,6 +6,7 @@ use App\Models\Student\Student;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class FollowUpReminder extends Model
@@ -68,6 +69,13 @@ class FollowUpReminder extends Model
         return $this->belongsTo(
             User::class,
             'assigned_to'
+        );
+    }
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(
+            FollowUpNotification::class,
+            'follow_up_reminder_id'
         );
     }
 }

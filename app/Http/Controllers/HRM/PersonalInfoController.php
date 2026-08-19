@@ -8,6 +8,7 @@ use App\Http\Requests\PersonalInfo\StorePersonalInfoRequest;
 use App\Models\HRM\Branch;
 use App\Models\HRM\Department;
 use App\Models\HRM\Designation;
+use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use App\Services\PersonalInfoService;
@@ -17,7 +18,7 @@ use Inertia\Inertia;
 
 class PersonalInfoController extends Controller
 {
-    
+
     use AuthorizesRequests;
     /**
      * Display a listing of the resource.
@@ -40,6 +41,7 @@ class PersonalInfoController extends Controller
             'branch' => Branch::where('active', 1)->get(),
             'department' => Department::where('active', 1)->get(),
             'designation' => Designation::where('active', 1)->get(),
+            'user' => User::whereNull('banned_at')->get(),
         ]);
     }
 
@@ -70,7 +72,7 @@ class PersonalInfoController extends Controller
                 File::makeDirectory($filePath, 0777, true, true);
             }
             $file = $request->file('photo');
-            $file_name = time() . '_' .$file->getClientOriginalName();
+            $file_name = time() . '_' . $file->getClientOriginalName();
             $file->move($filePath, $file_name);
             $validated['photo'] = $file_name;
         }
@@ -182,6 +184,7 @@ class PersonalInfoController extends Controller
             'branch_id'     => 'required',
             'dept_id'       => 'required',
             'des_id'        => 'required',
+            'user_id'       => '',
             'dateofbirth'   => 'required',
             'gender'        => 'required',
             'present'       => 'required',

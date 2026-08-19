@@ -2,15 +2,15 @@
 
 namespace App\Models\HRM;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PersonalInfo extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'empid',
@@ -19,6 +19,7 @@ class PersonalInfo extends Model
         'branch_id',
         'dept_id',
         'des_id',
+        'user_id',
         'dateofbirth',
         'gender',
         'present',
@@ -30,7 +31,7 @@ class PersonalInfo extends Model
         'nidpass',
         'photo',
         'active',
-        
+
     ];
 
     /**
@@ -42,7 +43,7 @@ class PersonalInfo extends Model
     {
         return $this->belongsTo(Branch::class, 'branch_id');
     }
-    
+
     /**
      * Get the designation that owns the PersonalInfo
      *
@@ -61,6 +62,16 @@ class PersonalInfo extends Model
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'dept_id');
+    }
+
+    /**
+     * Get the department that owns the PersonalInfo
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**

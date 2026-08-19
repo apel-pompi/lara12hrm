@@ -8,11 +8,13 @@ use App\Models\HRM\Attendance;
 use App\Models\HRM\HolidayDt;
 use App\Models\HRM\Leave;
 use App\Models\HRM\PersonalInfo;
+use App\Models\SocialMedia\FollowUp\FollowUpActivity;
 use App\Models\Student\Student;
 use App\Models\Student\StudentInvoiceHD;
 use App\Models\Student\StudentQuotationHD;
 use App\Models\Student\StudentUtility;
 use App\Models\User;
+use App\Services\SocialMedia\FollowUp\FollowUpActivityService;
 use App\Services\Agency\Student\AppoinmentsService;
 use App\Services\Agency\Student\QuoattionRequestService;
 use App\Services\Agency\Student\RefundRequestService;
@@ -24,6 +26,10 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        protected FollowUpActivityService $activityService,
+    ) {}
+
     public function dashboard()
     {
         $user = Auth::user();
@@ -48,59 +54,68 @@ class DashboardController extends Controller
                     'message' => 'User name not found in authentication.'
                 ]);
             }
-            $sql = PersonalInfo::where('empname', 'LIKE', '%' . $userName . '%')
-                ->where('active', 1)
-                ->first();
-
-            $presentCount = 0;
-            $lateCount = 0;
-            $absentCount = 0;
-            $leaveCount = 0;
-
-            if ($sql) {
-                $query = PersonalInfo::with(['designation', 'department'])->where('branch_id', $sql->branch_id)->where('active', 1)->where(DB::raw("(date_format(joindate,'%Y-%m-%d'))"), '<=', $currentDay)->orderBy('id', 'ASC')->get();
-
-                $reportData = [];
-
-                foreach ($query as $value) {
-
-                    $outquery = Attendance::getAttendanceOut($value->empid, $currentDay);
-                    $outtime = $outquery->record_time ?? null;
-                    $outtimeRaw = $outtime ? Carbon::parse($outtime) : null;
 
 
-                    $status = Attendance::getAttendanceStatus($value->empid, $currentDay);
-                    $statusname = $status->TimeName ?? '---';
+            $followUpStats = $this->activityService->dashboardSummary();
+            $counselorPerformance = $this->activityService->counselorPerformance()->take(10);
+            $accounts = DB::select("SELECT 
+                    b.groupone_name,
+                    SUM(a.baseamt) AS balance
+                FROM voucher_balances a
+                JOIN vw_chartofaccs b ON a.accountcode = b.accountcode
+                WHERE b.groupone_name IN ('ASSETS','LIABILITIES','REVENUES','EXPENDITURES')
+                AND a.voucherdate <= ?
+                AND a.status = 'Post'
+                GROUP BY b.groupone_name
+                ORDER BY b.groupone_name", [$currentDay]);
+            $revenue = StudentInvoiceHD::with(['student.service.workflow'])
+                ->where('status', 'Confirmed')
+                ->where('insnumber', 'like', 'MR--%')
+                ->where(function ($q) {
+                    $q->where('note', '<>', 'REFUND')->orWhere('note', null);
+                })
+                ->whereBetween('insdate', [$current->year . '-' . $current->month . '-01', $currentDay]);
+            $records = $revenue->get();
+            $grouped = $records->groupBy('student_id');
+            $totalReceived = 0;
+            foreach ($grouped as $rows) {
+                $receive = $rows->filter(
+                    fn($r) =>
+                    str_starts_with($r->insnumber, 'MR--') && $r->sign == -1 && $r->note <> 'REFUND'
+                )->sum('netamount');
 
-                    if ($outtimeRaw && $outtimeRaw->lt(Carbon::parse($currentDay . '15:00:00'))) {
-
-                        $statusname = 'Absent';
-                    }
-                    $leave = Leave::where('empid', $value->id)->where('status', 3)->whereDate('fromdate', '<=', $currentDay)->whereDate('todate', '>=', $currentDay)->exists();
-                    if ($leave) {
-                        $statusname = 'Leave';
-                    }
-
-                    $reportData[] = [
-                        'status' => $statusname,
-                    ];
+                if ($receive == 0) {
+                    continue;
                 }
-
-                foreach ($reportData as $key) {
-                    if ($key['status'] == 'Present') {
-                        $presentCount++;
-                    } elseif ($key['status'] == 'Late') {
-                        $lateCount++;
-                    } elseif ($key['status'] == 'Absent') {
-                        $absentCount++;
-                    } elseif ($key['status'] == 'Leave') {
-                        $leaveCount++;
-                    }
-                }
+                $totalReceived += $receive;
             }
+            $refund = $query = StudentInvoiceHD::with(['student.service.workflow'])
+                ->where('status', 'Confirmed')
+                ->where('insnumber', 'like', 'MR--%')
+                ->where('note', 'REFUND')
+                ->whereBetween('insdate', [$current->year . '-' . $current->month . '-01', $currentDay]);
+            $refundrecords = $query->get();
+            $refundgrouped = $refundrecords->groupBy('student_id');
+            $totalRefund = 0;
+            foreach ($refundgrouped as $rows) {
 
+                $refund = $rows->filter(
+                    fn($r) =>
+                    str_starts_with($r->insnumber, 'MR--') && $r->note == 'REFUND'
+                )->sum('netamount');
 
+                if ($refund == 0) {
+                    continue;
+                }
+
+                $totalRefund += $refund;
+            }
             return Inertia::render('AdminDashboard', [
+                'followUpStats' => $followUpStats,
+                'counselorPerformance' => $counselorPerformance,
+                'accounts' => $accounts,
+                'totalReceived' => $totalReceived,
+                'totalRefund' => $totalRefund,
                 'countAll' => Student::count(),
                 'countPending' => Student::where('status', null)->count(),
                 'countLead' => Student::where('status', 1)->count(),
@@ -122,11 +137,6 @@ class DashboardController extends Controller
                     ->whereRaw("LEFT(b.insnumber, 4) = 'MR--'")
                     ->groupBy('b.student_id')
                     ->get(),
-                'calander' => StudentUtility::with('student')->where('name', 'appoinments')->get(),
-                'presentCount' => $presentCount,
-                'lateCount' => $lateCount,
-                'absentCount' => $absentCount,
-                'leaveCount' => $leaveCount,
                 // Inactive lead counts
                 'countInactive1Month' => call_user_func(function () {
                     $maxActivityDates = DB::table('student_activities')

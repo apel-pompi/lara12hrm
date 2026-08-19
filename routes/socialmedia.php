@@ -9,7 +9,9 @@ use App\Http\Controllers\SocialMedia\FollowUp\{
     FollowUpMasterController,
     FollowUpStatusController,
     FollowUpActivityController,
-    FollowUpReminderController
+    FollowUpReminderController,
+    FollowUpTimelineController,
+    FollowUpNotificationController
 };
 use Illuminate\Support\Facades\Route;
 
@@ -67,8 +69,10 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
             Route::get('/student/{studentId}', 'student')->name('student');
-            Route::get('/{followUpActivity}', 'show')->name('show');
+            Route::get('/{activity}', 'show')->name('show');
+            Route::get('/{activity}/timeline', 'timeline')->name('timeline');
             Route::delete('/{followUpActivity}', 'destroy')->name('destroy');
+            Route::get('/admindashboard', 'admindashboard')->name('admindashboard');
         });
 
     Route::controller(FollowUpReminderController::class)
@@ -76,14 +80,37 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
         ->as('follow-up-reminders.')
         ->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/dashboard', 'dashboard')->name('dashboard');
             Route::get('/pending', 'pending')->name('pending');
             Route::get('/today', 'today')->name('today');
-            Route::post('/', 'store')->name('store');
-            Route::get('/{followUpReminder}', 'show')->name('show');
-            Route::put('/{followUpReminder}', 'update')->name('update');
-            Route::put('/{followUpReminder}/complete', 'complete')->name('complete');
-            Route::put('/{followUpReminder}/snooze', 'snooze')->name('snooze');
-            Route::put('/{followUpReminder}/cancel', 'cancel')->name('cancel');
-            Route::delete('/{followUpReminder}', 'destroy')->name('destroy');
+            Route::get('/due', 'due')->name('due');
+            Route::get('/overdue', 'overdue')->name('overdue');
+            Route::get('/upcoming', 'upcoming')->name('upcoming');
+            Route::post('/{reminder}/mark-as-sent', 'markAsSent')->name('markAsSent');
+            Route::post('/{reminder}/mark-as-read', 'markAsRead')->name('markAsRead');
+            Route::post('/{reminder}/snooze', 'snooze')->name('snooze');
+            Route::delete('/{reminder}', 'destroy')->name('destroy');
+            Route::post('/scheduler/run', 'runScheduler')->name('scheduler.run');
+        });
+    //FollowUp Timeline Route
+    Route::controller(FollowUpTimelineController::class)
+        ->prefix('follow-up-timeline')
+        ->as('follow-up-timeline.')
+        ->group(function () {
+            Route::get('/{followUpActivity}/timeline', 'timeline')->name('timeline');
+            Route::get('/student/{student}', 'student')->name('student');
+        });
+    //FollowUp notification list
+    Route::controller(FollowUpNotificationController::class)
+        ->prefix('follow-up-notifications')
+        ->as('follow-up-notifications.')
+        ->group(function () {
+            Route::get('/user/{userId}', 'index')->name('index');
+            Route::get('/all/{userId}', 'all')->name('all');
+            Route::get('/admindashboard', 'admindashboard')->name('admindashboard');
+            Route::get('/user/{userId}/unread-count', 'unreadCount')->name('unreadCount');
+            Route::get('/user/{userId}/dashboard', 'dashboard')->name('dashboard');
+            Route::post('/{notification}/read/{userId}', 'markAsRead')->name('markAsRead');
+            Route::post('/user/{userId}/read-all', 'markAllAsRead')->name('markAllAsRead');
         });
 });

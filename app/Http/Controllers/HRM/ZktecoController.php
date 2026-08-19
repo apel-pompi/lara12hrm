@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\HRM;
 
+use App\Events\HRM\AttendanceSyncCompleted;
 use App\Http\Controllers\Controller;
 use App\Models\HRM\Attendance;
 use App\Models\HRM\DeviceConfig;
@@ -11,6 +12,7 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
 
 
 
@@ -169,7 +171,7 @@ class ZktecoController extends Controller
                 'total_records_synced' => $config->total_records_synced + $newRecords
             ]);
 
-            return response()->json([
+            $result = [
                 'success' => true,
                 'message' => "Sync completed for {$syncDate}!",
                 'data' => [
@@ -179,7 +181,11 @@ class ZktecoController extends Controller
                     'sync_date' => $syncDate,
                     'last_sync' => now()->format('Y-m-d H:i:s')
                 ]
-            ]);
+            ];
+
+            AttendanceSyncCompleted::dispatch($result, Auth::id());
+
+            return response()->json($result);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -264,7 +270,7 @@ class ZktecoController extends Controller
                 'total_records_synced' => $config->total_records_synced + $newRecords
             ]);
 
-            return response()->json([
+            $result = [
                 'success' => true,
                 'message' => "Range sync completed!",
                 'data' => [
@@ -275,7 +281,11 @@ class ZktecoController extends Controller
                     'dates_processed' => array_keys($datesProcessed),
                     'last_sync' => now()->format('Y-m-d H:i:s')
                 ]
-            ]);
+            ];
+
+            AttendanceSyncCompleted::dispatch($result, Auth::id());
+
+            return response()->json($result);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

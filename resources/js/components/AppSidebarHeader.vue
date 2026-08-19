@@ -1,14 +1,42 @@
 <script setup lang="ts">
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
-import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import NavUser from '@/components/NavUser.vue';
+import FollowUpActivityModal from '@/pages/allpages/Agency/MetaChat/FollowUpComponents/FollowUpActivityModal.vue';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import type { BreadcrumbItemType } from '@/types';
 import axios from 'axios';
-import { AlertTriangle, CircleAlert, CircleCheck, Info, Sun } from 'lucide-vue-next';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
+import {
+    BellIcon,
+    ClockIcon,
+    ExclamationTriangleIcon,
+    UserPlusIcon,
+    SunIcon
+} from '@heroicons/vue/24/outline';
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
+import echo from '@/echo';
+
+
+interface NotificationItem {
+    id: number;
+    user_id: number;
+    follow_up_activity_id: number | null;
+    follow_up_reminder_id: number | null;
+    type: string;
+    title: string;
+    message: string;
+    data: {
+        priority?: string;
+        student_id?: number;
+        activity_id?: number;
+        follow_up_date?: string;
+        follow_up_time?: string;
+    } | null;
+    read_at: string | null;
+    created_at: string;
+    updated_at: string;
+}
 
 const time = ref<string>('');
 const timeStyle = ref<{ color: string; textShadow: string; fontSize: string; fontWeight: string }>({
@@ -18,210 +46,440 @@ const timeStyle = ref<{ color: string; textShadow: string; fontSize: string; fon
     fontWeight: '700',
 });
 
-const updateTime = () => {
-    const now = new Date();
+const page = usePage();
 
-    // Format time: HH:MM:SS
-    let hours = now.getHours();
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12; // convert 0 → 12
-
-    time.value = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
-
-    // Update color based on time of day
-    if (hours >= 6 && hours < 12) {
-        // Morning - Golden color
-        timeStyle.value.color = '#e67e22';
-        timeStyle.value.textShadow = '0 2px 8px rgba(230, 126, 34, 0.3)';
-    } else if (hours >= 12 && hours < 18) {
-        // Afternoon - Blue color
-        timeStyle.value.color = '#3498db';
-        timeStyle.value.textShadow = '0 2px 8px rgba(52, 152, 219, 0.3)';
-    } else if (hours >= 18 && hours < 22) {
-        // Evening - Purple color
-        timeStyle.value.color = '#9b59b6';
-        timeStyle.value.textShadow = '0 2px 8px rgba(155, 89, 182, 0.3)';
-    } else {
-        // Night - Dark blue color
-        timeStyle.value.color = '#2c3e50';
-        timeStyle.value.textShadow = '0 2px 8px rgba(44, 62, 80, 0.3)';
-    }
-
-    // Add pulse animation every second
-    timeStyle.value.fontSize = 'clamp(0.85rem, 2vw, 1.875rem)';
-    setTimeout(() => {
-        timeStyle.value.fontSize = 'clamp(0.85rem, 2vw, 1.875rem)';
-    }, 100);
-};
-
-let interval: number;
-
-onMounted(() => {
-    updateTime();
-    interval = window.setInterval(updateTime, 1000);
-});
-
-onUnmounted(() => {
-    clearInterval(interval);
-});
-
-withDefaults(
-    defineProps<{
-        breadcrumbs?: BreadcrumbItemType[];
-    }>(),
-    {
-        breadcrumbs: () => [],
-    },
+const userId = computed<number | null>(
+    () => (page.props as any).auth?.user?.id ?? null
 );
 
-// Reactive states
-const notificationsRef = ref(null);
 
-// Toggle notifications dropdown
-const showNotifications = ref(false);
-const notifications = ref([]);
+const notifications = ref<NotificationItem[]>([]);
+const unreadCount = ref(0);
 
-// Fetch notifications from API
-const fetchNotifications = async () => {
+const loading = ref(false);
+const open = ref(false);
+const markingAll = ref(false);
+
+const hasNotifications = computed(
+    () => notifications.value.length > 0
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Load Notifications
+|--------------------------------------------------------------------------
+*/
+const currentPage = ref(1);
+const lastPage = ref(1);
+const total = ref(0);
+
+const perPage = 15;
+
+const loadNotifications = async (pageNumber = 1) => {
+    if (!userId.value) return;
+
+    loading.value = true;
+
     try {
-        const response = await fetch('/notifications', {
-            headers: {
-                Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'include', // For sanctum cookies
-        });
+        const response = await axios.get(
+            `/follow-up-notifications/user/${userId.value}`,
+            {
+                params: {
+                    page: pageNumber,
+                    per_page: perPage,
+                },
+            }
+        );
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch notifications');
-        }
+        const result = response.data.data;
 
-        const data = await response.json();
+        notifications.value = result.data ?? [];
 
-        if (data.success) {
-            notifications.value = data.notifications;
-        }
-    } catch (error) {
-        console.error('Failed to fetch notifications:', error);
-        notifications.value = [];
+        currentPage.value = result.current_page ?? 1;
+        lastPage.value = result.last_page ?? 1;
+        total.value = result.total ?? 0;
+
+    } catch (error: any) {
+        toast.error('Failed to load follow-up notifications.', error?.response?.data?.message);
+
+    } finally {
+        loading.value = false;
     }
 };
 
-// Computed property for unread count
-const unreadCount = computed(() => {
-    return notifications.value.filter((n) => !n.read).length;
+/*
+|--------------------------------------------------------------------------
+| Load Unread Count
+|--------------------------------------------------------------------------
+*/
+
+const loadUnreadCount = async () => {
+    try {
+        const response = await axios.get(
+            `/follow-up-notifications/user/${userId.value}/unread-count`
+        );
+        unreadCount.value =
+            response.data?.count ?? 0;
+
+    } catch (error: any) {
+        toast.error(
+            'Notification Count Error:',
+            error.response?.status
+        );
+
+        toast.error(
+            'Notification Count Response:',
+            error.response?.data
+        );
+
+        toast.error(
+            'Notification Count URL:',
+            error.config?.url
+        );
+    }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Refresh
+|--------------------------------------------------------------------------
+*/
+
+const refreshNotifications = async () => {
+
+    await Promise.all([
+        loadNotifications(),
+        loadUnreadCount(),
+    ]);
+
+};
+
+/*
+|--------------------------------------------------------------------------
+| Toggle Dropdown
+|--------------------------------------------------------------------------
+*/
+
+const toggleNotifications = async () => {
+
+    open.value = !open.value;
+
+    if (open.value) {
+        await refreshNotifications();
+    }
+
+};
+
+/*
+|--------------------------------------------------------------------------
+| Mark As Read
+|--------------------------------------------------------------------------
+*/
+
+const markAsRead = async (
+    notification: NotificationItem
+) => {
+
+    if (notification.read_at) {
+        return;
+    }
+
+    try {
+
+        await axios.post(
+            `/follow-up-notifications/${notification.id}/read/${userId.value}`
+        );
+
+        notification.read_at =
+            new Date().toISOString();
+
+        if (unreadCount.value > 0) {
+            unreadCount.value--;
+        }
+
+    } catch (error: any) {
+
+        toast.error(
+            'Failed to mark notification as read.',
+            error?.response?.data?.message
+        );
+    }
+};
+
+const openNotification = async (
+    notification: NotificationItem
+) => {
+    await markAsRead(notification);
+
+    const activityId =
+        notification.follow_up_activity_id ??
+        notification.data?.activity_id;
+
+    if (!activityId) {
+        toast.error(
+            'Follow-up Activity ID not found.',
+            notification
+        );
+
+        return;
+    }
+
+    openFollowUpActivity(activityId);
+
+    open.value = false;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Mark All As Read
+|--------------------------------------------------------------------------
+*/
+
+const markAllAsRead = async () => {
+
+    if (unreadCount.value === 0) {
+        return;
+    }
+
+    try {
+
+        await axios.post(
+            `/follow-up-notifications/user/${userId.value}/read-all`
+        );
+
+        notifications.value.forEach(
+            notification => {
+                if (!notification.read_at) {
+                    notification.read_at =
+                        new Date().toISOString();
+                }
+            }
+        );
+
+        unreadCount.value = 0;
+
+    } catch (error: any) {
+
+        toast.error(
+            'Failed to mark all notifications as read.',
+            error?.response?.data?.message
+        );
+    }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Notification Icon
+|--------------------------------------------------------------------------
+*/
+
+const notificationIcon = (
+    type: string
+) => {
+
+    switch (type) {
+
+        case 'follow_up_assigned':
+            return UserPlusIcon;
+
+        case 'follow_up_due':
+            return ClockIcon;
+
+        case 'follow_up_overdue':
+            return ExclamationTriangleIcon;
+
+        default:
+            return BellIcon;
+    }
+};
+
+const notificationIconClass = (
+    notification: NotificationItem
+) => {
+
+    if (notification.read_at) {
+        return 'bg-slate-100 text-slate-500';
+    }
+
+    switch (notification.type) {
+
+        case 'follow_up_overdue':
+            return 'bg-red-100 text-red-600';
+
+        case 'follow_up_due':
+            return 'bg-amber-100 text-amber-600';
+
+        case 'follow_up_assigned':
+            return 'bg-blue-100 text-blue-600';
+
+        default:
+            return 'bg-slate-100 text-slate-600';
+    }
+
+};
+
+/*
+|--------------------------------------------------------------------------
+| Priority
+|--------------------------------------------------------------------------
+*/
+
+const priorityClass = (
+    priority?: string
+) => {
+
+    switch (priority) {
+
+        case 'Urgent':
+            return 'bg-red-100 text-red-700';
+
+        case 'High':
+            return 'bg-orange-100 text-orange-700';
+
+        case 'Medium':
+            return 'bg-blue-100 text-blue-700';
+
+        case 'Low':
+            return 'bg-slate-100 text-slate-600';
+
+        default:
+            return 'bg-slate-100 text-slate-600';
+    }
+};
+
+/*
+|--------------------------------------------------------------------------
+| Time
+|--------------------------------------------------------------------------
+*/
+
+const notificationTime = (
+    date: string
+) => {
+
+    const created = new Date(date);
+    const now = new Date();
+
+    const diff =
+        Math.floor(
+            (now.getTime() - created.getTime())
+            / 1000
+        );
+
+    if (diff < 60) {
+        return 'Just now';
+    }
+
+    if (diff < 3600) {
+        return `${Math.floor(diff / 60)} min ago`;
+    }
+
+    if (diff < 86400) {
+        return `${Math.floor(diff / 3600)} hr ago`;
+    }
+
+    if (diff < 172800) {
+        return 'Yesterday';
+    }
+
+    return created.toLocaleDateString();
+};
+
+let notificationChannel: string | null = null;
+
+const listenForFollowUpNotifications = () => {
+    if (!userId.value) {
+        return;
+    }
+
+    notificationChannel = `follow-up-notifications.${userId.value}`;
+
+    echo.private(notificationChannel)
+        .listen(
+            '.follow-up.notification.created',
+            (event: any) => {
+
+                const notification =
+                    event.notification;
+
+                notifications.value.unshift(
+                    notification
+                );
+
+                unreadCount.value++;
+
+
+            }
+        );
+};
+
+
+onMounted(() => {
+    if (!userId.value) {
+        return;
+    }
+
+    refreshNotifications();
+    listenForFollowUpNotifications();
+
 });
 
-// Toggle notifications dropdown
-const toggleNotifications = () => {
-    showNotifications.value = !showNotifications.value;
-    if (showNotifications.value) {
-        fetchNotifications();
-    }
-};
-
-// Handle notification click
-const handleNotificationClick = async (notification) => {
-    // Mark as read
-    if (!notification.read) {
-        await markAsRead(notification.id);
-    }
-    // Handle navigation based on notification type
-    if (notification.action_url) {
-        window.location.href = notification.action_url;
+const stopNotificationListener = () => {
+    if (!notificationChannel) {
+        return;
     }
 
-    showNotifications.value = false;
+    echo.leave(notificationChannel);
+    notificationChannel = null;
 };
 
-// Mark single notification as read
-const markAsRead = async (notificationId: number) => {
-    try {
-        await axios.post(`/notifications/${notificationId}/read`);
+onBeforeUnmount(() => {
+    stopNotificationListener();
+});
 
-        // UI Update
-        const index = notifications.value.findIndex((n) => n.id === notificationId);
-        if (index !== -1) notifications.value[index].read = true;
 
-        toast.success('Notification marked as read');
-    } catch (error) {
-        toast.error('Failed to mark notification as read');
-        console.error(error);
+
+const showFollowUpActivityModal = ref(false);
+
+const selectedFollowUpActivityId =
+    ref<number | null>(null);
+
+const openFollowUpActivity = (
+    activityId: number
+) => {
+    selectedFollowUpActivityId.value =
+        activityId;
+
+    showFollowUpActivityModal.value =
+        true;
+};
+
+const closeFollowUpActivity = () => {
+    showFollowUpActivityModal.value =
+        false;
+
+    selectedFollowUpActivityId.value =
+        null;
+};
+
+const goToPage = (pageNumber: number) => {
+    if (
+        pageNumber < 1 ||
+        pageNumber > lastPage.value ||
+        loading.value
+    ) {
+        return;
     }
-};
 
-// Mark all as read
-const markAllAsRead = async () => {
-    try {
-        await axios.post(route('notifications.markAllAsRead'));
+    loadNotifications(pageNumber);
 
-        notifications.value.forEach((n) => (n.read = true));
-
-        toast.success('All notifications marked as read');
-    } catch (error) {
-        toast.error('Failed to mark all as read');
-        console.error(error);
-    }
-};
-
-// Notification icon mapper
-const getNotificationIcon = (type) => {
-    const icons = {
-        success: { icon: CircleCheck, bg: 'bg-green-500/20', color: 'text-green-400' },
-        error: { icon: CircleAlert, bg: 'bg-red-500/20', color: 'text-red-400' },
-        warning: { icon: AlertTriangle, bg: 'bg-yellow-500/20', color: 'text-yellow-400' },
-        info: { icon: Info, bg: 'bg-blue-500/20', color: 'text-blue-400' },
-    };
-    return icons[type] || icons.info;
-};
-
-// Format time
-const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
     });
 };
 
-// Close dropdown when clicking outside
-const handleClickOutside = (event: MouseEvent) => {
-    const target = event.target as HTMLElement;
-
-    // Notifications dropdown close logic
-    if (showNotifications.value && notificationsRef.value && !notificationsRef.value.contains(target)) {
-        showNotifications.value = false;
-    }
-};
-
-// const checkUnread = async () => {
-//     const response = await fetch(route('notifications.unreadCount'), {
-//         headers: {
-//             Accept: 'application/json',
-//             'X-Requested-With': 'XMLHttpRequest',
-//         },
-//         credentials: 'include',
-//     });
-
-//     const data = await response.json();
-
-//     if (data.unread_count > unreadCount.value) {
-//         await fetchNotifications();
-//         showNotifications.value = true;
-//     }
-// };
-
-// Event listeners
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside);
-    // setInterval(checkUnread, 15000);
-});
-
-onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
-});
 </script>
 <style scoped>
 .time-display-alt {
@@ -250,6 +508,7 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+
     .time-display-alt,
     .time-display-dark {
         max-width: 100%;
@@ -260,13 +519,9 @@ onUnmounted(() => {
 </style>
 <template>
     <header
-        class="bg-background/95 sticky top-0 z-20 grid min-h-16 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-gray-800 px-4 py-2 backdrop-blur transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:grid-cols-3 md:px-6"
-    >
+        class="bg-background/95 sticky top-0 z-20 grid min-h-16 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-gray-800 px-4 py-2 backdrop-blur transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:grid-cols-3 md:px-6">
         <div class="flex min-w-0 items-center gap-2">
             <SidebarTrigger class="-ml-1" />
-            <template v-if="breadcrumbs && breadcrumbs.length > 0">
-                <Breadcrumbs :breadcrumbs="breadcrumbs" />
-            </template>
         </div>
 
         <div class="order-3 col-span-2 flex min-w-0 items-center justify-center md:order-none md:col-span-1">
@@ -279,108 +534,310 @@ onUnmounted(() => {
             <!-- Appearance Menu -->
             <DropdownMenu>
                 <DropdownMenuTrigger :as-child="true">
-                    <button class="relative rounded-lg p-2 text-gray-400 transition hover:bg-gray-800/60 hover:text-white">
-                        <Sun class="h-5 w-5" />
+                    <button
+                        class="relative rounded-lg p-2 text-gray-400 transition hover:bg-gray-800/60 hover:text-white">
+                        <SunIcon class="h-5 w-5" />
                     </button>
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent
-                    align="end"
-                    class="w-max max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-xl border border-gray-200 bg-white p-2 shadow-2xl dark:border-gray-700 dark:bg-gray-900"
-                >
+                <DropdownMenuContent align="end"
+                    class="w-max max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-xl border border-gray-200 bg-white p-2 shadow-2xl dark:border-gray-700 dark:bg-gray-900">
                     <AppearanceTabs />
                 </DropdownMenuContent>
             </DropdownMenu>
-
             <!-- Notifications -->
-            <!-- <div class="relative" ref="notificationsRef"> -->
-            <!-- <button @click="toggleNotifications" class="relative rounded-lg p-2 text-gray-400 transition hover:bg-gray-800/60 hover:text-white">
-                    <Bell class="h-5 w-5" />
+            <div class="relative">
 
-                    <span
-                        v-if="unreadCount > 0"
-                        class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white"
-                    >
-                        {{ unreadCount > 9 ? '9+' : unreadCount }}
+                <!-- ============================================================
+             Notification Bell
+        ============================================================= -->
+
+                <button type="button" @click="toggleNotifications"
+                    class="relative rounded-xl bg-white p-2.5 text-slate-600 transition hover:bg-slate-50">
+
+                    <BellIcon class="h-5 w-5" />
+
+                    <!-- Unread Badge -->
+
+                    <span v-if="unreadCount > 0"
+                        class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                        {{
+                            unreadCount > 99
+                                ? '99+'
+                                : unreadCount
+                        }}
                     </span>
-                </button> -->
 
-            <!-- <div
-                    v-if="showNotifications"
-                    class="animate-in fade-in-0 zoom-in-95 absolute top-11 right-0 z-50 w-80 overflow-hidden rounded-xl border border-gray-700 bg-gray-900/95 shadow-2xl backdrop-blur-md"
-                > -->
-            <!-- Header -->
-            <!-- <div class="flex items-center justify-between border-b border-gray-700 px-4 py-3">
-                        <h3 class="text-sm font-semibold text-white">Notifications</h3>
+                </button>
 
-                        <div class="flex items-center gap-1.5">
-                            <button
-                                v-if="unreadCount > 0"
-                                @click="markAllAsRead"
-                                class="rounded p-1.5 text-blue-400 transition hover:bg-blue-600/20 hover:text-blue-300"
-                            >
-                                <CheckCircle class="h-4 w-4" />
-                            </button>
 
-                            <button
-                                @click="showNotifications = false"
-                                class="rounded p-1.5 text-gray-400 transition hover:bg-gray-700 hover:text-white"
-                            >
-                                <X class="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div> -->
+                <!-- ============================================================
+             Notification Dropdown
+        ============================================================= -->
 
-            <!-- Notifications List -->
-            <!-- <div class="max-h-96 overflow-y-auto">
-                        <template v-if="notifications.length">
-                            <div
-                                v-for="notification in notifications"
-                                :key="notification.id"
-                                @click="handleNotificationClick(notification)"
-                                class="flex cursor-pointer gap-3 px-4 py-3 transition hover:bg-gray-800/60"
-                                :class="notification.read ? 'bg-transparent' : 'bg-blue-600/15'"
-                            >
-                                <div class="flex h-9 w-9 items-center justify-center rounded-full" :class="getNotificationIcon(notification.type).bg">
-                                    <component
-                                        :is="getNotificationIcon(notification.type).icon"
-                                        class="h-4 w-4"
-                                        :class="getNotificationIcon(notification.type).color"
-                                    />
+                <Transition enter-active-class="transition duration-150 ease-out"
+                    enter-from-class="translate-y-1 opacity-0" enter-to-class="translate-y-0 opacity-100"
+                    leave-active-class="transition duration-100 ease-in" leave-from-class="translate-y-0 opacity-100"
+                    leave-to-class="translate-y-1 opacity-0">
+
+                    <div v-if="open"
+                        class="absolute right-0 z-50 mt-2 w-[calc(100vw-24px)] max-w-[360px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+
+                        <!-- ====================================================
+                     Header
+                ===================================================== -->
+
+                        <div class="flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3">
+
+                            <div>
+
+                                <div class="flex items-center gap-2">
+
+                                    <h3 class="text-sm font-bold text-slate-900">
+                                        Notifications
+                                    </h3>
+
+                                    <span v-if="unreadCount > 0"
+                                        class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600">
+                                        {{ unreadCount }} new
+                                    </span>
+
                                 </div>
 
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-sm font-medium text-white">{{ notification.title }}</p>
-                                    <p class="line-clamp-2 text-xs text-gray-400">{{ notification.message }}</p>
-                                    <p class="mt-1 text-[11px] text-gray-500">{{ formatTime(notification.created_at) }}</p>
-                                </div>
+                                <p class="mt-0.5 text-xs text-slate-500">
+                                    Follow-up activities
+                                </p>
 
-                                <span v-if="!notification.read" class="mt-1 h-2 w-2 rounded-full bg-blue-500"></span>
                             </div>
-                        </template>
 
-                        <div v-else class="p-6 text-center text-gray-400">
-                            <BellOff class="mx-auto h-7 w-7 opacity-50" />
-                            <p class="mt-2 text-sm">No notifications</p>
+
+                            <div class="flex items-center gap-1">
+
+                                <button v-if="unreadCount > 0" type="button" :disabled="markingAll"
+                                    @click="markAllAsRead"
+                                    class="rounded-lg px-2 py-1 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 disabled:opacity-50">
+                                    <span v-if="!markingAll">
+                                        Mark all read
+                                    </span>
+
+                                    <span v-else>
+                                        Updating...
+                                    </span>
+                                </button>
+
+
+                                <button type="button" @click="open = false"
+                                    class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+
+                                    <XMarkIcon class="h-4 w-4" />
+
+                                </button>
+
+                            </div>
+
                         </div>
-                    </div> -->
 
-            <!-- Footer -->
-            <!-- <div class="border-t border-gray-700 bg-gray-900/70 p-3">
-                        <Link
-                            :href="route('notifications.index')"
-                            class="block w-full rounded py-2 text-center text-sm text-blue-400 transition hover:bg-blue-600/15 hover:text-blue-300"
-                        >
-                            View all notifications
-                        </Link>
-                    </div> -->
-            <!-- </div>
-            </div> -->
 
-            <!-- Click Outside -->
-            <!-- <div v-if="showNotifications" class="fixed inset-0 z-40" @click="showNotifications = false"></div> -->
+                        <!-- ====================================================
+                     Loading
+                ===================================================== -->
+
+                        <div v-if="loading" class="flex items-center justify-center py-12">
+
+                            <div
+                                class="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600" />
+
+                        </div>
+
+
+                        <!-- ====================================================
+                     Empty
+                ===================================================== -->
+
+                        <div v-else-if="!hasNotifications" class="px-6 py-12 text-center">
+
+                            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
+
+                                <BellIcon class="h-7 w-7 text-slate-400" />
+
+                            </div>
+
+                            <h4 class="mt-4 text-sm font-semibold text-slate-700">
+                                You're all caught up
+                            </h4>
+
+                            <p class="mt-1 text-xs text-slate-400">
+                                No follow-up notifications available.
+                            </p>
+
+                        </div>
+
+
+                        <!-- ====================================================
+                     Notification List
+                ===================================================== -->
+
+                        <div v-else class="max-h-[520px] overflow-y-auto overflow-x-hidden">
+
+                            <div v-for="notification in notifications" :key="notification.id"
+                                @click="openNotification(notification)"
+                                class="group relative w-full cursor-pointer border-b border-slate-100 px-4 py-3.5 transition-all duration-150 hover:bg-slate-50"
+                                :class="{
+                                    'bg-blue-50/60': !notification.read_at,
+                                    'bg-white': notification.read_at,
+                                }">
+
+                                <!-- Unread indicator -->
+                                <span v-if="!notification.read_at"
+                                    class="absolute left-0 top-0 h-full w-0.5 bg-blue-600" />
+
+                                <div class="flex w-full min-w-0 items-start gap-3">
+
+                                    <!-- Notification Icon -->
+
+                                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                                        :class="notificationIconClass(notification)">
+                                        <component :is="notificationIcon(notification.type)" class="h-5 w-5" />
+                                    </div>
+
+
+                                    <!-- Content -->
+
+                                    <div class="min-w-0 flex-1 overflow-hidden">
+
+                                        <!-- Title + unread dot -->
+
+                                        <div class="flex min-w-0 items-start gap-2">
+
+                                            <p class="min-w-0 flex-1 truncate text-sm" :class="notification.read_at
+                                                ? 'font-medium text-slate-700'
+                                                : 'font-semibold text-slate-900'
+                                                ">
+                                                {{ notification.title }}
+                                            </p>
+
+                                            <span v-if="!notification.read_at"
+                                                class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-600" />
+                                        </div>
+
+
+                                        <!-- Message -->
+
+                                        <p class="mt-1 line-clamp-2 break-words text-[13px] leading-5 text-slate-500">
+                                            {{ notification.message }}
+                                        </p>
+
+
+                                        <!-- Meta -->
+
+                                        <div class="mt-2.5 flex items-center gap-2">
+
+                                            <!-- Time -->
+
+                                            <span class="text-[11px] font-medium text-slate-400">
+                                                {{ notificationTime(notification.created_at) }}
+                                            </span>
+
+
+                                            <!-- Separator -->
+
+                                            <span v-if="notification.data?.priority" class="text-[10px] text-slate-300">
+                                                •
+                                            </span>
+
+
+                                            <!-- Priority -->
+
+                                            <span v-if="notification.data?.priority"
+                                                class="rounded-full px-2 py-0.5 text-[10px] font-semibold" :class="priorityClass(
+                                                    notification.data.priority
+                                                )
+                                                    ">
+                                                {{ notification.data.priority }}
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- Arrow -->
+
+                                    <div
+                                        class="mt-3 shrink-0 text-slate-300 opacity-0 transition-opacity group-hover:opacity-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7" />
+                                        </svg>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Pagination -->
+
+                        <div v-if="lastPage > 1" class="mt-5 flex items-center justify-between">
+
+                            <p class="text-xs text-slate-500 dark:text-slate-400">
+                                Page {{ currentPage }} of {{ lastPage }}
+                            </p>
+
+
+                            <div class="flex items-center gap-1">
+
+                                <button type="button" :disabled="currentPage === 1 || loading"
+                                    @click="goToPage(currentPage - 1)"
+                                    class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                                    Previous
+                                </button>
+
+
+                                <button v-for="pageNumber in lastPage" :key="pageNumber" type="button"
+                                    @click="goToPage(pageNumber)"
+                                    class="h-9 min-w-9 rounded-lg px-3 text-xs font-semibold transition" :class="pageNumber === currentPage
+                                        ? 'bg-blue-600 text-white'
+                                        : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
+                                        ">
+                                    {{ pageNumber }}
+                                </button>
+
+
+                                <button type="button" :disabled="currentPage === lastPage ||
+                                    loading
+                                    " @click="goToPage(currentPage + 1)"
+                                    class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                                    Next
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        <!-- ====================================================
+                     Footer
+                ===================================================== -->
+
+                        <div v-if="hasNotifications"
+                            class="border-t border-slate-100 bg-slate-50 px-4 py-2.5 text-center">
+
+                            <button type="button" class="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                                View all notifications
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </Transition>
+
+            </div>
 
             <NavUser />
         </div>
     </header>
+    <FollowUpActivityModal :show="showFollowUpActivityModal" :activity-id="selectedFollowUpActivityId"
+        @close="closeFollowUpActivity" />
 </template>

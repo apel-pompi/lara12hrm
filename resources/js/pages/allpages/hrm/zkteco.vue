@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import echo from '@/echo';
 import { type BreadcrumbItem } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'ZKTeco Device Manager ', href: '/zkteco' }];
@@ -35,12 +36,18 @@ const stats = ref({
     last_30_days: 0,
 });
 
+const page = usePage();
+const flash = page.props.flash;
+const userId = computed<number | null>(() => (page.props as any).auth?.user?.id ?? null);
+
+let attendanceSyncChannel: string | null = null;
+const syncTimeoutId = ref<number | null>(null);
+let refreshIntervalId: number | null = null;
+
 // Methods
 const setTodayDate = () => {
     selectedDate.value = new Date().toISOString().split('T')[0];
 };
-
-const flash = usePage().props.flash;
 
 const formatDateForDisplay = (date) => {
     if (!date) return;
@@ -136,6 +143,103 @@ const syncData = async () => {
     }
 };
 
+const startAttendanceSync = async () => {
+    if (!deviceStatus.value.connected) {
+        toast('error', {
+            description: flash.error,
+        });
+        return;
+    }
+
+    if (!selectedDate.value) {
+        toast('error', {
+            description: flash.error,
+        });
+        return;
+    }
+
+    syncing.value = true;
+    syncResult.value = null;
+    loading.value = true;
+
+    try {
+        const response = await axios.post('/zkteco/sync', {
+            date: selectedDate.value,
+        });
+
+        syncResult.value = response.data;
+
+        if (response.status === 202 && response.data.queued) {
+            toast('success', {
+                description: response.data.message,
+            });
+
+            if (syncTimeoutId.value) {
+                window.clearTimeout(syncTimeoutId.value);
+            }
+
+            syncTimeoutId.value = window.setTimeout(() => {
+                syncing.value = false;
+                loading.value = false;
+
+                toast('warning', {
+                    description: 'Sync is still processing. Please wait for the completion notification.',
+                });
+            }, 120000);
+        }
+    } catch (error) {
+        syncing.value = false;
+        loading.value = false;
+
+        syncResult.value = {
+            success: false,
+            message: error.response?.data?.message || error.message,
+        };
+
+        toast('error', {
+            description: syncResult.value.message,
+        });
+    }
+};
+
+const listenForAttendanceSync = () => {
+    if (!userId.value) {
+        return;
+    }
+
+    attendanceSyncChannel = `attendance-sync.${userId.value}`;
+
+    echo.private(attendanceSyncChannel).listen('.attendance.sync.completed', (event: any) => {
+        const result = event?.result ?? {};
+
+        if (syncTimeoutId.value) {
+            window.clearTimeout(syncTimeoutId.value);
+            syncTimeoutId.value = null;
+        }
+
+        syncResult.value = result;
+        syncing.value = false;
+        loading.value = false;
+
+        if (result.success) {
+            toast('success', {
+                description: result.message ?? 'Sync complete.',
+            });
+
+            loadStats();
+            checkDeviceStatus();
+        } else {
+            toast('error', {
+                description: result.message ?? 'Sync failed.',
+            });
+        }
+
+        window.setTimeout(() => {
+            syncResult.value = null;
+        }, 5000);
+    });
+};
+
 const syncDateRange = async () => {
     if (!deviceStatus.value.connected) {
         toast('error', {
@@ -215,18 +319,33 @@ const formatDate = (date) => {
 onMounted(() => {
     checkDeviceStatus();
     loadStats();
+    listenForAttendanceSync();
 
     // Auto refresh every 30 seconds
-    const interval = setInterval(() => {
+    refreshIntervalId = window.setInterval(() => {
         if (!syncing.value && !connecting.value) {
             checkDeviceStatus();
             loadStats();
             // syncData();
         }
     }, 30000);
+});
 
-    // Cleanup
-    return () => clearInterval(interval);
+onBeforeUnmount(() => {
+    if (refreshIntervalId) {
+        window.clearInterval(refreshIntervalId);
+        refreshIntervalId = null;
+    }
+
+    if (attendanceSyncChannel) {
+        echo.leave(attendanceSyncChannel);
+        attendanceSyncChannel = null;
+    }
+
+    if (syncTimeoutId.value) {
+        window.clearTimeout(syncTimeoutId.value);
+        syncTimeoutId.value = null;
+    }
 });
 </script>
 
@@ -312,7 +431,7 @@ onMounted(() => {
                             <button @click="setTodayDate" class="rounded-xl bg-gray-700 py-2 text-white">Today</button>
 
                             <button
-                                @click="syncData"
+                                @click="startAttendanceSync"
                                 :disabled="syncing || !deviceStatus.connected"
                                 class="rounded-xl bg-green-600 py-2 font-semibold text-white"
                             >

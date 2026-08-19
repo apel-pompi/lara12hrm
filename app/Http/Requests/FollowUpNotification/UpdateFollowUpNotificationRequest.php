@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\FollowUpNotification;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreFollowUpTimelineRequest extends FormRequest
+class UpdateFollowUpNotificationRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

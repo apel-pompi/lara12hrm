@@ -9,3 +9,17 @@ Broadcast::channel(
         return true;
     }
 );
+
+Broadcast::channel(
+    'follow-up-notifications.{userId}',
+    function ($user, $userId) {
+        return (int) $user->id === (int) $userId;
+    }
+);
+
+Broadcast::channel(
+    'attendance-sync.{userId}',
+    function ($user, $userId) {
+        return (int) $user->id === (int) $userId;
+    }
+);

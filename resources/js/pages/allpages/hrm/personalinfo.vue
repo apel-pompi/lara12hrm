@@ -43,6 +43,11 @@ export interface Designation {
     desname: string;
 }
 
+export interface User {
+    id: number;
+    username: string;
+}
+
 export interface PersonalInfo {
     id: number;
     empid: number;
@@ -51,6 +56,7 @@ export interface PersonalInfo {
     branch_id: number;
     dept_id: number;
     des_id: number;
+    user_id: number;
     dateofbirth: string;
     gender: number;
     present: string;
@@ -85,6 +91,7 @@ const props = defineProps<{
     branch: Branch[];
     department: Department[];
     designation: Designation[];
+    user: User[];
     filters: { empid?: string; empname?: string; branch_id?: string; dept_id?: string; des_id?: string; blood?: string };
 }>();
 
@@ -103,6 +110,7 @@ interface FormErrors {
     branch_id: string;
     dept_id: string;
     des_id: string;
+    user_id: string;
     dateofbirth: string;
     gender: string;
     present: string;
@@ -129,6 +137,7 @@ const form = useForm({
     branch_id: '',
     dept_id: '',
     des_id: '',
+    user_id: '',
     dateofbirth: '',
     gender: '',
     present: '',
@@ -383,25 +392,21 @@ const goToPage = (url: string | null) => {
 </script>
 
 <template>
+
     <Head title="Employee Information" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]">
             <!-- Responsive Filter + Action Section -->
 
             <!-- Filters Grid -->
-            <div class="mb-6 flex justify-center rounded-md border border-gray-300 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <div
+                class="mb-6 flex justify-center rounded-md border border-gray-300 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
                 <div
-                    class="grid w-fit grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10"
-                >
+                    class="grid w-fit grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
                     <!-- Create Button -->
-                    <Button
-                        variant="secondary"
-                        size="sm"
-                        @click="showDailogCreate"
-                        class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
-                    >
+                    <Button variant="secondary" size="sm" @click="showDailogCreate"
+                        class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
                         <Plus class="mr-1 h-4 w-4" />
                         Create
                     </Button>
@@ -411,21 +416,16 @@ const goToPage = (url: string | null) => {
                         <div class="relative w-40">
                             <ComboboxInput
                                 class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
-                                placeholder="Employee ID..."
-                                :display-value="(person) => person?.empid"
-                                @input="query = $event.target.value"
-                            />
+                                placeholder="Employee ID..." :display-value="(person) => person?.empid"
+                                @input="query = $event.target.value" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
-                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
-                                <ComboboxOption
-                                    v-for="person in filteredPeopleID"
-                                    :key="person.id"
-                                    :value="person"
-                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
-                                >
+                            <ComboboxOptions
+                                class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
+                                <ComboboxOption v-for="person in filteredPeopleID" :key="person.id" :value="person"
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white">
                                     {{ person.empid }}
                                 </ComboboxOption>
                             </ComboboxOptions>
@@ -437,21 +437,16 @@ const goToPage = (url: string | null) => {
                         <div class="relative w-40">
                             <ComboboxInput
                                 class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
-                                placeholder="Employee Name..."
-                                :display-value="(person) => person?.empname"
-                                @input="query = $event.target.value"
-                            />
+                                placeholder="Employee Name..." :display-value="(person) => person?.empname"
+                                @input="query = $event.target.value" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
-                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
-                                <ComboboxOption
-                                    v-for="person in filteredPeople"
-                                    :key="person.id"
-                                    :value="person"
-                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
-                                >
+                            <ComboboxOptions
+                                class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
+                                <ComboboxOption v-for="person in filteredPeople" :key="person.id" :value="person"
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white">
                                     {{ person.empname }}
                                 </ComboboxOption>
                             </ComboboxOptions>
@@ -463,21 +458,16 @@ const goToPage = (url: string | null) => {
                         <div class="relative w-40">
                             <ComboboxInput
                                 class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
-                                placeholder="Branch..."
-                                :display-value="(branches) => branches?.branchname"
-                                @input="queryBranch = $event.target.value"
-                            />
+                                placeholder="Branch..." :display-value="(branches) => branches?.branchname"
+                                @input="queryBranch = $event.target.value" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
-                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
-                                <ComboboxOption
-                                    v-for="branches in filteredBranch"
-                                    :key="branches.id"
-                                    :value="branches"
-                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
-                                >
+                            <ComboboxOptions
+                                class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
+                                <ComboboxOption v-for="branches in filteredBranch" :key="branches.id" :value="branches"
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white">
                                     {{ branches.branchname }}
                                 </ComboboxOption>
                             </ComboboxOptions>
@@ -489,21 +479,17 @@ const goToPage = (url: string | null) => {
                         <div class="relative w-40">
                             <ComboboxInput
                                 class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
-                                placeholder="Department..."
-                                :display-value="(departments) => departments?.deptname"
-                                @input="queryDepartment = $event.target.value"
-                            />
+                                placeholder="Department..." :display-value="(departments) => departments?.deptname"
+                                @input="queryDepartment = $event.target.value" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
-                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
-                                <ComboboxOption
-                                    v-for="departments in filteredDepartment"
-                                    :key="departments.id"
+                            <ComboboxOptions
+                                class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
+                                <ComboboxOption v-for="departments in filteredDepartment" :key="departments.id"
                                     :value="departments"
-                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
-                                >
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white">
                                     {{ departments.deptname }}
                                 </ComboboxOption>
                             </ComboboxOptions>
@@ -515,21 +501,17 @@ const goToPage = (url: string | null) => {
                         <div class="relative w-40">
                             <ComboboxInput
                                 class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
-                                placeholder="Designation..."
-                                :display-value="(designations) => designations?.desname"
-                                @input="queryDesignation = $event.target.value"
-                            />
+                                placeholder="Designation..." :display-value="(designations) => designations?.desname"
+                                @input="queryDesignation = $event.target.value" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
-                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
-                                <ComboboxOption
-                                    v-for="designations in filteredDesignation"
-                                    :key="designations.id"
+                            <ComboboxOptions
+                                class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
+                                <ComboboxOption v-for="designations in filteredDesignation" :key="designations.id"
                                     :value="designations"
-                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
-                                >
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white">
                                     {{ designations.desname }}
                                 </ComboboxOption>
                             </ComboboxOptions>
@@ -541,21 +523,16 @@ const goToPage = (url: string | null) => {
                         <div class="relative w-40">
                             <ComboboxInput
                                 class="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
-                                placeholder="Blood Group..."
-                                :display-value="(bloods) => bloods?.blood"
-                                @input="queryBlood = $event.target.value"
-                            />
+                                placeholder="Blood Group..." :display-value="(bloods) => bloods?.blood"
+                                @input="queryBlood = $event.target.value" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
                             </ComboboxButton>
 
-                            <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
-                                <ComboboxOption
-                                    v-for="bloods in filteredBlood"
-                                    :key="bloods.blood"
-                                    :value="bloods"
-                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white"
-                                >
+                            <ComboboxOptions
+                                class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border bg-white shadow-lg">
+                                <ComboboxOption v-for="bloods in filteredBlood" :key="bloods.blood" :value="bloods"
+                                    class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-600 hover:text-white">
                                     {{ bloods.blood }}
                                 </ComboboxOption>
                             </ComboboxOptions>
@@ -563,7 +540,8 @@ const goToPage = (url: string | null) => {
                     </Combobox>
 
                     <!-- Search -->
-                    <Button size="sm" @click="search" class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+                    <Button size="sm" @click="search"
+                        class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
                         <Search class="mr-1 h-4 w-4" />
                         Search
                     </Button>
@@ -584,31 +562,43 @@ const goToPage = (url: string | null) => {
                         <!-- Header -->
                         <TableHeader class="bg-gray-50">
                             <TableRow class="border-b">
-                                <TableHead class="w-14 px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase">#</TableHead>
+                                <TableHead
+                                    class="w-14 px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase">#
+                                </TableHead>
 
-                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Employee Name </TableHead>
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Employee
+                                    Name </TableHead>
 
-                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Employee ID </TableHead>
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Employee ID
+                                </TableHead>
 
-                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Branch </TableHead>
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Branch
+                                </TableHead>
 
-                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Department </TableHead>
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Department
+                                </TableHead>
 
-                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Designation </TableHead>
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Designation
+                                </TableHead>
 
-                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Phone </TableHead>
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Phone
+                                </TableHead>
 
-                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Blood </TableHead>
+                                <TableHead class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase"> Blood
+                                </TableHead>
 
-                                <TableHead class="px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase"> Status </TableHead>
+                                <TableHead class="px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase">
+                                    Status </TableHead>
 
-                                <TableHead class="px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase"> Actions </TableHead>
+                                <TableHead class="px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase">
+                                    Actions </TableHead>
                             </TableRow>
                         </TableHeader>
 
                         <!-- Body -->
                         <TableBody>
-                            <TableRow v-for="(personal, index) in data.data" :key="personal.id" class="border-b transition hover:bg-gray-50">
+                            <TableRow v-for="(personal, index) in data.data" :key="personal.id"
+                                class="border-b transition hover:bg-gray-50">
                                 <!-- Serial -->
                                 <TableCell class="px-4 py-4 text-center font-medium text-gray-700">
                                     {{ index + 1 }}
@@ -619,8 +609,7 @@ const goToPage = (url: string | null) => {
                                     <div class="flex items-center gap-3">
                                         <!-- Avatar -->
                                         <div
-                                            class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-600"
-                                        >
+                                            class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-600">
                                             {{ personal.empname?.charAt(0) }}
                                         </div>
 
@@ -637,7 +626,8 @@ const goToPage = (url: string | null) => {
 
                                 <!-- ID -->
                                 <TableCell class="px-4 py-4">
-                                    <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 ring-1 ring-blue-200">
+                                    <span
+                                        class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 ring-1 ring-blue-200">
                                         {{ personal.empid }}
                                     </span>
                                 </TableCell>
@@ -664,7 +654,8 @@ const goToPage = (url: string | null) => {
 
                                 <!-- Blood -->
                                 <TableCell class="px-4 py-4">
-                                    <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 ring-1 ring-red-200">
+                                    <span
+                                        class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 ring-1 ring-red-200">
                                         {{ personal.blood }}
                                     </span>
                                 </TableCell>
@@ -672,40 +663,27 @@ const goToPage = (url: string | null) => {
                                 <!-- Status -->
                                 <TableCell class="px-4 py-4 text-center">
                                     <div class="flex justify-center">
-                                        <Switch
-                                            :model-value="Boolean(personal.active)"
-                                            @update:model-value="(checked) => toggleStatus(personal, checked)"
-                                        />
+                                        <Switch :model-value="Boolean(personal.active)"
+                                            @update:model-value="(checked) => toggleStatus(personal, checked)" />
                                     </div>
                                 </TableCell>
 
                                 <!-- Actions -->
                                 <TableCell class="px-4 py-4">
                                     <div class="flex items-center justify-center gap-2">
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            class="h-8 w-8 text-blue-600 hover:bg-blue-50"
-                                            @click="onShow(personal.id)"
-                                        >
+                                        <Button size="icon" variant="ghost"
+                                            class="h-8 w-8 text-blue-600 hover:bg-blue-50" @click="onShow(personal.id)">
                                             <Eye class="h-4 w-4" />
                                         </Button>
 
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
+                                        <Button size="icon" variant="ghost"
                                             class="h-8 w-8 text-amber-600 hover:bg-amber-50"
-                                            @click="onEdit(personal.id)"
-                                        >
+                                            @click="onEdit(personal.id)">
                                             <SquarePen class="h-4 w-4" />
                                         </Button>
 
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            class="h-8 w-8 text-red-600 hover:bg-red-50"
-                                            @click="onDelete(personal.id)"
-                                        >
+                                        <Button size="icon" variant="ghost" class="h-8 w-8 text-red-600 hover:bg-red-50"
+                                            @click="onDelete(personal.id)">
                                             <Trash class="h-4 w-4" />
                                         </Button>
                                     </div>
@@ -716,17 +694,15 @@ const goToPage = (url: string | null) => {
                 </div>
 
                 <!-- Footer Pagination -->
-                <div class="flex flex-col gap-4 border-t bg-white px-5 py-4 md:flex-row md:items-center md:justify-between">
+                <div
+                    class="flex flex-col gap-4 border-t bg-white px-5 py-4 md:flex-row md:items-center md:justify-between">
                     <!-- Left -->
                     <div class="flex flex-col gap-3 md:flex-row md:items-center">
                         <div class="flex items-center gap-2 text-sm text-gray-600">
                             <span>Show</span>
 
-                            <select
-                                v-model="perPage"
-                                @change="changePerPage"
-                                class="rounded-lg border px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                            >
+                            <select v-model="perPage" @change="changePerPage"
+                                class="rounded-lg border px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                                 <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
                                     {{ size }}
                                 </option>
@@ -742,19 +718,12 @@ const goToPage = (url: string | null) => {
 
                     <!-- Right -->
                     <div class="flex flex-wrap items-center gap-2">
-                        <Button
-                            v-for="(link, index) in data.links"
-                            :key="index"
-                            :disabled="!link.url"
-                            variant="outline"
-                            size="sm"
-                            :class="[
+                        <Button v-for="(link, index) in data.links" :key="index" :disabled="!link.url" variant="outline"
+                            size="sm" :class="[
                                 'min-w-9.5 rounded-lg',
                                 link.active ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700' : '',
                                 !link.url ? 'cursor-not-allowed opacity-50' : '',
-                            ]"
-                            @click="goToPage(link.url)"
-                        >
+                            ]" @click="goToPage(link.url)">
                             <span v-html="link.label"></span>
                         </Button>
                     </div>
@@ -766,7 +735,8 @@ const goToPage = (url: string | null) => {
             <DialogContent class="h-auto w-full max-w-[95vw] overflow-y-auto sm:max-w-225">
                 <DialogHeader>
                     <DialogTitle>{{ isEditMode ? 'Edit Personal Info' : 'Create Personal Info' }}</DialogTitle>
-                    <DialogDescription>Fill in the employee details below. Click save when you're done.</DialogDescription>
+                    <DialogDescription>Fill in the employee details below. Click save when you're done.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <!-- Responsive grid layout -->
@@ -787,40 +757,33 @@ const goToPage = (url: string | null) => {
 
                         <div class="space-y-2">
                             <Label for="joindate">Joining Date</Label>
-                            <VueDatePicker
-                                v-model="jdate"
-                                :max-date="maxDate"
-                                :format="'yyyy-MM-dd'"
-                                :enable-time-picker="false"
-                                placeholder="Joning date"
-                                auto-apply
-                            />
+                            <VueDatePicker v-model="jdate" :max-date="maxDate" :format="'yyyy-MM-dd'"
+                                :enable-time-picker="false" placeholder="Joning date" auto-apply />
                             <span v-if="errors?.joindate" class="text-sm text-red-600">{{ errors.joindate }}</span>
                         </div>
 
                         <div class="space-y-2">
                             <Label for="dateofbirth">Date of Birth</Label>
-                            <VueDatePicker
-                                v-model="bdate"
-                                :max-date="maxDate"
-                                :format="'yyyy-MM-dd'"
-                                :enable-time-picker="false"
-                                placeholder="Date of birth"
-                                auto-apply
-                            />
-                            <span v-if="errors?.dateofbirth" class="text-sm text-red-600">{{ errors.dateofbirth }}</span>
+                            <VueDatePicker v-model="bdate" :max-date="maxDate" :format="'yyyy-MM-dd'"
+                                :enable-time-picker="false" placeholder="Date of birth" auto-apply />
+                            <span v-if="errors?.dateofbirth" class="text-sm text-red-600">{{ errors.dateofbirth
+                                }}</span>
                         </div>
 
                         <div class="space-y-2">
                             <Label for="phonepersonal">Personal Phone No</Label>
-                            <Input id="phonepersonal" placeholder="Enter personal phone no" v-model="form.phonepersonal" autofocus />
-                            <span v-if="errors?.phonepersonal" class="text-sm text-red-600">{{ errors.phonepersonal }}</span>
+                            <Input id="phonepersonal" placeholder="Enter personal phone no" v-model="form.phonepersonal"
+                                autofocus />
+                            <span v-if="errors?.phonepersonal" class="text-sm text-red-600">{{ errors.phonepersonal
+                                }}</span>
                         </div>
 
                         <div class="space-y-2">
                             <Label for="phoneoffice">Official Phone No</Label>
-                            <Input id="phoneoffice" placeholder="Enter official phone no" v-model="form.phoneoffice" autofocus />
-                            <span v-if="errors?.phoneoffice" class="text-sm text-red-600">{{ errors.phoneoffice }}</span>
+                            <Input id="phoneoffice" placeholder="Enter official phone no" v-model="form.phoneoffice"
+                                autofocus />
+                            <span v-if="errors?.phoneoffice" class="text-sm text-red-600">{{ errors.phoneoffice
+                                }}</span>
                         </div>
                     </div>
 
@@ -834,7 +797,8 @@ const goToPage = (url: string | null) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="b in branch" :key="b.id" :value="b.id">{{ b.branchname }}</SelectItem>
+                                        <SelectItem v-for="b in branch" :key="b.id" :value="b.id">{{ b.branchname }}
+                                        </SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
@@ -849,7 +813,8 @@ const goToPage = (url: string | null) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="d in department" :key="d.id" :value="d.id">{{ d.deptname }}</SelectItem>
+                                        <SelectItem v-for="d in department" :key="d.id" :value="d.id">{{ d.deptname }}
+                                        </SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
@@ -864,7 +829,8 @@ const goToPage = (url: string | null) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="g in designation" :key="g.id" :value="g.id">{{ g.desname }}</SelectItem>
+                                        <SelectItem v-for="g in designation" :key="g.id" :value="g.id">{{ g.desname }}
+                                        </SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
@@ -883,13 +849,15 @@ const goToPage = (url: string | null) => {
                             </Label>
                             <div class="flex items-center gap-4">
                                 <div class="relative">
-                                    <ImageUpload @image="(file) => (form.photo = file)" :Image="currentImage" :disabled="form.processing" />
+                                    <ImageUpload @image="(file) => (form.photo = file)" :Image="currentImage"
+                                        :disabled="form.processing" />
                                 </div>
                                 <div>
                                     <p class="text-xs text-gray-500">Recommended size: 256x256px</p>
                                     <p class="text-xs text-gray-500">Max size: 2MB</p>
                                 </div>
-                                <span v-if="form.errors.photo" class="text-xs text-red-600">{{ form.errors.photo }}</span>
+                                <span v-if="form.errors.photo" class="text-xs text-red-600">{{ form.errors.photo
+                                    }}</span>
                             </div>
                         </div>
                     </div>
@@ -954,6 +922,21 @@ const goToPage = (url: string | null) => {
                             </Select>
                             <span v-if="errors?.gender" class="text-sm text-red-600">{{ errors.gender }}</span>
                         </div>
+                        <div class="space-y-2">
+                            <Label for="user_id">User Name</Label>
+                            <Select v-model="form.user_id">
+                                <SelectTrigger class="w-full">
+                                    <SelectValue placeholder="Select User Name" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem v-for="g in user" :key="g.id" :value="g.id">{{ g.username
+                                        }}</SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <span v-if="errors?.user_id" class="text-sm text-red-600">{{ errors.user_id }}</span>
+                        </div>
                         <input type="hidden" v-model="form.active" class="form-radio text-primary-600" />
 
                         <div class="pt-4">
@@ -978,7 +961,8 @@ const goToPage = (url: string | null) => {
             <DialogContent class="h-[auto] w-full max-w-[95vw] overflow-y-auto sm:max-w-[900px]">
                 <DialogHeader>
                     <DialogTitle class="text-2xl font-semibold">Show employee details</DialogTitle>
-                    <DialogDescription class="text-muted-foreground text-sm"> View the details of this employee. </DialogDescription>
+                    <DialogDescription class="text-muted-foreground text-sm"> View the details of this employee.
+                    </DialogDescription>
                 </DialogHeader>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <!-- Column 1 -->
@@ -1043,13 +1027,11 @@ const goToPage = (url: string | null) => {
                         </div>
                         <div class="rounded-lg bg-gray-50 p-2">
                             <h3 class="mb-3 text-sm font-medium text-gray-800">Employee Photo</h3>
-                            <div class="flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-2">
+                            <div
+                                class="flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-2">
                                 <div class="flex items-center justify-center overflow-hidden rounded-full bg-gray-200">
-                                    <img
-                                        :src="currentImage || '/storage/employee/default.png'"
-                                        alt="preview"
-                                        class="h-35 w-35 object-cover object-center"
-                                    />
+                                    <img :src="currentImage || '/storage/employee/default.png'" alt="preview"
+                                        class="h-35 w-35 object-cover object-center" />
                                 </div>
                             </div>
                         </div>
@@ -1089,10 +1071,8 @@ const goToPage = (url: string | null) => {
                             <FormGroup label="Status" htmlFor="active">
                                 <div class="flex items-center space-x-6">
                                     <label class="inline-flex items-center space-x-2">
-                                        <span
-                                            class="inline-block rounded-full px-3 py-1 text-sm font-medium"
-                                            :class="form.active == '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                        >
+                                        <span class="inline-block rounded-full px-3 py-1 text-sm font-medium"
+                                            :class="form.active == '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
                                             {{ form.active == '1' ? 'Active' : 'Inactive' }}
                                         </span>
                                     </label>

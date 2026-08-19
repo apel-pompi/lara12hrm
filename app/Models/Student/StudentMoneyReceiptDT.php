@@ -6,12 +6,11 @@ use App\Models\AgencySetting\Fees;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudentMoneyReceiptDT extends Model
 {
-    use HasFactory, SoftDeletes;
-    
+    use HasFactory;
+
     protected $fillable = [
         'insnumber_id',
         'mrnumber_id',
@@ -28,6 +27,4 @@ class StudentMoneyReceiptDT extends Model
     {
         return $this->belongsTo(Fees::class, 'fees_id');
     }
-
-    
 }

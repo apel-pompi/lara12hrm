@@ -64,7 +64,7 @@ class MetaWebhookController extends Controller
 
     public function handle(Request $request)
     {
-        Log::info('META WEBHOOK', $request->all());
+        //Log::info('META WEBHOOK', $request->all());
 
         try {
 

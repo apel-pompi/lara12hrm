@@ -9,7 +9,7 @@ class PersonalInfoService
 {
     public function get(array $queryParams = [])
     {
-        $queryBuilder = PersonalInfo::with('branch','designation','department')->orderBy('id', 'DESC');
+        $queryBuilder = PersonalInfo::with('branch', 'designation', 'department', 'user')->orderBy('id', 'DESC');
 
         $attendance = resolve(PersonalInfoFilter::class)->getResults([
             'builder' => $queryBuilder,

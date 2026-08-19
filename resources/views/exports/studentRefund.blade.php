@@ -83,6 +83,7 @@
         <div style="display:table-cell;width:60%;text-align:center">
             <h2 style="margin:0">Student Refund Analysis</h2>
             <p class="muted">Financial Performance Overview</p>
+            <p class="muted">From {{ $formdate }} To {{ $todate }}</p>
         </div>
 
         <div style="display:table-cell;width:20%;text-align:right">
@@ -114,7 +115,7 @@
                 <td><strong>Total Received</strong></td>
                 <td class="text-right">{{ $totalReceived }}</td>
             </tr>
-           
+
         </table>
     </div>
     <div class="card">
@@ -134,21 +135,21 @@
                 @endphp
 
                 @foreach ($grouped as $studentId => $rows)
-                    @php
-                        
+                @php
 
-                        $receive = $rows->filter(fn ($r) =>
-                            str_starts_with($r->insnumber, 'MR--') && $r->sign == -1 && $r->note == 'REFUND'
-                        )->sum('netamount');
 
-                        $grandReceive += $receive;
-                    @endphp
-                    
+                $receive = $rows->filter(fn ($r) =>
+                str_starts_with($r->insnumber, 'MR--') && $r->sign == -1 && $r->note == 'REFUND'
+                )->sum('netamount');
+
+                $grandReceive += $receive;
+                @endphp
+
                 <tr>
                     <td>{{ $i++ }}</td>
                     <td>{{ $rows->first()->student->student_id }}</td>
                     <td>{{ $rows->first()->student->fname }} {{ $rows->first()->student->lname }}</td>
-                    
+
                     <td class="text-right">{{ $receive }}</td>
                 </tr>
                 @endforeach

@@ -57,10 +57,7 @@ class MessageService
 
     public function receiveWhatsapp(Request $request)
     {
-        // Log::info('WHATSAPP RECEIVE START');
-        // Log::info('WHATSAPP RECEIVE START', [
-        //     'payload' => $request->all(),
-        // ]);
+
         $message = data_get(
             $request->all(),
             'entry.0.changes.0.value.messages.0'
@@ -81,11 +78,7 @@ class MessageService
             default => null,
         };
 
-        // Log::info([
-        //     'phone' => $phone,
-        //     'messageId' => $messageId,
-        //     'text' => $text,
-        // ]);
+
 
         $inbox = $this->inboxService->getOrCreate(
             platform: 'whatsapp',
@@ -542,9 +535,7 @@ class MessageService
 
     public function updateStatus(Request $request)
     {
-        Log::warning('Status Webhook', [
-            'payload' => $request->all(),
-        ]);
+
         $status = data_get(
             $request->all(),
             'entry.0.changes.0.value.statuses.0'
@@ -612,10 +603,13 @@ class MessageService
             ->get();
 
         foreach ($messages as $message) {
-            $this->metaPlatformService->markAsRead(
-                $conversation,
-                $message
-            );
+            try {
+                $this->metaPlatformService->markAsRead(
+                    $conversation,
+                    $message
+                );
+            } catch (\Throwable $e) {
+            }
 
             $message->update([
                 'status' => 'read',

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import axios from 'axios';
+import { toast } from 'vue-sonner';
 
 import {
     XMarkIcon,
@@ -53,7 +54,6 @@ interface FollowUpActivity {
     follow_up_date?: string;
     follow_up_time?: string;
     priority?: string;
-    status?: string;
     remarks?: string;
     completed_at?: string | null;
     is_auto?: boolean;
@@ -108,17 +108,11 @@ const fetchTimeline = async () => {
 
     try {
         const response = await axios.get(
-            `/api/students/${props.studentId}/follow-up-timeline`,
+            `/follow-up-timeline/student/${props.studentId}`,
         );
-
         timeline.value = response.data?.data ?? [];
     } catch (err: any) {
-        console.error('Failed to load follow-up timeline:', err);
-
-        error.value =
-            err?.response?.data?.message ??
-            'Failed to load follow-up timeline.';
-
+        toast.error('Failed to load follow-up timeline.', err?.response?.data?.message);
         timeline.value = [];
     } finally {
         loading.value = false;
@@ -243,14 +237,6 @@ const formatFollowUpDate = (
 
     let value = date;
 
-    /*
-     * API sometimes returns:
-     * 2026-08-06T18:00:00.000000Z
-     *
-     * But follow_up_time separately:
-     * 08:55:00
-     */
-
     if (time) {
         value = `${date.substring(0, 10)}T${time}`;
     }
@@ -310,16 +296,24 @@ const activityTitle = (item: TimelineItem) => {
 };
 
 const assignedUserName = (item: TimelineItem) => {
-    const assignedId = item.activity?.assigned_to;
+    const activity = item.activity as any;
 
-    if (
-        assignedId &&
-        item.user?.id === assignedId
-    ) {
-        return item.user.name;
-    }
+    return (
+        activity?.assigned_user_name ??
+        activity?.assignedTo?.name ??
+        activity?.assigned_to?.name ??
+        'Unassigned'
+    );
+};
 
-    return item.user?.name ?? 'System';
+const hasAssignedUser = (item: TimelineItem) => {
+    const activity = item.activity as any;
+
+    return Boolean(
+        activity?.assigned_user_name ||
+        activity?.assignedTo ||
+        activity?.assigned_to,
+    );
 };
 
 const hasChanges = (item: TimelineItem): boolean => {
@@ -373,6 +367,7 @@ const fieldLabel = (field: string): string => {
 const formatChangeValue = (
     field: string,
     value: any,
+    item?: TimelineItem,
 ): string => {
     if (
         value === null ||
@@ -399,6 +394,20 @@ const formatChangeValue = (
     }
 
     if (field === 'assigned_to') {
+        const activity = item?.activity as any;
+        const assignedUser = activity?.assignedTo ?? activity?.assigned_to;
+
+        if (
+            assignedUser &&
+            String(assignedUser.id) === String(value)
+        ) {
+            return assignedUser.name ?? `User #${value}`;
+        }
+
+        if (activity?.assigned_user_name) {
+            return activity.assigned_user_name;
+        }
+
         return `User #${value}`;
     }
 
@@ -632,13 +641,11 @@ const formatChangeValue = (
                                                     }}
                                                 </div>
 
-                                                <div v-if="
-                                                    item.activity
-                                                        .assigned_to
-                                                " class="flex items-center gap-1.5">
+                                                <div v-if="hasAssignedUser(item)" class="flex items-center gap-1.5">
                                                     <UserIcon class="h-4 w-4" />
 
                                                     Assigned
+                                                    {{ assignedUserName(item) }}
                                                 </div>
                                             </div>
 
@@ -679,8 +686,9 @@ const formatChangeValue = (
                                                             {{
                                                                 formatChangeValue(
                                                                     field,
-                                                            item.old_values?.[field],
-                                                            )
+                                                                    item.old_values?.[field],
+                                                                    item,
+                                                                )
                                                             }}
                                                         </span>
 
@@ -693,8 +701,9 @@ const formatChangeValue = (
                                                             {{
                                                                 formatChangeValue(
                                                                     field,
-                                                            item.new_values?.[field],
-                                                            )
+                                                                    item.new_values?.[field],
+                                                                    item,
+                                                                )
                                                             }}
                                                         </span>
                                                     </div>

@@ -1,0 +1,92 @@
+[
+    {
+        "data": [
+            {
+                
+                "code": "PENDING",
+                "name": "Pending",
+                "description": "Follow-up is scheduled and waiting to be completed.",
+                "color": "#F59E0B",
+                "icon": "clock",
+                "is_completed": "0",
+                "is_cancelled": "0",
+                "is_default": "1",
+                "allow_reschedule": "1",
+                "allow_edit": "1",
+                "status": "1",
+                "sort_order": "1"
+            },
+            {
+                "code": "COMPLETED",
+                "name": "Completed",
+                "description": "Follow-up has been successfully completed.",
+                "color": "#10B981",
+                "icon": "check",
+                "is_completed": "1",
+                "is_cancelled": "0",
+                "is_default": "0",
+                "allow_reschedule": "0",
+                "allow_edit": "0",
+                "status": "1",
+                "sort_order": "2"
+            },
+            {
+                "code": "CANCELLED",
+                "name": "Cancelled",
+                "description": "Follow-up was cancelled and will not be rescheduled.",
+                "color": "#EF4444",
+                "icon": "x",
+                "is_completed": "0",
+                "is_cancelled": "1",
+                "is_default": "0",
+                "allow_reschedule": "0",
+                "allow_edit": "0",
+                "status": "1",
+                "sort_order": "3"
+            },
+            {
+                "code": "IN_PROGRESS",
+                "name": "In Progress",
+                "description": "Follow-up is currently being handled.",
+                "color": "#2563EB",
+                "icon": "play",
+                "is_completed": "0",
+                "is_cancelled": "0",
+                "is_default": "0",
+                "allow_reschedule": "1",
+                "allow_edit": "1",
+                "status": "1",
+                "sort_order": "3"
+            },
+            {
+                "code": "RESCHEDULED",
+                "name": "Rescheduled",
+                "description": "Follow-up has been moved to another date or time.",
+                "color": "#8B5CF6",
+                "icon": "calendar",
+                "is_completed": "0",
+                "is_cancelled": "0",
+                "is_default": "0",
+                "allow_reschedule": "1",
+                "allow_edit": "1",
+                "status": "1",
+                "sort_order": "3"
+            },
+            {
+                "code": "MISSED",
+                "name": "Missed",
+                "description": "Scheduled follow-up was not completed.",
+                "color": "#64748B",
+                "icon": "alert-triangle",
+                "is_completed": "0",
+                "is_cancelled": "0",
+                "is_default": "0",
+                "allow_reschedule": "1",
+                "allow_edit": "1",  
+                "status": "1",
+                "sort_order": "3"
+            }
+            
+        ]
+    }
+]

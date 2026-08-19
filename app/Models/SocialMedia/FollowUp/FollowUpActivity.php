@@ -80,6 +80,13 @@ class FollowUpActivity extends Model
         )->latest();
     }
 
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(
+            FollowUpNotification::class,
+            'follow_up_activity_id'
+        );
+    }
     protected function casts(): array
     {
         return [

@@ -84,7 +84,7 @@ class MessengerApiService extends MetaApiService
             $psid,
             [
                 'fields' =>
-                    'first_name,last_name,profile_pic'
+                'first_name,last_name,profile_pic'
             ]
         );
     }
@@ -165,10 +165,10 @@ class MessengerApiService extends MetaApiService
         string $pageToken,
         string $psid
     ): array {
-        Log::info('markMessengerRead', [
-            'token' => $pageToken,
-            'psid' => $psid,
-        ]);
+        // Log::info('markMessengerRead', [
+        //     'token' => $pageToken,
+        //     'psid' => $psid,
+        // ]);
         return $this->post(
             $pageToken,
             'me/messages',
@@ -187,10 +187,10 @@ class MessengerApiService extends MetaApiService
         $setup = SocialMediaSetup::platform(
             SocialMediaSetup::MESSENGER
         );
-        Log::info('Messenger markAsRead', [
-            'message' => $message,
-            'setup' => $setup,
-        ]);
+        // Log::info('Messenger markAsRead', [
+        //     'message' => $message,
+        //     'setup' => $setup,
+        // ]);
         try {
             return $this->markMessengerRead(
                 pageToken: $setup->access_token,
@@ -198,10 +198,10 @@ class MessengerApiService extends MetaApiService
             );
         } catch (\Exception $e) {
             if (str_contains($e->getMessage(), 'outside of allowed window')) {
-                Log::info('Messenger mark_seen skipped', [
-                    'conversation_id' => $message->conversation_id,
-                    'message_id' => $message->id,
-                ]);
+                // Log::info('Messenger mark_seen skipped', [
+                //     'conversation_id' => $message->conversation_id,
+                //     'message_id' => $message->id,
+                // ]);
 
                 return [];
             }

@@ -3,156 +3,142 @@
 namespace App\Http\Controllers\SocialMedia\FollowUp;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\FollowUpReminder\StoreFollowUpReminderRequest;
-use App\Http\Requests\FollowUpReminder\UpdateFollowUpReminderRequest;
 use App\Models\SocialMedia\FollowUp\FollowUpReminder;
+use App\Services\SocialMedia\FollowUp\FollowUpReminderService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class FollowUpReminderController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(): JsonResponse
+    public function __construct(
+        protected FollowUpReminderService $reminderService
+    ) {}
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(
-            FollowUpReminder::with([
-                'student',
-                'activity',
-                'assignedUser',
-            ])
-                ->latest('reminder_at')
-                ->paginate(20)
-        );
+        $reminders = $this->reminderService
+            ->query()
+            ->orderBy('remind_at')
+            ->paginate(
+                $request->integer('per_page', 15)
+            );
+        return response()->json([
+            'success' => true,
+            'data' => $reminders,
+        ]);
+    }
+
+    public function dashboard(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->reminderService->dashboard(),
+        ]);
     }
 
     public function pending(): JsonResponse
     {
-        return response()->json(
-            FollowUpReminder::with([
-                'student',
-                'activity',
-                'assignedUser',
-            ])
-                ->where('status', 'Pending')
-                ->orderBy('reminder_at')
-                ->get()
-        );
+        return response()->json([
+            'success' => true,
+            'data' => $this->reminderService->pending(),
+        ]);
     }
 
     public function today(): JsonResponse
     {
-        return response()->json(
-            FollowUpReminder::with([
-                'student',
-                'activity',
-                'assignedUser',
-            ])
-                ->whereDate('reminder_at', today())
-                ->orderBy('reminder_at')
-                ->get()
-        );
+        return response()->json([
+            'success' => true,
+            'data' => $this->reminderService->today(),
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreFollowUpReminderRequest $request): JsonResponse
+    public function due(): JsonResponse
     {
-        $reminder = FollowUpReminder::create(
-            $request->validated()
-        );
+        return response()->json([
+            'success' => true,
+            'data' => $this->reminderService->due(),
+        ]);
+    }
+
+    public function overdue(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->reminderService->overdue(),
+        ]);
+    }
+
+    public function upcoming(Request $request): JsonResponse
+    {
+        $days = $request->integer('days', 7);
 
         return response()->json([
             'success' => true,
-            'message' => 'Reminder created successfully.',
+            'data' => $this->reminderService->upcoming($days),
+        ]);
+    }
+
+    public function markAsSent(FollowUpReminder $reminder): JsonResponse
+    {
+        $reminder = $this->reminderService
+            ->markAsSent($reminder);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Reminder marked as sent.',
             'data' => $reminder,
-        ], 201);
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(
-        FollowUpReminder $followUpReminder
-    ): JsonResponse {
-        return response()->json(
-            $followUpReminder->load([
-                'student',
-                'activity',
-                'assignedUser',
-            ])
-        );
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateFollowUpReminderRequest $request, FollowUpReminder $followUpReminder): JsonResponse
+    public function markAsRead(FollowUpReminder $reminder): JsonResponse
     {
-        $followUpReminder->update(
-            $request->validated()
+        $reminder = $this->reminderService
+            ->markAsRead($reminder);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Reminder marked as read.',
+            'data' => $reminder,
+        ]);
+    }
+
+    public function snooze(Request $request, FollowUpReminder $reminder): JsonResponse
+    {
+        $validated = $request->validate([
+            'minutes' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+        ]);
+
+        $reminder = $this->reminderService->snooze(
+            $reminder,
+            $validated['minutes']
         );
 
         return response()->json([
             'success' => true,
-            'message' => 'Reminder updated successfully.',
-            'data' => $followUpReminder,
+            'message' => 'Reminder snoozed successfully.',
+            'data' => $reminder,
         ]);
     }
 
-    public function complete(
-        FollowUpReminder $followUpReminder
-    ): JsonResponse {
-        $followUpReminder->update([
-            'status' => 'Completed',
-            'completed_at' => now(),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Reminder completed successfully.',
-        ]);
-    }
-
-    public function snooze(
-        FollowUpReminder $followUpReminder
-    ): JsonResponse {
-        $followUpReminder->update([
-            'status' => 'Pending',
-            'reminder_at' => now()->addDay(),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Reminder snoozed for 1 day.',
-        ]);
-    }
-
-    public function cancel(
-        FollowUpReminder $followUpReminder
-    ): JsonResponse {
-        $followUpReminder->update([
-            'status' => 'Cancelled',
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Reminder cancelled successfully.',
-        ]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(
-        FollowUpReminder $followUpReminder
-    ): JsonResponse {
-        $followUpReminder->delete();
+    public function destroy(FollowUpReminder $reminder): JsonResponse
+    {
+        $this->reminderService->delete($reminder);
 
         return response()->json([
             'success' => true,
             'message' => 'Reminder deleted successfully.',
+        ]);
+    }
+
+    public function runScheduler(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->reminderService->runScheduler(),
         ]);
     }
 }

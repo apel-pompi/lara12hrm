@@ -4,6 +4,7 @@ namespace App\Services\SocialMedia\FollowUp;
 
 use App\Models\SocialMedia\FollowUp\FollowUpActivity;
 use App\Models\SocialMedia\FollowUp\FollowUpStatus;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,7 @@ class FollowUpActivityService
     public function __construct(
         protected FollowUpReminderService $reminderService,
         protected FollowUpTimelineService $timelineService,
-        //protected FollowUpNotificationService $notificationService,
+        protected FollowUpNotificationService $notificationService,
     ) {}
 
 
@@ -91,8 +92,8 @@ class FollowUpActivityService
             |--------------------------------------------------------------------------
             */
 
-            // $this->notificationService
-            //     ->activityAssigned($activity);
+            $this->notificationService
+                ->createAssignedNotification($activity);
 
             DB::commit();
 
@@ -247,8 +248,8 @@ class FollowUpActivityService
 
             if ($oldAssigned != $activity->assigned_to) {
 
-                // $this->notificationService
-                //     ->activityAssigned($activity);
+                $this->notificationService
+                    ->createAssignedNotification($activity);
             }
 
             DB::commit();
@@ -330,8 +331,8 @@ class FollowUpActivityService
         |--------------------------------------------------------------------------
         */
 
-            // $this->notificationService
-            //     ->activityCompleted($activity);
+            $this->notificationService
+                ->createAssignedNotification($activity);
 
             DB::commit();
 
@@ -483,8 +484,8 @@ class FollowUpActivityService
         |--------------------------------------------------------------------------
         */
 
-            // $this->notificationService
-            //     ->activityRescheduled($activity);
+            $this->notificationService
+                ->createRescheduledNotification($activity);
 
             DB::commit();
 
@@ -782,34 +783,136 @@ class FollowUpActivityService
      */
     public function dashboardSummary(): array
     {
-        return [
+        $current = Carbon::now();
+        $currentDay = $current->year . '-' . $current->month . '-' . $current->day;
+        $followUpQuery = FollowUpActivity::query();
+        $followUpStats = [
+            'total' => (clone $followUpQuery)->count(),
 
-            'today' => FollowUpActivity::pending()
-                ->whereDate('follow_up_date', today())
+            'pending' => (clone $followUpQuery)
+                ->whereHas('status', function ($q) {
+                    $q->where('name', 'Pending');
+                })
                 ->count(),
 
-            'overdue' => FollowUpActivity::pending()
-                ->whereDate('follow_up_date', '<', today())
+            'due_today' => (clone $followUpQuery)
+                ->whereDate('follow_up_date', $currentDay)
+                ->whereHas('status', function ($q) {
+                    $q->where('name', 'Pending');
+                })
                 ->count(),
 
-            'upcoming' => FollowUpActivity::pending()
-                ->whereDate('follow_up_date', '>', today())
+            'completed' => (clone $followUpQuery)
+                ->whereHas('status', function ($q) {
+                    $q->where('name', 'Completed');
+                })
                 ->count(),
 
-            'completed' => FollowUpActivity::completed()
+            'overdue' => (clone $followUpQuery)
+                ->whereDate('follow_up_date', '<', $currentDay)
+                ->whereHas('status', function ($q) {
+                    $q->where('name', 'Pending');
+                })
                 ->count(),
 
-            'cancelled' => FollowUpActivity::whereCode(
-                'CANCELLED'
-            )->count(),
-
-            'rescheduled' => FollowUpActivity::whereCode(
-                'RESCHEDULED'
-            )->count(),
-
+            'urgent' => (clone $followUpQuery)
+                ->where('priority', 'Urgent')
+                ->whereHas('status', function ($q) {
+                    $q->where('name', 'Pending');
+                })
+                ->count(),
         ];
+        return $followUpStats;
+        // return [
+
+        //     'today' => FollowUpActivity::pending()
+        //         ->whereDate('follow_up_date', today())
+        //         ->count(),
+
+        //     'overdue' => FollowUpActivity::pending()
+        //         ->whereDate('follow_up_date', '<', today())
+        //         ->count(),
+
+        //     'upcoming' => FollowUpActivity::pending()
+        //         ->whereDate('follow_up_date', '>', today())
+        //         ->count(),
+
+        //     'completed' => FollowUpActivity::completed()
+        //         ->count(),
+
+        // ];
     }
 
+    public function counselorPerformance()
+    {
+        return FollowUpActivity::query()
+            ->select([
+                'assigned_to',
+                DB::raw('COUNT(*) as total'),
+
+                DB::raw("
+                SUM(
+                    CASE
+                        WHEN status = 'Pending'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as pending
+            "),
+
+                DB::raw("
+                SUM(
+                    CASE
+                        WHEN status = 'Completed'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as completed
+            "),
+
+                DB::raw("
+                SUM(
+                    CASE
+                        WHEN status = 'Pending'
+                        AND follow_up_date < CURDATE()
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as overdue
+            "),
+
+                DB::raw("
+                SUM(
+                    CASE
+                        WHEN priority = 'Urgent'
+                        AND status = 'Pending'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as urgent
+            "),
+            ])
+            ->with('assignedTo:id,name')
+            ->whereNotNull('assigned_to')
+            ->groupBy('assigned_to')
+            ->orderByDesc('total')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'user_id' => (int) $item->assigned_to,
+
+                    'user_name' =>
+                    $item->assignedTo?->name
+                        ?? 'Unknown Counselor',
+
+                    'total' => (int) $item->total,
+                    'pending' => (int) $item->pending,
+                    'completed' => (int) $item->completed,
+                    'overdue' => (int) $item->overdue,
+                    'urgent' => (int) $item->urgent,
+                ];
+            });
+    }
     /**
      * ----------------------------------------------------------
      * My Pending Follow-ups
@@ -819,7 +922,7 @@ class FollowUpActivityService
         ?int $userId = null
     ): Collection {
 
-        $userId ??= auth()->id();
+        $userId ??= Auth::id();
 
         return $this->query()
 

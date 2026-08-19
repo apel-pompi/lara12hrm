@@ -45,10 +45,10 @@ class MetaApiService
 
             return $this->response($response);
         } catch (\Throwable $e) {
-            Log::error('META GET', [
-                'endpoint' => $endpoint,
-                'message' => $e->getMessage(),
-            ]);
+            // Log::error('META GET', [
+            //     'endpoint' => $endpoint,
+            //     'message' => $e->getMessage(),
+            // ]);
 
             throw $e;
         }
@@ -86,10 +86,10 @@ class MetaApiService
             // ]);
             return $this->response($response);
         } catch (\Throwable $e) {
-            Log::error('META POST', [
-                'endpoint' => $endpoint,
-                'message' => $e->getMessage(),
-            ]);
+            // Log::error('META POST', [
+            //     'endpoint' => $endpoint,
+            //     'message' => $e->getMessage(),
+            // ]);
 
             throw $e;
         }
@@ -183,13 +183,13 @@ class MetaApiService
             return $response->json();
         }
 
-        Log::error(
-            'META API ERROR',
-            [
-                'status' => $response->status(),
-                'body' => $response->json(),
-            ]
-        );
+        // Log::error(
+        //     'META API ERROR',
+        //     [
+        //         'status' => $response->status(),
+        //         'body' => $response->json(),
+        //     ]
+        // );
 
         throw new \Exception(
             $response->json()['error']['message']

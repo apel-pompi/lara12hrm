@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Log;
 
 class FollowUpReminderService
 {
+    public function __construct(
+        protected FollowUpNotificationService $notificationService,
+    ) {}
+
     public function query()
     {
         return FollowUpReminder::query()
@@ -24,7 +28,11 @@ class FollowUpReminderService
     {
 
         return DB::transaction(function () use ($activity) {
-            $remindAt = Carbon::parse($activity->date_time);
+            $remindAt = Carbon::parse(
+                $activity->follow_up_date->format('Y-m-d')
+                    . ' '
+                    . ($activity->follow_up_time ?: '09:00:00')
+            );
 
             return FollowUpReminder::create([
                 'follow_up_activity_id' => $activity->id,
@@ -66,18 +74,20 @@ class FollowUpReminderService
     public function completeReminder(
         FollowUpActivity $activity
     ): void {
-        FollowUpReminder::whereCode(
+        FollowUpReminder::where(
             'follow_up_activity_id',
             $activity->id
         )->update([
-            'status' => 'Completed',
+            'status' => 'Sent',
+            'is_sent' => true,
+            'sent_at' => now(),
         ]);
     }
 
     public function cancelReminder(
         FollowUpActivity $activity
     ): void {
-        FollowUpReminder::whereCode(
+        FollowUpReminder::where(
             'follow_up_activity_id',
             $activity->id
         )->update([
@@ -215,7 +225,6 @@ class FollowUpReminderService
 
     public function sendDueNotifications(): int
     {
-        Log::info('sendDueNotifications() Called');
         $reminders = FollowUpReminder::with([
             'activity',
             'student',
@@ -227,19 +236,12 @@ class FollowUpReminderService
             ->where('remind_at', '<=', now())
             ->get();
 
-        Log::info('Due Reminder Count', [
-            'count' => $reminders->count(),
-        ]);
+
 
         $count = 0;
 
         foreach ($reminders as $reminder) {
             try {
-                Log::info('Processing Reminder', [
-                    'id' => $reminder->id,
-                    'student_id' => $reminder->student_id,
-                    'remind_at' => $reminder->remind_at,
-                ]);
 
                 /*
                  * |--------------------------------------------------------------------------
@@ -247,17 +249,21 @@ class FollowUpReminderService
                  * |--------------------------------------------------------------------------
                  */
 
-                // $this->notificationService->send($reminder);
+                $this->notificationService->createDueNotification($reminder);
 
                 $reminder->update([
+                    'status' => 'Sent',
                     'is_sent' => true,
                     'sent_at' => now(),
+                    'error_message' => null,
                 ]);
-                Log::info('Reminder Sent', [
-                    'id' => $reminder->id,
-                ]);
+
                 $count++;
             } catch (\Throwable $e) {
+                $reminder->update([
+                    'error_message' => $e->getMessage(),
+                    'status' => 'Failed',
+                ]);
                 Log::error('FollowUp Reminder Failed', [
                     'remind_at' => $reminder->id,
                     'message' => $e->getMessage(),
@@ -270,16 +276,9 @@ class FollowUpReminderService
 
     public function runScheduler(): array
     {
-        Log::info('Follow-up Scheduler Started');
         $due = $this->due();
 
         $sent = $this->sendDueNotifications();
-
-        Log::info('Follow-up Scheduler Finished', [
-            'time' => now(),
-            'due_count' => $due->count(),
-            'sent_count' => $sent,
-        ]);
 
         return [
             'time' => now(),

@@ -68,13 +68,13 @@ class CountryController extends Controller
 
     public function states(Country $country)
     {
-        return $country->states()->get(['id','name']);
+        return $country->states()->get(['id', 'name']);
     }
 
     public function userlist()
     {
         return response()->json(
-            User::select('id', 'name')->get()
+            User::select('id', 'name')->whereNull('banned_at')->get()
         );
     }
 }

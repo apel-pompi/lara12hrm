@@ -22,6 +22,8 @@ return new class extends Migration
                 ->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('des_id')->constrained('designations')
                 ->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')
+                ->cascadeOnUpdate()->cascadeOnDelete()->nullable();
             $table->date('dateofbirth');
             $table->integer('gender');
             $table->string('present');
@@ -29,16 +31,11 @@ return new class extends Migration
             $table->string('phonepersonal');
             $table->string('phoneoffice')->nullable();
             $table->string('email')->nullable();
-            $table->string('blood',50);
+            $table->string('blood', 50);
             $table->string('nidpass');
             $table->string('photo');
             $table->integer('active')->nullable();
             $table->timestamps();
-
-            $table->softDeletes();
-            
-            $table->charset = 'utf8';
-            $table->collation = 'utf8_general_ci';
         });
     }
 

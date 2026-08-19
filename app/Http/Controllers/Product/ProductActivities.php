@@ -41,6 +41,8 @@ class ProductActivities extends Controller
     public function fees(Product $product)
     {
         $productwithuser = Product::with(['partner', 'user'])->where('id', $product->id)->first();
+        $feesDt = ProductFeesHd::with(['details.fees', 'installment'])->where('product_id', $product->id)->orderBy('id', 'DESC')->get();
+
         return Inertia::render('allpages/Agency/Product/fees', [
             'product' => $productwithuser,
             'country' => Country::where('status', 1)->get(),
@@ -87,9 +89,9 @@ class ProductActivities extends Controller
         $countryString = is_array($request['country_id'])
             ? implode(',', $request['country_id'])
             : $request['country_id'];
-        
+
         $feesHd = ProductFeesHd::findOrFail($request->id);
-        
+
         $feesHd->update([
             'name'       => $request['name'],
             'product_id' => $product->id,
@@ -112,7 +114,7 @@ class ProductActivities extends Controller
                 ]);
             }
         }
-       return back()
+        return back()
             ->with('success', 'Product updated successfully.');
     }
 

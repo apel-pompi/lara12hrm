@@ -41,7 +41,6 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
 
 
 require __DIR__ . '/socialmedia.php';
-require __DIR__ . '/notifications.php';
 require __DIR__ . '/users.php';
 require __DIR__ . '/hrm.php';
 require __DIR__ . '/partner.php';

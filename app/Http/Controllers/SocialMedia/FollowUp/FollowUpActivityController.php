@@ -9,9 +9,10 @@ use App\Models\SocialMedia\FollowUp\FollowUpMaster;
 use App\Models\SocialMedia\FollowUp\FollowUpStatus;
 use App\Models\User;
 use App\Services\SocialMedia\FollowUp\FollowUpActivityService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -35,9 +36,11 @@ class FollowUpActivityController extends Controller
                 'assignedTo',
             ])
                 ->latest()
-                ->paginate(20)
+                ->paginate(10)
         );
     }
+
+
 
     public function create(Request $request): Response
     {
@@ -149,6 +152,107 @@ class FollowUpActivityController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Activity deleted successfully.'
+        ]);
+    }
+
+    // public function admindashboard(): JsonResponse
+    // {
+
+    //     $result = $this->activityService->dashboardSummary();
+    //     return response()->json($result);
+    // }
+    public function admindashboard()
+    {
+        dd('sadas');
+        $today = Carbon::today();
+
+        $counselorPerformance = FollowUpActivity::query()
+            ->select([
+                'assigned_to',
+                DB::raw('COUNT(*) as total'),
+
+                DB::raw("
+                SUM(
+                    CASE
+                        WHEN follow_up_status_id = 1
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as pending
+            "),
+
+                DB::raw("
+                SUM(
+                    CASE
+                        WHEN follow_up_status_id = 3
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as completed
+            "),
+
+                DB::raw("
+                SUM(
+                    CASE
+                        WHEN follow_up_date < '{$today->toDateString()}'
+                        AND follow_up_status_id != 3
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as overdue
+            "),
+
+                DB::raw("
+                SUM(
+                    CASE
+                        WHEN priority = 'Urgent'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) as urgent
+            "),
+            ])
+            ->whereNotNull('assigned_to')
+            ->groupBy('assigned_to')
+            ->orderByDesc('total')
+            ->get();
+        dd($today);
+        // Counselor names
+        $userIds = $counselorPerformance
+            ->pluck('assigned_to')
+            ->filter()
+            ->unique();
+
+        $users = User::pluck('name', 'id');
+
+        $counselorPerformance = $counselorPerformance
+            ->map(function ($item) use ($users) {
+
+                return [
+                    'user_id' => (int) $item->assigned_to,
+
+                    'user_name' => $users[$item->assigned_to]
+                        ?? 'Unknown Counselor',
+
+                    'total' => (int) $item->total,
+
+                    'pending' => (int) $item->pending,
+
+                    'completed' => (int) $item->completed,
+
+                    'overdue' => (int) $item->overdue,
+
+                    'urgent' => (int) $item->urgent,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'success' => true,
+
+            'data' => [
+                'counselorPerformance' => $counselorPerformance,
+            ],
         ]);
     }
 }

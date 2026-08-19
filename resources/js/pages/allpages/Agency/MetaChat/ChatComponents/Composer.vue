@@ -2,6 +2,7 @@
 import echo from '@/echo';
 import axios from 'axios';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 import { FaceSmileIcon, PaperAirplaneIcon, PaperClipIcon, PhotoIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
@@ -31,6 +32,28 @@ const emojis = [
 const appendEmoji = (emoji: string) => {
     message.value += emoji;
     showEmojiPicker.value = false;
+};
+
+const getErrorMessage = (error: any) => {
+    const responseData = error?.response?.data;
+
+    const validationErrors = responseData?.errors;
+    if (validationErrors && typeof validationErrors === 'object') {
+        const firstError = Object.values(validationErrors).flat().find((item) => typeof item === 'string');
+        if (firstError) {
+            return firstError;
+        }
+    }
+
+    if (typeof responseData?.message === 'string' && responseData.message) {
+        return responseData.message;
+    }
+
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    return 'Unable to send message.';
 };
 
 const sendMessage = async () => {
@@ -71,7 +94,9 @@ const sendMessage = async () => {
         attachment.value = null;
         image.value = null;
     } catch (error) {
-        console.error(error);
+        const errorMessage = getErrorMessage(error);
+        toast.error(errorMessage);
+        console.error('Failed to send message', error);
     } finally {
         sending.value = false;
     }

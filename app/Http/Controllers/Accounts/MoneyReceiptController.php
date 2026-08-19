@@ -428,7 +428,7 @@ class MoneyReceiptController extends Controller
             Voucherheader::create([
                 'vouchernumber' => $confirm->insnumber,
                 'voucherdate'   => $confirm->insdate,
-                'referance'     => $credit_note.' ( '.$getstudent_id->student_id.' )',
+                'referance'     => $credit_note . ' ( ' . $getstudent_id->student_id . ' )',
                 'yearname'      => $voucherDate->year,
                 'monthname'     => $voucherDate->month,
                 'branch_id'     => $branch_id,

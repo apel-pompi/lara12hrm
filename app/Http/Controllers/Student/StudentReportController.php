@@ -526,7 +526,9 @@ class StudentReportController extends Controller
         if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
 
             return Inertia::render('allpages/reports/studentRevenue', [
-                'UsersWithRoles' => User::with('roles')->get(),
+                'UsersWithRoles' => User::with('roles')
+                    ->whereNull('banned_at')
+                    ->get(),
                 'isAdmin' => true,
             ]);
         } else {
@@ -542,38 +544,43 @@ class StudentReportController extends Controller
 
         $query = StudentInvoiceHD::with(['student.service.workflow'])
             ->where('status', 'Confirmed')
+            ->where('insnumber', 'like', 'MR--%')
+            ->where(function ($q) {
+                $q->where('note', '<>', 'REFUND')->orWhere('note', null);
+            })
             ->whereBetween('insdate', [$formdate, $todate]);
         if (! $isAdmin && $employee) {
             $query->whereHas('student', function ($q) use ($employee) {
-                $q->where('assain_user', $employee->id);
+                $q->where('assain_user', $employee);
             });
         }
+
+        if ($isAdmin && $employee) {
+            $query->whereHas('student', function ($q) use ($employee) {
+                $q->where('assain_user', $employee);
+            });
+        }
+
         $records = $query->get();
+
         $grouped = $records->groupBy('student_id');
 
         $totalStudents = 0;
-        $totalInvoiced = 0;
         $totalReceived = 0;
         foreach ($grouped as $studentId => $rows) {
-            $invoice = $rows->filter(
-                fn($r) =>
-                str_starts_with($r->insnumber, 'INV-') && $r->sign == 1
-            )->sum('netamount');
-
             $receive = $rows->filter(
                 fn($r) =>
                 str_starts_with($r->insnumber, 'MR--') && $r->sign == -1 && $r->note <> 'REFUND'
             )->sum('netamount');
 
-            if ($invoice == 0 || $receive == 0) {
+            if ($receive == 0) {
                 continue;
             }
 
             $totalStudents++;
-            $totalInvoiced += $invoice;
             $totalReceived += $receive;
         }
-        $totalDue = $totalInvoiced - $totalReceived;
+        $totalDue = $totalReceived;
 
         $company = CompanyInfo::firstOrFail();
 
@@ -592,10 +599,8 @@ class StudentReportController extends Controller
         }
 
         if ($targetUserId) {
-            $targetUserName = User::where('id', $targetUserId)->value('name');
-            $personalinfo = PersonalInfo::with('designation')->where('empname', $targetUserName)->first();
+            $personalinfo = PersonalInfo::with('designation')->where('user_id', $targetUserId)->first();
         }
-
 
         $numberToWords = new NumberToWords();
         $numberTransformer = $numberToWords->getNumberTransformer('en');
@@ -604,10 +609,11 @@ class StudentReportController extends Controller
             'company' => $company,
             'personalinfo' => $personalinfo,
             'totalStudents' => $totalStudents,
-            'totalInvoiced' => $totalInvoiced,
             'totalReceived' => $totalReceived,
             'totalDue' => $totalDue,
             'grouped' => $grouped,
+            'formdate' => date('d-m-Y', strtotime($formdate)),
+            'todate' => date('d-m-Y', strtotime($todate)),
             'numberTransformer' => $numberTransformer
         ])
             ->setPaper('a4', 'portrait')
@@ -640,7 +646,7 @@ class StudentReportController extends Controller
         if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
 
             return Inertia::render('allpages/reports/studentRefund', [
-                'UsersWithRoles' => User::with('roles')->get(),
+                'UsersWithRoles' => User::with('roles')->whereNull('banned_at')->get(),
                 'isAdmin' => true,
             ]);
         } else {
@@ -656,38 +662,40 @@ class StudentReportController extends Controller
 
         $query = StudentInvoiceHD::with(['student.service.workflow'])
             ->where('status', 'Confirmed')
+            ->where('insnumber', 'like', 'MR--%')
+            ->where('note', 'REFUND')
             ->whereBetween('insdate', [$formdate, $todate]);
         if (! $isAdmin && $employee) {
             $query->whereHas('student', function ($q) use ($employee) {
-                $q->where('assain_user', $employee->id);
+                $q->where('assain_user', $employee);
             });
         }
+
+        if ($isAdmin && $employee) {
+            $query->whereHas('student', function ($q) use ($employee) {
+                $q->where('assain_user', $employee);
+            });
+        }
+
         $records = $query->get();
         $grouped = $records->groupBy('student_id');
 
         $totalStudents = 0;
-        $totalInvoiced = 0;
         $totalReceived = 0;
         foreach ($grouped as $studentId => $rows) {
-            $invoice = $rows->filter(
-                fn($r) =>
-                str_starts_with($r->insnumber, 'SR--') && $r->sign == 1
-            )->sum('netamount');
 
             $receive = $rows->filter(
                 fn($r) =>
-                str_starts_with($r->insnumber, 'MR--') && $r->sign == -1 && $r->note == 'REFUND'
+                str_starts_with($r->insnumber, 'MR--') && $r->note == 'REFUND'
             )->sum('netamount');
 
-            if ($invoice == 0 || $receive == 0) {
+            if ($receive == 0) {
                 continue;
             }
 
             $totalStudents++;
-            $totalInvoiced += $invoice;
             $totalReceived += $receive;
         }
-        $totalDue = $totalInvoiced - $totalReceived;
 
         $company = CompanyInfo::firstOrFail();
 
@@ -706,8 +714,7 @@ class StudentReportController extends Controller
         }
 
         if ($targetUserId) {
-            $targetUserName = User::where('id', $targetUserId)->value('name');
-            $personalinfo = PersonalInfo::with('designation')->where('empname', $targetUserName)->first();
+            $personalinfo = PersonalInfo::with('designation')->where('user_id', $targetUserId)->first();
         }
 
         $numberToWords = new NumberToWords();
@@ -717,10 +724,10 @@ class StudentReportController extends Controller
             'company' => $company,
             'personalinfo' => $personalinfo,
             'totalStudents' => $totalStudents,
-            'totalInvoiced' => $totalInvoiced,
             'totalReceived' => $totalReceived,
-            'totalDue' => $totalDue,
             'grouped' => $grouped,
+            'formdate' => date('d-m-Y', strtotime($formdate)),
+            'todate' => date('d-m-Y', strtotime($todate)),
             'numberTransformer' => $numberTransformer
         ])
             ->setPaper('a4', 'portrait')

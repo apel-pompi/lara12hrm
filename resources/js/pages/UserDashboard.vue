@@ -1,16 +1,13 @@
 <script setup lang="ts">
-import Button from '@/components/ui/button/Button.vue';
-import DualBarChart from '@/Components/ui/chart/DualBarChart.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import FollowUpDashboard from '@/pages/allpages/Agency/MetaChat/FollowUpComponents/FollowUpDashboard.vue'
+
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import {
     Archive,
     Calendar,
-    CalendarDays,
     CheckCircle,
-    ChevronLeft,
-    ChevronRight,
     Clock,
     FileText,
     Palmtree,
@@ -21,8 +18,6 @@ import {
     Users,
     XCircle,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
-import PlaceholderPattern from '../components/PlaceholderPattern.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -65,410 +60,451 @@ const props = defineProps<{
     totalWork: number;
 }>();
 
-const labels = [''];
-const alllead = [props.countAll];
-const lead = [props.countLead];
-const pending = [props.countPending];
-const prospect = [props.countProspect];
-const onboard = [props.countonBoard];
-const archive = [props.countArchive];
 
-const showDate = ref(new Date());
-
-const events = ref(
-    props.calander.map((e) => ({
-        id: e.id,
-        name: e.name,
-        datetime: e.datetime,
-        discus: e.discus,
-        fname: e.student.fname,
-        lname: e.student.lname,
-        phone: e.student.phone,
-    })),
-);
-
-function getDaysInMonth(date: Date) {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const days = [];
-
-    for (let i = 0; i < firstDay.getDay(); i++) {
-        days.push(null);
-    }
-
-    for (let d = 1; d <= lastDay.getDate(); d++) {
-        const dt = new Date(year, month, d);
-        dt.setHours(12, 0, 0, 0);
-        days.push(dt);
-    }
-
-    return days;
-}
-
-const daysInMonth = computed(() => getDaysInMonth(showDate.value));
-
-function nextMonth() {
-    showDate.value = new Date(showDate.value.getFullYear(), showDate.value.getMonth() + 1, 1);
-}
-
-function prevMonth() {
-    showDate.value = new Date(showDate.value.getFullYear(), showDate.value.getMonth() - 1, 1);
-}
-
-function eventsForDate(date: Date | null) {
-    if (!date) return [];
-
-    const d = date.toISOString().split('T')[0];
-
-    return events.value.filter((e) => {
-        const eventDate = e.datetime.split(' ')[0];
-        return eventDate === d;
-    });
-}
 </script>
 
 <template>
+
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="flex h-full flex-1 flex-col gap-4 border border-white/60 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 shadow-[0_24px_60px_-24px_rgba(79,70,229,0.35)] dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
-            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <div class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
-                    <div
-                        class="border-b border-indigo-100 bg-gradient-to-r from-indigo-500 to-blue-500 p-4 dark:border-indigo-900/40 dark:from-indigo-900 dark:to-blue-900"
-                    >
-                        <div class="flex items-center gap-2">
-                            <Users class="h-5 w-5 text-white" />
-                            <h3 class="text-base font-semibold text-white">Lead Overview</h3>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4 p-5 sm:grid-cols-3">
-                        <Link
-                            :href="route('student.index')"
-                            class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-50 to-blue-50 p-4 transition-all hover:scale-[1.02] hover:shadow-md dark:from-indigo-950/40 dark:to-blue-900/20"
-                        >
-                            <div class="relative z-10 flex flex-col">
-                                <div
-                                    class="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-300"
-                                >
-                                    <Users class="h-4 w-4" />
-                                </div>
-                                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">All Lead</h4>
-                                <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">{{ props.countAll }}</p>
-                            </div>
-                        </Link>
-
-                        <Link
-                            :href="route('student.lead')"
-                            class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 p-4 transition-all hover:scale-[1.02] hover:shadow-md dark:from-blue-950/40 dark:to-cyan-900/20"
-                        >
-                            <div class="relative z-10 flex flex-col">
-                                <div
-                                    class="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300"
-                                >
-                                    <UserPlus class="h-4 w-4" />
-                                </div>
-                                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Lead</h4>
-                                <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">{{ props.countLead }}</p>
-                            </div>
-                        </Link>
-
-                        <Link
-                            :href="route('student.pending')"
-                            class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 p-4 transition-all hover:scale-[1.02] hover:shadow-md dark:from-amber-950/40 dark:to-orange-900/20"
-                        >
-                            <div class="relative z-10 flex flex-col">
-                                <div
-                                    class="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300"
-                                >
-                                    <Clock class="h-4 w-4" />
-                                </div>
-                                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Pending</h4>
-                                <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">{{ props.countPending }}</p>
-                            </div>
-                        </Link>
-
-                        <Link
-                            :href="route('student.prospect')"
-                            class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 p-4 transition-all hover:scale-[1.02] hover:shadow-md dark:from-emerald-950/40 dark:to-teal-900/20"
-                        >
-                            <div class="relative z-10 flex flex-col">
-                                <div
-                                    class="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-300"
-                                >
-                                    <CheckCircle class="h-4 w-4" />
-                                </div>
-                                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Prospect</h4>
-                                <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">{{ props.countProspect }}</p>
-                            </div>
-                        </Link>
-
-                        <Link
-                            :href="route('student.onBoard')"
-                            class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-cyan-50 to-sky-50 p-4 transition-all hover:scale-[1.02] hover:shadow-md dark:from-cyan-950/40 dark:to-sky-900/20"
-                        >
-                            <div class="relative z-10 flex flex-col">
-                                <div
-                                    class="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-cyan-100 text-cyan-600 dark:bg-cyan-900 dark:text-cyan-300"
-                                >
-                                    <UserCheck class="h-4 w-4" />
-                                </div>
-                                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Onboard</h4>
-                                <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">{{ props.countonBoard }}</p>
-                            </div>
-                        </Link>
-
-                        <Link
-                            :href="route('student.archive')"
-                            class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-50 to-gray-50 p-4 transition-all hover:scale-[1.02] hover:shadow-md dark:from-slate-800/40 dark:to-gray-800/20"
-                        >
-                            <div class="relative z-10 flex flex-col">
-                                <div
-                                    class="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
-                                >
-                                    <Archive class="h-4 w-4" />
-                                </div>
-                                <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Archive</h4>
-                                <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">{{ props.countArchive }}</p>
-                            </div>
-                        </Link>
-                    </div>
-                </div>
-
-                <div class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
-                    <div
-                        class="border-b border-fuchsia-100 bg-gradient-to-r from-fuchsia-500 to-rose-500 p-4 dark:border-fuchsia-900/40 dark:from-fuchsia-900 dark:to-rose-900"
-                    >
-                        <div class="flex items-center gap-2">
-                            <FileText class="h-5 w-5 text-white" />
-                            <h3 class="text-base font-semibold text-white">Request Overview</h3>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4 p-5 sm:grid-cols-3">
-                        <Link
-                            :href="route('dashboard.ArchiveRequest')"
-                            class="group rounded-xl border border-gray-100 bg-white p-4 transition-all hover:border-purple-200 hover:bg-purple-50/30 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:hover:border-purple-900/50 dark:hover:bg-purple-900/10"
-                        >
-                            <div class="flex flex-col gap-3">
-                                <div
-                                    class="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400"
-                                >
-                                    <Archive class="h-5 w-5" />
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Archive</p>
-                                    <h4 class="text-xl font-bold text-gray-900 dark:text-white">{{ props.countArchiveApproval }}</h4>
-                                </div>
-                            </div>
-                        </Link>
-
-                        <Link
-                            :href="route('dashboard.QuotationRequest')"
-                            class="group rounded-xl border border-gray-100 bg-white p-4 transition-all hover:border-blue-200 hover:bg-blue-50/30 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:hover:border-blue-900/50 dark:hover:bg-blue-900/10"
-                        >
-                            <div class="flex flex-col gap-3">
-                                <div
-                                    class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400"
-                                >
-                                    <FileText class="h-5 w-5" />
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Quotations</p>
-                                    <h4 class="text-xl font-bold text-gray-900 dark:text-white">{{ props.countQuotationApproval }}</h4>
-                                </div>
-                            </div>
-                        </Link>
-
-                        <Link
-                            :href="route('leave.index')"
-                            class="group rounded-xl border border-gray-100 bg-white p-4 transition-all hover:border-amber-200 hover:bg-amber-50/30 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:hover:border-amber-900/50 dark:hover:bg-amber-900/10"
-                        >
-                            <div class="flex flex-col gap-3">
-                                <div
-                                    class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400"
-                                >
-                                    <Plane class="h-5 w-5" />
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Leave</p>
-                                    <h4 class="text-xl font-bold text-gray-900 dark:text-white">{{ props.leaveCount }}</h4>
-                                </div>
-                            </div>
-                        </Link>
-                    </div>
-                </div>
-
-                <div class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
-                    <div
-                        class="border-b border-emerald-100 bg-gradient-to-r from-emerald-500 to-teal-500 p-4 dark:border-emerald-900/40 dark:from-emerald-900 dark:to-teal-900"
-                    >
-                        <div class="flex items-center gap-2">
-                            <Clock class="h-5 w-5 text-white" />
-                            <h3 class="text-base font-semibold text-white">Attendance Overview</h3>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4 p-5 sm:grid-cols-3">
-                        <div
-                            class="flex flex-col items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 p-4 transition hover:shadow-md dark:border-emerald-900/30 dark:bg-emerald-950/20"
-                        >
-                            <CheckCircle class="mb-2 h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                            <h4 class="text-xs font-semibold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">Present</h4>
-                            <p class="mt-1 text-3xl font-black text-gray-900 dark:text-gray-100">{{ props.presentCount }}</p>
-                        </div>
-
-                        <div
-                            class="flex flex-col items-center justify-center rounded-xl border border-amber-100 bg-amber-50 p-4 transition hover:shadow-md dark:border-amber-900/30 dark:bg-amber-950/20"
-                        >
-                            <Clock class="mb-2 h-6 w-6 text-amber-600 dark:text-amber-400" />
-                            <h4 class="text-xs font-semibold tracking-wider text-amber-600 uppercase dark:text-amber-400">Late</h4>
-                            <p class="mt-1 text-3xl font-black text-gray-900 dark:text-gray-100">{{ props.lateCount }}</p>
-                        </div>
-
-                        <div
-                            class="flex flex-col items-center justify-center rounded-xl border border-rose-100 bg-rose-50 p-4 transition hover:shadow-md dark:border-rose-900/30 dark:bg-rose-950/20"
-                        >
-                            <XCircle class="mb-2 h-6 w-6 text-rose-600 dark:text-rose-400" />
-                            <h4 class="text-xs font-semibold tracking-wider text-rose-600 uppercase dark:text-rose-400">Absent</h4>
-                            <p class="mt-1 text-3xl font-black text-gray-900 dark:text-gray-100">{{ props.absentCount }}</p>
-                        </div>
-
-                        <div
-                            class="flex flex-col items-center justify-center rounded-xl border border-purple-100 bg-purple-50 p-4 transition hover:shadow-md dark:border-purple-900/30 dark:bg-purple-950/20"
-                        >
-                            <Calendar class="mb-2 h-6 w-6 text-purple-600 dark:text-purple-400" />
-                            <h4 class="text-xs font-semibold tracking-wider text-purple-600 uppercase dark:text-purple-400">Leave</h4>
-                            <p class="mt-1 text-3xl font-black text-gray-900 dark:text-gray-100">{{ props.leaveCount }}</p>
-                        </div>
-
-                        <div
-                            class="flex flex-col items-center justify-center rounded-xl border border-fuchsia-100 bg-fuchsia-50 p-4 transition hover:shadow-md dark:border-fuchsia-900/30 dark:bg-fuchsia-950/20"
-                        >
-                            <Palmtree class="mb-2 h-6 w-6 text-fuchsia-600 dark:text-fuchsia-400" />
-                            <h4 class="text-xs font-semibold tracking-wider text-fuchsia-600 uppercase dark:text-fuchsia-400">Holiday</h4>
-                            <p class="mt-1 text-3xl font-black text-gray-900 dark:text-gray-100">{{ props.holidayCount }}</p>
-                        </div>
-
-                        <div
-                            class="flex flex-col items-center justify-center rounded-xl border border-sky-100 bg-sky-50 p-4 transition hover:shadow-md dark:border-sky-900/30 dark:bg-sky-950/20"
-                        >
-                            <TrendingUp class="mb-2 h-6 w-6 text-sky-600 dark:text-sky-400" />
-                            <h4 class="text-xs font-semibold tracking-wider text-sky-600 uppercase dark:text-sky-400">Work Hours</h4>
-                            <p class="mt-1 text-3xl font-black text-gray-900 dark:text-gray-100">{{ props.totalWork }}</p>
-                        </div>
-                    </div>
-
-                    <div class="border-t border-gray-100 p-5 dark:border-gray-800">
-                        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                            <div class="rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 p-4 dark:from-emerald-950/40 dark:to-green-900/20">
-                                <p class="text-xs font-semibold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">In Time</p>
-                                <p class="mt-2 text-xl font-bold text-gray-900 dark:text-white">{{ props.intimes }}</p>
-                            </div>
-                            <div class="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 p-4 dark:from-blue-950/40 dark:to-indigo-900/20">
-                                <p class="text-xs font-semibold tracking-wider text-blue-600 uppercase dark:text-blue-400">Out Time</p>
-                                <p class="mt-2 text-xl font-bold text-gray-900 dark:text-white">{{ props.outtimes }}</p>
-                            </div>
-                            <div class="rounded-xl bg-gradient-to-br from-rose-50 to-pink-50 p-4 dark:from-rose-950/40 dark:to-pink-900/20">
-                                <p class="text-xs font-semibold tracking-wider text-rose-600 uppercase dark:text-rose-400">Status</p>
-                                <p class="mt-2 text-xl font-bold text-gray-900 dark:text-white">{{ props.statuses }}</p>
-                            </div>
-                            <div class="rounded-xl bg-gradient-to-br from-violet-50 to-purple-50 p-4 dark:from-violet-950/40 dark:to-purple-900/20">
-                                <p class="text-xs font-semibold tracking-wider text-violet-600 uppercase dark:text-violet-400">Total Hours</p>
-                                <p class="mt-2 text-xl font-bold text-gray-900 dark:text-white">{{ props.workhours }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+        <div class="app-page">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <!-- Lead Overview Section -->
                 <div
-                    class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm md:col-span-2 lg:col-span-2 dark:border-gray-800 dark:bg-gray-900/50"
-                >
+                    class="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <!-- Section Title -->
                     <div
-                        class="border-b border-violet-100 bg-gradient-to-r from-violet-500 to-indigo-500 p-4 dark:border-violet-900/40 dark:from-violet-900 dark:to-indigo-900"
-                    >
-                        <div class="flex items-center gap-2">
-                            <TrendingUp class="h-5 w-5 text-white" />
-                            <h3 class="text-base font-semibold text-white">Lead Analytics</h3>
-                        </div>
+                        class="flex flex-col gap-1 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5 dark:border-slate-800">
+                        <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
+                            Lead Overview
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            Track and monitor your leads performance
+                        </p>
                     </div>
-                    <div class="p-6">
-                        <DualBarChart
-                            :labels="labels"
-                            :alllead="alllead"
-                            :pending="pending"
-                            :lead="lead"
-                            :prospect="prospect"
-                            :onboard="onboard"
-                            :archive="archive"
-                        />
+
+                    <!-- Lead Cards Grid -->
+                    <div
+                        class="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 sm:p-5">
+
+                        <!-- All Lead -->
+                        <Link :href="route('student.index')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-cyan-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-cyan-50 dark:bg-cyan-950/40">
+                                <Users
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-cyan-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countAll }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    All Leads
+                                </p>
+                            </div>
+                        </Link>
+
+                        <!-- New Lead -->
+                        <Link :href="route('student.lead')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-red-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/40">
+                                <UserPlus
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-red-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countLead }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    New Leads
+                                </p>
+                            </div>
+                        </Link>
+
+                        <!-- Pending -->
+                        <Link :href="route('student.pending')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-amber-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/40">
+                                <Clock
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-amber-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countPending }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Pending Leads
+                                </p>
+                            </div>
+                        </Link>
+
+                        <!-- Prospect -->
+                        <Link :href="route('student.prospect')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-emerald-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/40">
+                                <CheckCircle
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-emerald-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countProspect }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Prospect
+                                </p>
+                            </div>
+                        </Link>
+
+                        <!-- Onboard -->
+                        <Link :href="route('student.onBoard')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-blue-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40">
+                                <UserCheck
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-blue-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countonBoard }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Onboard
+                                </p>
+                            </div>
+                        </Link>
+
+                        <!-- Archive -->
+                        <Link :href="route('student.archive')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-slate-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
+                                <Archive
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-slate-500 transition-transform duration-200 group-hover:scale-110 dark:text-slate-400"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countArchive }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Archive
+                                </p>
+                            </div>
+                        </Link>
+
                     </div>
                 </div>
-
-                <div class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900/50">
+                <!-- Request Overview Section -->
+                <div
+                    class="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <!-- Section Title -->
                     <div
-                        class="flex items-center justify-between border-b border-sky-100 bg-gradient-to-r from-sky-500 to-cyan-500 p-4 dark:border-sky-900/40 dark:from-sky-900 dark:to-cyan-900"
-                    >
-                        <Button @click="prevMonth" variant="ghost" size="icon" class="h-8 w-8 rounded-full">
-                            <ChevronLeft class="h-4 w-4 text-white" />
-                        </Button>
-                        <div class="flex items-center gap-2">
-                            <CalendarDays class="h-4 w-4 text-white" />
-                            <h2 class="text-sm font-bold text-white">
-                                {{ showDate.toLocaleString('default', { month: 'long', year: 'numeric' }) }}
-                            </h2>
+                        class="flex flex-col gap-1 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5 dark:border-slate-800">
+                        <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
+                            Request Overview
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            Track and manage pending requests
+                        </p>
+                    </div>
+                    <!-- Request Cards Grid -->
+                    <div
+                        class="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3 sm:p-5">
+                        <!-- Archive -->
+                        <Link :href="route('dashboard.ArchiveRequest')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-purple-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/40">
+                                <Archive
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countArchiveApproval }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Archive
+                                </p>
+                            </div>
+                        </Link>
+                        <!-- Quotation -->
+                        <Link :href="route('dashboard.QuotationRequest')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-blue-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40">
+                                <FileText
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-blue-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countQuotationApproval }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Quotations
+                                </p>
+                            </div>
+                        </Link>
+                        <!-- Leave -->
+                        <Link :href="route('dashboard.LeaveRequest')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-amber-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/40">
+                                <Plane
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-amber-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countLeave }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Leave
+                                </p>
+                            </div>
+                        </Link>
+                        <!-- Transfer -->
+                        <Link :href="route('dashboard.TransferRequest')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-pink-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-pink-50 dark:bg-pink-950/40">
+                                <ArrowRightLeft
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-pink-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countTransferApproval }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Transfer
+                                </p>
+                            </div>
+                        </Link>
+                        <!-- OnBoard -->
+                        <Link :href="route('dashboard.onBoardRequest')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-teal-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/40">
+                                <Briefcase
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-teal-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countOnBoardApproval }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    OnBoard
+                                </p>
+                            </div>
+                        </Link>
+                        <!-- Refund -->
+                        <Link :href="route('dashboard.ReturnRequest')"
+                            class="group relative flex min-h-[82px] items-center gap-3 sm:gap-4 overflow-hidden rounded-lg border border-gray-100 bg-white p-3 sm:p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                            <span class="absolute inset-x-0 top-0 h-[3px] bg-rose-500"></span>
+                            <div
+                                class="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-950/40">
+                                <HandCoins
+                                    class="h-6 w-6 sm:h-7 sm:w-7 text-rose-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="1.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-lg sm:text-xl font-bold leading-none text-gray-800 dark:text-gray-100">
+                                    {{ props.countOnRefund }}
+                                </p>
+                                <p class="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    Refund
+                                </p>
+                            </div>
+                        </Link>
+
+                    </div>
+                </div>
+                <!-- Attendance Overview Section -->
+                <div
+                    class="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <!-- Section Title -->
+                    <div
+                        class="flex flex-col gap-1 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5 dark:border-slate-800">
+                        <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
+                            Attendance Overview
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            Today's attendance summary
+                        </p>
+                    </div>
+                    <!-- Attendance Cards Grid -->
+                    <div
+                        class="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3 sm:p-5">
+
+                        <!-- Present -->
+                        <div
+                            class="group relative flex h-20 items-center gap-4 overflow-hidden rounded-xl border border-slate-200/80 bg-white px-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/90">
+                            <span class="absolute inset-x-0 top-0 h-1 bg-emerald-500"></span>
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-500/10">
+                                <CheckCircle
+                                    class="h-5 w-5 text-emerald-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="2" />
+                            </div>
+                            <div>
+                                <p class="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">{{
+                                    props.presentCount }}</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Present</p>
+                            </div>
                         </div>
-                        <Button @click="nextMonth" variant="ghost" size="icon" class="h-8 w-8 rounded-full">
-                            <ChevronRight class="h-4 w-4 text-white" />
-                        </Button>
-                    </div>
 
-                    <div
-                        class="grid grid-cols-7 border-b border-gray-100 bg-gray-50/50 p-2 text-center text-xs font-semibold text-gray-500 dark:border-gray-800 dark:bg-gray-900/50 dark:text-gray-400"
-                    >
-                        <div>Su</div>
-                        <div>Mo</div>
-                        <div>Tu</div>
-                        <div>We</div>
-                        <div>Th</div>
-                        <div>Fr</div>
-                        <div>Sa</div>
-                    </div>
+                        <!-- Late -->
+                        <div
+                            class="group relative flex h-20 items-center gap-4 overflow-hidden rounded-xl border border-slate-200/80 bg-white px-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/90">
+                            <span class="absolute inset-x-0 top-0 h-1 bg-amber-500"></span>
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-500/10">
+                                <Clock
+                                    class="h-5 w-5 text-amber-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="2" />
+                            </div>
+                            <div>
+                                <p class="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">{{
+                                    props.lateCount }}</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Late</p>
+                            </div>
+                        </div>
 
-                    <div class="grid grid-cols-7 gap-1 p-3">
-                        <template v-for="(day, idx) in daysInMonth" :key="idx">
-                            <Link
-                                v-if="day && eventsForDate(day).length"
-                                :href="route('dashboard.Calender', { datetime: day.toISOString().split('T')[0] })"
-                                class="group relative flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl bg-indigo-50 text-indigo-700 transition-all hover:bg-indigo-600 hover:text-white hover:shadow-md dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-600 dark:hover:text-white"
-                            >
-                                <span class="text-sm font-semibold">{{ day.getDate() }}</span>
-                                <span
-                                    class="absolute bottom-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500 group-hover:bg-white dark:bg-indigo-400"
-                                ></span>
-                            </Link>
+                        <!-- Absent -->
+                        <div
+                            class="group relative flex h-20 items-center gap-4 overflow-hidden rounded-xl border border-slate-200/80 bg-white px-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/90">
+                            <span class="absolute inset-x-0 top-0 h-1 bg-rose-500"></span>
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-500/10">
+                                <XCircle
+                                    class="h-5 w-5 text-rose-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="2" />
+                            </div>
+                            <div>
+                                <p class="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">{{
+                                    props.absentCount }}</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Absent</p>
+                            </div>
+                        </div>
+
+                        <!-- Leave -->
+                        <div
+                            class="group relative flex h-20 items-center gap-4 overflow-hidden rounded-xl border border-slate-200/80 bg-white px-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/90">
+                            <span class="absolute inset-x-0 top-0 h-1 bg-purple-500"></span>
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-500/10">
+                                <Calendar
+                                    class="h-5 w-5 text-purple-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="2" />
+                            </div>
+                            <div>
+                                <p class="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">{{
+                                    props.leaveCount }}</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Leave</p>
+                            </div>
+                        </div>
+
+                        <!-- Holiday -->
+                        <div
+                            class="group relative flex h-20 items-center gap-4 overflow-hidden rounded-xl border border-slate-200/80 bg-white px-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/90">
+                            <span class="absolute inset-x-0 top-0 h-1 bg-fuchsia-500"></span>
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-fuchsia-50 dark:bg-fuchsia-500/10">
+                                <Palmtree
+                                    class="h-5 w-5 text-fuchsia-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="2" />
+                            </div>
+                            <div>
+                                <p class="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">{{
+                                    props.holidayCount }}</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Holiday</p>
+                            </div>
+                        </div>
+
+                        <!-- Work Hours -->
+                        <div
+                            class="group relative flex h-20 items-center gap-4 overflow-hidden rounded-xl border border-slate-200/80 bg-white px-4 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/90">
+                            <span class="absolute inset-x-0 top-0 h-1 bg-sky-500"></span>
+                            <div
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-50 dark:bg-sky-500/10">
+                                <TrendingUp
+                                    class="h-5 w-5 text-sky-500 transition-transform duration-200 group-hover:scale-110"
+                                    stroke-width="2" />
+                            </div>
+                            <div>
+                                <p class="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">{{
+                                    props.totalWork }}</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Work Hours</p>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Today's Details Grid -->
+                    <div class="pt-2">
+                        <p
+                            class="mb-3 px-4 sm:px-5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                            Today's Shift Details
+                        </p>
+
+                        <div
+                            class="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4 sm:gap-4 lg:grid-cols-2 xl:grid-cols-3 sm:p-5">
+                            <div
+                                class="rounded-xl border border-emerald-500/20 bg-emerald-50/40 p-3.5 dark:bg-emerald-950/20">
+                                <p class="text-xs font-medium text-emerald-600 dark:text-emerald-400">In Time</p>
+                                <p class="mt-1 text-base font-semibold text-slate-800 dark:text-slate-100">{{
+                                    props.intimes }}</p>
+                            </div>
+
+                            <div class="rounded-xl border border-blue-500/20 bg-blue-50/40 p-3.5 dark:bg-blue-950/20">
+                                <p class="text-xs font-medium text-blue-600 dark:text-blue-400">Out Time</p>
+                                <p class="mt-1 text-base font-semibold text-slate-800 dark:text-slate-100">{{
+                                    props.outtimes }}</p>
+                            </div>
 
                             <div
-                                v-else-if="day"
-                                class="flex aspect-square items-center justify-center rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300"
-                            >
-                                {{ day.getDate() }}
+                                class="rounded-xl border border-purple-500/20 bg-purple-50/40 p-3.5 dark:bg-purple-950/20">
+                                <p class="text-xs font-medium text-purple-600 dark:text-purple-400">Status</p>
+                                <p class="mt-1 text-base font-semibold text-slate-800 dark:text-slate-100">{{
+                                    props.statuses }}</p>
                             </div>
 
-                            <div v-else class="aspect-square"></div>
-                        </template>
+                            <div
+                                class="rounded-xl border border-indigo-500/20 bg-indigo-50/40 p-3.5 dark:bg-indigo-950/20">
+                                <p class="text-xs font-medium text-indigo-600 dark:text-indigo-400">Total Hours</p>
+                                <p class="mt-1 text-base font-semibold text-slate-800 dark:text-slate-100">{{
+                                    props.workhours }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 rounded-xl border md:min-h-min">
-                <PlaceholderPattern />
+                <!-- Follow Up Section -->
+                <FollowUpDashboard />
             </div>
         </div>
+
     </AppLayout>
 </template>
