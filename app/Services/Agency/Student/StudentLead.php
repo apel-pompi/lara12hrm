@@ -1,5 +1,5 @@
 <?php
- 
+
 namespace App\Services\Agency\Student;
 
 use App\Filters\Agency\StudentFilter;
@@ -12,7 +12,7 @@ class StudentLead
     {
         $user = Auth::user();
         $roles = $user->getRoleNames();
-        $queryBuilder = ModelsStudent::with(['user:id,name', 'assainuser:id,name', 'source:id,name', 'country:id,name'])->where('status',1)
+        $queryBuilder = ModelsStudent::with(['user:id,name', 'assainuser:id,name', 'source:id,name', 'country:id,name'])->where('status', 1)
             ->orderBy('id', 'DESC');
 
         if (! $roles->intersect(['superadmin', 'Admin', 'Manager'])->count()) {
@@ -25,6 +25,5 @@ class StudentLead
         ]);
 
         return $students;
-
     }
 }

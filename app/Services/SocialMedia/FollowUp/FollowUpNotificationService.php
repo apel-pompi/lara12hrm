@@ -7,6 +7,7 @@ use App\Models\SocialMedia\FollowUp\FollowUpActivity;
 use App\Models\SocialMedia\FollowUp\FollowUpNotification;
 use App\Models\SocialMedia\FollowUp\FollowUpReminder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class FollowUpNotificationService
@@ -363,10 +364,19 @@ class FollowUpNotificationService
         int $userId,
         int $perPage = 10
     ) {
-        return FollowUpNotification::query()
-            ->where('user_id', $userId)
-            ->latest('created_at')
-            ->paginate($perPage);
+        $user = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
+        $roles = $user->getRoleNames();
+        if ($roles->contains('superadmin') or $roles->contains('Admin') or $roles->contains('Manager')) {
+            return FollowUpNotification::query()
+                ->latest('created_at')
+                ->paginate($perPage);
+        } else {
+            return FollowUpNotification::query()
+                ->where('user_id', $userId)
+                ->latest('created_at')
+                ->paginate($perPage);
+        }
     }
 
     /*

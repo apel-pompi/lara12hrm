@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import axios from 'axios';
+import { onMounted, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { toast } from 'vue-sonner';
-
+import axios from 'axios';
 import {
     BellAlertIcon,
+    CheckCircleIcon,
     ClockIcon,
     ExclamationTriangleIcon,
-    CheckCircleIcon,
-    ChevronRightIcon,
-    ArrowPathIcon,
-    CheckIcon,
+    UserIcon,
     CalendarDaysIcon,
+    CheckIcon,
+    PaperAirplaneIcon,
+    MoonIcon,
+    TrashIcon,
+    EllipsisVerticalIcon,
 } from '@heroicons/vue/24/outline';
 
 interface Reminder {
@@ -20,50 +21,51 @@ interface Reminder {
     follow_up_activity_id: number;
     student_id: number;
     assigned_to: number;
-
     remind_at: string;
-
     channel: string;
     status: string;
-
-    is_sent: boolean;
-    is_read: boolean;
-
+    is_sent: boolean | number;
+    is_read: boolean | number;
     sent_at: string | null;
     read_at: string | null;
-
     error_message: string | null;
-
+    payload: any;
     activity?: {
         id: number;
-        follow_up_date: string | null;
-        follow_up_time: string | null;
+        title: string;
         description: string | null;
-        priority?: string | null;
-        status?: string | null;
+        follow_up_date: string;
+        follow_up_time: string | null;
+        priority: string;
+        status: string;
     };
-
     student?: {
         id: number;
-        fname?: string;
-        lname?: string;
-        student_id?: string;
+        fname: string;
+        lname: string;
+        phone: string | null;
+        email: string | null;
     };
-
     assigned_user?: {
         id: number;
         name: string;
+        username: string;
     };
 }
 
-interface Dashboard {
+interface ReminderDashboard {
     pending: number;
     today: number;
     overdue: number;
     completed: number;
 }
 
-const dashboard = ref<Dashboard>({
+const loading = ref(true);
+const todayLoading = ref(false);
+const upcomingLoading = ref(false);
+const actionLoading = ref<number | null>(null);
+
+const dashboard = ref<ReminderDashboard>({
     pending: 0,
     today: 0,
     overdue: 0,
@@ -73,132 +75,162 @@ const dashboard = ref<Dashboard>({
 const todayReminders = ref<Reminder[]>([]);
 const upcomingReminders = ref<Reminder[]>([]);
 
-const loading = ref(true);
-const actionLoading = ref<number | null>(null);
-
-const loadDashboard = async () => {
-    loading.value = true;
-
-    try {
-        const [
-            dashboardResponse,
-            todayResponse,
-            upcomingResponse,
-        ] = await Promise.all([
-            axios.get('/follow-up-reminders/dashboard'),
-
-            axios.get('/follow-up-reminders/today'),
-
-            axios.get('/follow-up-reminders/upcoming', {
-                params: {
-                    days: 7,
-                },
-            }),
-        ]);
-
-        dashboard.value =
-            dashboardResponse.data?.data ??
-            dashboard.value;
-
-        todayReminders.value =
-            todayResponse.data?.data ?? [];
-
-        upcomingReminders.value =
-            upcomingResponse.data?.data ?? [];
-
-    } catch (error: any) {
-        console.error(
-            'Failed to load reminder dashboard',
-            error
-        );
-
-        toast.error(
-            error?.response?.data?.message ??
-            'Failed to load reminders.'
-        );
-    } finally {
-        loading.value = false;
+/**
+ * Format UTC datetime to Bangladesh time
+ */
+const formatDateTime = (date: string | null) => {
+    if (!date) {
+        return '-';
     }
+
+    return new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Dhaka',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+    }).format(new Date(date));
 };
 
+/**
+ * Student name
+ */
 const studentName = (reminder: Reminder) => {
-    const student = reminder.student;
-
-    if (!student) {
+    if (!reminder.student) {
         return 'Unknown Student';
     }
 
-    return [
-        student.fname,
-        student.lname,
-    ]
-        .filter(Boolean)
-        .join(' ') ||
-        student.student_id ||
-        'Unknown Student';
+    return `${reminder.student.fname ?? ''} ${reminder.student.lname ?? ''}`.trim();
 };
 
-const reminderTime = (date: string) => {
-    if (!date) {
-        return '-';
-    }
-
-    return new Date(date).toLocaleTimeString(
-        'en-US',
-        {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true,
-        }
-    );
-};
-
-const reminderDate = (date: string) => {
-    if (!date) {
-        return '-';
-    }
-
-    return new Date(date).toLocaleDateString(
-        'en-US',
-        {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }
-    );
-};
-
-const priorityClass = (priority?: string | null) => {
-    switch (priority?.toLowerCase()) {
-        case 'urgent':
+/**
+ * Priority class
+ */
+const priorityClass = (priority?: string) => {
+    switch (priority) {
+        case 'Urgent':
             return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
 
-        case 'high':
+        case 'High':
             return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
 
-        case 'medium':
+        case 'Medium':
             return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+
+        case 'Low':
+            return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
 
         default:
             return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
     }
 };
 
-const openReminder = (reminder: Reminder) => {
-    if (!reminder.follow_up_activity_id) {
-        return;
-    }
+/**
+ * Status class
+ */
+const statusClass = (status?: string) => {
+    switch (status) {
+        case 'Pending':
+            return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
 
-    router.visit(
-        route(
-            'follow-up-activities.show',
-            reminder.follow_up_activity_id
-        )
-    );
+        case 'Completed':
+            return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+
+        case 'Sent':
+            return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+
+        case 'Failed':
+            return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+
+        case 'Cancelled':
+            return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
+
+        default:
+            return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
+    }
 };
 
+/**
+ * Load dashboard summary
+ */
+const loadDashboard = async () => {
+    const response = await axios.get(
+        '/follow-up-reminders/dashboard'
+    );
+
+    dashboard.value =
+        response.data?.data ?? dashboard.value;
+};
+
+/**
+ * Load today's reminders
+ */
+const loadToday = async () => {
+    todayLoading.value = true;
+
+    try {
+        const response = await axios.get(
+            '/follow-up-reminders/today'
+        );
+
+        todayReminders.value =
+            response.data?.data ?? [];
+    } finally {
+        todayLoading.value = false;
+    }
+};
+
+/**
+ * Load upcoming reminders
+ */
+const loadUpcoming = async () => {
+    upcomingLoading.value = true;
+
+    try {
+        const response = await axios.get(
+            '/follow-up-reminders/upcoming',
+            {
+                params: {
+                    days: 7,
+                },
+            }
+        );
+
+        upcomingReminders.value =
+            response.data?.data ?? [];
+    } finally {
+        upcomingLoading.value = false;
+    }
+};
+
+/**
+ * Load everything
+ */
+const loadData = async () => {
+    loading.value = true;
+
+    try {
+        await Promise.all([
+            loadDashboard(),
+            loadToday(),
+            loadUpcoming(),
+        ]);
+    } catch (error) {
+        console.error(
+            'Failed to load reminder dashboard',
+            error
+        );
+    } finally {
+        loading.value = false;
+    }
+};
+
+onMounted(loadData);
+
 const markAsRead = async (reminder: Reminder) => {
-    if (reminder.is_read) {
+    if (actionLoading.value === reminder.id) {
         return;
     }
 
@@ -212,10 +244,36 @@ const markAsRead = async (reminder: Reminder) => {
         reminder.is_read = true;
         reminder.read_at = new Date().toISOString();
 
-    } catch (error: any) {
-        toast.error(
-            error?.response?.data?.message ??
-            'Failed to mark reminder as read.'
+    } catch (error) {
+        console.error(
+            'Failed to mark reminder as read',
+            error
+        );
+    } finally {
+        actionLoading.value = null;
+    }
+};
+
+const markAsSent = async (reminder: Reminder) => {
+    if (actionLoading.value === reminder.id) {
+        return;
+    }
+
+    actionLoading.value = reminder.id;
+
+    try {
+        await axios.post(
+            `/follow-up-reminders/${reminder.id}/mark-as-sent`
+        );
+
+        reminder.is_sent = true;
+        reminder.sent_at = new Date().toISOString();
+        reminder.status = 'Sent';
+
+    } catch (error) {
+        console.error(
+            'Failed to mark reminder as sent',
+            error
         );
     } finally {
         actionLoading.value = null;
@@ -226,6 +284,10 @@ const snoozeReminder = async (
     reminder: Reminder,
     minutes: number
 ) => {
+    if (actionLoading.value === reminder.id) {
+        return;
+    }
+
     actionLoading.value = reminder.id;
 
     try {
@@ -237,99 +299,141 @@ const snoozeReminder = async (
         );
 
         const updatedReminder =
-            response.data?.data;
+            response.data?.data ?? response.data;
 
-        if (updatedReminder) {
-            const index =
-                todayReminders.value.findIndex(
-                    item => item.id === reminder.id
-                );
+        if (updatedReminder?.remind_at) {
+            reminder.remind_at =
+                updatedReminder.remind_at;
+        } else {
+            const date = new Date(reminder.remind_at);
 
-            if (index !== -1) {
-                todayReminders.value[index] =
-                    updatedReminder;
-            }
+            date.setMinutes(
+                date.getMinutes() + minutes
+            );
+
+            reminder.remind_at =
+                date.toISOString();
         }
 
-        toast.success(
-            `Reminder snoozed for ${minutes} minutes.`
+    } catch (error) {
+        console.error(
+            'Failed to snooze reminder',
+            error
+        );
+    } finally {
+        actionLoading.value = null;
+    }
+};
+const deleteReminder = async (
+    reminder: Reminder
+) => {
+    if (actionLoading.value === reminder.id) {
+        return;
+    }
+
+    const confirmed = window.confirm(
+        'Are you sure you want to delete this reminder?'
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    actionLoading.value = reminder.id;
+
+    try {
+        await axios.delete(
+            `/follow-up-reminders/${reminder.id}`
         );
 
-        await loadDashboard();
+        todayReminders.value =
+            todayReminders.value.filter(
+                item => item.id !== reminder.id
+            );
 
-    } catch (error: any) {
-        toast.error(
-            error?.response?.data?.message ??
-            'Failed to snooze reminder.'
+        upcomingReminders.value =
+            upcomingReminders.value.filter(
+                item => item.id !== reminder.id
+            );
+
+        dashboard.value.pending =
+            Math.max(0, dashboard.value.pending - 1);
+
+    } catch (error) {
+        console.error(
+            'Failed to delete reminder',
+            error
         );
     } finally {
         actionLoading.value = null;
     }
 };
 
-const goToAllReminders = () => {
+const openFollowUpActivity = (
+    reminder: Reminder
+) => {
+    const activityId =
+        reminder.follow_up_activity_id ??
+        reminder.activity?.id;
+
+    if (!activityId) {
+        console.warn(
+            'Follow-up activity ID not found',
+            reminder
+        );
+
+        return;
+    }
+
     router.visit(
-        route('follow-up-reminders.index')
+        route('follow-up-activities.show', {
+            activity: activityId,
+        })
     );
 };
-
-onMounted(loadDashboard);
 </script>
 
 <template>
     <div class="space-y-5">
 
         <!-- Header -->
+        <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">
+                Follow-up Reminders
+            </h2>
 
-        <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-
-            <div>
-                <h2 class="text-lg font-bold text-slate-900 dark:text-white">
-                    Follow-up Reminders
-                </h2>
-
-                <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    Manage your upcoming and pending reminders.
-                </p>
-            </div>
-
-            <button type="button" @click="goToAllReminders"
-                class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-                View All
-
-                <ChevronRightIcon class="h-4 w-4" />
-            </button>
-
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Manage and monitor your follow-up reminders.
+            </p>
         </div>
 
-
         <!-- Loading -->
-
         <div v-if="loading"
-            class="rounded-2xl border border-slate-200 bg-white p-10 text-center dark:border-slate-800 dark:bg-slate-900">
-            <ArrowPathIcon class="mx-auto h-6 w-6 animate-spin text-slate-400" />
+            class="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div class="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600" />
 
-            <p class="mt-2 text-xs text-slate-400">
+            <p class="mt-3 text-sm text-slate-500">
                 Loading reminders...
             </p>
         </div>
 
-
         <template v-else>
 
             <!-- Summary -->
-
-            <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
 
                 <!-- Pending -->
-
                 <div
-                    class="rounded-xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900/40 dark:bg-blue-950/20">
-                    <div class="flex items-center justify-between">
+                    class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm dark:border-blue-900/40 dark:bg-slate-900">
+                    <div class="flex items-center gap-3">
+
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                            <BellAlertIcon class="h-5 w-5" />
+                        </div>
 
                         <div>
-                            <p
-                                class="text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">
                                 Pending
                             </p>
 
@@ -338,24 +442,21 @@ onMounted(loadDashboard);
                             </p>
                         </div>
 
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
-                            <BellAlertIcon class="h-5 w-5" />
-                        </div>
-
                     </div>
                 </div>
 
-
                 <!-- Today -->
-
                 <div
-                    class="rounded-xl border border-amber-100 bg-amber-50/70 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
-                    <div class="flex items-center justify-between">
+                    class="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm dark:border-amber-900/40 dark:bg-slate-900">
+                    <div class="flex items-center gap-3">
+
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                            <ClockIcon class="h-5 w-5" />
+                        </div>
 
                         <div>
-                            <p
-                                class="text-[11px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">
                                 Today
                             </p>
 
@@ -364,53 +465,47 @@ onMounted(loadDashboard);
                             </p>
                         </div>
 
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
-                            <ClockIcon class="h-5 w-5" />
-                        </div>
-
                     </div>
                 </div>
 
-
                 <!-- Overdue -->
-
                 <div
-                    class="rounded-xl border border-red-100 bg-red-50/70 p-4 dark:border-red-900/40 dark:bg-red-950/20">
-                    <div class="flex items-center justify-between">
+                    class="rounded-2xl border border-red-100 bg-white p-5 shadow-sm dark:border-red-900/40 dark:bg-slate-900">
+                    <div class="flex items-center gap-3">
+
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                            <ExclamationTriangleIcon class="h-5 w-5" />
+                        </div>
 
                         <div>
-                            <p
-                                class="text-[11px] font-semibold uppercase tracking-wider text-red-600 dark:text-red-400">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">
                                 Overdue
                             </p>
 
                             <p class="mt-1 text-2xl font-black" :class="dashboard.overdue > 0
-                                    ? 'text-red-600 dark:text-red-400'
-                                    : 'text-slate-900 dark:text-white'
+                                ? 'text-red-600 dark:text-red-400'
+                                : 'text-slate-900 dark:text-white'
                                 ">
                                 {{ dashboard.overdue }}
                             </p>
                         </div>
 
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">
-                            <ExclamationTriangleIcon class="h-5 w-5" />
-                        </div>
-
                     </div>
                 </div>
 
-
                 <!-- Completed -->
-
                 <div
-                    class="rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-                    <div class="flex items-center justify-between">
+                    class="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm dark:border-emerald-900/40 dark:bg-slate-900">
+                    <div class="flex items-center gap-3">
+
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+                            <CheckCircleIcon class="h-5 w-5" />
+                        </div>
 
                         <div>
-                            <p
-                                class="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">
                                 Completed
                             </p>
 
@@ -419,236 +514,284 @@ onMounted(loadDashboard);
                             </p>
                         </div>
 
-                        <div
-                            class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
-                            <CheckCircleIcon class="h-5 w-5" />
-                        </div>
-
                     </div>
                 </div>
 
             </div>
 
-
             <!-- Today's Reminders -->
-
             <div
                 class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
 
                 <div
                     class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
-
                     <div>
-                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">
                             Today's Reminders
                         </h3>
 
-                        <p class="mt-0.5 text-xs text-slate-400">
+                        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                             Follow-ups scheduled for today
                         </p>
                     </div>
 
-                    <CalendarDaysIcon class="h-5 w-5 text-slate-400" />
-
+                    <span
+                        class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                        {{ todayReminders.length }}
+                    </span>
                 </div>
 
+                <!-- Loading -->
+                <div v-if="todayLoading" class="px-5 py-10 text-center text-sm text-slate-400">
+                    Loading today's reminders...
+                </div>
 
                 <!-- Empty -->
+                <div v-else-if="!todayReminders.length" class="px-5 py-12 text-center">
+                    <CalendarDaysIcon class="mx-auto h-9 w-9 text-slate-300 dark:text-slate-700" />
 
-                <div v-if="!todayReminders.length" class="px-5 py-10 text-center">
-                    <BellAlertIcon class="mx-auto h-7 w-7 text-slate-300" />
-
-                    <p class="mt-2 text-xs text-slate-400">
-                        No reminders for today.
+                    <p class="mt-3 text-sm font-medium text-slate-500">
+                        No reminders for today
                     </p>
                 </div>
 
-
                 <!-- List -->
-
                 <div v-else>
 
-                    <div v-for="reminder in todayReminders" :key="reminder.id"
-                        class="group border-b border-slate-100 px-5 py-4 transition last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/40">
+                    <div v-for="reminder in todayReminders" :key="reminder.id" @click="openFollowUpActivity(reminder)"
+                        class="border-b border-slate-100 px-5 py-4 last:border-b-0 dark:border-slate-800">
+                        <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
 
-                        <div class="flex gap-3">
-
-                            <!-- Time -->
-
-                            <div class="w-16 shrink-0 text-center">
-                                <p class="text-sm font-bold text-slate-900 dark:text-white">
-                                    {{ reminderTime(reminder.remind_at) }}
-                                </p>
-
-                                <p class="mt-0.5 text-[10px] text-slate-400">
-                                    Reminder
-                                </p>
-                            </div>
-
-
-                            <!-- Divider -->
-
-                            <div class="w-px bg-slate-200 dark:bg-slate-700" />
-
-
-                            <!-- Content -->
-
+                            <!-- Reminder information -->
                             <div class="min-w-0 flex-1">
 
                                 <div class="flex flex-wrap items-center gap-2">
 
-                                    <button type="button" @click="openReminder(reminder)"
-                                        class="truncate text-sm font-semibold text-slate-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400">
-                                        {{ studentName(reminder) }}
-                                    </button>
+                                    <h4 class="font-semibold text-slate-900 dark:text-white">
+                                        {{ reminder.activity?.title ?? 'Follow-up Reminder' }}
+                                    </h4>
 
-                                    <span v-if="reminder.activity?.priority"
-                                        class="rounded-full px-2 py-0.5 text-[10px] font-semibold" :class="priorityClass(
-                                            reminder.activity.priority
-                                        )
-                                            ">
-                                        {{ reminder.activity.priority }}
+                                    <span class="rounded-full px-2 py-0.5 text-[10px] font-bold" :class="priorityClass(
+                                        reminder.activity?.priority
+                                    )
+                                        ">
+                                        {{ reminder.activity?.priority ?? 'Normal' }}
                                     </span>
 
-                                </div>
-
-
-                                <p v-if="reminder.activity?.description"
-                                    class="mt-1 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
-                                    {{ reminder.activity.description }}
-                                </p>
-
-
-                                <div class="mt-2 flex flex-wrap items-center gap-2">
-
-                                    <span class="text-[10px] text-slate-400">
-                                        {{ reminder.channel }}
-                                    </span>
-
-                                    <span class="text-slate-300">
-                                        •
-                                    </span>
-
-                                    <span class="text-[10px] text-slate-400">
+                                    <span class="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                                        :class="statusClass(reminder.status)">
                                         {{ reminder.status }}
                                     </span>
 
                                 </div>
 
+                                <div
+                                    class="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+
+                                    <span class="flex items-center gap-1">
+                                        <UserIcon class="h-3.5 w-3.5" />
+
+                                        {{ studentName(reminder) }}
+                                    </span>
+
+                                    <span>
+                                        Assigned to:
+                                        <strong class="font-semibold text-slate-700 dark:text-slate-300">
+                                            {{ reminder.assigned_user?.name ?? '-' }}
+                                        </strong>
+                                    </span>
+
+                                </div>
+
+                                <p v-if="reminder.activity?.description"
+                                    class="mt-2 line-clamp-1 text-xs text-slate-400">
+                                    {{ reminder.activity.description }}
+                                </p>
+
+                            </div>
+
+
+                            <!-- Reminder time -->
+                            <div class="shrink-0 xl:text-right">
+
+                                <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                    Reminder
+                                </p>
+
+                                <p class="mt-1 text-sm font-bold text-slate-800 dark:text-slate-200">
+                                    {{ formatDateTime(reminder.remind_at) }}
+                                </p>
+
+                                <span
+                                    class="mt-1 inline-block rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                    {{ reminder.channel }}
+                                </span>
+
                             </div>
 
 
                             <!-- Actions -->
+                            <div class="flex flex-wrap items-center gap-2 xl:w-[330px] xl:justify-end">
 
-                            <div class="flex shrink-0 items-center gap-1">
-
-                                <!-- Read -->
-
-                                <button type="button" :disabled="reminder.is_read ||
-                                    actionLoading === reminder.id
-                                    " @click.stop="markAsRead(reminder)"
-                                    class="rounded-lg p-2 text-slate-400 transition hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-default disabled:opacity-40 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-400"
-                                    title="Mark as read">
+                                <!-- Mark as Read -->
+                                <button v-if="!reminder.is_read" type="button" :disabled="actionLoading === reminder.id"
+                                    @click.stop="markAsRead(reminder)"
+                                    class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-950/50">
                                     <CheckIcon class="h-4 w-4" />
+
+                                    Mark Read
                                 </button>
 
+                                <span v-else
+                                    class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400">
+                                    <CheckCircleIcon class="h-4 w-4" />
 
-                                <!-- Snooze 15 -->
+                                    Read
+                                </span>
 
-                                <button type="button" :disabled="actionLoading === reminder.id
-                                    " @click.stop="
-                                        snoozeReminder(
-                                            reminder,
-                                            15
-                                        )
-                                        "
-                                    class="rounded-lg p-2 text-slate-400 transition hover:bg-amber-50 hover:text-amber-600 disabled:opacity-40 dark:hover:bg-amber-950/30 dark:hover:text-amber-400"
-                                    title="Snooze 15 minutes">
-                                    <ClockIcon class="h-4 w-4" />
+
+                                <!-- Mark as Sent -->
+                                <button v-if="!reminder.is_sent" type="button" :disabled="actionLoading === reminder.id"
+                                    @click.stop="markAsSent(reminder)"
+                                    class="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-400 dark:hover:bg-blue-950/50">
+                                    <PaperAirplaneIcon class="h-4 w-4" />
+
+                                    Mark Sent
                                 </button>
 
+                                <span v-else
+                                    class="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 dark:bg-blue-950/30 dark:text-blue-400">
+                                    <PaperAirplaneIcon class="h-4 w-4" />
 
-                                <!-- Open -->
+                                    Sent
+                                </span>
 
-                                <button type="button" @click.stop="
-                                    openReminder(reminder)
-                                    "
-                                    class="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950/30 dark:hover:text-blue-400"
-                                    title="Open follow-up">
-                                    <ChevronRightIcon class="h-4 w-4" />
+
+                                <!-- Snooze -->
+                                <div class="relative">
+
+                                    <details class="group">
+
+                                        <summary
+                                            class="flex cursor-pointer list-none items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-400 dark:hover:bg-amber-950/50">
+                                            <MoonIcon class="h-4 w-4" />
+
+                                            Snooze
+                                        </summary>
+
+                                        <div
+                                            class="absolute right-0 z-20 mt-2 w-40 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+
+                                            <button type="button" @click.stop="snoozeReminder(reminder, 15)"
+                                                class="block w-full rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                                                15 minutes
+                                            </button>
+
+                                            <button type="button" @click.stop="snoozeReminder(reminder, 30)"
+                                                class="block w-full rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                                                30 minutes
+                                            </button>
+
+                                            <button type="button" @click.stop="snoozeReminder(reminder, 60)"
+                                                class="block w-full rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                                                1 hour
+                                            </button>
+
+                                            <button type="button" @click.stop="snoozeReminder(reminder, 180)"
+                                                class="block w-full rounded-lg px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                                                3 hours
+                                            </button>
+
+                                        </div>
+
+                                    </details>
+
+                                </div>
+
+
+                                <!-- Delete -->
+                                <button type="button" :disabled="actionLoading === reminder.id"
+                                    @click.stop="deleteReminder(reminder)"
+                                    class="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 p-2 text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-950/50"
+                                    title="Delete reminder">
+                                    <TrashIcon class="h-4 w-4" />
                                 </button>
 
                             </div>
 
                         </div>
-
                     </div>
 
                 </div>
 
             </div>
 
-
             <!-- Upcoming -->
-
             <div
                 class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
 
-                <div
-                    class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+                <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">
+                        Upcoming Reminders
+                    </h3>
 
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">
-                            Upcoming Reminders
-                        </h3>
-
-                        <p class="mt-0.5 text-xs text-slate-400">
-                            Next 7 days
-                        </p>
-                    </div>
-
-                    <ArrowPathIcon class="h-5 w-5 text-slate-400" />
-
-                </div>
-
-
-                <div v-if="!upcomingReminders.length" class="px-5 py-10 text-center">
-                    <p class="text-xs text-slate-400">
-                        No upcoming reminders.
+                    <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                        Reminders scheduled within the next 7 days
                     </p>
                 </div>
 
+                <div v-if="upcomingLoading" class="px-5 py-10 text-center text-sm text-slate-400">
+                    Loading upcoming reminders...
+                </div>
 
-                <div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
+                <div v-else-if="!upcomingReminders.length" class="px-5 py-12 text-center">
+                    <CalendarDaysIcon class="mx-auto h-9 w-9 text-slate-300 dark:text-slate-700" />
 
-                    <button v-for="reminder in upcomingReminders.slice(0, 7)" :key="reminder.id" type="button"
-                        @click="openReminder(reminder)"
-                        class="flex w-full items-center gap-4 px-5 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                    <p class="mt-3 text-sm font-medium text-slate-500">
+                        No upcoming reminders
+                    </p>
 
-                        <div
-                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400">
-                            <ClockIcon class="h-4 w-4" />
-                        </div>
+                    <p class="mt-1 text-xs text-slate-400">
+                        Nothing scheduled for the next 7 days.
+                    </p>
+                </div>
 
+                <div v-else>
 
-                        <div class="min-w-0 flex-1">
+                    <div v-for="reminder in upcomingReminders" :key="reminder.id"
+                        class="border-b border-slate-100 px-5 py-4 last:border-b-0 dark:border-slate-800">
+                        <div class="flex items-center justify-between gap-4">
 
-                            <p class="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                {{ studentName(reminder) }}
+                            <div class="min-w-0">
+
+                                <h4 class="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                                    {{
+                                        reminder.activity?.title ??
+                                        'Follow-up Reminder'
+                                    }}
+                                </h4>
+
+                                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                    {{ studentName(reminder) }}
+                                    ·
+                                    {{
+                                        reminder.assigned_user?.name ??
+                                        '-'
+                                    }}
+                                </p>
+
+                            </div>
+
+                            <p class="shrink-0 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                {{
+                                    formatDateTime(
+                                        reminder.remind_at
+                                    )
+                                }}
                             </p>
 
-                            <p class="mt-0.5 text-xs text-slate-400">
-                                {{ reminderDate(reminder.remind_at) }}
-                                ·
-                                {{ reminderTime(reminder.remind_at) }}
-                            </p>
-
                         </div>
-
-
-                        <ChevronRightIcon class="h-4 w-4 shrink-0 text-slate-300" />
-
-                    </button>
+                    </div>
 
                 </div>
 

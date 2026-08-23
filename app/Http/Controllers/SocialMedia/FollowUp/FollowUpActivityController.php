@@ -126,18 +126,22 @@ class FollowUpActivityController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(
-        FollowUpActivity $followUpActivity
-    ): JsonResponse {
-        return response()->json(
-            $followUpActivity->load([
-                'student',
-                'master',
-                'status',
-                'creator',
-                'assignedTo',
-                'reminders',
-            ])
+    public function show(FollowUpActivity $activity)
+    {
+        $activity->load([
+            'student',
+            'master',
+            'status',
+            'creator',
+            'assignedTo',
+            'reminders',
+        ]);
+
+        return Inertia::render(
+            'allpages/Agency/MetaChat/FollowUpComponents/FollowUpActivityShow',
+            [
+                'activity' => $activity,
+            ]
         );
     }
 
@@ -161,98 +165,98 @@ class FollowUpActivityController extends Controller
     //     $result = $this->activityService->dashboardSummary();
     //     return response()->json($result);
     // }
-    public function admindashboard()
-    {
-        dd('sadas');
-        $today = Carbon::today();
+    // public function admindashboard()
+    // {
 
-        $counselorPerformance = FollowUpActivity::query()
-            ->select([
-                'assigned_to',
-                DB::raw('COUNT(*) as total'),
+    //     $today = Carbon::today();
 
-                DB::raw("
-                SUM(
-                    CASE
-                        WHEN follow_up_status_id = 1
-                        THEN 1
-                        ELSE 0
-                    END
-                ) as pending
-            "),
+    //     $counselorPerformance = FollowUpActivity::query()
+    //         ->select([
+    //             'assigned_to',
+    //             DB::raw('COUNT(*) as total'),
 
-                DB::raw("
-                SUM(
-                    CASE
-                        WHEN follow_up_status_id = 3
-                        THEN 1
-                        ELSE 0
-                    END
-                ) as completed
-            "),
+    //             DB::raw("
+    //             SUM(
+    //                 CASE
+    //                     WHEN follow_up_status_id = 1
+    //                     THEN 1
+    //                     ELSE 0
+    //                 END
+    //             ) as pending
+    //         "),
 
-                DB::raw("
-                SUM(
-                    CASE
-                        WHEN follow_up_date < '{$today->toDateString()}'
-                        AND follow_up_status_id != 3
-                        THEN 1
-                        ELSE 0
-                    END
-                ) as overdue
-            "),
+    //             DB::raw("
+    //             SUM(
+    //                 CASE
+    //                     WHEN follow_up_status_id = 3
+    //                     THEN 1
+    //                     ELSE 0
+    //                 END
+    //             ) as completed
+    //         "),
 
-                DB::raw("
-                SUM(
-                    CASE
-                        WHEN priority = 'Urgent'
-                        THEN 1
-                        ELSE 0
-                    END
-                ) as urgent
-            "),
-            ])
-            ->whereNotNull('assigned_to')
-            ->groupBy('assigned_to')
-            ->orderByDesc('total')
-            ->get();
-        dd($today);
-        // Counselor names
-        $userIds = $counselorPerformance
-            ->pluck('assigned_to')
-            ->filter()
-            ->unique();
+    //             DB::raw("
+    //             SUM(
+    //                 CASE
+    //                     WHEN follow_up_date < '{$today->toDateString()}'
+    //                     AND follow_up_status_id != 3
+    //                     THEN 1
+    //                     ELSE 0
+    //                 END
+    //             ) as overdue
+    //         "),
 
-        $users = User::pluck('name', 'id');
+    //             DB::raw("
+    //             SUM(
+    //                 CASE
+    //                     WHEN priority = 'Urgent'
+    //                     THEN 1
+    //                     ELSE 0
+    //                 END
+    //             ) as urgent
+    //         "),
+    //         ])
+    //         ->whereNotNull('assigned_to')
+    //         ->groupBy('assigned_to')
+    //         ->orderByDesc('total')
+    //         ->get();
 
-        $counselorPerformance = $counselorPerformance
-            ->map(function ($item) use ($users) {
+    //     // Counselor names
+    //     $userIds = $counselorPerformance
+    //         ->pluck('assigned_to')
+    //         ->filter()
+    //         ->unique();
 
-                return [
-                    'user_id' => (int) $item->assigned_to,
+    //     $users = User::pluck('name', 'id');
 
-                    'user_name' => $users[$item->assigned_to]
-                        ?? 'Unknown Counselor',
+    //     $counselorPerformance = $counselorPerformance
+    //         ->map(function ($item) use ($users) {
 
-                    'total' => (int) $item->total,
+    //             return [
+    //                 'user_id' => (int) $item->assigned_to,
 
-                    'pending' => (int) $item->pending,
+    //                 'user_name' => $users[$item->assigned_to]
+    //                     ?? 'Unknown Counselor',
 
-                    'completed' => (int) $item->completed,
+    //                 'total' => (int) $item->total,
 
-                    'overdue' => (int) $item->overdue,
+    //                 'pending' => (int) $item->pending,
 
-                    'urgent' => (int) $item->urgent,
-                ];
-            })
-            ->values();
+    //                 'completed' => (int) $item->completed,
 
-        return response()->json([
-            'success' => true,
+    //                 'overdue' => (int) $item->overdue,
 
-            'data' => [
-                'counselorPerformance' => $counselorPerformance,
-            ],
-        ]);
-    }
+    //                 'urgent' => (int) $item->urgent,
+    //             ];
+    //         })
+    //         ->values();
+
+    //     return response()->json([
+    //         'success' => true,
+
+    //         'data' => [
+    //             'counselorPerformance' => $counselorPerformance,
+    //         ],
+    //     ]);
+    // }
 }

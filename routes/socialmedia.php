@@ -69,10 +69,10 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
             Route::get('/student/{studentId}', 'student')->name('student');
+            //Route::get('/admindashboard', 'admindashboard')->name('admindashboard');
             Route::get('/{activity}', 'show')->name('show');
             Route::get('/{activity}/timeline', 'timeline')->name('timeline');
             Route::delete('/{followUpActivity}', 'destroy')->name('destroy');
-            Route::get('/admindashboard', 'admindashboard')->name('admindashboard');
         });
 
     Route::controller(FollowUpReminderController::class)
