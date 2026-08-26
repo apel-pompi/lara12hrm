@@ -171,7 +171,7 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
                 Route::put('/{attendanceStatus}/status', 'updateStatus')->name('attendanceStatus.updateStatus');
 
                 Route::get('/{attendanceStatus}', 'show')->name('attendanceStatus.show');
-                Route::delete('/show/{attendanceStatus}', 'destroy')->name('attendanceStatus.destroy');
+                Route::delete('/', 'destroy')->name('attendanceStatus.destroy');
             }
         );
     //Salary Type Setup

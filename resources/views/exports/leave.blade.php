@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <title>Leave Application</title>
     <style>
         body {
@@ -150,7 +151,8 @@
                 www.glendonedu.com</p>
             <div class="title">APPLICATION FOR LEAVE</div>
             <div class="company-info">Ref No: HR/LA/{{ date('Y') }}/{{ $leave->id }} | Date: {{ $monthname }},
-                {{ $yearname }}</div>
+                {{ $yearname }}
+            </div>
         </div>
 
         <!-- Employee Information -->
@@ -162,7 +164,8 @@
             <tr>
                 <td class="label">2. Designation, Department/Section/Place</td>
                 <td class="value">{{ $leave->employee->designation->desname }},
-                    {{ $leave->employee->department->deptname }}</td>
+                    {{ $leave->employee->department->deptname }}
+                </td>
             </tr>
             <tr>
                 <td class="label">3. Contact address during leave period</td>
@@ -198,16 +201,16 @@
                 <th>Now Applied</th>
                 <th>Remarks</th>
             </tr>
-            
+
             @foreach ($allleave as $item)
-                <tr>
-                    <td>{{ $item->leavename }}</td>
-                    <td>{{ $item->allow_days }}</td>
-                    <td>{{ $item->taken }}</td>
-                    <td>{{ $item->balance }}</td>
-                    <td>{{ $item->nowapply }}</td>
-                    <td></td>
-                </tr>
+            <tr>
+                <td>{{ $item->leavename }}</td>
+                <td>{{ $item->allow_days }}</td>
+                <td>{{ $item->taken }}</td>
+                <td>{{ $item->balance }}</td>
+                <td>{{ $item->nowapply }}</td>
+                <td></td>
+            </tr>
             @endforeach
         </table>
 
@@ -216,7 +219,8 @@
             <tr>
                 <td class="label">9. Officer in charge during absence</td>
                 <td class="value">{{ $leave->substituteEmployee->empname }} ({{ $leave->substituteEmployee->designation->desname }},
-                    {{ $leave->substituteEmployee->department->deptname }})</td>
+                    {{ $leave->substituteEmployee->department->deptname }})
+                </td>
             </tr>
         </table>
 

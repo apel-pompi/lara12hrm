@@ -7,7 +7,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, Head } from '@inertiajs/vue3';
 import { getLocalTimeZone, today } from '@internationalized/date';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
@@ -308,45 +308,39 @@ const manage = () => {
 </script>
 
 <template>
-    <Head title="Supplier Payable" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+
+        <Head title="Supplier Payable" />
+        <div class="app-page">
             <div
-                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
-            >
-                <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="manage"
-                    ><Plus></Plus> Manage Payable
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
+                <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm"
+                    @click="manage">
+                    <Plus></Plus> Manage Payable
                 </Button>
                 <Combobox v-model="selectedBranch">
                     <div class="relative w-full md:w-48">
-                        <ComboboxInput
-                            class="w-full rounded-md border px-3 py-2 text-sm"
-                            placeholder="Select Branch"
-                            @input="queryBranch = $event.target.value"
-                            :display-value="(c) => c?.branchname ?? ''"
-                        />
+                        <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm" placeholder="Select Branch"
+                            @input="queryBranch = $event.target.value" :display-value="(c) => c?.branchname ?? ''" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
-                        <ComboboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
-                            <div v-if="filteredBranch.length === 0 && queryBranch !== ''" class="px-4 py-2 text-gray-500 select-none">
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                            <div v-if="filteredBranch.length === 0 && queryBranch !== ''"
+                                class="px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="one in filteredBranch"
-                                :key="one.id"
-                                :value="one"
+                            <ComboboxOption v-for="one in filteredBranch" :key="one.id" :value="one"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ one.branchname }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -355,32 +349,28 @@ const manage = () => {
                 </Combobox>
                 <Combobox v-model="selectedSupplier">
                     <div class="relative w-full md:w-48">
-                        <ComboboxInput
-                            class="w-full rounded-md border px-3 py-2 text-sm"
-                            placeholder="Select Supplier"
+                        <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm" placeholder="Select Supplier"
                             @input="querySupplier = $event.target.value"
-                            :display-value="(c) => c?.suppliername ?? ''"
-                        />
+                            :display-value="(c) => c?.suppliername ?? ''" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
-                        <ComboboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
-                            <div v-if="filteredSupplier.length === 0 && querySupplier !== ''" class="px-4 py-2 text-gray-500 select-none">
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                            <div v-if="filteredSupplier.length === 0 && querySupplier !== ''"
+                                class="px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="one in filteredSupplier"
-                                :key="one.id"
-                                :value="one"
+                            <ComboboxOption v-for="one in filteredSupplier" :key="one.id" :value="one"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ one.suppliername }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -389,40 +379,40 @@ const manage = () => {
                 </Combobox>
                 <Combobox v-model="selectedPerson">
                     <div class="relative w-full md:w-48">
-                        <ComboboxInput
-                            class="w-full rounded-md border px-3 py-2 text-sm"
-                            placeholder="Select Person"
+                        <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm" placeholder="Select Person"
                             @input="queryPerson = $event.target.value"
-                            :display-value="(c) => c?.contact_person ?? ''"
-                        />
+                            :display-value="(c) => c?.contact_person ?? ''" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
-                        <ComboboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
-                            <div v-if="filteredPerson.length === 0 && queryPerson !== ''" class="px-4 py-2 text-gray-500 select-none">
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                            <div v-if="filteredPerson.length === 0 && queryPerson !== ''"
+                                class="px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="one in filteredPerson"
-                                :key="one.id"
-                                :value="one"
+                            <ComboboxOption v-for="one in filteredPerson" :key="one.id" :value="one"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ one.contact_person }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
                         </ComboboxOptions>
                     </div>
                 </Combobox>
-                <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+                <Button variant="outline" size="sm" @click="search">
+                    <Search></Search> Search
+                </Button>
+                <Button variant="outline" size="sm" @click="refresh">
+                    <RefreshCcw></RefreshCcw> Refresh
+                </Button>
             </div>
 
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -451,36 +441,29 @@ const manage = () => {
                             <TableCell>{{ supplier?.payableamt }}</TableCell>
 
                             <TableCell class="text-center">
-                                <Button
-                                    class="m-[2px] cursor-pointer"
-                                    variant="outline"
-                                    size="sm"
-                                    @click="
-                                        showDailog(
-                                            supplier.suppliercode,
-                                            supplier.suppliername,
-                                            supplier.chart_o_f_account.group_three.description,
-                                            supplier.branch_id,
-                                        )
-                                    "
-                                >
+                                <Button class="m-[2px] cursor-pointer" variant="outline" size="sm" @click="
+                                    showDailog(
+                                        supplier.suppliercode,
+                                        supplier.suppliername,
+                                        supplier.chart_o_f_account.group_three.description,
+                                        supplier.branch_id,
+                                    )
+                                    ">
                                     <ShieldCheck class="mr-1 h-4 w-4 text-red-500" />
                                 </Button>
                             </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
-                <div class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
+                <div
+                    class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
                     <!-- Left -->
                     <div class="flex flex-col gap-2 text-sm text-gray-600 sm:flex-row sm:items-center">
                         <div class="flex items-center gap-2">
                             <label>Show</label>
 
-                            <select
-                                v-model="perPage"
-                                @change="changePerPage"
-                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
-                            >
+                            <select v-model="perPage" @change="changePerPage"
+                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500">
                                 <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
                                     {{ size }}
                                 </option>
@@ -492,18 +475,11 @@ const manage = () => {
 
                     <!-- Right -->
                     <div class="flex flex-wrap justify-center gap-2 md:justify-end">
-                        <Button
-                            v-for="(link, index) in data.links"
-                            :key="index"
-                            :disabled="!link.url"
-                            size="sm"
-                            variant="outline"
-                            @click="goToPage(link.url)"
-                            :class="[
+                        <Button v-for="(link, index) in data.links" :key="index" :disabled="!link.url" size="sm"
+                            variant="outline" @click="goToPage(link.url)" :class="[
                                 link.active ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-gray-700',
                                 !link.url ? 'cursor-not-allowed opacity-50' : '',
-                            ]"
-                        >
+                            ]">
                             <span v-html="link.label"></span>
                         </Button>
                     </div>
@@ -512,11 +488,11 @@ const manage = () => {
         </div>
         <Dialog v-model:open="showDialogAdd">
             <DialogContent
-                class="flex max-h-[85vh] flex-col overflow-hidden rounded-xl border-0 bg-white shadow-2xl sm:max-w-3xl lg:max-w-5xl dark:bg-gray-900"
-            >
+                class="flex max-h-[85vh] flex-col overflow-hidden rounded-xl border-0 bg-white shadow-2xl sm:max-w-3xl lg:max-w-5xl dark:bg-gray-900">
                 <!-- HEADER - Fixed at top -->
                 <DialogHeader class="shrink-0 border-b border-gray-100 px-6 pt-6 pb-4 dark:border-gray-800">
-                    <DialogTitle class="text-xl font-semibold text-gray-900 dark:text-white"> Create Supplier Payment </DialogTitle>
+                    <DialogTitle class="text-xl font-semibold text-gray-900 dark:text-white"> Create Supplier Payment
+                    </DialogTitle>
                     <DialogDescription class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         Record payment against supplier invoices
                     </DialogDescription>
@@ -526,7 +502,8 @@ const manage = () => {
                 <div class="flex-1 overflow-y-auto px-6 py-4">
                     <div class="space-y-6">
                         <!-- PAYMENT DETAILS CARD -->
-                        <div class="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+                        <div
+                            class="rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
                             <h3 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">
                                 Payment Details
                                 <span class="mt-1 block text-xs font-normal text-gray-500 dark:text-gray-400">
@@ -541,15 +518,10 @@ const manage = () => {
                                         <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Payment Date <span class="ml-0.5 text-red-500">*</span>
                                         </Label>
-                                        <VueDatePicker
-                                            v-model="vdate"
-                                            :max-date="maxDate"
-                                            :format="'yyyy-MM-dd'"
-                                            :enable-time-picker="false"
-                                            placeholder="Select Date"
-                                            auto-apply
-                                        />
-                                        <p v-if="form.errors.voucherdate" class="mt-1 text-sm text-red-600">{{ form.errors.voucherdate }}</p>
+                                        <VueDatePicker v-model="vdate" :max-date="maxDate" :format="'yyyy-MM-dd'"
+                                            :enable-time-picker="false" placeholder="Select Date" auto-apply />
+                                        <p v-if="form.errors.voucherdate" class="mt-1 text-sm text-red-600">{{
+                                            form.errors.voucherdate }}</p>
                                     </div>
 
                                     <div class="space-y-2">
@@ -564,37 +536,28 @@ const manage = () => {
                                                     class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                                                     placeholder="Select account..."
                                                     :display-value="(account) => account?.description ?? ''"
-                                                    @input="queryAccount = $event.target.value"
-                                                />
-                                                <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                                                    @input="queryAccount = $event.target.value" />
+                                                <ComboboxButton
+                                                    class="absolute inset-y-0 right-0 flex items-center pr-2">
                                                     <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                                 </ComboboxButton>
 
                                                 <!-- Options -->
                                                 <ComboboxOptions
-                                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                                >
-                                                    <div
-                                                        v-if="filteredAccount.length === 0 && queryAccount !== ''"
-                                                        class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                                    >
+                                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                                                    <div v-if="filteredAccount.length === 0 && queryAccount !== ''"
+                                                        class="cursor-default px-4 py-2 text-gray-500 select-none">
                                                         Nothing found.
                                                     </div>
 
-                                                    <ComboboxOption
-                                                        v-for="n in filteredAccount"
-                                                        :key="n.id"
-                                                        :value="n"
+                                                    <ComboboxOption v-for="n in filteredAccount" :key="n.id" :value="n"
                                                         class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                                        v-slot="{ selected }"
-                                                    >
-                                                        <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                                            {{ n.description }}</span
-                                                        >
+                                                        v-slot="{ selected }">
                                                         <span
-                                                            v-if="selected"
-                                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                                        >
+                                                            :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
+                                                            {{ n.description }}</span>
+                                                        <span v-if="selected"
+                                                            class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                                             <CheckIcon class="h-5 w-5" />
                                                         </span>
                                                     </ComboboxOption>
@@ -602,7 +565,8 @@ const manage = () => {
                                             </div>
                                         </Combobox>
 
-                                        <p v-if="form.errors.account" class="mt-1 text-sm text-red-600">{{ form.errors.account }}</p>
+                                        <p v-if="form.errors.account" class="mt-1 text-sm text-red-600">{{
+                                            form.errors.account }}</p>
                                     </div>
                                 </div>
 
@@ -613,54 +577,54 @@ const manage = () => {
                                         <span class="ml-0.5 text-red-500">*</span>
                                     </label>
                                     <div class="relative">
-                                        <span class="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-500 dark:text-gray-400">৳</span>
-                                        <input
-                                            type="number"
-                                            v-model.number="amountPaid"
-                                            :max="totalOutstanding"
+                                        <span
+                                            class="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-500 dark:text-gray-400">৳</span>
+                                        <input type="number" v-model.number="amountPaid" :max="totalOutstanding"
                                             placeholder="0.00"
-                                            class="w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-3 pl-8 text-right text-lg font-semibold text-gray-900 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-blue-600"
-                                        />
+                                            class="w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-3 pl-8 text-right text-lg font-semibold text-gray-900 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-blue-600" />
                                     </div>
                                 </div>
 
                                 <!-- SUPPLIER INFO CARD -->
-                                <div class="rounded-lg border border-blue-100 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+                                <div
+                                    class="rounded-lg border border-blue-100 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
                                     <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                                         <div>
                                             <span class="mb-1 block text-gray-600 dark:text-gray-400">Supplier</span>
-                                            <span class="font-medium text-gray-900 dark:text-white">{{ supplierName }}</span>
+                                            <span class="font-medium text-gray-900 dark:text-white">{{ supplierName
+                                            }}</span>
                                         </div>
                                         <div>
-                                            <span class="mb-1 block text-gray-600 dark:text-gray-400">Expense Account</span>
-                                            <span class="font-medium text-gray-900 dark:text-white">{{ AccountsName }}</span>
+                                            <span class="mb-1 block text-gray-600 dark:text-gray-400">Expense
+                                                Account</span>
+                                            <span class="font-medium text-gray-900 dark:text-white">{{ AccountsName
+                                            }}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- NOTES -->
                                 <div class="space-y-2">
-                                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300"> Payment Notes </label>
-                                    <Textarea
-                                        v-model="form.notes"
-                                        placeholder="Add any payment notes..."
-                                        class="w-full resize-none rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-gray-900 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-blue-600"
-                                    ></Textarea>
+                                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300"> Payment Notes
+                                    </label>
+                                    <Textarea v-model="form.notes" placeholder="Add any payment notes..."
+                                        class="w-full resize-none rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-gray-900 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-blue-600"></Textarea>
                                 </div>
                             </div>
                         </div>
 
                         <!-- UNPAID INVOICES TABLE -->
-                        <div class="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                            <div class="border-b border-gray-100 bg-gray-50 px-5 py-3.5 dark:border-gray-800 dark:bg-gray-800/50">
+                        <div
+                            class="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                            <div
+                                class="border-b border-gray-100 bg-gray-50 px-5 py-3.5 dark:border-gray-800 dark:bg-gray-800/50">
                                 <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Unpaid Invoices</h3>
                             </div>
 
                             <div class="overflow-x-auto">
                                 <table class="w-full">
                                     <thead
-                                        class="bg-gray-50 text-xs font-medium tracking-wider text-gray-500 uppercase dark:bg-gray-800/50 dark:text-gray-400"
-                                    >
+                                        class="bg-gray-50 text-xs font-medium tracking-wider text-gray-500 uppercase dark:bg-gray-800/50 dark:text-gray-400">
                                         <tr>
                                             <th class="px-5 py-3 text-left font-medium">Invoice #</th>
                                             <th class="px-5 py-3 text-left font-medium">Date</th>
@@ -670,26 +634,29 @@ const manage = () => {
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                                        <tr
-                                            v-for="(inv, index) in form.payinv"
-                                            :key="index"
-                                            @click="editPay(inv)"
-                                            class="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                                        >
-                                            <td class="px-5 py-3.5 font-medium text-gray-900 dark:text-white">{{ inv.invicenumber }}</td>
+                                        <tr v-for="(inv, index) in form.payinv" :key="index" @click="editPay(inv)"
+                                            class="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <td class="px-5 py-3.5 font-medium text-gray-900 dark:text-white">{{
+                                                inv.invicenumber }}</td>
                                             <td class="px-5 py-3.5 text-gray-600 dark:text-gray-400">{{ inv.date }}</td>
-                                            <td class="px-5 py-3.5 text-center text-gray-600 dark:text-gray-400">{{ inv.currency }}</td>
-                                            <td class="px-5 py-3.5 text-center text-gray-600 dark:text-gray-400">{{ inv.exchagerate }}</td>
-                                            <td class="px-5 py-3.5 text-right font-semibold text-gray-900 dark:text-white">{{ inv.primeamt }}</td>
+                                            <td class="px-5 py-3.5 text-center text-gray-600 dark:text-gray-400">{{
+                                                inv.currency }}</td>
+                                            <td class="px-5 py-3.5 text-center text-gray-600 dark:text-gray-400">{{
+                                                inv.exchagerate }}</td>
+                                            <td
+                                                class="px-5 py-3.5 text-right font-semibold text-gray-900 dark:text-white">
+                                                {{ inv.primeamt }}</td>
                                         </tr>
                                         <!-- Add more rows as needed -->
                                     </tbody>
                                 </table>
                             </div>
 
-                            <div class="border-t border-gray-100 bg-gray-50 px-5 py-3.5 dark:border-gray-800 dark:bg-gray-800/50">
+                            <div
+                                class="border-t border-gray-100 bg-gray-50 px-5 py-3.5 dark:border-gray-800 dark:bg-gray-800/50">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Total Outstanding</span>
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Total
+                                        Outstanding</span>
                                     <span class="text-lg font-semibold text-gray-900 dark:text-white">{{
                                         form.payinv.reduce((total, f) => total + Number(f.primeamt || 0), 0).toFixed(2)
                                     }}</span>
@@ -698,15 +665,16 @@ const manage = () => {
                         </div>
 
                         <!-- ALLOCATION SECTION - This was hidden before -->
-                        <div class="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-                            <div class="border-b border-gray-100 bg-gray-50 px-5 py-3.5 dark:border-gray-800 dark:bg-gray-800/50">
+                        <div
+                            class="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                            <div
+                                class="border-b border-gray-100 bg-gray-50 px-5 py-3.5 dark:border-gray-800 dark:bg-gray-800/50">
                                 <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Allocated Invoices</h3>
                             </div>
                             <div v-if="selectedPay.length">
                                 <table class="w-full">
                                     <thead
-                                        class="bg-gray-50 text-xs font-medium tracking-wider text-gray-500 uppercase dark:bg-gray-800/50 dark:text-gray-400"
-                                    >
+                                        class="bg-gray-50 text-xs font-medium tracking-wider text-gray-500 uppercase dark:bg-gray-800/50 dark:text-gray-400">
                                         <tr>
                                             <th class="px-5 py-3 text-left font-medium">Invoice #</th>
                                             <th class="px-5 py-3 text-left font-medium">Date</th>
@@ -717,29 +685,25 @@ const manage = () => {
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                                        <tr
-                                            v-for="(pay, index) in selectedPay"
-                                            :key="index"
-                                            class="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                                        >
-                                            <td class="px-5 py-3.5 font-medium text-gray-900 dark:text-white">{{ pay.invicenumber }}</td>
+                                        <tr v-for="(pay, index) in selectedPay" :key="index"
+                                            class="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <td class="px-5 py-3.5 font-medium text-gray-900 dark:text-white">{{
+                                                pay.invicenumber }}</td>
                                             <td class="px-5 py-3.5 text-gray-600 dark:text-gray-400">{{ pay.date }}</td>
-                                            <td class="px-5 py-3.5 text-center text-gray-600 dark:text-gray-400">{{ pay.currency }}</td>
-                                            <td class="px-5 py-3.5 text-center text-gray-600 dark:text-gray-400">{{ pay.exchagerate }}</td>
-                                            <td class="px-5 py-3.5 text-right font-semibold text-gray-900 dark:text-white">
-                                                <input
-                                                    type="number"
-                                                    v-model.number="pay.primeamt"
+                                            <td class="px-5 py-3.5 text-center text-gray-600 dark:text-gray-400">{{
+                                                pay.currency }}</td>
+                                            <td class="px-5 py-3.5 text-center text-gray-600 dark:text-gray-400">{{
+                                                pay.exchagerate }}</td>
+                                            <td
+                                                class="px-5 py-3.5 text-right font-semibold text-gray-900 dark:text-white">
+                                                <input type="number" v-model.number="pay.primeamt"
                                                     @input="updatePayAmount(pay)"
-                                                    class="mt-1 w-full rounded border border-gray-300 px-2 py-1 shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none md:w-32"
-                                                />
+                                                    class="mt-1 w-full rounded border border-gray-300 px-2 py-1 shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none md:w-32" />
                                             </td>
-                                            <td class="px-5 py-3.5 text-right font-semibold text-gray-900 dark:text-white">
-                                                <Button
-                                                    variant="destructive"
-                                                    @click="deletePayRow(index)"
-                                                    class="flex cursor-pointer items-center gap-1"
-                                                >
+                                            <td
+                                                class="px-5 py-3.5 text-right font-semibold text-gray-900 dark:text-white">
+                                                <Button variant="destructive" @click="deletePayRow(index)"
+                                                    class="flex cursor-pointer items-center gap-1">
                                                     <Trash2 class="h-4 w-4" /> Delete
                                                 </Button>
                                             </td>
@@ -749,30 +713,29 @@ const manage = () => {
                                 </table>
                             </div>
                             <div v-else class="p-8 text-center">
-                                <div class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                                    <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                        />
+                                <div
+                                    class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                                    <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                 </div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">No invoices allocated yet</p>
-                                <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Select invoices from above to allocate payment</p>
+                                <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Select invoices from above to
+                                    allocate payment</p>
                             </div>
 
-                            <div class="border-t border-gray-100 bg-gray-50 px-5 py-3.5 dark:border-gray-800 dark:bg-gray-800/50">
+                            <div
+                                class="border-t border-gray-100 bg-gray-50 px-5 py-3.5 dark:border-gray-800 dark:bg-gray-800/50">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Allocated Total</span>
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Allocated
+                                        Total</span>
                                     <div class="relative">
-                                        <span class="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-500 dark:text-gray-400">৳</span>
-                                        <input
-                                            readonly
-                                            :value="totalAfterEdit.toFixed(2)"
-                                            class="w-32 rounded-lg border border-gray-300 bg-gray-50 py-2 pr-3 pl-8 text-right font-semibold text-gray-900 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                                        />
+                                        <span
+                                            class="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-500 dark:text-gray-400">৳</span>
+                                        <input readonly :value="totalAfterEdit.toFixed(2)"
+                                            class="w-32 rounded-lg border border-gray-300 bg-gray-50 py-2 pr-3 pl-8 text-right font-semibold text-gray-900 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
                                     </div>
                                 </div>
                             </div>
@@ -791,13 +754,12 @@ const manage = () => {
                     </DialogClose>
 
                     <!-- RIGHT : SAVE -->
-                    <Button
-                        :disabled="form.processing"
-                        @click="submitInvoice"
-                        class="flex items-center gap-2 bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
-                    >
+                    <Button :disabled="form.processing" @click="submitInvoice"
+                        class="flex items-center gap-2 bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
                         <template v-if="form.processing">Saving...</template>
-                        <template v-else><Save class="h-4 w-4" />Save Payment</template>
+                        <template v-else>
+                            <Save class="h-4 w-4" />Save Payment
+                        </template>
                     </Button>
                 </DialogFooter>
             </DialogContent>

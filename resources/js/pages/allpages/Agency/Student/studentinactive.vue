@@ -113,12 +113,12 @@ const tabRefs = ref<HTMLElement[]>([]);
 
 const tabs = computed(() => {
     const baseTabs = [
-        { key: 'all',      label: 'All',     count: props.countAll },
-        { key: 'pending',  label: 'Pending', count: props.countPending },
-        { key: 'lead',     label: 'Lead',    count: props.countLead },
-        { key: 'prospect', label: 'Prospect',count: props.countProspect },
-        { key: 'onboard',  label: 'OnBoard', count: props.countonBoard },
-        { key: 'archive',  label: 'Archive', count: props.countArchive },
+        { key: 'all', label: 'All', count: props.countAll },
+        { key: 'pending', label: 'Pending', count: props.countPending },
+        { key: 'lead', label: 'Lead', count: props.countLead },
+        { key: 'prospect', label: 'Prospect', count: props.countProspect },
+        { key: 'onboard', label: 'OnBoard', count: props.countonBoard },
+        { key: 'archive', label: 'Archive', count: props.countArchive },
     ];
 
     if (!props.showInactiveTabs) {
@@ -133,12 +133,12 @@ const tabs = computed(() => {
 });
 
 const routes: Record<string, string> = {
-    all:            'student.index',
-    pending:        'student.pending',
-    lead:           'student.lead',
-    prospect:       'student.prospect',
-    onboard:        'student.onBoard',
-    archive:        'student.archive',
+    all: 'student.index',
+    pending: 'student.pending',
+    lead: 'student.lead',
+    prospect: 'student.prospect',
+    onboard: 'student.onBoard',
+    archive: 'student.archive',
     inactive1month: 'student.inactive1month',
     inactive3month: 'student.inactive3month',
     inactive6month: 'student.inactive6month',
@@ -162,15 +162,15 @@ const setActive = async (tab: string) => {
 
 const setActiveFromUrl = () => {
     const url = page.url;
-    if (url.includes('inactive/6month'))      active.value = 'inactive6month';
+    if (url.includes('inactive/6month')) active.value = 'inactive6month';
     else if (url.includes('inactive/3month')) active.value = 'inactive3month';
     else if (url.includes('inactive/1month')) active.value = 'inactive1month';
-    else if (url.includes('pending'))         active.value = 'pending';
-    else if (url.includes('lead'))            active.value = 'lead';
-    else if (url.includes('prospect'))        active.value = 'prospect';
-    else if (url.includes('onBoard'))         active.value = 'onboard';
-    else if (url.includes('archive'))         active.value = 'archive';
-    else                                      active.value = 'all';
+    else if (url.includes('pending')) active.value = 'pending';
+    else if (url.includes('lead')) active.value = 'lead';
+    else if (url.includes('prospect')) active.value = 'prospect';
+    else if (url.includes('onBoard')) active.value = 'onboard';
+    else if (url.includes('archive')) active.value = 'archive';
+    else active.value = 'all';
 };
 
 onMounted(async () => {
@@ -217,10 +217,10 @@ const toggleOne = (id: number) => {
 
 // ─── Transfer Form ───────────────────────────────────────
 const transferForm = useForm({
-    to_user_id:   null as number | null,
-    student_ids:  [] as number[],
+    to_user_id: null as number | null,
+    student_ids: [] as number[],
     transfer_all: false,
-    period:       props.period,
+    period: props.period,
 });
 
 const selectedStudent = ref<Student | null>(null);
@@ -327,11 +327,11 @@ const search = () => {
 
 const transferMode = ref<'selected' | 'all'>('selected');
 const transferSuccess = ref('');
-const transferError   = ref('');
+const transferError = ref('');
 
 const submitTransfer = () => {
     transferSuccess.value = '';
-    transferError.value   = '';
+    transferError.value = '';
 
     if (!transferForm.to_user_id) {
         transferError.value = 'Please select a user.';
@@ -340,14 +340,14 @@ const submitTransfer = () => {
 
     if (transferMode.value === 'all') {
         transferForm.transfer_all = true;
-        transferForm.student_ids  = [];
+        transferForm.student_ids = [];
     } else {
         if (selectedIds.value.length === 0) {
             transferError.value = 'Please select at least one lead.';
             return;
         }
         transferForm.transfer_all = false;
-        transferForm.student_ids  = [...selectedIds.value];
+        transferForm.student_ids = [...selectedIds.value];
     }
 
     transferForm.period = props.period;
@@ -355,7 +355,7 @@ const submitTransfer = () => {
     transferForm.post(route('student.transferInactiveLeads'), {
         preserveScroll: true,
         onSuccess: () => {
-            selectedIds.value   = [];
+            selectedIds.value = [];
             transferForm.reset('to_user_id');
             transferSuccess.value = 'Lead(s) transferred successfully.';
             setTimeout(() => refresh(), 1000);
@@ -368,29 +368,23 @@ const submitTransfer = () => {
 </script>
 
 <template>
+
     <Head title="Inactive Leads" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+        <div class="app-page">
             <!-- ── Tab Bar ── -->
             <div class="flex justify-center">
-                <div class="no-scrollbar relative mb-4 flex overflow-x-auto rounded-full bg-gray-100/80 p-1 dark:bg-gray-800/80">
-                    <div
-                        class="absolute top-1 bottom-1 rounded-full bg-white shadow transition-all duration-300 ease-out dark:bg-gray-900"
-                        :style="indicatorStyle"
-                    ></div>
-                    <button
-                        v-for="(tab, index) in tabs"
-                        :key="tab.key"
-                        @click="setActive(tab.key)"
+                <div
+                    class="no-scrollbar relative mb-4 flex overflow-x-auto rounded-full bg-gray-100/80 p-1 dark:bg-gray-800/80">
+                    <div class="absolute top-1 bottom-1 rounded-full bg-white shadow transition-all duration-300 ease-out dark:bg-gray-900"
+                        :style="indicatorStyle"></div>
+                    <button v-for="(tab, index) in tabs" :key="tab.key" @click="setActive(tab.key)"
                         :ref="(el) => (tabRefs[index] = el as HTMLElement)"
                         class="relative z-10 cursor-pointer px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-all duration-200"
                         :class="[
                             active === tab.key ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 hover:text-indigo-500 dark:text-gray-300',
                             tab.key.startsWith('inactive') ? 'text-indigo-600' : '',
-                        ]"
-                    >
+                        ]">
                         {{ tab.label }}
                         <span class="ml-1 text-xs opacity-70">({{ tab.count }})</span>
                     </button>
@@ -398,17 +392,14 @@ const submitTransfer = () => {
             </div>
 
             <!-- ── Search Panel ── -->
-            <div class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
+            <div
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
                 <div class="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
                     <Combobox v-model="selectedStudent" as="div" class="w-full">
                         <div class="relative w-full">
-                            <ComboboxInput
-                                class="input"
-                                placeholder="Search student..."
-                                :display-value="(s: any) => displayStudent(s)"
-                                @input="onNameInput"
-                                @focus="() => showAllStudents('name')"
-                            />
+                            <ComboboxInput class="input" placeholder="Search student..."
+                                :display-value="(s: any) => displayStudent(s)" @input="onNameInput"
+                                @focus="() => showAllStudents('name')" />
                             <ComboboxButton class="icon-btn" @click="() => showAllStudents('name')">
                                 <ChevronUpDownIcon class="icon" />
                             </ComboboxButton>
@@ -424,13 +415,9 @@ const submitTransfer = () => {
 
                     <Combobox v-model="selectedPhone" class="w-full">
                         <div class="relative w-full">
-                            <ComboboxInput
-                                class="input"
-                                placeholder="Search phone..."
-                                :display-value="(s: any) => displayPhone(s)"
-                                @input="onPhoneInput"
-                                @focus="() => showAllStudents('phone')"
-                            />
+                            <ComboboxInput class="input" placeholder="Search phone..."
+                                :display-value="(s: any) => displayPhone(s)" @input="onPhoneInput"
+                                @focus="() => showAllStudents('phone')" />
                             <ComboboxButton class="icon-btn" @click="() => showAllStudents('phone')">
                                 <ChevronUpDownIcon class="icon" />
                             </ComboboxButton>
@@ -446,13 +433,9 @@ const submitTransfer = () => {
 
                     <Combobox v-model="selectedAssain" class="w-full">
                         <div class="relative w-full">
-                            <ComboboxInput
-                                class="input"
-                                placeholder="Assign user..."
-                                :display-value="(s: any) => displayAssain(s)"
-                                @input="onAssainInput"
-                                @focus="() => showAllStudents('assain')"
-                            />
+                            <ComboboxInput class="input" placeholder="Assign user..."
+                                :display-value="(s: any) => displayAssain(s)" @input="onAssainInput"
+                                @focus="() => showAllStudents('assain')" />
                             <ComboboxButton class="icon-btn" @click="() => showAllStudents('assain')">
                                 <ChevronUpDownIcon class="icon" />
                             </ComboboxButton>
@@ -468,13 +451,9 @@ const submitTransfer = () => {
 
                     <Combobox v-model="selectedDate" class="w-full">
                         <div class="relative w-full">
-                            <ComboboxInput
-                                class="input"
-                                placeholder="Entry date..."
-                                :display-value="(d: any) => displayDate(d)"
-                                @input="onDateInput"
-                                @focus="() => showAllStudents('date')"
-                            />
+                            <ComboboxInput class="input" placeholder="Entry date..."
+                                :display-value="(d: any) => displayDate(d)" @input="onDateInput"
+                                @focus="() => showAllStudents('date')" />
                             <ComboboxButton class="icon-btn" @click="() => showAllStudents('date')">
                                 <ChevronUpDownIcon class="icon" />
                             </ComboboxButton>
@@ -500,9 +479,11 @@ const submitTransfer = () => {
             </div>
 
             <!-- ── Lead Transfer Panel ── -->
-            <div class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
+            <div
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
                 <!-- Header -->
-                <div class="flex items-center gap-3 border-b border-orange-100 bg-gradient-to-r from-indigo-500 to-indigo-500 px-6 py-3 dark:border-orange-900/50 dark:from-indigo-900 dark:to-indigo-900">
+                <div
+                    class="flex items-center gap-3 border-b border-orange-100 bg-gradient-to-r from-indigo-500 to-indigo-500 px-6 py-3 dark:border-orange-900/50 dark:from-indigo-900 dark:to-indigo-900">
                     <ArrowRightLeft class="h-5 w-5 text-white" />
                     <h3 class="font-semibold text-white">
                         Lead Transfer — {{ periodLabel }}+ Inactive
@@ -514,29 +495,24 @@ const submitTransfer = () => {
                 <div class="flex flex-col gap-4 p-5 sm:flex-row sm:items-end sm:flex-wrap">
                     <!-- Transfer Mode -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Transfer Mode</label>
+                        <label class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Transfer
+                            Mode</label>
                         <div class="flex gap-2">
-                            <button
-                                @click="transferMode = 'selected'"
-                                :class="[
-                                    'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition',
-                                    transferMode === 'selected'
-                                        ? 'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
-                                        : 'border-gray-200 bg-white text-gray-600 hover:border-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300',
-                                ]"
-                            >
+                            <button @click="transferMode = 'selected'" :class="[
+                                'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition',
+                                transferMode === 'selected'
+                                    ? 'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+                                    : 'border-gray-200 bg-white text-gray-600 hover:border-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                            ]">
                                 <CheckSquare class="h-4 w-4" />
                                 Selected ({{ selectedIds.length }})
                             </button>
-                            <button
-                                @click="transferMode = 'all'"
-                                :class="[
-                                    'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition',
-                                    transferMode === 'all'
-                                        ? 'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
-                                        : 'border-gray-200 bg-white text-gray-600 hover:border-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300',
-                                ]"
-                            >
+                            <button @click="transferMode = 'all'" :class="[
+                                'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition',
+                                transferMode === 'all'
+                                    ? 'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+                                    : 'border-gray-200 bg-white text-gray-600 hover:border-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                            ]">
                                 <CheckCheck class="h-4 w-4" />
                                 All ({{ student.total }})
                             </button>
@@ -545,9 +521,11 @@ const submitTransfer = () => {
 
                     <!-- Target User -->
                     <div class="flex flex-col gap-1 min-w-48">
-                        <label class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Transfer to →</label>
+                        <label class="text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">Transfer to
+                            →</label>
                         <Select v-model="transferForm.to_user_id">
-                            <SelectTrigger class="h-10 border-gray-200 bg-white text-sm dark:border-gray-700 dark:bg-gray-800">
+                            <SelectTrigger
+                                class="h-10 border-gray-200 bg-white text-sm dark:border-gray-700 dark:bg-gray-800">
                                 <SelectValue placeholder="Select a user..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -559,11 +537,8 @@ const submitTransfer = () => {
                     </div>
 
                     <!-- Submit -->
-                    <Button
-                        @click="submitTransfer"
-                        :disabled="transferForm.processing"
-                        class="flex h-10 cursor-pointer items-center gap-2 bg-indigo-500 text-white hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500"
-                    >
+                    <Button @click="submitTransfer" :disabled="transferForm.processing"
+                        class="flex h-10 cursor-pointer items-center gap-2 bg-indigo-500 text-white hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-500">
                         <Send class="h-4 w-4" />
                         {{ transferForm.processing ? 'Processing...' : 'Transfer' }}
                     </Button>
@@ -575,27 +550,32 @@ const submitTransfer = () => {
                 </div>
 
                 <!-- Alerts -->
-                <div v-if="transferSuccess" class="mx-5 mb-4 flex items-center gap-2 rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-300">
+                <div v-if="transferSuccess"
+                    class="mx-5 mb-4 flex items-center gap-2 rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-300">
                     <CheckCheck class="h-4 w-4" />
                     {{ transferSuccess }}
                 </div>
-                <div v-if="transferError" class="mx-5 mb-4 flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
+                <div v-if="transferError"
+                    class="mx-5 mb-4 flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
                     <AlertCircle class="h-4 w-4" />
                     {{ transferError }}
                 </div>
             </div>
 
             <!-- ── Table ── -->
-            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            <div
+                class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
                 <div class="flex items-center justify-between border-b px-6 py-4 dark:border-gray-700">
                     <div>
                         <h2 class="flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-100">
                             <Clock3 class="h-5 w-5 text-orange-500" />
                             {{ periodLabel }}+ No Activity
                         </h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">These leads have had no activity for more than {{ periodLabel }}.</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">These leads have had no activity for more
+                            than {{ periodLabel }}.</p>
                     </div>
-                    <span class="rounded-full bg-orange-100 px-3 py-1 text-sm font-semibold text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                    <span
+                        class="rounded-full bg-orange-100 px-3 py-1 text-sm font-semibold text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
                         {{ student.total }} leads
                     </span>
                 </div>
@@ -604,7 +584,8 @@ const submitTransfer = () => {
                     <TableHeader>
                         <TableRow class="bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800">
                             <TableHead class="w-10 px-4">
-                                <input type="checkbox" :checked="allChecked" @change="toggleAll" class="h-4 w-4 rounded border-gray-300 text-orange-500" />
+                                <input type="checkbox" :checked="allChecked" @change="toggleAll"
+                                    class="h-4 w-4 rounded border-gray-300 text-orange-500" />
                             </TableHead>
                             <TableHead class="px-4 font-semibold">Student Name</TableHead>
                             <TableHead class="px-4 font-semibold">Phone</TableHead>
@@ -616,53 +597,53 @@ const submitTransfer = () => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow
-                            v-for="(stud, index) in student.data"
-                            :key="stud.id ?? index"
+                        <TableRow v-for="(stud, index) in student.data" :key="stud.id ?? index"
                             :class="selectedIds.includes(stud.id) ? 'bg-orange-50 dark:bg-orange-900/10' : ''"
-                            class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                        >
+                            class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50">
                             <TableCell class="px-4">
-                                <input
-                                    type="checkbox"
-                                    :checked="selectedIds.includes(stud.id)"
+                                <input type="checkbox" :checked="selectedIds.includes(stud.id)"
                                     @change="toggleOne(stud.id)"
-                                    class="h-4 w-4 rounded border-gray-300 text-orange-500"
-                                />
+                                    class="h-4 w-4 rounded border-gray-300 text-orange-500" />
                             </TableCell>
                             <TableCell class="px-4">
                                 <Link :href="route('studentActivities.index', stud.id)" class="flex items-center gap-3">
                                     <div class="relative shrink-0">
-                                        <img v-if="stud.photo" :src="`/storage/student/${stud.photo}`" class="h-9 w-9 rounded-full object-cover" />
-                                        <div
-                                            v-else
-                                            :class="['flex h-9 w-9 items-center justify-center rounded-full font-semibold text-white text-sm', getAvatarColor(stud.fname)]"
-                                        >
+                                        <img v-if="stud.photo" :src="`/storage/student/${stud.photo}`"
+                                            class="h-9 w-9 rounded-full object-cover" />
+                                        <div v-else
+                                            :class="['flex h-9 w-9 items-center justify-center rounded-full font-semibold text-white text-sm', getAvatarColor(stud.fname)]">
                                             {{ stud.fname?.charAt(0) }}{{ stud.lname?.charAt(0) }}
                                         </div>
                                     </div>
                                     <div>
-                                        <div class="font-medium text-gray-900 dark:text-white">{{ stud.fname }} {{ stud.lname }}</div>
-                                        <div v-if="stud.stage?.name" class="text-xs text-gray-400">{{ stud.stage.name }}</div>
+                                        <div class="font-medium text-gray-900 dark:text-white">{{ stud.fname }} {{
+                                            stud.lname }}</div>
+                                        <div v-if="stud.stage?.name" class="text-xs text-gray-400">{{ stud.stage.name }}
+                                        </div>
                                     </div>
                                 </Link>
                             </TableCell>
                             <TableCell class="px-4 text-gray-600 dark:text-gray-300">{{ stud.phone }}</TableCell>
-                            <TableCell class="px-4 text-gray-500 dark:text-gray-400">{{ stud.source?.name ?? '—' }}</TableCell>
+                            <TableCell class="px-4 text-gray-500 dark:text-gray-400">{{ stud.source?.name ?? '—' }}
+                            </TableCell>
                             <TableCell class="px-4">
                                 <div class="flex items-center gap-1.5">
                                     <Users class="h-3.5 w-3.5 text-gray-400" />
-                                    <span class="text-gray-700 dark:text-gray-300">{{ stud.assainuser?.name ?? '—' }}</span>
+                                    <span class="text-gray-700 dark:text-gray-300">{{ stud.assainuser?.name ?? '—'
+                                        }}</span>
                                 </div>
                             </TableCell>
-                            <TableCell class="px-4 text-xs text-gray-500 dark:text-gray-400">{{ formatDate(stud.created_at) }}</TableCell>
+                            <TableCell class="px-4 text-xs text-gray-500 dark:text-gray-400">{{
+                                formatDate(stud.created_at) }}</TableCell>
                             <TableCell class="px-4">
-                                <span class="rounded bg-orange-50 px-2 py-0.5 text-xs text-orange-700 dark:bg-orange-900/20 dark:text-orange-300">
+                                <span
+                                    class="rounded bg-orange-50 px-2 py-0.5 text-xs text-orange-700 dark:bg-orange-900/20 dark:text-orange-300">
                                     {{ getLastActivityOrEntryDate(stud) }}
                                 </span>
                             </TableCell>
                             <TableCell class="px-4">
-                                <span class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-900/20 dark:text-red-300">
+                                <span
+                                    class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-900/20 dark:text-red-300">
                                     {{ daysSince(getEffectiveLastActivityDate(stud)) }}
                                 </span>
                             </TableCell>
@@ -687,7 +668,8 @@ const submitTransfer = () => {
                                 <SelectValue placeholder="10" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</SelectItem>
+                                <SelectItem v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size
+                                    }}</SelectItem>
                             </SelectContent>
                         </Select>
                         <span>entries</span>
@@ -703,20 +685,14 @@ const submitTransfer = () => {
                     </div>
                 </div>
                 <div class="flex flex-wrap justify-center gap-2 md:justify-end">
-                    <button
-                        v-for="(link, index) in student.links"
-                        :key="index"
-                        @click="goToPage(link.url)"
-                        :disabled="!link.url"
-                        v-html="link.label"
-                        :class="[
+                    <button v-for="(link, index) in student.links" :key="index" @click="goToPage(link.url)"
+                        :disabled="!link.url" v-html="link.label" :class="[
                             'rounded-md border px-3 py-1.5 text-sm transition',
                             link.active
                                 ? 'border-orange-500 bg-orange-500 text-white shadow'
                                 : 'bg-white text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
                             !link.url ? 'cursor-not-allowed opacity-50' : '',
-                        ]"
-                    ></button>
+                        ]"></button>
                 </div>
             </div>
         </div>

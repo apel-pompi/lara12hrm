@@ -203,47 +203,38 @@ const onConfirm = async (invId: number) => {
 </script>
 
 <template>
-    <Head title="All Money Receipt" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+
+        <Head title="All Money Receipt" />
+        <div class="app-page">
             <div
-                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
-            >
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
                 <Combobox v-model="selectedInvoice">
                     <div class="relative w-full md:w-48">
                         <ComboboxInput
                             class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                            placeholder="Select invoice..."
-                            :display-value="(invoice) => invoice?.refe_code ?? ''"
-                            @input="queryInvoice = $event.target.value"
-                        />
+                            placeholder="Select invoice..." :display-value="(invoice) => invoice?.refe_code ?? ''"
+                            @input="queryInvoice = $event.target.value" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div
-                                v-if="filteredInvoice.length === 0 && queryInvoice !== ''"
-                                class="cursor-default px-4 py-2 text-gray-500 select-none"
-                            >
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredInvoice.length === 0 && queryInvoice !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredInvoice"
-                                :key="n.id"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredInvoice" :key="n.id" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
-                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.refe_code }}</span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                v-slot="{ selected }">
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{
+                                    n.refe_code }}</span>
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -254,31 +245,27 @@ const onConfirm = async (invId: number) => {
                     <div class="relative w-full md:w-48">
                         <ComboboxInput
                             class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                            placeholder="Select MR..."
-                            :display-value="(mr) => mr?.insnumber ?? ''"
-                            @input="queryMr = $event.target.value"
-                        />
+                            placeholder="Select MR..." :display-value="(mr) => mr?.insnumber ?? ''"
+                            @input="queryMr = $event.target.value" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div v-if="filteredMr.length === 0 && queryMr !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredMr.length === 0 && queryMr !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredMr"
-                                :key="n.id"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredMr" :key="n.id" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
-                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.insnumber }}</span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                v-slot="{ selected }">
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{
+                                    n.insnumber }}</span>
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -289,34 +276,27 @@ const onConfirm = async (invId: number) => {
                     <div class="relative w-full md:w-48">
                         <ComboboxInput
                             class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                            placeholder="Select student ID..."
-                            :display-value="(invoice) => invoice?.student_id ?? ''"
-                            @input="queryInvoice = $event.target.value"
-                        />
+                            placeholder="Select student ID..." :display-value="(invoice) => invoice?.student_id ?? ''"
+                            @input="queryInvoice = $event.target.value" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div
-                                v-if="filteredStudentID.length === 0 && queryStudentID !== ''"
-                                class="cursor-default px-4 py-2 text-gray-500 select-none"
-                            >
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredStudentID.length === 0 && queryStudentID !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredStudentID"
-                                :key="n.id"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredStudentID" :key="n.id" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
-                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.student_id }}</span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                v-slot="{ selected }">
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{
+                                    n.student_id }}</span>
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -327,34 +307,27 @@ const onConfirm = async (invId: number) => {
                     <div class="relative w-full md:w-48">
                         <ComboboxInput
                             class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                            placeholder="Select invoice date..."
-                            :display-value="(invoice) => invoice?.insdate ?? ''"
-                            @input="queryInvoiceDate = $event.target.value"
-                        />
+                            placeholder="Select invoice date..." :display-value="(invoice) => invoice?.insdate ?? ''"
+                            @input="queryInvoiceDate = $event.target.value" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div
-                                v-if="filteredInvoiceDate.length === 0 && queryInvoiceDate !== ''"
-                                class="cursor-default px-4 py-2 text-gray-500 select-none"
-                            >
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredInvoiceDate.length === 0 && queryInvoiceDate !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredInvoiceDate"
-                                :key="n.id"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredInvoiceDate" :key="n.id" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
-                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.insdate }}</span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                v-slot="{ selected }">
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{
+                                    n.insdate }}</span>
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -367,29 +340,26 @@ const onConfirm = async (invId: number) => {
                             class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                             placeholder="Select Student name..."
                             :display-value="(n) => (n ? `${n.fname} ${n.lname}` : '')"
-                            @input="queryName = $event.target.value"
-                        />
+                            @input="queryName = $event.target.value" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div v-if="filteredName.length === 0 && queryName !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredName.length === 0 && queryName !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredName"
-                                :key="n.id"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredName" :key="n.id" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
-                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.fname }} {{ n.lname }} </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                v-slot="{ selected }">
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.fname
+                                }} {{ n.lname }} </span>
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -400,31 +370,27 @@ const onConfirm = async (invId: number) => {
                     <div class="relative w-full md:w-48">
                         <ComboboxInput
                             class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                            placeholder="Select student phone..."
-                            :display-value="(student) => student?.phone ?? ''"
-                            @input="queryPhone = $event.target.value"
-                        />
+                            placeholder="Select student phone..." :display-value="(student) => student?.phone ?? ''"
+                            @input="queryPhone = $event.target.value" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div v-if="filteredPhone.length === 0 && queryPhone !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredPhone.length === 0 && queryPhone !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredPhone"
-                                :key="n.student_id"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredPhone" :key="n.student_id" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
-                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.phone }}</span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                v-slot="{ selected }">
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.phone
+                                }}</span>
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -435,39 +401,39 @@ const onConfirm = async (invId: number) => {
                     <div class="relative w-full md:w-48">
                         <ComboboxInput
                             class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                            placeholder="Select status..."
-                            :display-value="(status) => status?.status ?? ''"
-                            @input="queryPhone = $event.target.value"
-                        />
+                            placeholder="Select status..." :display-value="(status) => status?.status ?? ''"
+                            @input="queryPhone = $event.target.value" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div v-if="filteredStatus.length === 0 && queryStatus !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredStatus.length === 0 && queryStatus !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredStatus"
-                                :key="n.status"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredStatus" :key="n.status" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
-                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.status }}</span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                v-slot="{ selected }">
+                                <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']"> {{ n.status
+                                }}</span>
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
                         </ComboboxOptions>
                     </div>
                 </Combobox>
-                <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+                <Button variant="outline" size="sm" @click="search">
+                    <Search></Search> Search
+                </Button>
+                <Button variant="outline" size="sm" @click="refresh">
+                    <RefreshCcw></RefreshCcw> Refresh
+                </Button>
             </div>
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                 <!-- Title -->
@@ -503,27 +469,22 @@ const onConfirm = async (invId: number) => {
                             <TableCell>{{ inv.status }}</TableCell>
                             <TableCell>
                                 <div class="group relative inline-block">
-                                    <Button
-                                        v-if="inv.status === 'Confirmed'"
-                                        class="cursor-pointer"
-                                        size="sm"
-                                        variant="outline"
-                                        @click="onReport(inv.id)"
-                                        ><FileText class="text-red-500"></FileText
-                                    ></Button>
+                                    <Button v-if="inv.status === 'Confirmed'" class="cursor-pointer" size="sm"
+                                        variant="outline" @click="onReport(inv.id)">
+                                        <FileText class="text-red-500"></FileText>
+                                    </Button>
                                     <span
-                                        class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
-                                    >
+                                        class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block">
                                         Report
                                     </span>
                                 </div>
                                 <div class="group relative inline-block">
-                                    <Button v-if="inv.status === 'Open'" class="cursor-pointer" size="sm" variant="outline" @click="onConfirm(inv.id)"
-                                        ><ShieldCheck class="text-green-500"></ShieldCheck
-                                    ></Button>
+                                    <Button v-if="inv.status === 'Open'" class="cursor-pointer" size="sm"
+                                        variant="outline" @click="onConfirm(inv.id)">
+                                        <ShieldCheck class="text-green-500"></ShieldCheck>
+                                    </Button>
                                     <span
-                                        class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block"
-                                    >
+                                        class="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform rounded bg-gray-700 px-2 py-1 text-xs whitespace-nowrap text-white group-hover:block">
                                         Report
                                     </span>
                                 </div>
@@ -531,17 +492,15 @@ const onConfirm = async (invId: number) => {
                         </TableRow>
                     </TableBody>
                 </Table>
-                <div class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
+                <div
+                    class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
                     <!-- Left -->
                     <div class="flex flex-col gap-2 text-sm text-gray-600 sm:flex-row sm:items-center">
                         <div class="flex items-center gap-2">
                             <label>Show</label>
 
-                            <select
-                                v-model="perPage"
-                                @change="changePerPage"
-                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
-                            >
+                            <select v-model="perPage" @change="changePerPage"
+                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500">
                                 <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
                                     {{ size }}
                                 </option>
@@ -553,18 +512,11 @@ const onConfirm = async (invId: number) => {
 
                     <!-- Right -->
                     <div class="flex flex-wrap justify-center gap-2 md:justify-end">
-                        <Button
-                            v-for="(link, index) in data.links"
-                            :key="index"
-                            :disabled="!link.url"
-                            size="sm"
-                            variant="outline"
-                            @click="goToPage(link.url)"
-                            :class="[
+                        <Button v-for="(link, index) in data.links" :key="index" :disabled="!link.url" size="sm"
+                            variant="outline" @click="goToPage(link.url)" :class="[
                                 link.active ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-gray-700',
                                 !link.url ? 'cursor-not-allowed opacity-50' : '',
-                            ]"
-                        >
+                            ]">
                             <span v-html="link.label"></span>
                         </Button>
                     </div>

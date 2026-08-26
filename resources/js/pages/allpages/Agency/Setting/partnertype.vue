@@ -156,36 +156,25 @@ const changePerPage = () => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
+
         <Head title="Partner Type Setup" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+            <div
+                class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
                 <!-- Header Section -->
                 <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <!-- Left Buttons -->
                     <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                        <Button
-                            class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-700"
-                            variant="outline"
-                            size="sm"
-                            @click="goToMasterCategory"
-                        >
+                        <Button class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-700"
+                            variant="outline" size="sm" @click="goToMasterCategory">
                             <CornerDownLeft class="mr-2 h-4 w-4" />
                             Back Master Category
                         </Button>
 
-                        <Button
-                            class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
-                            size="sm"
-                            @click="showDailogCreate"
-                        >
+                        <Button class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
+                            size="sm" @click="showDailogCreate">
                             <Plus class="mr-2 h-4 w-4" />
                             Partner Type
-                        </Button>
-
-                        <!-- Refresh -->
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-700" variant="outline" size="sm" @click="refresh">
-                            <RefreshCcw class="mr-2 h-4 w-4" />
-                            Refresh
                         </Button>
                     </div>
                 </div>
@@ -209,19 +198,15 @@ const changePerPage = () => {
                         </TableHeader>
 
                         <TableBody>
-                            <TableRow
-                                v-for="(patnersetup, index) in data"
-                                :key="patnersetup.id ?? index"
-                                class="transition hover:bg-gray-50 dark:hover:bg-gray-800"
-                            >
+                            <TableRow v-for="(patnersetup, index) in data" :key="patnersetup.id ?? index"
+                                class="transition hover:bg-gray-50 dark:hover:bg-gray-800">
                                 <TableCell class="font-medium">
                                     {{ patnersetup.partnertypename }}
                                 </TableCell>
 
                                 <TableCell>
                                     <span
-                                        class="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-200"
-                                    >
+                                        class="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-200">
                                         {{ patnersetup.mastercategory.catname }}
                                     </span>
                                 </TableCell>
@@ -231,19 +216,13 @@ const changePerPage = () => {
                                 </TableCell>
 
                                 <TableCell class="text-center">
-                                    <Switch
-                                        :model-value="Boolean(patnersetup.active)"
-                                        @update:model-value="(checked) => toggleStatus(patnersetup, checked)"
-                                    />
+                                    <Switch :model-value="Boolean(patnersetup.active)"
+                                        @update:model-value="(checked) => toggleStatus(patnersetup, checked)" />
                                 </TableCell>
 
                                 <TableCell class="text-center">
-                                    <Button
-                                        class="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
-                                        size="sm"
-                                        variant="outline"
-                                        @click="onDelete(patnersetup.id)"
-                                    >
+                                    <Button class="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                        size="sm" variant="outline" @click="onDelete(patnersetup.id)">
                                         <Trash class="h-4 w-4" />
                                     </Button>
                                 </TableCell>
@@ -251,7 +230,8 @@ const changePerPage = () => {
 
                             <!-- Empty State -->
                             <TableRow v-if="data.length === 0">
-                                <TableCell colspan="5" class="py-10 text-center text-gray-500"> No Partner Type Found </TableCell>
+                                <TableCell colspan="5" class="py-10 text-center text-gray-500"> No Partner Type Found
+                                </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -272,17 +252,10 @@ const changePerPage = () => {
 
                     <!-- Right -->
                     <div class="flex flex-wrap gap-2">
-                        <Button
-                            v-for="(link, index) in data.links"
-                            :key="index"
-                            :disabled="!link.url"
-                            size="sm"
-                            :class="[
-                                link.active ? 'bg-indigo-600 text-white hover:bg-indigo-700' : '',
-                                !link.url ? 'cursor-not-allowed opacity-50' : '',
-                            ]"
-                            @click="goToPage(link.url)"
-                        >
+                        <Button v-for="(link, index) in data.links" :key="index" :disabled="!link.url" size="sm" :class="[
+                            link.active ? 'bg-indigo-600 text-white hover:bg-indigo-700' : '',
+                            !link.url ? 'cursor-not-allowed opacity-50' : '',
+                        ]" @click="goToPage(link.url)">
                             <span v-html="link.label"></span>
                         </Button>
                     </div>
@@ -312,7 +285,8 @@ const changePerPage = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="master in props.mastersetup" :key="master.id" :value="master.id">
+                                        <SelectItem v-for="master in props.mastersetup" :key="master.id"
+                                            :value="master.id">
                                             {{ master.catname }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -326,13 +300,8 @@ const changePerPage = () => {
                         <!-- Partner Type Name -->
                         <div class="space-y-2">
                             <Label for="partnertypename" class="font-medium">Partner Type Name</Label>
-                            <Input
-                                id="partnertypename"
-                                v-model="form.partnertypename"
-                                placeholder="Enter Partner Type Name"
-                                class="w-full"
-                                autofocus
-                            />
+                            <Input id="partnertypename" v-model="form.partnertypename"
+                                placeholder="Enter Partner Type Name" class="w-full" autofocus />
                             <span v-if="errors?.partnertypename" class="text-sm text-red-600">
                                 {{ errors.partnertypename }}
                             </span>

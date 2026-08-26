@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\FollowUpMaster\StoreFollowUpMasterRequest;
 use App\Http\Requests\FollowUpMaster\UpdateFollowUpMasterRequest;
 use App\Models\SocialMedia\FollowUp\FollowUpMaster;
+use App\Models\SocialMedia\UserWiseForm;
+use App\Models\Student\Student;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -124,6 +127,31 @@ class FollowUpMasterController extends Controller
             FollowUpMaster::where('status', true)
                 ->orderBy('sort_order')
                 ->orderBy('name')
+                ->get()
+        );
+    }
+
+    public function userlist($userId, $student_id)
+    {
+        $student = Student::find($student_id);
+
+        if (!$student?->form_id) {
+            return response()->json([]);
+        }
+
+        $form = UserWiseForm::where('form_id', $student->form_id)
+            ->where('team_id', $userId)
+            ->first();
+
+        if (!$form) {
+            return response()->json([]);
+        }
+
+        $counselorIds = json_decode($form->counsilor_id, true);
+        return response()->json(
+            User::select('id', 'name')
+                ->whereNull('banned_at')
+                ->whereIn('id', $counselorIds)
                 ->get()
         );
     }

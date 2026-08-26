@@ -8,7 +8,6 @@ use App\Http\Requests\AttendanceStatus\StoreAttendanceStatusRequest;
 use App\Http\Requests\AttendanceStatus\UpdateAttendanceStatusRequest;
 use App\Models\HRM\Attendance;
 use App\Models\HRM\AttenDeduct;
-use App\Models\HRM\AttenSetting;
 use App\Models\HRM\Branch;
 use App\Models\HRM\HolidayDt;
 use App\Models\HRM\Leave;
@@ -19,7 +18,6 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -58,265 +56,686 @@ class AttendanceStatusController extends Controller
      */
     public function create(Request $request)
     {
-        $branchId  = $request->branch_id;
-        $yearname  = $request->yearname;
-        $monthname = $request->monthname;
-        $authUserId = Auth::id();
-
-        $employees = PersonalInfo::with(['designation', 'department'])
-            ->where('branch_id', $branchId)
-            ->where('active', 1)
-            ->orderBy('id', 'ASC')
-            ->get();
-
-        $daysInMonth = date('t', mktime(0, 0, 0, $monthname, 1, $yearname));
-
-        $dates = [];
-        for ($i = 1; $i <= $daysInMonth; $i++) {
-            $dates[] = sprintf('%04d-%02d-%02d', $yearname, $monthname, $i);
+        try {
+            $this->authorize('attendStatus.index');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.',
+            ]);
         }
 
-        $empidList = $employees->pluck('empid')->toArray();
+        $branchId  = (int) $request->branch_id;
+        $yearname  = (int) $request->yearname;
+        $monthname = (int) $request->monthname;
 
-        // 1. Load all holidays for the month in one query
-        $holidays = HolidayDt::whereIn('holidate', $dates)
-            ->pluck('holitypes')
-            ->toArray();
-
-        // 2. Load all attendance records for these employees in this month (in/out/first-time)
-        $attendanceDaily = DB::table('attendances as a')
-            ->select(
-                'a.user_id as empid',
-                DB::raw('DATE(a.record_time) as att_date'),
-                DB::raw('MIN(a.record_time) as in_time'),
-                DB::raw('MAX(a.record_time) as out_time'),
-                DB::raw('TIME(MIN(a.record_time)) as first_time')
-            )
-            ->whereIn('a.user_id', $empidList)
-            ->whereIn(DB::raw('DATE(a.record_time)'), $dates)
-            ->groupBy('a.user_id', DB::raw('DATE(a.record_time)'))
-            ->get();
-
-        $attendanceIndex = [];
-        foreach ($attendanceDaily as $row) {
-            $attendanceIndex[$row->empid . '_' . $row->att_date] = $row;
-        }
-
-        // 3. Load all approved leaves for these employees in this month
-        $leaves = DB::table('leaves')
-            ->select('empid', 'fromdate', 'todate')
-            ->where('status', 3)
-            ->whereIn('empid', $empidList)
-            ->get();
-
-        $leaveRangesByEmp = [];
-        foreach ($leaves as $leave) {
-            $leaveRangesByEmp[$leave->empid][] = [
-                'from' => $leave->fromdate,
-                'to' => $leave->todate,
-            ];
-        }
-
-        // 4. Load all active deduction rules for the branch
-        $deductRules = AttenDeduct::where('active', 1)
-            ->where('branch_id', $branchId)
-            ->get()
-            ->groupBy('branch_id');
-
-        // 5. Load active attendance settings for the branch
-        $attenSetting = AttenSetting::where('active', 1)
-            ->where('branch_id', $branchId)
-            ->first();
-
-        // 6. Load existing records to preserve payablehour/hrsurplus & avoid duplicate checks
-        $existingRecords = AttendanceStatus::where('branch_id', $branchId)
+        /*
+    |--------------------------------------------------------------------------
+    | Existing Attendance Status
+    |--------------------------------------------------------------------------
+    | Load existing monthly summary only once.
+    |
+    */
+        $existingData = AttendanceStatus::where('branch_id', $branchId)
             ->where('yearname', $yearname)
             ->where('monthname', $monthname)
             ->get()
             ->keyBy('empid');
 
-        $newRecords = [];
-        $updateRecords = [];
+        $hasExistingData = $existingData->isNotEmpty();
 
-        foreach ($employees as $emp) {
-            $presentCount       = 0;
-            $lateCount          = 0;
-            $absentCount        = 0;
-            $leaveCount         = 0;
-            $holidayCount       = 0;
-            $totalWorkSeconds   = 0;
+        /*
+    |--------------------------------------------------------------------------
+    | Employees
+    |--------------------------------------------------------------------------
+    */
+        $employees = PersonalInfo::with([
+            'designation:id,desname',
+            'department:id,deptname',
+        ])
+            ->where('branch_id', $branchId)
+            ->where('active', 1)
+            ->get([
+                'id',
+                'empid',
+                'empname',
+                'branch_id',
+                'des_id',
+                'dept_id',
+            ]);
+
+        /*
+    |--------------------------------------------------------------------------
+    | Month Date Range
+    |--------------------------------------------------------------------------
+    */
+        $startDate = Carbon::create($yearname, $monthname, 1)->startOfMonth();
+        $endDate   = $startDate->copy()->endOfMonth();
+
+        $daysInMonth = $startDate->daysInMonth;
+
+        /*
+    |--------------------------------------------------------------------------
+    | Holidays
+    |--------------------------------------------------------------------------
+    */
+        $holidays = HolidayDt::whereBetween('holidate', [
+            $startDate->toDateString(),
+            $endDate->toDateString(),
+        ])
+            ->pluck('holitypes', 'holidate');
+
+        /*
+    |--------------------------------------------------------------------------
+    | Working Hour Setup
+    |--------------------------------------------------------------------------
+    */
+        $working_hour = WorkHourSetup::where('branch_id', $branchId)
+            ->where('yearname', $yearname)
+            ->where('monthname', $monthname)
+            ->where('active', 1)
+            ->first();
+
+        if (!$working_hour) {
+            return back()->with([
+                'error' => true,
+                'message' => 'No working hour found for this branch and month.',
+            ]);
+        }
+        /*
+    |--------------------------------------------------------------------------
+    | Load Entire Month Attendance ONCE
+    |--------------------------------------------------------------------------
+    */
+        $employeeEmpIds = $employees
+            ->pluck('empid')
+            ->filter()
+            ->values();
+        $attendanceData = DB::table('attendances as a')
+            ->leftJoin(
+                'personal_infos as pi',
+                'a.user_id',
+                '=',
+                'pi.empid'
+            )
+            ->leftJoin(
+                'atten_settings as ats',
+                'pi.branch_id',
+                '=',
+                'ats.branch_id'
+            )
+            ->whereIn('a.user_id', $employeeEmpIds)
+            ->whereBetween('a.record_time', [
+                $startDate->copy()->startOfDay(),
+                $endDate->copy()->endOfDay(),
+            ])
+            ->orderBy('a.user_id')
+            ->orderBy('a.record_time')
+            ->get([
+                'a.user_id',
+                'a.record_time',
+                'ats.ptime',
+                'ats.pname',
+                'ats.ltime',
+                'ats.lname',
+            ]);
+        /*
+|--------------------------------------------------------------------------
+| Create Fast Attendance Lookup
+|--------------------------------------------------------------------------
+*/
+        $attendanceMap = [];
+
+        foreach ($attendanceData as $attendance) {
+
+            $date = Carbon::parse($attendance->record_time)
+                ->toDateString();
+
+            $key = $attendance->user_id . '|' . $date;
+
+            $attendanceMap[$key][] = $attendance;
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | Leaves
+    |--------------------------------------------------------------------------
+    |
+    | Use employee IDs because Leave.empid is assumed to reference
+    | PersonalInfo.id based on your existing code.
+    |
+    */
+        $employeeIds = $employees->pluck('id');
+
+        $allLeaves = Leave::whereIn('empid', $employeeIds)
+            ->where('status', 3)
+            ->whereDate('fromdate', '<=', $endDate)
+            ->whereDate('todate', '>=', $startDate)
+            ->get([
+                'empid',
+                'fromdate',
+                'todate',
+            ])
+            ->groupBy('empid');
+
+        /*
+    |--------------------------------------------------------------------------
+    | Local Caches
+    |--------------------------------------------------------------------------
+    |
+    | Prevent duplicate method calls during this request.
+    |
+    */
+        $allSummaryData = [];
+
+        /*
+    |--------------------------------------------------------------------------
+    | Calculate Current Summary
+    |--------------------------------------------------------------------------
+    */
+        foreach ($employees as $employee) {
+
+            $presentCount = 0;
+            $lateCount = 0;
+            $absentCount = 0;
+            $leaveCount = 0;
+
+            $totalWorkSeconds = 0;
             $totalDeductSeconds = 0;
-            $totalNetSeconds    = 0;
+            $totalNetSeconds = 0;
 
-            $empid            = $emp->empid;
-            $empLeaveRanges   = $leaveRangesByEmp[$empid] ?? [];
-            $empDeductRules   = $deductRules->get($emp->branch_id, collect());
-            $settings         = $attenSetting;
+            $employeeLeaves = $allLeaves->get(
+                $employee->id,
+                collect()
+            );
 
             for ($i = 1; $i <= $daysInMonth; $i++) {
-                $currentDate = $yearname . '-' . $monthname . '-' . str_pad($i, 2, '0', STR_PAD_LEFT);
 
-                if (isset($holidays[$currentDate])) {
-                    $holidayCount++;
+                $currentDate = sprintf(
+                    '%04d-%02d-%02d',
+                    $yearname,
+                    $monthname,
+                    $i
+                );
+
+                /*
+        |--------------------------------------------------------------------------
+        | Holiday
+        |--------------------------------------------------------------------------
+        */
+
+                if ($holidays->has($currentDate)) {
                     continue;
                 }
 
-                $key     = $empid . '_' . $currentDate;
-                $attRow  = $attendanceIndex[$key] ?? null;
 
-                $intime     = $attRow->in_time ?? null;
-                $outtime    = $attRow->out_time ?? null;
-                $firstTime  = $attRow->first_time ?? null;
-                $outtimeRaw = $outtime ? Carbon::parse($outtime) : null;
+                /*
+        |--------------------------------------------------------------------------
+        | Get Attendance From Memory
+        |--------------------------------------------------------------------------
+        */
 
-                $statusname = 'Absent';
-                if ($intime && $settings) {
-                    if ($firstTime <= $settings->ptime) {
-                        $statusname = $settings->pname ?? 'Present';
-                    } elseif ($firstTime <= $settings->ltime) {
-                        $statusname = $settings->lname ?? 'Late';
+                $key = $employee->empid . '|' . $currentDate;
+
+                $records = $attendanceMap[$key] ?? [];
+
+                $intime = null;
+                $outtime = null;
+                $statusname = '---';
+
+                if (!empty($records)) {
+
+                    /*
+            | First attendance = IN
+            */
+                    $firstRecord = $records[0];
+
+                    /*
+            | Last attendance = OUT
+            */
+                    $lastRecord = $records[count($records) - 1];
+
+                    $intime = $firstRecord->record_time;
+                    $outtime = $lastRecord->record_time;
+
+
+                    /*
+            |--------------------------------------------------------------------------
+            | Attendance Status
+            |--------------------------------------------------------------------------
+            */
+
+                    $time = Carbon::parse($intime)->format('H:i:s');
+
+                    if (
+                        $firstRecord->ptime &&
+                        $time <= $firstRecord->ptime
+                    ) {
+
+                        $statusname = $firstRecord->pname;
+                    } elseif (
+                        $firstRecord->ltime &&
+                        $time <= $firstRecord->ltime
+                    ) {
+
+                        $statusname = $firstRecord->lname;
                     } else {
+
                         $statusname = 'Absent';
                     }
                 }
 
-                $workHours = '---';
-                if ($statusname != 'Absent' && $intime && $outtime) {
-                    $diffSeconds = strtotime($outtime) - strtotime($intime);
-                    $workHours   = sprintf('%02d:%02d', floor($diffSeconds / 3600), floor(($diffSeconds % 3600) / 60));
+
+                /*
+        |--------------------------------------------------------------------------
+        | Work Hours
+        |--------------------------------------------------------------------------
+        */
+
+                $workSeconds = 0;
+
+                if (
+                    $statusname !== 'Absent' &&
+                    $intime &&
+                    $outtime
+                ) {
+
+                    $workSeconds = max(
+                        0,
+                        strtotime($outtime) - strtotime($intime)
+                    );
+
+                    $totalWorkSeconds += $workSeconds;
                 }
 
-                if ($outtimeRaw && $outtimeRaw->lt(Carbon::parse($currentDate . ' 15:00:00'))) {
+
+                /*
+        |--------------------------------------------------------------------------
+        | Out Before 3 PM = Absent
+        |--------------------------------------------------------------------------
+        */
+
+                if (
+                    $outtime &&
+                    Carbon::parse($outtime)->lt(
+                        Carbon::parse(
+                            $currentDate . ' 15:00:00'
+                        )
+                    )
+                ) {
                     $statusname = 'Absent';
                 }
 
-                $deduct = '---';
-                if ($intime) {
-                    $getintime = date('h:i:s', strtotime($intime));
-                    foreach ($empDeductRules as $rule) {
-                        if ($getintime >= $rule->starttime && $getintime <= $rule->endtime) {
-                            $deduct = $rule->deduct;
-                            break;
-                        }
-                    }
-                    if ($deduct == 0) {
-                        $deduct = '---';
-                    }
-                }
 
-                $onLeave = false;
-                foreach ($empLeaveRanges as $range) {
-                    if ($currentDate >= $range['from'] && $currentDate <= $range['to']) {
-                        $onLeave = true;
-                        break;
+                /*
+        |--------------------------------------------------------------------------
+        | Leave
+        |--------------------------------------------------------------------------
+        */
+
+                $isLeave = $employeeLeaves->contains(
+                    function ($leave) use ($currentDate) {
+
+                        return $currentDate >= $leave->fromdate
+                            && $currentDate <= $leave->todate;
                     }
-                }
-                if ($onLeave) {
+                );
+
+                if ($isLeave) {
                     $statusname = 'Leave';
                 }
 
-                if ($statusname == 'Present')      $presentCount++;
-                elseif ($statusname == 'Late')     $lateCount++;
-                elseif ($statusname == 'Absent')   $absentCount++;
-                elseif ($statusname == 'Leave')    $leaveCount++;
 
-                if ($workHours && preg_match('/^(\d{1,2}):(\d{2})$/', $workHours)) {
-                    [$h, $m] = explode(':', $workHours);
-                    $workSec = ($h * 3600) + ($m * 60);
+                /*
+        |--------------------------------------------------------------------------
+        | Status Count
+        |--------------------------------------------------------------------------
+        */
 
-                    if (is_numeric($deduct)) {
-                        $deductSec = $deduct * 3600;
-                    } elseif ($deduct && preg_match('/^(\d{1,2}):(\d{2})$/', $deduct)) {
-                        [$dh, $dm] = explode(':', $deduct);
-                        $deductSec = ($dh * 3600) + ($dm * 60);
-                    } else {
-                        $deductSec = 0;
-                    }
+                match ($statusname) {
 
-                    $netSec = max(0, $workSec - $deductSec);
-                    $totalWorkSeconds   += $workSec;
-                    $totalDeductSeconds += $deductSec;
-                    $totalNetSeconds    += $netSec;
+                    'Present' => $presentCount++,
+
+                    'Late' => $lateCount++,
+
+                    'Absent' => $absentCount++,
+
+                    'Leave' => $leaveCount++,
+
+                    default => null,
+                };
+
+
+                /*
+        |--------------------------------------------------------------------------
+        | Deduct
+        |--------------------------------------------------------------------------
+        */
+
+                $getintime = $intime
+                    ? date('H:i:s', strtotime($intime))
+                    : '---';
+
+                $deduct = AttenDeduct::getDeductHour(
+                    $employee->branch_id,
+                    $getintime
+                ) ?: 0;
+
+
+                if (is_numeric($deduct)) {
+
+                    $deductSeconds = (float) $deduct * 3600;
+                } elseif (
+                    is_string($deduct) &&
+                    preg_match(
+                        '/^(\d{1,2}):(\d{2})$/',
+                        $deduct,
+                        $matches
+                    )
+                ) {
+
+                    $deductSeconds =
+                        ($matches[1] * 3600)
+                        + ($matches[2] * 60);
+                } else {
+
+                    $deductSeconds = 0;
+                }
+
+
+                $totalDeductSeconds += $deductSeconds;
+
+
+                /*
+        |--------------------------------------------------------------------------
+        | Net Work
+        |--------------------------------------------------------------------------
+        */
+
+                if ($workSeconds > 0) {
+
+                    $totalNetSeconds += max(
+                        0,
+                        $workSeconds - $deductSeconds
+                    );
                 }
             }
 
-            $totalWorkFormatted   = sprintf('%02d:%02d', floor($totalWorkSeconds / 3600),   floor(($totalWorkSeconds % 3600) / 60));
-            $totalDeductFormatted = sprintf('%02d:%02d', floor($totalDeductSeconds / 3600), floor(($totalDeductSeconds % 3600) / 60));
+            /*
+        |--------------------------------------------------------------------------
+        | Final Net Calculation
+        |--------------------------------------------------------------------------
+        */
+            $finalNetSeconds = max(
+                0,
+                $totalNetSeconds
+                    + ($leaveCount * 8 * 3600)
+                    - ($absentCount * 8 * 3600)
+            );
 
-            $absentSec       = $absentCount * 8 * 3600;
-            $leaveSec        = $leaveCount  * 8 * 3600;
-            $finalNetSeconds = max(0, $totalNetSeconds + $leaveSec - $absentSec);
-            $netFormatted    = sprintf('%02d:%02d', floor($finalNetSeconds / 3600), floor(($finalNetSeconds % 3600) / 60));
+            /*
+        |--------------------------------------------------------------------------
+        | New Summary
+        |--------------------------------------------------------------------------
+        */
+            $allSummaryData[$employee->empid] = [
+                'empid'       => $employee->empid,
+                'branch_id'   => $branchId,
+                'yearname'    => $yearname,
+                'monthname'   => $monthname,
 
-            $workDays        = $daysInMonth - $holidayCount;
-            $workhourSec     = $workDays * 8 * 3600;
-            $workhourFormatted = sprintf('%02d:%02d', floor($workhourSec / 3600), floor(($workhourSec % 3600) / 60));
+                'workhour'    => $working_hour->workhour,
 
-            $updates = [
-                'workhour'    => $workhourFormatted,
-                'totalhour'   => $totalWorkFormatted,
-                'deducthour'  => $totalDeductFormatted,
-                'nethour'     => $netFormatted,
                 'absent'      => $absentCount,
                 'leave'       => $leaveCount,
-                'active'      => 1,
-                'user_id'     => $authUserId,
+
+                'totalhour'   => sprintf(
+                    '%02d:%02d',
+                    floor($totalWorkSeconds / 3600),
+                    floor(($totalWorkSeconds % 3600) / 60)
+                ),
+
+                'deducthour'  => sprintf(
+                    '%02d:%02d',
+                    floor($totalDeductSeconds / 3600),
+                    floor(($totalDeductSeconds % 3600) / 60)
+                ),
+
+                'nethour'     => sprintf(
+                    '%02d:%02d',
+                    floor($finalNetSeconds / 3600),
+                    floor(($finalNetSeconds % 3600) / 60)
+                ),
+
+                'payablehour' => sprintf(
+                    '%02d:%02d',
+                    floor($finalNetSeconds / 3600),
+                    floor(($finalNetSeconds % 3600) / 60)
+                ),
+
+                'active'      => '0',
+                'user_id'     => Auth::id(),
+                'updated_at'  => now(),
             ];
+        }
 
-            $existing = AttendanceStatus::where('empid', $empid)
-                ->where('branch_id', $branchId)
-                ->where('yearname', $yearname)
-                ->where('monthname', $monthname)
-                ->first();
+        /*
+    |--------------------------------------------------------------------------
+    | Existing Data Comparison
+    |--------------------------------------------------------------------------
+    |
+    | Only compare these calculated fields.
+    |
+    */
+        $hasMismatch = false;
+        $mismatchEmployees = [];
 
-            if ($existing) {
-                $existing->update($updates);
-            } else {
-                AttendanceStatus::create(array_merge($updates, [
-                    'empid'       => $empid,
-                    'branch_id'   => $branchId,
-                    'yearname'    => $yearname,
-                    'monthname'   => $monthname,
-                    'payablehour' => $netFormatted,
-                ]));
+        $compareFields = [
+            'workhour',
+            'totalhour',
+            'deducthour',
+            'nethour',
+            'absent',
+            'leave',
+        ];
+
+        /*
+    |--------------------------------------------------------------------------
+    | Check New Employees / Changed Employees
+    |--------------------------------------------------------------------------
+    */
+        foreach ($allSummaryData as $empid => $newData) {
+
+            $oldData = $existingData->get($empid);
+
+            /*
+        | Existing database no record found
+        */
+            if (!$oldData) {
+
+                $hasMismatch = true;
+
+                $mismatchEmployees[] = $empid;
+
+                continue;
+            }
+
+            /*
+        | Compare calculated fields
+        */
+            foreach ($compareFields as $field) {
+
+                $oldValue = (string) ($oldData->{$field} ?? '');
+                $newValue = (string) ($newData[$field] ?? '');
+
+                if ($oldValue !== $newValue) {
+
+                    $hasMismatch = true;
+
+                    $mismatchEmployees[] = $empid;
+
+                    break;
+                }
             }
         }
 
-        return Inertia::render('allpages/hrm/attendanceStatusview', [
-            'alldata' => AttendanceStatus::with(['employee.designation', 'employee.department'])
-                ->where('branch_id', $branchId)
-                ->where('yearname', $yearname)
-                ->where('monthname', $monthname)
-                ->get(),
-            'monthname' => (int) $monthname,
-            'yearname'  => (int) $yearname,
-            'branch_id' => (int) $branchId,
-        ]);
-    }
+        /*
+    |--------------------------------------------------------------------------
+    | Check Old Employees Missing From Current Employees
+    |--------------------------------------------------------------------------
+    |
+    | Example:
+    | Old summary has EMP001
+    | But current active employee list doesn't have EMP001.
+    |
+    */
+        foreach ($existingData->keys() as $oldEmpId) {
 
+            if (!isset($allSummaryData[$oldEmpId])) {
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreAttendanceStatusRequest $request)
-    {
-        //
-    }
+                $hasMismatch = true;
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(AttendanceStatus $attendanceStatus)
-    {
-        //
-    }
+                $mismatchEmployees[] = $oldEmpId;
+            }
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(AttendanceStatus $attendanceStatus)
-    {
-        //
+        $mismatchEmployees = array_values(
+            array_unique($mismatchEmployees)
+        );
+
+        /*
+    |--------------------------------------------------------------------------
+    | EXISTING DATA + MISMATCH
+    |--------------------------------------------------------------------------
+    |
+    | IMPORTANT:
+    | Do NOT update database.
+    |
+    */
+        if ($hasExistingData && $hasMismatch) {
+
+            return Inertia::render(
+                'allpages/hrm/attendanceStatusview',
+                [
+                    'alldata' => AttendanceStatus::with([
+                        'employee.designation',
+                        'employee.department',
+                    ])
+                        ->where('branch_id', $branchId)
+                        ->where('yearname', $yearname)
+                        ->where('monthname', $monthname)
+                        ->get(),
+
+                    'monthname' => $monthname,
+                    'yearname'   => $yearname,
+                    'branch_id'  => $branchId,
+
+                    'hasExistingData' => true,
+                    'dataMismatch'    => true,
+
+                    'mismatchEmployees' => $mismatchEmployees,
+
+                    'error' => true,
+
+                    'message' =>
+                    'Attendance Status for this month has already been generated, ' .
+                        'but some information does not match the current Attendance Data.' .
+                        'Please delete the existing data and generate it again.',
+                ]
+            );
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | EXISTING DATA + EVERYTHING SAME
+    |--------------------------------------------------------------------------
+    |
+    | No need to update database.
+    |
+    */
+        if ($hasExistingData) {
+
+            return Inertia::render(
+                'allpages/hrm/attendanceStatusview',
+                [
+                    'alldata' => AttendanceStatus::with([
+                        'employee.designation',
+                        'employee.department',
+                    ])
+                        ->where('branch_id', $branchId)
+                        ->where('yearname', $yearname)
+                        ->where('monthname', $monthname)
+                        ->get(),
+
+                    'monthname' => $monthname,
+                    'yearname'   => $yearname,
+                    'branch_id'  => $branchId,
+
+                    'hasExistingData' => true,
+                    'dataMismatch'    => false,
+
+                    'error' => false,
+                ]
+            );
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | NO EXISTING DATA
+    |--------------------------------------------------------------------------
+    |
+    | First time generation.
+    |
+    */
+        AttendanceStatus::upsert(
+            array_values($allSummaryData),
+            [
+                'empid',
+                'branch_id',
+                'yearname',
+                'monthname',
+            ],
+            [
+                'workhour',
+                'totalhour',
+                'deducthour',
+                'nethour',
+                'payablehour',
+                'absent',
+                'leave',
+                'active',
+                'user_id',
+                'updated_at',
+            ]
+        );
+
+        /*
+    |--------------------------------------------------------------------------
+    | Final Response
+    |--------------------------------------------------------------------------
+    */
+        return Inertia::render(
+            'allpages/hrm/attendanceStatusview',
+            [
+                'alldata' => AttendanceStatus::with([
+                    'employee.designation',
+                    'employee.department',
+                ])
+                    ->where('branch_id', $branchId)
+                    ->where('yearname', $yearname)
+                    ->where('monthname', $monthname)
+                    ->get(),
+
+                'monthname' => $monthname,
+                'yearname'   => $yearname,
+                'branch_id'  => $branchId,
+
+                'hasExistingData' => false,
+                'dataMismatch'    => false,
+
+                'error' => false,
+            ]
+        );
     }
 
     /**
@@ -324,44 +743,72 @@ class AttendanceStatusController extends Controller
      */
     public function update(Request $request, AttendanceStatus $attendanceStatus)
     {
-
-
         try {
             $this->authorize('attendStatus.update');
         } catch (AuthorizationException $e) {
             return back()->with([
                 'error' => true,
-                'message' => 'You are not authorized to access this page.'
+                'message' => 'You are not authorized to access this page.',
             ]);
         }
 
-        // Load record
-        $sql = AttendanceStatus::find($attendanceStatus->id);
-        if (! $sql) {
-            return back()->with(['error' => true, 'message' => 'Record not found']);
+        if (!$attendanceStatus->exists) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Attendance record not found.',
+            ]);
         }
 
-        // Normalize both values to minutes
-        $payableMinutes = $this->toMinutesFlexible($sql->nethour);   // handles "198:37", "198.37", 198.37, "198"
-        $inputMinutes   = $this->toMinutesFlexible($request->hrsurplus); // handles "11", "11.12", "10:12", "10.12", etc.
+        /*
+    |--------------------------------------------------------------------------
+    | Calculate Payable Hour
+    |--------------------------------------------------------------------------
+    */
+        $payableMinutes = $this->toMinutesFlexible(
+            $attendanceStatus->nethour
+        );
 
-        // Add minutes
+        $inputMinutes = $this->toMinutesFlexible(
+            $request->hrsurplus
+        );
+
         $totalMinutes = $payableMinutes + $inputMinutes;
 
-        // Convert back to HH:MM
         $finalHHMM = $this->minutesToHHMM($totalMinutes);
 
-        // Update DB (you can store hrsurplus raw input or normalized string as needed)
-        $attendanceStatus->update([
-            'hrsurplus'   => $request->hrsurplus,   // original input (optional)
+        /*
+    |--------------------------------------------------------------------------
+    | Update
+    |--------------------------------------------------------------------------
+    */
+        $updated = $attendanceStatus->update([
+            'hrsurplus'   => $request->hrsurplus,
             'payablehour' => $finalHHMM,
+            'active' => 1,
+            'updated_at'  => now(),
         ]);
 
-        return redirect()->route('attendanceStatus.create', [
-            'branch_id' => $request->branch_id,
-            'monthname' => $request->monthname,
-            'yearname'  => $request->yearname,
-        ])->with('success', 'Pay slip successfully updated');
+        if (!$updated) {
+            return back()->with([
+                'error' => true,
+                'message' => 'Failed to update attendance record.',
+            ]);
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | Redirect back to Attendance Status page
+    |--------------------------------------------------------------------------
+    */
+        return back()->with([
+            'success' => true,
+            'message' => 'Attendance record updated successfully.',
+            'updated_record' => [
+                'id' => $attendanceStatus->id,
+                'hrsurplus' => $attendanceStatus->hrsurplus,
+                'payablehour' => $attendanceStatus->payablehour,
+            ],
+        ]);
     }
 
 
@@ -448,12 +895,32 @@ class AttendanceStatusController extends Controller
     }
 
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(AttendanceStatus $attendanceStatus)
+    public function destroy(Request $request)
     {
-        //
+        try {
+            $this->authorize('attendStatus.destroy');
+        } catch (AuthorizationException $e) {
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to delete attendance status.',
+            ]);
+        }
+
+        $branchId  = (int) $request->branch_id;
+        $yearname  = (int) $request->yearname;
+        $monthname = (int) $request->monthname;
+
+        $deleted = AttendanceStatus::where('branch_id', $branchId)
+            ->where('yearname', $yearname)
+            ->where('monthname', $monthname)
+            ->delete();
+
+        return back()->with([
+            'error' => false,
+            'message' => $deleted
+                ? 'Attendance Status data deleted successfully. You can generate it again.'
+                : 'No Attendance Status data found to delete.',
+        ]);
     }
 
     public function createMonth()

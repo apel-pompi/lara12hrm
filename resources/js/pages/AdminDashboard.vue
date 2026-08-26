@@ -783,10 +783,14 @@ const accountCardTheme = (index: number) =>
 
 
                     <!-- Performance List -->
+
                     <div v-else class="max-h-[65vh] overflow-y-auto p-4 sm:p-5">
                         <div class="grid grid-cols-1 gap-3">
-                            <div v-for="(counselor, index) in counselorPerformanceList" :key="counselor.user_id"
-                                class="group relative overflow-hidden rounded-lg border border-gray-100 bg-white p-3 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-4 dark:border-gray-800 dark:bg-gray-900">
+
+                            <!-- 2. Make the Link the repeating element -->
+                            <Link v-for="(counselor, index) in counselorPerformanceList" :key="counselor.user_id"
+                                :href="route('follow-up-notifications.all', counselor.user_id)"
+                                class="group relative block overflow-hidden rounded-lg border border-gray-100 bg-white p-3 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md sm:p-4 dark:border-gray-800 dark:bg-gray-900">
                                 <span class="absolute inset-x-0 top-0 h-[3px]"
                                     :class="counselorCardTheme(index).barClass"></span>
 
@@ -892,10 +896,9 @@ const accountCardTheme = (index: number) =>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         </div>
                     </div>
-
                 </div>
                 <!--Accounts Overview Section -->
                 <div

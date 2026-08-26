@@ -156,36 +156,25 @@ const changePerPage = () => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
+
         <Head title="Product Type Setup" />
         <AgencyLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+            <div
+                class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
                 <!-- Header -->
                 <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <!-- Left Buttons -->
                     <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                        <Button
-                            class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-700"
-                            variant="outline"
-                            size="sm"
-                            @click="goToMasterCategory"
-                        >
+                        <Button class="w-full sm:w-auto dark:bg-black dark:text-white dark:hover:bg-gray-700"
+                            variant="outline" size="sm" @click="goToMasterCategory">
                             <CornerDownLeft class="mr-2 h-4 w-4" />
                             Back Master Category
                         </Button>
 
-                        <Button
-                            class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
-                            size="sm"
-                            @click="showDailogCreate"
-                        >
+                        <Button class="w-full bg-blue-600 text-white hover:bg-blue-700 sm:w-auto dark:bg-blue-500"
+                            size="sm" @click="showDailogCreate">
                             <Plus class="mr-2 h-4 w-4" />
                             Product Type
-                        </Button>
-
-                        <!-- Refresh -->
-                        <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-700" variant="outline" size="sm" @click="refresh">
-                            <RefreshCcw class="mr-2 h-4 w-4" />
-                            Refresh
                         </Button>
                     </div>
                 </div>
@@ -209,19 +198,15 @@ const changePerPage = () => {
                         </TableHeader>
 
                         <TableBody>
-                            <TableRow
-                                v-for="(productsetup, index) in data"
-                                :key="productsetup.id ?? index"
-                                class="transition hover:bg-gray-50 dark:hover:bg-gray-800"
-                            >
+                            <TableRow v-for="(productsetup, index) in data" :key="productsetup.id ?? index"
+                                class="transition hover:bg-gray-50 dark:hover:bg-gray-800">
                                 <TableCell class="font-medium">
                                     {{ productsetup.producttypename }}
                                 </TableCell>
 
                                 <TableCell>
                                     <span
-                                        class="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-200"
-                                    >
+                                        class="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-200">
                                         {{ productsetup.mastercategory.catname }}
                                     </span>
                                 </TableCell>
@@ -231,19 +216,13 @@ const changePerPage = () => {
                                 </TableCell>
 
                                 <TableCell class="text-center">
-                                    <Switch
-                                        :model-value="Boolean(productsetup.active)"
-                                        @update:model-value="(checked) => toggleStatus(productsetup, checked)"
-                                    />
+                                    <Switch :model-value="Boolean(productsetup.active)"
+                                        @update:model-value="(checked) => toggleStatus(productsetup, checked)" />
                                 </TableCell>
 
                                 <TableCell class="text-center">
-                                    <Button
-                                        class="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
-                                        size="sm"
-                                        variant="outline"
-                                        @click="onDelete(productsetup.id)"
-                                    >
+                                    <Button class="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                        size="sm" variant="outline" @click="onDelete(productsetup.id)">
                                         <Trash class="h-4 w-4" />
                                     </Button>
                                 </TableCell>
@@ -251,7 +230,8 @@ const changePerPage = () => {
 
                             <!-- Empty State -->
                             <TableRow v-if="data.length === 0">
-                                <TableCell colspan="5" class="py-10 text-center text-gray-500"> No Product Type Found </TableCell>
+                                <TableCell colspan="5" class="py-10 text-center text-gray-500"> No Product Type Found
+                                </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -271,17 +251,10 @@ const changePerPage = () => {
 
                     <!-- Right -->
                     <div class="flex flex-wrap gap-2">
-                        <Button
-                            v-for="(link, index) in data.links"
-                            :key="index"
-                            :disabled="!link.url"
-                            size="sm"
-                            :class="[
-                                link.active ? 'bg-indigo-600 text-white hover:bg-indigo-700' : '',
-                                !link.url ? 'cursor-not-allowed opacity-50' : '',
-                            ]"
-                            @click="goToPage(link.url)"
-                        >
+                        <Button v-for="(link, index) in data.links" :key="index" :disabled="!link.url" size="sm" :class="[
+                            link.active ? 'bg-indigo-600 text-white hover:bg-indigo-700' : '',
+                            !link.url ? 'cursor-not-allowed opacity-50' : '',
+                        ]" @click="goToPage(link.url)">
                             <span v-html="link.label"></span>
                         </Button>
                     </div>
@@ -291,7 +264,8 @@ const changePerPage = () => {
             <Dialog v-model:open="showDialog">
                 <DialogContent class="w-full max-w-lg rounded-2xl p-6 sm:max-w-xl md:max-w-2xl">
                     <DialogHeader class="border-b pb-4">
-                        <DialogTitle class="text-xl font-semibold">{{ isEditMode ? 'Edit Product Type' : 'Create Product Type' }}</DialogTitle>
+                        <DialogTitle class="text-xl font-semibold">
+                            {{ isEditMode ? 'Edit Product Type' : 'Create Product Type' }}</DialogTitle>
                         <DialogDescription class="text-sm text-gray-500">
                             Make changes to your partner type here. Click save when you're done.
                         </DialogDescription>
@@ -307,19 +281,23 @@ const changePerPage = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="master in props.mastersetup" :key="master.id" :value="master.id">
+                                        <SelectItem v-for="master in props.mastersetup" :key="master.id"
+                                            :value="master.id">
                                             {{ master.catname }}
                                         </SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
-                            <span v-if="errors?.mastercaterory_id" class="text-sm text-red-600">{{ errors.mastercaterory_id }}</span>
+                            <span v-if="errors?.mastercaterory_id" class="text-sm text-red-600">{{
+                                errors.mastercaterory_id }}</span>
                         </div>
                         <!-- Partner Type Name -->
                         <div class="space-y-2">
                             <Label for="producttypename">Product Type Name</Label>
-                            <Input class="w-full" placeholder="Enter Product Type Name" id="catname" v-model="form.producttypename" autofocus />
-                            <span v-if="errors?.producttypename" class="text-sm text-red-600">{{ errors.producttypename }}</span>
+                            <Input class="w-full" placeholder="Enter Product Type Name" id="catname"
+                                v-model="form.producttypename" autofocus />
+                            <span v-if="errors?.producttypename" class="text-sm text-red-600">{{ errors.producttypename
+                            }}</span>
                         </div>
                     </div>
 

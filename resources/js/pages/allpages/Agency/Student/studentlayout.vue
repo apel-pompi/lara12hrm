@@ -14,7 +14,7 @@ import { getLocalTimeZone, today } from '@internationalized/date';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import axios from 'axios';
-import { AlertCircle, CornerDownLeft, Loader2, Phone, Save } from 'lucide-vue-next';
+import { AlertCircle, Loader2, Phone, Save } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import StudentSidebar from './StudentSidebar.vue';
@@ -47,15 +47,7 @@ const pending = [
     {
         title: 'Check-in Logs',
         href: route('studentCheckin.index', props.student.id),
-    },
-    {
-        title: 'Facebook Chat',
-        href: route('studentChat.index', props.student.id),
-    },
-    {
-        title: 'WhatsApp Chat',
-        href: route('studentWhatsapp.index', props.student.id),
-    },
+    }
 ];
 const lead = [
     {
@@ -81,14 +73,6 @@ const lead = [
     {
         title: 'Check-in Logs',
         href: route('studentCheckin.index', props.student.id),
-    },
-    {
-        title: 'Facebook Chat',
-        href: route('studentChat.index', props.student.id),
-    },
-    {
-        title: 'WhatsApp Chat',
-        href: route('studentWhatsapp.index', props.student.id),
     },
 ];
 
@@ -126,14 +110,6 @@ const prospect = [
         title: 'Check-in Logs',
         href: route('studentCheckin.index', props.student.id),
     },
-    {
-        title: 'Facebook Chat',
-        href: route('studentChat.index', props.student.id),
-    },
-    {
-        title: 'WhatsApp Chat',
-        href: route('studentWhatsapp.index', props.student.id),
-    },
 ];
 const onBoard = [
     {
@@ -168,15 +144,7 @@ const onBoard = [
     {
         title: 'Check-in Logs',
         href: route('studentCheckin.index', props.student.id),
-    },
-    {
-        title: 'Facebook Chat',
-        href: route('studentChat.index', props.student.id),
-    },
-    {
-        title: 'WhatsApp Chat',
-        href: route('studentWhatsapp.index', props.student.id),
-    },
+    }
 ];
 
 const archive = [
@@ -211,14 +179,6 @@ const archive = [
     {
         title: 'Educations',
         href: route('studentEducations.index', props.student.id),
-    },
-    {
-        title: 'Facebook Chat',
-        href: route('studentChat.index', props.student.id),
-    },
-    {
-        title: 'WhatsApp Chat',
-        href: route('studentWhatsapp.index', props.student.id),
     },
 ];
 
@@ -261,9 +221,7 @@ const isActiveTab = (href: string) => {
     return currentUrl.value.startsWith(clean);
 };
 
-const goToStudent = () => {
-    router.visit('/student');
-};
+
 
 const updateRate = (status: number) => {
     router.put(
@@ -593,63 +551,35 @@ const updateStudent = () => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="relative min-h-screen flex-1 bg-gray-50 dark:bg-gray-950">
-            <!-- Page Header -->
-            <div class="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <h1 class="text-base font-semibold text-gray-900 dark:text-gray-100">Student Activities</h1>
-                        <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Manage student activities and account settings</p>
-                    </div>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        @click="goToStudent"
-                        class="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                    >
-                        <CornerDownLeft class="h-3.5 w-3.5" />
-                        Back to Students
-                    </Button>
-                </div>
-            </div>
+        <div class="app-page">
 
             <div class="flex flex-col gap-4 p-4 lg:flex-row lg:items-start">
                 <!-- LEFT SIDEBAR -->
-                <StudentSidebar
-                    :student="student"
-                    :getStatusText="getStatusText"
-                    :updateArchive="updateArchive"
-                    :updateRate="updateRate"
-                    :editStudent="editDialogCreate"
-                    :showDailogCreate="showDailogCreate"
-                    :updateTransfer="updateTransfer"
-                    :updateonBoard="updateonBoard"
-                    :studentService="studentService"
-                />
+                <StudentSidebar :student="student" :getStatusText="getStatusText" :updateArchive="updateArchive"
+                    :updateRate="updateRate" :editStudent="editDialogCreate" :showDailogCreate="showDailogCreate"
+                    :updateTransfer="updateTransfer" :updateonBoard="updateonBoard" :studentService="studentService" />
 
                 <!-- MAIN CONTENT -->
                 <main class="flex min-w-0 flex-1 flex-col gap-4">
                     <!-- Navigation Tabs -->
-                    <nav class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                    <nav
+                        class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
                         <div class="flex flex-wrap gap-1 p-2">
-                            <Link
-                                v-for="item in sidebarNavItems"
-                                :key="item.href"
-                                :href="item.href"
+                            <Link v-for="item in sidebarNavItems" :key="item.href" :href="item.href"
                                 class="relative rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-150"
                                 :class="{
                                     'bg-indigo-600 text-white shadow-sm': isActiveTab(item.href),
                                     'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200':
                                         !isActiveTab(item.href),
-                                }"
-                            >
+                                }">
                                 {{ item.title }}
                             </Link>
                         </div>
                     </nav>
 
                     <!-- Content Card -->
-                    <section class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+                    <section
+                        class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
                         <slot />
                     </section>
                 </main>
@@ -714,9 +644,12 @@ const updateStudent = () => {
                 <div class="grid gap-6">
                     <!-- Select Document Type -->
                     <div class="grid gap-2">
-                        <Label for="doctype">why doing you transfer this student ? <span class="text-red-500">*</span></Label>
+                        <Label for="doctype">why doing you transfer this student ? <span
+                                class="text-red-500">*</span></Label>
                         <Textarea v-model="Transferform.details" id="paddress" placeholder="Please write details" />
-                        <span v-if="Transferform.errors.details" class="text-sm text-red-600">{{ Transferform.errors.details }}</span>
+                        <span v-if="Transferform.errors.details" class="text-sm text-red-600">{{
+                            Transferform.errors.details
+                        }}</span>
                     </div>
                 </div>
 
@@ -740,19 +673,22 @@ const updateStudent = () => {
         </Dialog>
 
         <Dialog v-model:open="editDialog">
-            <DialogContent class="max-h-[90vh] max-w-206.25 overflow-y-auto bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+            <DialogContent
+                class="max-h-[90vh] max-w-206.25 overflow-y-auto bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                 <!-- Header -->
                 <DialogHeader class="border-b border-gray-200 pb-4 dark:border-gray-700">
-                    <DialogTitle class="text-xl font-bold text-gray-900 dark:text-white">Student Information Update</DialogTitle>
-                    <DialogDescription class="text-gray-600 dark:text-gray-400"
-                        >Update student details and click save when you're done.</DialogDescription
-                    >
+                    <DialogTitle class="text-xl font-bold text-gray-900 dark:text-white">Student Information Update
+                    </DialogTitle>
+                    <DialogDescription class="text-gray-600 dark:text-gray-400">Update student details and click save
+                        when
+                        you're done.</DialogDescription>
                 </DialogHeader>
 
                 <!-- Main Form Content -->
                 <div class="space-y-8 py-4">
                     <!-- Personal Details -->
-                    <section class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                    <section
+                        class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
                         <h2 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-white">
                             <User class="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                             Personal Details
@@ -765,45 +701,33 @@ const updateStudent = () => {
                                     <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         First Name <span class="text-red-500">*</span>
                                     </Label>
-                                    <Input
-                                        v-model="form.fname"
-                                        type="text"
-                                        placeholder="Enter first name"
-                                        class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
-                                    />
-                                    <span v-if="form.errors.fname" class="text-sm text-red-600 dark:text-red-400">{{ form.errors.fname }}</span>
+                                    <Input v-model="form.fname" type="text" placeholder="Enter first name"
+                                        class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400" />
+                                    <span v-if="form.errors.fname" class="text-sm text-red-600 dark:text-red-400">{{
+                                        form.errors.fname }}</span>
                                 </div>
 
                                 <div class="space-y-2">
                                     <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Last Name <span class="text-red-500">*</span>
                                     </Label>
-                                    <Input
-                                        v-model="form.lname"
-                                        placeholder="Enter last name"
-                                        type="text"
-                                        class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
-                                    />
-                                    <span v-if="form.errors.lname" class="text-sm text-red-600 dark:text-red-400">{{ form.errors.lname }}</span>
+                                    <Input v-model="form.lname" placeholder="Enter last name" type="text"
+                                        class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400" />
+                                    <span v-if="form.errors.lname" class="text-sm text-red-600 dark:text-red-400">{{
+                                        form.errors.lname }}</span>
                                 </div>
 
                                 <div class="space-y-2">
                                     <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Date Of Birth <span class="text-red-500">*</span>
                                     </Label>
-                                    <VueDatePicker
-                                        v-model="dob"
-                                        :max-date="maxDate"
-                                        :format="'yyyy-MM-dd'"
-                                        :enable-time-picker="false"
-                                        placeholder="Select date of birth"
-                                        auto-apply
-                                        class="w-full"
-                                        :dark="isDarkMode"
-                                    />
-                                    <span v-if="form.errors.dateofbirth" class="text-sm text-red-600 dark:text-red-400">{{
-                                        form.errors.dateofbirth
-                                    }}</span>
+                                    <VueDatePicker v-model="dob" :max-date="maxDate" :format="'yyyy-MM-dd'"
+                                        :enable-time-picker="false" placeholder="Select date of birth" auto-apply
+                                        class="w-full" :dark="isDarkMode" />
+                                    <span v-if="form.errors.dateofbirth"
+                                        class="text-sm text-red-600 dark:text-red-400">{{
+                                            form.errors.dateofbirth
+                                        }}</span>
                                 </div>
 
                                 <div class="space-y-2">
@@ -812,32 +736,34 @@ const updateStudent = () => {
                                     </Label>
                                     <Select v-model="form.gender">
                                         <SelectTrigger
-                                            class="w-full border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                        >
+                                            class="w-full border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                             <SelectValue placeholder="Select Gender" />
                                         </SelectTrigger>
-                                        <SelectContent class="border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
+                                        <SelectContent
+                                            class="border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-700">
                                             <SelectGroup>
-                                                <SelectItem value="1" class="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                                    >Male</SelectItem
-                                                >
-                                                <SelectItem value="2" class="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                                    >Female</SelectItem
-                                                >
-                                                <SelectItem value="3" class="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                                    >Other</SelectItem
-                                                >
+                                                <SelectItem value="1"
+                                                    class="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600">
+                                                    Male</SelectItem>
+                                                <SelectItem value="2"
+                                                    class="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600">
+                                                    Female</SelectItem>
+                                                <SelectItem value="3"
+                                                    class="text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600">
+                                                    Other</SelectItem>
                                             </SelectGroup>
                                         </SelectContent>
                                     </Select>
-                                    <span v-if="form.errors.gender" class="text-sm text-red-600 dark:text-red-400">{{ form.errors.gender }}</span>
+                                    <span v-if="form.errors.gender" class="text-sm text-red-600 dark:text-red-400">{{
+                                        form.errors.gender }}</span>
                                 </div>
                             </div>
                         </div>
                     </section>
 
                     <!-- Contact Details -->
-                    <section class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                    <section
+                        class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
                         <h2 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-white">
                             <Phone class="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                             Contact Details
@@ -845,38 +771,37 @@ const updateStudent = () => {
 
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                             <div class="space-y-2">
-                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</Label>
-                                <Input
-                                    v-model="form.email"
-                                    placeholder="Enter email address"
-                                    type="email"
-                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
-                                />
+                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Email
+                                    Address</Label>
+                                <Input v-model="form.email" placeholder="Enter email address" type="email"
+                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400" />
                             </div>
 
                             <div class="space-y-2">
                                 <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Phone Number <span class="text-red-500">*</span>
                                 </Label>
-                                <Input
-                                    v-model="form.phone"
-                                    placeholder="Enter phone number"
-                                    type="text"
-                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
-                                />
-                                <span v-if="form.errors.phone" class="text-sm text-red-600 dark:text-red-400">{{ form.errors.phone }}</span>
+                                <Input v-model="form.phone" placeholder="Enter phone number" type="text"
+                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400" />
+                                <span v-if="form.errors.phone" class="text-sm text-red-600 dark:text-red-400">{{
+                                    form.errors.phone }}</span>
                             </div>
 
                             <div class="space-y-2">
-                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Contact Preference</Label>
+                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Contact
+                                    Preference</Label>
                                 <RadioGroup class="flex flex-col space-y-3" v-model="form.contactpre">
                                     <div class="flex items-center space-x-2">
-                                        <RadioGroupItem value="0" id="contact-email" class="text-indigo-600 dark:text-indigo-400" />
-                                        <Label for="contact-email" class="text-sm text-gray-700 dark:text-gray-300">Email</Label>
+                                        <RadioGroupItem value="0" id="contact-email"
+                                            class="text-indigo-600 dark:text-indigo-400" />
+                                        <Label for="contact-email"
+                                            class="text-sm text-gray-700 dark:text-gray-300">Email</Label>
                                     </div>
                                     <div class="flex items-center space-x-2">
-                                        <RadioGroupItem value="1" id="contact-phone" class="text-indigo-600 dark:text-indigo-400" />
-                                        <Label for="contact-phone" class="text-sm text-gray-700 dark:text-gray-300">Phone</Label>
+                                        <RadioGroupItem value="1" id="contact-phone"
+                                            class="text-indigo-600 dark:text-indigo-400" />
+                                        <Label for="contact-phone"
+                                            class="text-sm text-gray-700 dark:text-gray-300">Phone</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
@@ -884,7 +809,8 @@ const updateStudent = () => {
                     </section>
 
                     <!-- Emergency Contact -->
-                    <section class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                    <section
+                        class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
                         <h2 class="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-white">
                             <AlertCircle class="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                             Emergency Contact Details
@@ -892,23 +818,17 @@ const updateStudent = () => {
 
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Emergency Contact Name</Label>
-                                <Input
-                                    v-model="form.ename"
-                                    placeholder="Enter emergency contact name"
-                                    type="text"
-                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
-                                />
+                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Emergency Contact
+                                    Name</Label>
+                                <Input v-model="form.ename" placeholder="Enter emergency contact name" type="text"
+                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400" />
                             </div>
 
                             <div class="space-y-2">
-                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Emergency Phone Number</Label>
-                                <Input
-                                    v-model="form.ephone"
-                                    placeholder="Enter emergency phone number"
-                                    type="text"
-                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
-                                />
+                                <Label class="text-sm font-medium text-gray-700 dark:text-gray-300">Emergency Phone
+                                    Number</Label>
+                                <Input v-model="form.ephone" placeholder="Enter emergency phone number" type="text"
+                                    class="w-full rounded-lg border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400" />
                             </div>
                         </div>
                     </section>
@@ -918,20 +838,14 @@ const updateStudent = () => {
                 <DialogFooter class="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
                     <div class="flex w-full flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <DialogClose as-child>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                class="w-full border-gray-300 text-gray-700 hover:bg-gray-50 sm:w-auto dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                            >
+                            <Button type="button" variant="outline"
+                                class="w-full border-gray-300 text-gray-700 hover:bg-gray-50 sm:w-auto dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
                                 Cancel
                             </Button>
                         </DialogClose>
 
-                        <Button
-                            :disabled="form.processing"
-                            @click="updateStudent"
-                            class="w-full bg-indigo-600 text-white hover:bg-indigo-700 sm:w-auto dark:bg-indigo-700 dark:hover:bg-indigo-600"
-                        >
+                        <Button :disabled="form.processing" @click="updateStudent"
+                            class="w-full bg-indigo-600 text-white hover:bg-indigo-700 sm:w-auto dark:bg-indigo-700 dark:hover:bg-indigo-600">
                             <template v-if="form.processing">
                                 <Loader2 class="mr-2 h-4 w-4 animate-spin" />
                                 Saving Changes...
@@ -958,9 +872,12 @@ const updateStudent = () => {
                 <div class="grid gap-6">
                     <!-- Select Document Type -->
                     <div class="grid gap-2">
-                        <Label for="doctype">why doing you onBoard this student ? <span class="text-red-500">*</span></Label>
+                        <Label for="doctype">why doing you onBoard this student ? <span
+                                class="text-red-500">*</span></Label>
                         <Textarea v-model="onBoardform.details" id="paddress" placeholder="Please write details" />
-                        <span v-if="onBoardform.errors.details" class="text-sm text-red-600">{{ onBoardform.errors.details }}</span>
+                        <span v-if="onBoardform.errors.details" class="text-sm text-red-600">{{
+                            onBoardform.errors.details
+                        }}</span>
                     </div>
                 </div>
 
@@ -995,9 +912,12 @@ const updateStudent = () => {
                 <div class="grid gap-6">
                     <!-- Select Document Type -->
                     <div class="grid gap-2">
-                        <Label for="doctype">why doing you archive this student ? <span class="text-red-500">*</span></Label>
+                        <Label for="doctype">why doing you archive this student ? <span
+                                class="text-red-500">*</span></Label>
                         <Textarea v-model="archiveform.details" id="paddress" placeholder="Please write details" />
-                        <span v-if="archiveform.errors.details" class="text-sm text-red-600">{{ archiveform.errors.details }}</span>
+                        <span v-if="archiveform.errors.details" class="text-sm text-red-600">{{
+                            archiveform.errors.details
+                        }}</span>
                     </div>
                 </div>
 

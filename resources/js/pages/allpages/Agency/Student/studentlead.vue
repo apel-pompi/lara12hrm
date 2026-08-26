@@ -8,7 +8,7 @@ import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOption
 import { ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
-import { RefreshCcw, Search } from 'lucide-vue-next';
+import { RefreshCcw, Search, SlidersHorizontal } from 'lucide-vue-next';
 import { nextTick, onMounted, ref, watch, computed } from 'vue';
 
 export interface Student {
@@ -43,7 +43,14 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Student', href: '/student' }];
 
 const props = defineProps<{
     student: Paginated<Student>;
-    filters: { name?: string };
+    filters: {
+        name?: string;
+        phone?: string;
+        user?: string;
+        created_at?: string;
+        advanceStudentName?: string;
+        advancePhone?: string;
+    };
     countAll: { countAll: number };
     countLead: { countLead: number };
     countPending: { countPending: number };
@@ -57,6 +64,7 @@ const props = defineProps<{
 }>();
 
 const data = props.student;
+
 
 const colors = [
     'bg-blue-500',
@@ -173,12 +181,18 @@ const showAllStudents = (type: 'name' | 'phone' | 'assain' | 'date') => {
     fetchStudents(type, '');
 };
 
+const isAdvanceSearchOpen = ref(false);
+const advanceStudentName = ref(props.filters?.advanceStudentName || '');
+const advancePhone = ref(props.filters?.advancePhone || '');
+
 const search = () => {
     const params: Record<string, any> = {};
     if (selectedStudent.value) params.name = selectedStudent.value.id;
     if (selectedPhone.value) params.phone = selectedPhone.value.phone;
     if (selectedAssain.value) params.user = selectedAssain.value.id;
     if (selectedDate.value) params.created_at = selectedDate.value;
+    if (advanceStudentName.value) params.advanceStudentName = advanceStudentName.value;
+    if (advancePhone.value) params.advancePhone = advancePhone.value;
 
     router.get(route('student.lead'), params, {
         preserveState: false,
@@ -186,7 +200,24 @@ const search = () => {
     });
 };
 
+const AdvanceSearch = () => {
+    const params: Record<string, any> = {};
+    if (advanceStudentName.value) params.advanceStudentName = advanceStudentName.value;
+    if (advancePhone.value) params.advancePhone = advancePhone.value;
+    router.get(route('student.AdvanceSearch'), params, {
+        preserveState: false,
+        preserveScroll: true,
+    });
+    search();
+};
+
 const refresh = () => {
+    selectedStudent.value = null;
+    selectedPhone.value = null;
+    selectedAssain.value = null;
+    selectedDate.value = null;
+    advanceStudentName.value = '';
+    advancePhone.value = '';
     router.get(route('student.lead'), {}, { replace: true });
 };
 
@@ -304,8 +335,7 @@ const statusClass = (status) => {
 
     <Head title="Student" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]">
+        <div class="app-page">
             <div class="flex justify-center">
                 <div
                     class="no-scrollbar relative mb-4 flex overflow-x-auto rounded-full bg-gray-100/80 p-1 dark:bg-gray-800/80">
@@ -326,7 +356,7 @@ const statusClass = (status) => {
             <div
                 class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
                 <!--  FILTER GRID -->
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
                     <!--  Name -->
                     <Combobox v-model="selectedStudent" as="div" class="w-full">
                         <div class="relative w-full">
@@ -346,6 +376,7 @@ const statusClass = (status) => {
                             </ComboboxOptions>
                         </div>
                     </Combobox>
+
                     <!--  Phone -->
                     <Combobox v-model="selectedPhone" class="w-full">
                         <div class="relative w-full">
@@ -404,13 +435,48 @@ const statusClass = (status) => {
                             </ComboboxOptions>
                         </div>
                     </Combobox>
-                    <div class="flex flex-col items-stretch justify-end gap-2 sm:flex-row">
+                    <div
+                        class="col-span-1 sm:col-span-2 lg:col-span-2 flex flex-col items-stretch justify-end gap-2 sm:flex-row">
                         <Button class="btn-primary w-full cursor-pointer sm:w-auto" @click="search">
                             <Search class="mr-1 h-4 w-4" /> Search
                         </Button>
                         <Button class="w-full cursor-pointer sm:w-auto" @click="refresh">
                             <RefreshCcw class="mr-1 h-4 w-4" /> Refresh
                         </Button>
+                        <Button class="w-full cursor-pointer sm:w-auto"
+                            @click="isAdvanceSearchOpen = !isAdvanceSearchOpen">
+                            <SlidersHorizontal class="mr-1 h-4 w-4" /> Advance Search
+                        </Button>
+                    </div>
+
+                </div>
+
+                <!-- ADVANCE SEARCH PANEL -->
+                <div v-show="isAdvanceSearchOpen" class="flex flex-col gap-3 mt-4">
+                    <div
+                        class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-center">
+                        Advance Search Fields
+                    </div>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 items-end">
+                        <div>
+                            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                                Student ID
+                            </label>
+                            <input v-model="advanceStudentName" type="text" class="input w-full"
+                                placeholder="Student Name" @keyup.enter="AdvanceSearch" />
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                                Phone
+                            </label>
+                            <input v-model="advancePhone" type="number" class="input w-full"
+                                placeholder="Search phone..." @keyup.enter="AdvanceSearch" />
+                        </div>
+                        <div class="w-full">
+                            <Button class="btn-primary w-full cursor-pointer" @click="AdvanceSearch">
+                                <Search class="mr-1 h-4 w-4" /> Search
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>

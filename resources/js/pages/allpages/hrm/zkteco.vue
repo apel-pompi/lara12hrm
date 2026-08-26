@@ -350,11 +350,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+
     <Head title="ZKTeco Device Manager" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+        <div class="app-page">
             <div class="min-h-screen p-4 md:p-6">
                 <div class="mx-auto max-w-7xl space-y-6">
                     <!-- 🔌 CONNECT + STATUS -->
@@ -366,29 +365,18 @@ onBeforeUnmount(() => {
                             <div class="space-y-4">
                                 <div>
                                     <label class="text-sm text-gray-600">Device IP</label>
-                                    <input
-                                        type="text"
-                                        v-model="deviceConfig.ip"
-                                        placeholder="192.168.1.100"
-                                        class="mt-1 w-full rounded-xl border px-4 py-2 focus:ring-2 focus:ring-cyan-500"
-                                    />
+                                    <input type="text" v-model="deviceConfig.ip" placeholder="192.168.1.100"
+                                        class="mt-1 w-full rounded-xl border px-4 py-2 focus:ring-2 focus:ring-cyan-500" />
                                 </div>
 
                                 <div>
                                     <label class="text-sm text-gray-600">Port</label>
-                                    <input
-                                        type="number"
-                                        v-model="deviceConfig.port"
-                                        placeholder="4370"
-                                        class="mt-1 w-full rounded-xl border px-4 py-2 focus:ring-2 focus:ring-cyan-500"
-                                    />
+                                    <input type="number" v-model="deviceConfig.port" placeholder="4370"
+                                        class="mt-1 w-full rounded-xl border px-4 py-2 focus:ring-2 focus:ring-cyan-500" />
                                 </div>
 
-                                <button
-                                    @click="connectDevice"
-                                    :disabled="connecting"
-                                    class="w-full rounded-xl bg-cyan-600 py-2 font-semibold text-white transition hover:bg-cyan-700 disabled:opacity-50"
-                                >
+                                <button @click="connectDevice" :disabled="connecting"
+                                    class="w-full rounded-xl bg-cyan-600 py-2 font-semibold text-white transition hover:bg-cyan-700 disabled:opacity-50">
                                     {{ connecting ? 'Connecting...' : 'Connect Device' }}
                                 </button>
                             </div>
@@ -426,15 +414,13 @@ onBeforeUnmount(() => {
                         <h2 class="mb-4 text-lg font-semibold text-gray-800">📅 Select Date</h2>
 
                         <div class="grid gap-4 md:grid-cols-3">
-                            <input type="date" v-model="selectedDate" class="rounded-xl border px-4 py-2 focus:ring-2 focus:ring-purple-500" />
+                            <input type="date" v-model="selectedDate"
+                                class="rounded-xl border px-4 py-2 focus:ring-2 focus:ring-purple-500" />
 
                             <button @click="setTodayDate" class="rounded-xl bg-gray-700 py-2 text-white">Today</button>
 
-                            <button
-                                @click="startAttendanceSync"
-                                :disabled="syncing || !deviceStatus.connected"
-                                class="rounded-xl bg-green-600 py-2 font-semibold text-white"
-                            >
+                            <button @click="startAttendanceSync" :disabled="syncing || !deviceStatus.connected"
+                                class="rounded-xl bg-green-600 py-2 font-semibold text-white">
                                 {{ syncing ? 'Syncing...' : 'Sync Data' }}
                             </button>
                         </div>
@@ -443,7 +429,8 @@ onBeforeUnmount(() => {
                         <div class="mt-5 grid gap-3 md:grid-cols-3">
                             <input type="date" v-model="dateRange.start" class="rounded-xl border px-3 py-2" />
                             <input type="date" v-model="dateRange.end" class="rounded-xl border px-3 py-2" />
-                            <button @click="syncDateRange" class="rounded-xl bg-blue-600 py-2 text-white">Sync Range</button>
+                            <button @click="syncDateRange" class="rounded-xl bg-blue-600 py-2 text-white">Sync
+                                Range</button>
                         </div>
                     </div>
 
@@ -470,14 +457,14 @@ onBeforeUnmount(() => {
                         </div>
                     </div>
                     <!-- Loading Indicator -->
-                    <div
-                        v-if="loading"
-                        class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-all duration-300"
-                    >
+                    <div v-if="loading"
+                        class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-all duration-300">
                         <div class="min-w-55 rounded-2xl border border-white/20 bg-white/90 p-6 shadow-2xl">
                             <div class="flex flex-col items-center gap-4">
                                 <div class="relative">
-                                    <div class="h-14 w-14 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
+                                    <div
+                                        class="h-14 w-14 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600">
+                                    </div>
                                 </div>
 
                                 <div class="text-center">

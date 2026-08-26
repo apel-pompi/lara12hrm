@@ -273,16 +273,16 @@ const goToManageStudent = () => {
 </script>
 
 <template>
+
     <Head title="Create Student" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+        <div class="app-page">
             <div
-                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
-            >
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
                 <div class="grid grid-cols-1 gap-4">
-                    <Button variant="outline" size="sm" @click="goToManageStudent"><CornerDownLeft></CornerDownLeft> Manage Student </Button>
+                    <Button variant="outline" size="sm" @click="goToManageStudent">
+                        <CornerDownLeft></CornerDownLeft> Manage Student
+                    </Button>
                 </div>
             </div>
             <div class="mx-auto mb-15 max-w-6xl space-y-8 rounded-lg border border-gray-800 bg-white p-6 shadow">
@@ -307,42 +307,35 @@ const goToManageStudent = () => {
                         <!-- Fields -->
                         <div class="grid grid-cols-1 gap-6 md:col-span-2 md:grid-cols-2">
                             <div>
-                                <Label class="block text-sm font-medium text-gray-700">First Name <span class="text-red-500">*</span></Label>
-                                <Input
-                                    v-model="form.fname"
-                                    type="text"
-                                    placeholder="Enter first name"
-                                    class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                                />
-                                <span v-if="form.errors.fname" class="text-sm text-red-600">{{ form.errors.fname }}</span>
+                                <Label class="block text-sm font-medium text-gray-700">First Name <span
+                                        class="text-red-500">*</span></Label>
+                                <Input v-model="form.fname" type="text" placeholder="Enter first name"
+                                    class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
+                                <span v-if="form.errors.fname" class="text-sm text-red-600">{{ form.errors.fname
+                                    }}</span>
                             </div>
 
                             <div>
-                                <Label class="block text-sm font-medium text-gray-700">Last Name <span class="text-red-500">*</span></Label>
-                                <Input
-                                    v-model="form.lname"
-                                    placeholder="Enter last name"
-                                    type="text"
-                                    class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                                />
-                                <span v-if="form.errors.lname" class="text-sm text-red-600">{{ form.errors.lname }}</span>
+                                <Label class="block text-sm font-medium text-gray-700">Last Name <span
+                                        class="text-red-500">*</span></Label>
+                                <Input v-model="form.lname" placeholder="Enter last name" type="text"
+                                    class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
+                                <span v-if="form.errors.lname" class="text-sm text-red-600">{{ form.errors.lname
+                                    }}</span>
                             </div>
 
                             <div>
-                                <Label class="block text-sm font-medium text-gray-700">Date Of Birth <span class="text-red-500">*</span></Label>
-                                <VueDatePicker
-                                    v-model="dob"
-                                    :max-date="maxDate"
-                                    :format="'yyyy-MM-dd'"
-                                    :enable-time-picker="false"
-                                    placeholder="Date Of Birth"
-                                    auto-apply
-                                />
-                                <span v-if="form.errors.dateofbirth" class="text-sm text-red-600">{{ form.errors.dateofbirth }}</span>
+                                <Label class="block text-sm font-medium text-gray-700">Date Of Birth <span
+                                        class="text-red-500">*</span></Label>
+                                <VueDatePicker v-model="dob" :max-date="maxDate" :format="'yyyy-MM-dd'"
+                                    :enable-time-picker="false" placeholder="Date Of Birth" auto-apply />
+                                <span v-if="form.errors.dateofbirth" class="text-sm text-red-600">{{
+                                    form.errors.dateofbirth }}</span>
                             </div>
 
                             <div>
-                                <Label class="block text-sm font-medium text-gray-700">Gender<span class="text-red-500">*</span></Label>
+                                <Label class="block text-sm font-medium text-gray-700">Gender<span
+                                        class="text-red-500">*</span></Label>
                                 <Select v-model="form.gender">
                                     <SelectTrigger class="w-full">
                                         <SelectValue placeholder="Select Gender" />
@@ -355,7 +348,8 @@ const goToManageStudent = () => {
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
-                                <span v-if="form.errors.gender" class="text-sm text-red-600">{{ form.errors.gender }}</span>
+                                <span v-if="form.errors.gender" class="text-sm text-red-600">{{ form.errors.gender
+                                    }}</span>
                             </div>
                         </div>
                     </div>
@@ -368,23 +362,16 @@ const goToManageStudent = () => {
                         <!-- Email -->
                         <div class="w-full md:w-1/3">
                             <Label class="block text-sm font-medium text-gray-700">Email</Label>
-                            <Input
-                                v-model="form.email"
-                                placeholder="Enter email address"
-                                type="email"
-                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <Input v-model="form.email" placeholder="Enter email address" type="email"
+                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
                         </div>
 
                         <!-- Phone -->
                         <div class="w-full md:w-1/3">
-                            <Label class="block text-sm font-medium text-gray-700"><span class="text-red-500">*</span>Phone</Label>
-                            <Input
-                                v-model="form.phone"
-                                placeholder="Enter phone number"
-                                type="text"
-                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <Label class="block text-sm font-medium text-gray-700"><span
+                                    class="text-red-500">*</span>Phone</Label>
+                            <Input v-model="form.phone" placeholder="Enter phone number" type="text"
+                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
                             <span v-if="form.errors.phone" class="text-sm text-red-600">{{ form.errors.phone }}</span>
                         </div>
 
@@ -410,23 +397,15 @@ const goToManageStudent = () => {
                         <!-- Email -->
                         <div class="w-full md:w-1/3">
                             <Label class="block text-sm font-medium text-gray-700">Name</Label>
-                            <Input
-                                v-model="form.ename"
-                                placeholder="Enter name"
-                                type="text"
-                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <Input v-model="form.ename" placeholder="Enter name" type="text"
+                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
                         </div>
 
                         <!-- Phone -->
                         <div class="w-full md:w-1/3">
                             <Label class="block text-sm font-medium text-gray-700">Phone</Label>
-                            <Input
-                                v-model="form.ephone"
-                                placeholder="Enter phone number"
-                                type="text"
-                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <Input v-model="form.ephone" placeholder="Enter phone number" type="text"
+                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
                         </div>
                     </div>
                 </section>
@@ -439,28 +418,20 @@ const goToManageStudent = () => {
                                 <div class="relative">
                                     <ComboboxInput
                                         class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select Country"
-                                        @input="queryCountry = $event.target.value"
-                                        :display-value="(c) => (c ? c.name : '')"
-                                    />
+                                        placeholder="Select Country" @input="queryCountry = $event.target.value"
+                                        :display-value="(c) => (c ? c.name : '')" />
                                     <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                     </ComboboxButton>
                                     <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                    >
-                                        <div
-                                            v-if="filteredCountries.length === 0 && queryCountry !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                                        <div v-if="filteredCountries.length === 0 && queryCountry !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none">
                                             Nothing found.
                                         </div>
-                                        <ComboboxOption
-                                            v-for="country in filteredCountries"
-                                            :key="country.id"
+                                        <ComboboxOption v-for="country in filteredCountries" :key="country.id"
                                             :value="country"
-                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                        >
+                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white">
                                             {{ country.name }}
                                         </ComboboxOption>
                                     </ComboboxOptions>
@@ -473,28 +444,19 @@ const goToManageStudent = () => {
                                 <div class="relative">
                                     <ComboboxInput
                                         class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select State"
-                                        @input="queryState = $event.target.value"
-                                        :display-value="(s) => s?.name ?? ''"
-                                    />
+                                        placeholder="Select State" @input="queryState = $event.target.value"
+                                        :display-value="(s) => s?.name ?? ''" />
                                     <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                     </ComboboxButton>
                                     <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                    >
-                                        <div
-                                            v-if="filteredStates.length === 0 && queryState !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                                        <div v-if="filteredStates.length === 0 && queryState !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none">
                                             Nothing found.
                                         </div>
-                                        <ComboboxOption
-                                            v-for="state in filteredStates"
-                                            :key="state.id"
-                                            :value="state"
-                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                        >
+                                        <ComboboxOption v-for="state in filteredStates" :key="state.id" :value="state"
+                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white">
                                             {{ state.name }}
                                         </ComboboxOption>
                                     </ComboboxOptions>
@@ -508,28 +470,19 @@ const goToManageStudent = () => {
                                 <div class="relative">
                                     <ComboboxInput
                                         class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select City"
-                                        @input="queryCity = $event.target.value"
-                                        :display-value="(c) => c?.name ?? ''"
-                                    />
+                                        placeholder="Select City" @input="queryCity = $event.target.value"
+                                        :display-value="(c) => c?.name ?? ''" />
                                     <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                     </ComboboxButton>
                                     <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                    >
-                                        <div
-                                            v-if="filteredCities.length === 0 && queryCity !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                                        <div v-if="filteredCities.length === 0 && queryCity !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none">
                                             Nothing found.
                                         </div>
-                                        <ComboboxOption
-                                            v-for="city in filteredCities"
-                                            :key="city.id"
-                                            :value="city"
-                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                        >
+                                        <ComboboxOption v-for="city in filteredCities" :key="city.id" :value="city"
+                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white">
                                             {{ city.name }}
                                         </ComboboxOption>
                                     </ComboboxOptions>
@@ -548,14 +501,8 @@ const goToManageStudent = () => {
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
                         <div>
                             <Label class="block text-sm font-medium text-gray-700">Preferred Intake</Label>
-                            <VueDatePicker
-                                v-model="intake"
-                                :max-date="maxDate"
-                                :format="'yyyy-MM-dd'"
-                                :enable-time-picker="false"
-                                placeholder="Preferred Intake Date"
-                                auto-apply
-                            />
+                            <VueDatePicker v-model="intake" :max-date="maxDate" :format="'yyyy-MM-dd'"
+                                :enable-time-picker="false" placeholder="Preferred Intake Date" auto-apply />
                         </div>
                         <div>
                             <Label class="block text-sm font-medium text-gray-700">Country of Passport</Label>
@@ -563,28 +510,20 @@ const goToManageStudent = () => {
                                 <div class="relative">
                                     <ComboboxInput
                                         class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Country of Passport"
-                                        @input="querypCountry = $event.target.value"
-                                        :display-value="(c) => c?.name ?? ''"
-                                    />
+                                        placeholder="Country of Passport" @input="querypCountry = $event.target.value"
+                                        :display-value="(c) => c?.name ?? ''" />
                                     <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                     </ComboboxButton>
                                     <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                    >
-                                        <div
-                                            v-if="filteredpCountry.length === 0 && querypCountry !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                                        <div v-if="filteredpCountry.length === 0 && querypCountry !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none">
                                             Nothing found.
                                         </div>
-                                        <ComboboxOption
-                                            v-for="pCountry in filteredpCountry"
-                                            :key="pCountry.id"
+                                        <ComboboxOption v-for="pCountry in filteredpCountry" :key="pCountry.id"
                                             :value="pCountry"
-                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                        >
+                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white">
                                             {{ pCountry.name }}
                                         </ComboboxOption>
                                     </ComboboxOptions>
@@ -594,41 +533,23 @@ const goToManageStudent = () => {
 
                         <div>
                             <Label class="block text-sm font-medium text-gray-700">Passport Number</Label>
-                            <Input
-                                v-model="form.pasnocountry"
-                                placeholder="enter passport number"
-                                type="text"
-                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <Input v-model="form.pasnocountry" placeholder="enter passport number" type="text"
+                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div>
                             <Label class="block text-sm font-medium text-gray-700">Visa Type</Label>
-                            <Input
-                                v-model="form.visatype"
-                                placeholder="enter visa type"
-                                type="text"
-                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <Input v-model="form.visatype" placeholder="enter visa type" type="text"
+                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div>
                             <Label class="block text-sm font-medium text-gray-700">Visa Expiry Date</Label>
-                            <VueDatePicker
-                                v-model="visaex"
-                                :max-date="maxDate"
-                                :format="'yyyy-MM-dd'"
-                                :enable-time-picker="false"
-                                placeholder="Visa Expiry Date"
-                                auto-apply
-                            />
+                            <VueDatePicker v-model="visaex" :max-date="maxDate" :format="'yyyy-MM-dd'"
+                                :enable-time-picker="false" placeholder="Visa Expiry Date" auto-apply />
                         </div>
                         <div>
                             <Label class="block text-sm font-medium text-gray-700">Previous Visas & Destination</Label>
-                            <Input
-                                v-model="form.pvisades"
-                                placeholder="Previous Visas & Destination"
-                                type="text"
-                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <Input v-model="form.pvisades" placeholder="Previous Visas & Destination" type="text"
+                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
                         </div>
                     </div>
                 </section>
@@ -637,95 +558,73 @@ const goToManageStudent = () => {
                     <h2 class="text-md mb-4 border-b pb-2 font-semibold text-gray-700">Identification</h2>
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
                         <div>
-                            <Label class="block text-sm font-medium text-gray-700"
-                                >What is your preferred destination?<span class="text-red-500">*</span></Label
-                            >
+                            <Label class="block text-sm font-medium text-gray-700">What is your preferred
+                                destination?<span class="text-red-500">*</span></Label>
                             <Combobox v-model="selectedPreDes">
                                 <div class="relative">
                                     <ComboboxInput
                                         class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="preferred destination"
-                                        @input="queryPreDes = $event.target.value"
-                                        :display-value="(c) => c?.name ?? ''"
-                                    />
+                                        placeholder="preferred destination" @input="queryPreDes = $event.target.value"
+                                        :display-value="(c) => c?.name ?? ''" />
                                     <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                     </ComboboxButton>
                                     <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                    >
-                                        <div
-                                            v-if="filteredPreDes.length === 0 && queryPreDes !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                                        <div v-if="filteredPreDes.length === 0 && queryPreDes !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none">
                                             Nothing found.
                                         </div>
-                                        <ComboboxOption
-                                            v-for="PreDes in filteredPreDes"
-                                            :key="PreDes.id"
+                                        <ComboboxOption v-for="PreDes in filteredPreDes" :key="PreDes.id"
                                             :value="PreDes"
-                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                        >
+                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white">
                                             {{ PreDes.name }}
                                         </ComboboxOption>
                                     </ComboboxOptions>
                                 </div>
                             </Combobox>
-                            <span v-if="form.errors.descountry_id" class="text-sm text-red-600">{{ form.errors.descountry_id }}</span>
+                            <span v-if="form.errors.descountry_id" class="text-sm text-red-600">{{
+                                form.errors.descountry_id }}</span>
                         </div>
                         <div>
-                            <Label class="block text-sm font-medium text-gray-700">Stage<span class="text-red-500">*</span></Label>
+                            <Label class="block text-sm font-medium text-gray-700">Stage<span
+                                    class="text-red-500">*</span></Label>
                             <Combobox v-model="selectedStuStage">
                                 <div class="relative">
                                     <ComboboxInput
                                         class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Stage"
-                                        @input="querypStuStage = $event.target.value"
-                                        :display-value="(c) => c?.name ?? ''"
-                                    />
+                                        placeholder="Stage" @input="querypStuStage = $event.target.value"
+                                        :display-value="(c) => c?.name ?? ''" />
                                     <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                     </ComboboxButton>
                                     <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                    >
-                                        <div
-                                            v-if="filteredStuStage.length === 0 && queryStuStage !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                                        <div v-if="filteredStuStage.length === 0 && queryStuStage !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none">
                                             Nothing found.
                                         </div>
-                                        <ComboboxOption
-                                            v-for="PreDes in filteredStuStage"
-                                            :key="PreDes.id"
+                                        <ComboboxOption v-for="PreDes in filteredStuStage" :key="PreDes.id"
                                             :value="PreDes"
-                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                        >
+                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white">
                                             {{ PreDes.name }}
                                         </ComboboxOption>
                                     </ComboboxOptions>
                                 </div>
                             </Combobox>
-                            <span v-if="form.errors.stage_id" class="text-sm text-red-600">{{ form.errors.stage_id }}</span>
+                            <span v-if="form.errors.stage_id" class="text-sm text-red-600">{{ form.errors.stage_id
+                                }}</span>
                         </div>
 
                         <div>
                             <Label class="block text-sm font-medium text-gray-700">Meeting Notes</Label>
-                            <Input
-                                v-model="form.metting_note"
-                                placeholder="enter metting notes"
-                                type="text"
-                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <Input v-model="form.metting_note" placeholder="enter metting notes" type="text"
+                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div>
                             <Label class="block text-sm font-medium text-gray-700">Passport</Label>
-                            <Input
-                                v-model="form.passportno"
-                                placeholder="enter passport number"
-                                type="text"
-                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <Input v-model="form.passportno" placeholder="enter passport number" type="text"
+                                class="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
                         </div>
                     </div>
                 </section>
@@ -734,86 +633,72 @@ const goToManageStudent = () => {
                     <h2 class="text-md mb-4 border-b pb-2 font-semibold text-gray-700">Internal</h2>
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
                         <div>
-                            <Label class="block text-sm font-medium text-gray-700">Assignee<span class="text-red-500">*</span></Label>
+                            <Label class="block text-sm font-medium text-gray-700">Assignee<span
+                                    class="text-red-500">*</span></Label>
                             <Combobox v-model="selectedUser">
                                 <div class="relative">
                                     <ComboboxInput
                                         class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select assignee parson"
-                                        @input="queryUser = $event.target.value"
-                                        :display-value="(c) => c?.name ?? ''"
-                                    />
+                                        placeholder="Select assignee parson" @input="queryUser = $event.target.value"
+                                        :display-value="(c) => c?.name ?? ''" />
                                     <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                     </ComboboxButton>
                                     <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                    >
-                                        <div
-                                            v-if="filteredUser.length === 0 && queryUser !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                                        <div v-if="filteredUser.length === 0 && queryUser !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none">
                                             Nothing found.
                                         </div>
-                                        <ComboboxOption
-                                            v-for="user in filteredUser"
-                                            :key="user.id"
-                                            :value="user"
-                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                        >
+                                        <ComboboxOption v-for="user in filteredUser" :key="user.id" :value="user"
+                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white">
                                             {{ user.name }}
                                         </ComboboxOption>
                                     </ComboboxOptions>
                                 </div>
                             </Combobox>
-                            <span v-if="form.errors.assain_user" class="text-sm text-red-600">{{ form.errors.assain_user }}</span>
+                            <span v-if="form.errors.assain_user" class="text-sm text-red-600">{{ form.errors.assain_user
+                                }}</span>
                         </div>
                         <div>
-                            <Label class="block text-sm font-medium text-gray-700">Choose a source <span class="text-red-500">*</span></Label>
+                            <Label class="block text-sm font-medium text-gray-700">Choose a source <span
+                                    class="text-red-500">*</span></Label>
                             <Combobox v-model="selectedSource">
                                 <div class="relative">
                                     <ComboboxInput
                                         class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        placeholder="Select source"
-                                        @input="querySource = $event.target.value"
-                                        :display-value="(c) => c?.name ?? ''"
-                                    />
+                                        placeholder="Select source" @input="querySource = $event.target.value"
+                                        :display-value="(c) => c?.name ?? ''" />
                                     <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                                     </ComboboxButton>
                                     <ComboboxOptions
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                                    >
-                                        <div
-                                            v-if="filteredSource.length === 0 && querySource !== ''"
-                                            class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                        >
+                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                                        <div v-if="filteredSource.length === 0 && querySource !== ''"
+                                            class="cursor-default px-4 py-2 text-gray-500 select-none">
                                             Nothing found.
                                         </div>
-                                        <ComboboxOption
-                                            v-for="source in filteredSource"
-                                            :key="source.id"
+                                        <ComboboxOption v-for="source in filteredSource" :key="source.id"
                                             :value="source"
-                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                        >
+                                            class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white">
                                             {{ source.name }}
                                         </ComboboxOption>
                                     </ComboboxOptions>
                                 </div>
                             </Combobox>
-                            <span v-if="form.errors.source_id" class="text-sm text-red-600">{{ form.errors.source_id }}</span>
+                            <span v-if="form.errors.source_id" class="text-sm text-red-600">{{ form.errors.source_id
+                                }}</span>
                         </div>
                     </div>
                 </section>
                 <section class="border-t pt-6">
                     <div class="flex justify-end">
-                        <Button
-                            :disabled="form.processing"
-                            @click="submit"
-                            class="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-white shadow-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-400"
-                        >
+                        <Button :disabled="form.processing" @click="submit"
+                            class="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-white shadow-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-400">
                             <template v-if="form.processing">Saving...</template>
-                            <template v-else><Save class="h-5 w-5" />Save</template>
+                            <template v-else>
+                                <Save class="h-5 w-5" />Save
+                            </template>
                         </Button>
                     </div>
                 </section>

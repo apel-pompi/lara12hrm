@@ -12,7 +12,8 @@ import {
     ClockIcon,
     ExclamationTriangleIcon,
     UserPlusIcon,
-    SunIcon
+    SunIcon,
+    XMarkIcon,
 } from '@heroicons/vue/24/outline';
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
 import echo from '@/echo';
@@ -73,8 +74,7 @@ const hasNotifications = computed(
 const currentPage = ref(1);
 const lastPage = ref(1);
 const total = ref(0);
-
-const perPage = 15;
+const perPage = ref<number | null>(null);
 
 const loadNotifications = async (pageNumber = 1) => {
     if (!userId.value) return;
@@ -82,14 +82,17 @@ const loadNotifications = async (pageNumber = 1) => {
     loading.value = true;
 
     try {
+        const params: Record<string, any> = {
+            page: pageNumber,
+        };
+
+        if (perPage.value) {
+            params.per_page = perPage.value;
+        }
+
         const response = await axios.get(
             `/follow-up-notifications/user/${userId.value}`,
-            {
-                params: {
-                    page: pageNumber,
-                    per_page: perPage,
-                },
-            }
+            { params }
         );
 
         const result = response.data.data;
@@ -99,6 +102,7 @@ const loadNotifications = async (pageNumber = 1) => {
         currentPage.value = result.current_page ?? 1;
         lastPage.value = result.last_page ?? 1;
         total.value = result.total ?? 0;
+        perPage.value = result.per_page ?? 15;
 
     } catch (error: any) {
         toast.error('Failed to load follow-up notifications.', error?.response?.data?.message);
@@ -299,22 +303,22 @@ const notificationIconClass = (
 ) => {
 
     if (notification.read_at) {
-        return 'bg-slate-100 text-slate-500';
+        return 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400';
     }
 
     switch (notification.type) {
 
         case 'follow_up_overdue':
-            return 'bg-red-100 text-red-600';
+            return 'bg-red-100 text-red-600 dark:bg-red-950/80 dark:text-red-400';
 
         case 'follow_up_due':
-            return 'bg-amber-100 text-amber-600';
+            return 'bg-amber-100 text-amber-600 dark:bg-amber-950/80 dark:text-amber-400';
 
         case 'follow_up_assigned':
-            return 'bg-blue-100 text-blue-600';
+            return 'bg-blue-100 text-blue-600 dark:bg-blue-950/80 dark:text-blue-400';
 
         default:
-            return 'bg-slate-100 text-slate-600';
+            return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
     }
 
 };
@@ -332,19 +336,19 @@ const priorityClass = (
     switch (priority) {
 
         case 'Urgent':
-            return 'bg-red-100 text-red-700';
+            return 'bg-red-100 text-red-700 dark:bg-red-950/80 dark:text-red-300';
 
         case 'High':
-            return 'bg-orange-100 text-orange-700';
+            return 'bg-orange-100 text-orange-700 dark:bg-orange-950/80 dark:text-orange-300';
 
         case 'Medium':
-            return 'bg-blue-100 text-blue-700';
+            return 'bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300';
 
         case 'Low':
-            return 'bg-slate-100 text-slate-600';
+            return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
 
         default:
-            return 'bg-slate-100 text-slate-600';
+            return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
     }
 };
 
@@ -414,8 +418,17 @@ const listenForFollowUpNotifications = () => {
         );
 };
 
+let clockTimer: any = null;
+
+const updateClock = () => {
+    const now = new Date();
+    time.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
 
 onMounted(() => {
+    updateClock();
+    clockTimer = setInterval(updateClock, 1000);
+
     if (!userId.value) {
         return;
     }
@@ -435,6 +448,9 @@ const stopNotificationListener = () => {
 };
 
 onBeforeUnmount(() => {
+    if (clockTimer) {
+        clearInterval(clockTimer);
+    }
     stopNotificationListener();
 });
 
@@ -548,19 +564,13 @@ const goToPage = (pageNumber: number) => {
             <!-- Notifications -->
             <div class="relative">
 
-                <!-- ============================================================
-             Notification Bell
-        ============================================================= -->
-
                 <button type="button" @click="toggleNotifications"
-                    class="relative rounded-xl bg-white p-2.5 text-slate-600 transition hover:bg-slate-50">
+                    class="relative rounded-xl bg-white p-2.5 text-slate-600 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white">
 
                     <BellIcon class="h-5 w-5" />
 
-                    <!-- Unread Badge -->
-
                     <span v-if="unreadCount > 0"
-                        class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                        class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white dark:ring-slate-900">
                         {{
                             unreadCount > 99
                                 ? '99+'
@@ -570,10 +580,8 @@ const goToPage = (pageNumber: number) => {
 
                 </button>
 
-
-                <!-- ============================================================
-             Notification Dropdown
-        ============================================================= -->
+                <!-- Backdrop overlay for outside click on mobile and desktop -->
+                <div v-if="open" class="fixed inset-0 z-40 bg-black/20 sm:bg-transparent" @click="open = false" />
 
                 <Transition enter-active-class="transition duration-150 ease-out"
                     enter-from-class="translate-y-1 opacity-0" enter-to-class="translate-y-0 opacity-100"
@@ -581,30 +589,28 @@ const goToPage = (pageNumber: number) => {
                     leave-to-class="translate-y-1 opacity-0">
 
                     <div v-if="open"
-                        class="absolute right-0 z-50 mt-2 w-[calc(100vw-24px)] max-w-[360px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                        class="fixed inset-x-3 top-16 z-50 flex max-h-[calc(100vh-5rem)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[380px] sm:max-h-[600px] sm:max-w-none">
 
-                        <!-- ====================================================
-                     Header
-                ===================================================== -->
-
-                        <div class="flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3">
+                        <!-- Header -->
+                        <div
+                            class="flex shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
 
                             <div>
 
                                 <div class="flex items-center gap-2">
 
-                                    <h3 class="text-sm font-bold text-slate-900">
+                                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">
                                         Notifications
                                     </h3>
 
                                     <span v-if="unreadCount > 0"
-                                        class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600">
+                                        class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600 dark:bg-red-950/80 dark:text-red-400">
                                         {{ unreadCount }} new
                                     </span>
 
                                 </div>
 
-                                <p class="mt-0.5 text-xs text-slate-500">
+                                <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                                     Follow-up activities
                                 </p>
 
@@ -615,7 +621,7 @@ const goToPage = (pageNumber: number) => {
 
                                 <button v-if="unreadCount > 0" type="button" :disabled="markingAll"
                                     @click="markAllAsRead"
-                                    class="rounded-lg px-2 py-1 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 disabled:opacity-50">
+                                    class="rounded-lg px-2 py-1 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-950/50">
                                     <span v-if="!markingAll">
                                         Mark all read
                                     </span>
@@ -627,7 +633,7 @@ const goToPage = (pageNumber: number) => {
 
 
                                 <button type="button" @click="open = false"
-                                    class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                                    class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200">
 
                                     <XMarkIcon class="h-4 w-4" />
 
@@ -638,66 +644,58 @@ const goToPage = (pageNumber: number) => {
                         </div>
 
 
-                        <!-- ====================================================
-                     Loading
-                ===================================================== -->
-
-                        <div v-if="loading" class="flex items-center justify-center py-12">
+                        <!-- Loading state -->
+                        <div v-if="loading" class="flex flex-1 items-center justify-center py-12">
 
                             <div
-                                class="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600" />
+                                class="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-500" />
 
                         </div>
 
 
-                        <!-- ====================================================
-                     Empty
-                ===================================================== -->
+                        <!-- Empty state -->
+                        <div v-else-if="!hasNotifications" class="flex-1 px-6 py-12 text-center">
 
-                        <div v-else-if="!hasNotifications" class="px-6 py-12 text-center">
+                            <div
+                                class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
 
-                            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
-
-                                <BellIcon class="h-7 w-7 text-slate-400" />
+                                <BellIcon class="h-7 w-7 text-slate-400 dark:text-slate-500" />
 
                             </div>
 
-                            <h4 class="mt-4 text-sm font-semibold text-slate-700">
+                            <h4 class="mt-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
                                 You're all caught up
                             </h4>
 
-                            <p class="mt-1 text-xs text-slate-400">
+                            <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">
                                 No follow-up notifications available.
                             </p>
 
                         </div>
 
-
-                        <!-- ====================================================
-                     Notification List
-                ===================================================== -->
-
-                        <div v-else class="max-h-[520px] overflow-y-auto overflow-x-hidden">
+                        <!-- Notification items list -->
+                        <div v-else
+                            class="flex-1 max-h-[420px] overflow-y-auto overflow-x-hidden divide-y divide-slate-100 dark:divide-slate-800">
 
                             <div v-for="notification in notifications" :key="notification.id"
                                 @click="openNotification(notification)"
-                                class="group relative w-full cursor-pointer border-b border-slate-100 px-4 py-3.5 transition-all duration-150 hover:bg-slate-50"
+                                class="group relative w-full cursor-pointer px-4 py-3.5 transition-all duration-150 hover:bg-slate-50 dark:hover:bg-slate-800/60"
                                 :class="{
-                                    'bg-blue-50/60': !notification.read_at,
-                                    'bg-white': notification.read_at,
+                                    'bg-blue-50/50 dark:bg-blue-950/20': !notification.read_at,
+                                    'bg-white dark:bg-slate-900': notification.read_at,
                                 }">
 
                                 <!-- Unread indicator -->
                                 <span v-if="!notification.read_at"
-                                    class="absolute left-0 top-0 h-full w-0.5 bg-blue-600" />
+                                    class="absolute left-0 top-0 h-full w-1 bg-blue-600 dark:bg-blue-500" />
 
                                 <div class="flex w-full min-w-0 items-start gap-3">
 
                                     <!-- Notification Icon -->
 
-                                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
                                         :class="notificationIconClass(notification)">
-                                        <component :is="notificationIcon(notification.type)" class="h-5 w-5" />
+                                        <component :is="notificationIcon(notification.type)" class="h-4 w-4" />
                                     </div>
 
 
@@ -709,39 +707,41 @@ const goToPage = (pageNumber: number) => {
 
                                         <div class="flex min-w-0 items-start gap-2">
 
-                                            <p class="min-w-0 flex-1 truncate text-sm" :class="notification.read_at
-                                                ? 'font-medium text-slate-700'
-                                                : 'font-semibold text-slate-900'
+                                            <p class="min-w-0 flex-1 truncate text-xs sm:text-sm" :class="notification.read_at
+                                                ? 'font-medium text-slate-700 dark:text-slate-300'
+                                                : 'font-semibold text-slate-900 dark:text-white'
                                                 ">
                                                 {{ notification.title }}
                                             </p>
 
                                             <span v-if="!notification.read_at"
-                                                class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-600" />
+                                                class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-600 dark:bg-blue-500" />
                                         </div>
 
 
                                         <!-- Message -->
 
-                                        <p class="mt-1 line-clamp-2 break-words text-[13px] leading-5 text-slate-500">
+                                        <p
+                                            class="mt-1 line-clamp-2 break-words text-xs leading-4 text-slate-500 dark:text-slate-400">
                                             {{ notification.message }}
                                         </p>
 
 
                                         <!-- Meta -->
 
-                                        <div class="mt-2.5 flex items-center gap-2">
+                                        <div class="mt-2 flex flex-wrap items-center gap-2">
 
                                             <!-- Time -->
 
-                                            <span class="text-[11px] font-medium text-slate-400">
+                                            <span class="text-[11px] font-medium text-slate-400 dark:text-slate-500">
                                                 {{ notificationTime(notification.created_at) }}
                                             </span>
 
 
                                             <!-- Separator -->
 
-                                            <span v-if="notification.data?.priority" class="text-[10px] text-slate-300">
+                                            <span v-if="notification.data?.priority"
+                                                class="text-[10px] text-slate-300 dark:text-slate-600">
                                                 •
                                             </span>
 
@@ -764,7 +764,7 @@ const goToPage = (pageNumber: number) => {
                                     <!-- Arrow -->
 
                                     <div
-                                        class="mt-3 shrink-0 text-slate-300 opacity-0 transition-opacity group-hover:opacity-100">
+                                        class="mt-2 shrink-0 text-slate-300 opacity-0 transition-opacity group-hover:opacity-100 dark:text-slate-600 dark:group-hover:text-slate-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7" />
@@ -779,9 +779,10 @@ const goToPage = (pageNumber: number) => {
 
                         <!-- Pagination -->
 
-                        <div v-if="lastPage > 1" class="mt-5 flex items-center justify-between">
+                        <div v-if="lastPage > 1"
+                            class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/80 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-950">
 
-                            <p class="text-xs text-slate-500 dark:text-slate-400">
+                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400">
                                 Page {{ currentPage }} of {{ lastPage }}
                             </p>
 
@@ -790,25 +791,27 @@ const goToPage = (pageNumber: number) => {
 
                                 <button type="button" :disabled="currentPage === 1 || loading"
                                     @click="goToPage(currentPage - 1)"
-                                    class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-                                    Previous
+                                    class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
+                                    Prev
                                 </button>
 
 
-                                <button v-for="pageNumber in lastPage" :key="pageNumber" type="button"
-                                    @click="goToPage(pageNumber)"
-                                    class="h-9 min-w-9 rounded-lg px-3 text-xs font-semibold transition" :class="pageNumber === currentPage
-                                        ? 'bg-blue-600 text-white'
-                                        : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
-                                        ">
-                                    {{ pageNumber }}
-                                </button>
+                                <template v-if="lastPage <= 5">
+                                    <button v-for="pageNumber in lastPage" :key="pageNumber" type="button"
+                                        @click="goToPage(pageNumber)"
+                                        class="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-semibold transition"
+                                        :class="pageNumber === currentPage
+                                            ? 'bg-blue-600 text-white'
+                                            : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                                            ">
+                                        {{ pageNumber }}
+                                    </button>
+                                </template>
 
 
-                                <button type="button" :disabled="currentPage === lastPage ||
-                                    loading
-                                    " @click="goToPage(currentPage + 1)"
-                                    class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                                <button type="button" :disabled="currentPage === lastPage || loading"
+                                    @click="goToPage(currentPage + 1)"
+                                    class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
                                     Next
                                 </button>
 
@@ -816,14 +819,11 @@ const goToPage = (pageNumber: number) => {
 
                         </div>
 
-                        <!-- ====================================================
-                     Footer
-                ===================================================== -->
-
                         <div v-if="hasNotifications"
-                            class="border-t border-slate-100 bg-slate-50 px-4 py-2.5 text-center">
+                            class="shrink-0 border-t border-slate-100 bg-slate-50 px-4 py-2.5 text-center dark:border-slate-800 dark:bg-slate-950">
 
-                            <button type="button" class="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                            <button type="button"
+                                class="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
                                 View all notifications
                             </button>
 

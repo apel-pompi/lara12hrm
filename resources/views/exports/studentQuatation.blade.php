@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark'=> ($appearance ?? 'system') == 'dark'])>
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <title>Student Quotation</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
@@ -203,38 +204,38 @@
 
             <tbody>
                 @php
-                    $netAmount = 0;
+                $netAmount = 0;
                 @endphp
                 @foreach ($fees as $key)
-                    @php
-                        $netAmount += $key->quaotamount;
-                    @endphp
-                    <tr>
-                        <td>{{ $key->name }}</td>
-                        <td>{{ number_format($key->quaotamount, 2) }}</td>
-                        <td>
-                            @if ($key->paytype == 'Revenue')
-                                Non Refundable
-                            @else
-                                {{$key->paytype}}
-                            @endif
-                        </td>
-                        <td>
-                            @if ($key->name == 'File Opening Fee')
-                                At the beginning of process
-                            @elseif($key->name == 'Application Fee')
-                                During process direct payment to University
-                            @elseif($key->name == 'Visa Process Fee')
-                                After offer letter of services needed
-                            @elseif($key->name == 'VISA Fee')
-                                After offer letter direct payment to VFS/Embassy
-                            @elseif($key->name == 'Service Fee')
-                                After Visa
-                            @elseif($key->name == 'Tuition Fee')
-                                Tuition fees are refundable if the visa application is refused**
-                            @endif
-                        </td>
-                    </tr>
+                @php
+                $netAmount += $key->quaotamount;
+                @endphp
+                <tr>
+                    <td>{{ $key->name }}</td>
+                    <td>{{ number_format($key->quaotamount, 2) }}</td>
+                    <td>
+                        @if ($key->paytype == 'Revenue')
+                        Non Refundable
+                        @else
+                        {{$key->paytype}}
+                        @endif
+                    </td>
+                    <td>
+                        @if ($key->name == 'File Opening Fee')
+                        At the beginning of process
+                        @elseif($key->name == 'Application Fee')
+                        During process direct payment to University
+                        @elseif($key->name == 'Visa Process Fee')
+                        After offer letter of services needed
+                        @elseif($key->name == 'VISA Fee')
+                        After offer letter direct payment to VFS/Embassy
+                        @elseif($key->name == 'Service Fee')
+                        After Visa
+                        @elseif($key->name == 'Tuition Fee')
+                        Tuition fees are refundable if the visa application is refused**
+                        @endif
+                    </td>
+                </tr>
                 @endforeach
                 <tr>
                     <td><strong>Grand Total</strong></td>
@@ -252,9 +253,9 @@
     <div class="note">
         <strong>Note:</strong>
 
-            {{ $quatHd->notes }}
+        {{ $quatHd->notes }}
 
-    </div> 
+    </div>
     <!-- ======= Footer Section ======= -->
     <footer
         style="

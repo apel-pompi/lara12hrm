@@ -274,52 +274,44 @@ const goToPage = (url: string | null) => {
 </script>
 
 <template>
-    <Head title="Supplier" />
+
+
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+
+        <Head title="Supplier" />
+        <div class="app-page">
             <div
-                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
-            >
-                <Button variant="outline" size="sm" @click="showDailogCreate" class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
-                    ><Plus></Plus> Create
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
+                <Button variant="outline" size="sm" @click="showDailogCreate"
+                    class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+                    <Plus></Plus> Create
                 </Button>
                 <!-- Search start -->
                 <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedSupplier">
                         <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Supplier Code"
-                                @input="querySupplier = $event.target.value"
-                                :display-value="(c) => c?.subcode ?? ''"
-                            />
+                            <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Supplier Code" @input="querySupplier = $event.target.value"
+                                :display-value="(c) => c?.subcode ?? ''" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div v-if="filteredSupplier.length === 0 && querySupplier !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                                <div v-if="filteredSupplier.length === 0 && querySupplier !== ''"
+                                    class="px-4 py-2 text-gray-500 select-none">
                                     Nothing found.
                                 </div>
 
-                                <ComboboxOption
-                                    v-for="one in filteredSupplier"
-                                    :key="one.id"
-                                    :value="one"
+                                <ComboboxOption v-for="one in filteredSupplier" :key="one.id" :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
+                                    v-slot="{ selected }">
                                     <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                         {{ one.subcode }}
                                     </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
+                                    <span v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                         <CheckIcon class="h-5 w-5" />
                                     </span>
                                 </ComboboxOption>
@@ -330,37 +322,28 @@ const goToPage = (url: string | null) => {
                 <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedName">
                         <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Supplier Name"
-                                @input="querySupplierName = $event.target.value"
-                                :display-value="(c) => c?.name ?? ''"
-                            />
+                            <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Select Supplier Name" @input="querySupplierName = $event.target.value"
+                                :display-value="(c) => c?.name ?? ''" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div v-if="filteredSupplierName.length === 0 && querySupplierName !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                                <div v-if="filteredSupplierName.length === 0 && querySupplierName !== ''"
+                                    class="px-4 py-2 text-gray-500 select-none">
                                     Nothing found.
                                 </div>
 
-                                <ComboboxOption
-                                    v-for="one in filteredSupplierName"
-                                    :key="one.id"
-                                    :value="one"
+                                <ComboboxOption v-for="one in filteredSupplierName" :key="one.id" :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
+                                    v-slot="{ selected }">
                                     <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                         {{ one.name }}
                                     </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
+                                    <span v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                         <CheckIcon class="h-5 w-5" />
                                     </span>
                                 </ComboboxOption>
@@ -371,37 +354,28 @@ const goToPage = (url: string | null) => {
                 <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedAddress">
                         <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Address"
-                                @input="queryAddress = $event.target.value"
-                                :display-value="(c) => c?.subaddress ?? ''"
-                            />
+                            <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Select Address" @input="queryAddress = $event.target.value"
+                                :display-value="(c) => c?.subaddress ?? ''" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div v-if="filteredAddress.length === 0 && queryAddress !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                                <div v-if="filteredAddress.length === 0 && queryAddress !== ''"
+                                    class="px-4 py-2 text-gray-500 select-none">
                                     Nothing found.
                                 </div>
 
-                                <ComboboxOption
-                                    v-for="one in filteredAddress"
-                                    :key="one.id"
-                                    :value="one"
+                                <ComboboxOption v-for="one in filteredAddress" :key="one.id" :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
+                                    v-slot="{ selected }">
                                     <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                         {{ one.subaddress }}
                                     </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
+                                    <span v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                         <CheckIcon class="h-5 w-5" />
                                     </span>
                                 </ComboboxOption>
@@ -412,40 +386,28 @@ const goToPage = (url: string | null) => {
                 <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedContactPerson">
                         <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Contact Person"
-                                @input="queryContactPerson = $event.target.value"
-                                :display-value="(c) => c?.contact_person ?? ''"
-                            />
+                            <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Select Contact Person" @input="queryContactPerson = $event.target.value"
+                                :display-value="(c) => c?.contact_person ?? ''" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div
-                                    v-if="filteredContactPerson.length === 0 && queryContactPerson !== ''"
-                                    class="px-4 py-2 text-gray-500 select-none"
-                                >
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                                <div v-if="filteredContactPerson.length === 0 && queryContactPerson !== ''"
+                                    class="px-4 py-2 text-gray-500 select-none">
                                     Nothing found.
                                 </div>
 
-                                <ComboboxOption
-                                    v-for="one in filteredContactPerson"
-                                    :key="one.id"
-                                    :value="one"
+                                <ComboboxOption v-for="one in filteredContactPerson" :key="one.id" :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
+                                    v-slot="{ selected }">
                                     <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                         {{ one.contact_person }}
                                     </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
+                                    <span v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                         <CheckIcon class="h-5 w-5" />
                                     </span>
                                 </ComboboxOption>
@@ -456,37 +418,27 @@ const goToPage = (url: string | null) => {
                 <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedPhone">
                         <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Phone"
-                                @input="queryPhone = $event.target.value"
-                                :display-value="(c) => c?.subphone ?? ''"
-                            />
+                            <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm" placeholder="Select Phone"
+                                @input="queryPhone = $event.target.value" :display-value="(c) => c?.subphone ?? ''" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div v-if="filteredPhone.length === 0 && queryPhone !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                                <div v-if="filteredPhone.length === 0 && queryPhone !== ''"
+                                    class="px-4 py-2 text-gray-500 select-none">
                                     Nothing found.
                                 </div>
 
-                                <ComboboxOption
-                                    v-for="one in filteredPhone"
-                                    :key="one.id"
-                                    :value="one"
+                                <ComboboxOption v-for="one in filteredPhone" :key="one.id" :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
+                                    v-slot="{ selected }">
                                     <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                         {{ one.subphone }}
                                     </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
+                                    <span v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                         <CheckIcon class="h-5 w-5" />
                                     </span>
                                 </ComboboxOption>
@@ -497,37 +449,27 @@ const goToPage = (url: string | null) => {
                 <div class="w-full sm:w-1/2 lg:w-auto">
                     <Combobox v-model="selectedEmail">
                         <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Email"
-                                @input="queryEmail = $event.target.value"
-                                :display-value="(c) => c?.subemail ?? ''"
-                            />
+                            <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm" placeholder="Select Email"
+                                @input="queryEmail = $event.target.value" :display-value="(c) => c?.subemail ?? ''" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div v-if="filteredEmail.length === 0 && queryEmail !== ''" class="px-4 py-2 text-gray-500 select-none">
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                                <div v-if="filteredEmail.length === 0 && queryEmail !== ''"
+                                    class="px-4 py-2 text-gray-500 select-none">
                                     Nothing found.
                                 </div>
 
-                                <ComboboxOption
-                                    v-for="one in filteredEmail"
-                                    :key="one.id"
-                                    :value="one"
+                                <ComboboxOption v-for="one in filteredEmail" :key="one.id" :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
+                                    v-slot="{ selected }">
                                     <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                         {{ one.subemail }}
                                     </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
+                                    <span v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                         <CheckIcon class="h-5 w-5" />
                                     </span>
                                 </ComboboxOption>
@@ -536,10 +478,14 @@ const goToPage = (url: string | null) => {
                     </Combobox>
                 </div>
                 <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
+                    <Button variant="outline" size="sm" @click="search">
+                        <Search></Search> Search
+                    </Button>
                 </div>
                 <div class="grid gap-2">
-                    <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+                    <Button variant="outline" size="sm" @click="refresh">
+                        <RefreshCcw></RefreshCcw> Refresh
+                    </Button>
                 </div>
                 <!-- Search start -->
             </div>
@@ -571,28 +517,33 @@ const goToPage = (url: string | null) => {
                             <TableCell>{{ supplier.subphone }}</TableCell>
                             <TableCell>{{ supplier.subemail }}</TableCell>
                             <TableCell>
-                                <Switch :model-value="Boolean(supplier.active)" @update:model-value="(checked) => toggleStatus(supplier, checked)">
+                                <Switch :model-value="Boolean(supplier.active)"
+                                    @update:model-value="(checked) => toggleStatus(supplier, checked)">
                                 </Switch>
                             </TableCell>
                             <TableCell class="text-right">
-                                <Button size="sm" variant="outline" @click="onShow(supplier.id)"><Eye></Eye></Button>
-                                <Button size="sm" variant="outline" @click="onEdit(supplier.id)"><SquarePen></SquarePen></Button>
-                                <Button size="sm" variant="outline" @click="onDelete(supplier.id)"><Trash></Trash></Button>
+                                <Button size="sm" variant="outline" @click="onShow(supplier.id)">
+                                    <Eye></Eye>
+                                </Button>
+                                <Button size="sm" variant="outline" @click="onEdit(supplier.id)">
+                                    <SquarePen></SquarePen>
+                                </Button>
+                                <Button size="sm" variant="outline" @click="onDelete(supplier.id)">
+                                    <Trash></Trash>
+                                </Button>
                             </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
-                <div class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
+                <div
+                    class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
                     <!-- Left -->
                     <div class="flex flex-col gap-2 text-sm text-gray-600 sm:flex-row sm:items-center">
                         <div class="flex items-center gap-2">
                             <label>Show</label>
 
-                            <select
-                                v-model="perPage"
-                                @change="changePerPage"
-                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
-                            >
+                            <select v-model="perPage" @change="changePerPage"
+                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500">
                                 <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
                                     {{ size }}
                                 </option>
@@ -604,18 +555,11 @@ const goToPage = (url: string | null) => {
 
                     <!-- Right -->
                     <div class="flex flex-wrap justify-center gap-2 md:justify-end">
-                        <Button
-                            v-for="(link, index) in data.links"
-                            :key="index"
-                            :disabled="!link.url"
-                            size="sm"
-                            variant="outline"
-                            @click="goToPage(link.url)"
-                            :class="[
+                        <Button v-for="(link, index) in data.links" :key="index" :disabled="!link.url" size="sm"
+                            variant="outline" @click="goToPage(link.url)" :class="[
                                 link.active ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-gray-700',
                                 !link.url ? 'cursor-not-allowed opacity-50' : '',
-                            ]"
-                        >
+                            ]">
                             <span v-html="link.label"></span>
                         </Button>
                     </div>
@@ -627,26 +571,31 @@ const goToPage = (url: string | null) => {
             <DialogContent class="max-w-206.25">
                 <DialogHeader>
                     <DialogTitle>{{ isEditMode ? 'Edit Supplier' : 'Create Supplier' }}</DialogTitle>
-                    <DialogDescription> Make changes to your supplier here. Click save when you're done. </DialogDescription>
+                    <DialogDescription> Make changes to your supplier here. Click save when you're done.
+                    </DialogDescription>
                 </DialogHeader>
                 <div class="grid grid-cols-1 gap-6 py-4 md:grid-cols-2">
                     <div class="grid gap-2">
                         <Label for="name" class="font-medium">Supplier Name<span class="text-red-500">*</span></Label>
-                        <Input id="name" v-model="form.name" class="w-full" placeholder="Enter Supplier Name" autofocus />
+                        <Input id="name" v-model="form.name" class="w-full" placeholder="Enter Supplier Name"
+                            autofocus />
                         <p v-if="form.errors.name" class="text-sm text-red-600">
                             {{ form.errors.name }}
                         </p>
                     </div>
                     <div class="grid gap-2">
-                        <Label for="subaddress" class="font-medium">Supplier Address<span class="text-red-500">*</span></Label>
-                        <Textarea id="subaddress" v-model="form.subaddress" class="w-full" placeholder="Enter Supplier Address" autofocus />
+                        <Label for="subaddress" class="font-medium">Supplier Address<span
+                                class="text-red-500">*</span></Label>
+                        <Textarea id="subaddress" v-model="form.subaddress" class="w-full"
+                            placeholder="Enter Supplier Address" autofocus />
                         <p v-if="form.errors.subaddress" class="text-sm text-red-600">
                             {{ form.errors.subaddress }}
                         </p>
                     </div>
                     <div class="grid gap-2">
                         <Label for="subcountry" class="font-medium">Country Name</Label>
-                        <Input id="subcountry" v-model="form.subcountry" class="w-full" placeholder="Supplier Country Name" autofocus />
+                        <Input id="subcountry" v-model="form.subcountry" class="w-full"
+                            placeholder="Supplier Country Name" autofocus />
                         <p v-if="form.errors.subcountry" class="text-sm text-red-600">
                             {{ form.errors.subcountry }}
                         </p>
@@ -654,7 +603,8 @@ const goToPage = (url: string | null) => {
                     </div>
                     <div class="grid gap-2">
                         <Label for="substate" class="font-medium">State Name</Label>
-                        <Input id="substate" v-model="form.substate" class="w-full" placeholder="State Name" autofocus />
+                        <Input id="substate" v-model="form.substate" class="w-full" placeholder="State Name"
+                            autofocus />
                         <p v-if="form.errors.substate" class="text-sm text-red-600">
                             {{ form.errors.substate }}
                         </p>
@@ -668,28 +618,33 @@ const goToPage = (url: string | null) => {
                     </div>
                     <div class="grid gap-2">
                         <Label for="subzipcode" class="font-medium">Zip Code</Label>
-                        <Input id="subzipcode" v-model="form.subzipcode" class="w-full" placeholder="Enter Zip Code" autofocus />
+                        <Input id="subzipcode" v-model="form.subzipcode" class="w-full" placeholder="Enter Zip Code"
+                            autofocus />
                         <p v-if="form.errors.subzipcode" class="text-sm text-red-600">
                             {{ form.errors.subzipcode }}
                         </p>
                     </div>
                     <div class="grid gap-2">
-                        <Label for="contact_person" class="font-medium">Contact Person<span class="text-red-500">*</span></Label>
-                        <Input id="contact_person" v-model="form.contact_person" class="w-full" placeholder="Enter Contact Person" autofocus />
+                        <Label for="contact_person" class="font-medium">Contact Person<span
+                                class="text-red-500">*</span></Label>
+                        <Input id="contact_person" v-model="form.contact_person" class="w-full"
+                            placeholder="Enter Contact Person" autofocus />
                         <p v-if="form.errors.contact_person" class="text-sm text-red-600">
                             {{ form.errors.contact_person }}
                         </p>
                     </div>
                     <div class="grid gap-2">
                         <Label for="subphone" class="font-medium">Phone<span class="text-red-500">*</span></Label>
-                        <Input id="subphone" v-model="form.subphone" class="w-full" placeholder="Enter Supplier Phone" autofocus />
+                        <Input id="subphone" v-model="form.subphone" class="w-full" placeholder="Enter Supplier Phone"
+                            autofocus />
                         <p v-if="form.errors.subphone" class="text-sm text-red-600">
                             {{ form.errors.subphone }}
                         </p>
                     </div>
                     <div class="grid gap-2">
                         <Label for="subemail" class="font-medium">Email</Label>
-                        <Input id="subemail" v-model="form.subemail" class="w-full" placeholder="Enter Supplier Email" autofocus />
+                        <Input id="subemail" v-model="form.subemail" class="w-full" placeholder="Enter Supplier Email"
+                            autofocus />
                         <p v-if="form.errors.subemail" class="text-sm text-red-600">
                             {{ form.errors.subemail }}
                         </p>
@@ -714,7 +669,8 @@ const goToPage = (url: string | null) => {
             <DialogContent class="max-w-4xl rounded-2xl p-6 shadow-xl">
                 <DialogHeader>
                     <DialogTitle class="text-2xl font-semibold">Show Supplier</DialogTitle>
-                    <DialogDescription class="text-muted-foreground text-sm"> View the details of this Supplier. </DialogDescription>
+                    <DialogDescription class="text-muted-foreground text-sm"> View the details of this Supplier.
+                    </DialogDescription>
                 </DialogHeader>
                 <div class="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
                     <!-- Left Column -->
@@ -763,10 +719,8 @@ const goToPage = (url: string | null) => {
                         <FormGroup label="Status" htmlFor="active">
                             <div class="flex items-center space-x-6">
                                 <label class="inline-flex items-center space-x-2">
-                                    <span
-                                        class="inline-block rounded-full px-3 py-1 text-sm font-medium"
-                                        :class="form.active == '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                    >
+                                    <span class="inline-block rounded-full px-3 py-1 text-sm font-medium"
+                                        :class="form.active == '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
                                         {{ form.active == '1' ? 'Active' : 'Inactive' }}
                                     </span>
                                 </label>

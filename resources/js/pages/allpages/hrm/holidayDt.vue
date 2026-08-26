@@ -306,11 +306,10 @@ const goToHolidayHd = () => {
 };
 </script>
 <template>
+
     <Head title="Holiday Details" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+        <div class="app-page">
             <!-- Header Section -->
 
             <!-- Top Row -->
@@ -322,7 +321,8 @@ const goToHolidayHd = () => {
                         Manage Holiday
                     </Button>
 
-                    <Button size="sm" @click="showDailogCreate" class="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+                    <Button size="sm" @click="showDailogCreate"
+                        class="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
                         <Plus class="mr-2 h-4 w-4" />
                         Create Holiday
                     </Button>
@@ -340,15 +340,12 @@ const goToHolidayHd = () => {
                     <DropdownMenuContent class="w-52">
                         <DropdownMenuCheckboxItem
                             v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
-                            :key="column.id"
-                            class="capitalize"
-                            :model-value="column.getIsVisible()"
+                            :key="column.id" class="capitalize" :model-value="column.getIsVisible()"
                             @update:model-value="
                                 (value) => {
                                     column.toggleVisibility(!!value);
                                 }
-                            "
-                        >
+                            ">
                             {{ column.id }}
                         </DropdownMenuCheckboxItem>
                     </DropdownMenuContent>
@@ -365,20 +362,17 @@ const goToHolidayHd = () => {
                 <Table class="min-w-full">
                     <!-- Table Head -->
                     <TableHeader>
-                        <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id" class="bg-gray-50">
-                            <TableHead
-                                v-for="header in headerGroup.headers"
-                                :key="header.id"
-                                :data-pinned="header.column.getIsPinned()"
-                                :class="
-                                    cn(
-                                        'px-4 py-3 font-semibold whitespace-nowrap text-gray-700',
-                                        { 'sticky z-10 bg-white': header.column.getIsPinned() },
-                                        header.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                    )
-                                "
-                            >
-                                <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
+                        <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id"
+                            class="bg-gray-50">
+                            <TableHead v-for="header in headerGroup.headers" :key="header.id"
+                                :data-pinned="header.column.getIsPinned()" :class="cn(
+                                    'px-4 py-3 font-semibold whitespace-nowrap text-gray-700',
+                                    { 'sticky z-10 bg-white': header.column.getIsPinned() },
+                                    header.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
+                                )
+                                    ">
+                                <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+                                    :props="header.getContext()" />
                             </TableHead>
                         </TableRow>
                     </TableHeader>
@@ -387,26 +381,23 @@ const goToHolidayHd = () => {
                     <TableBody>
                         <template v-if="table.getRowModel().rows?.length">
                             <template v-for="row in table.getRowModel().rows" :key="row.id">
-                                <TableRow :data-state="row.getIsSelected() && 'selected'" class="border-t transition hover:bg-gray-50">
-                                    <TableCell
-                                        v-for="cell in row.getVisibleCells()"
-                                        :key="cell.id"
-                                        :data-pinned="cell.column.getIsPinned()"
-                                        :class="
-                                            cn(
-                                                'px-4 py-3 whitespace-nowrap',
-                                                { 'sticky z-10 bg-white': cell.column.getIsPinned() },
-                                                cell.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                            )
-                                        "
-                                    >
+                                <TableRow :data-state="row.getIsSelected() && 'selected'"
+                                    class="border-t transition hover:bg-gray-50">
+                                    <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id"
+                                        :data-pinned="cell.column.getIsPinned()" :class="cn(
+                                            'px-4 py-3 whitespace-nowrap',
+                                            { 'sticky z-10 bg-white': cell.column.getIsPinned() },
+                                            cell.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
+                                        )
+                                            ">
                                         <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                                     </TableCell>
                                 </TableRow>
 
                                 <!-- Expanded Row -->
                                 <TableRow v-if="row.getIsExpanded()">
-                                    <TableCell :colspan="row.getAllCells().length" class="bg-gray-50 px-4 py-3 text-sm text-gray-600">
+                                    <TableCell :colspan="row.getAllCells().length"
+                                        class="bg-gray-50 px-4 py-3 text-sm text-gray-600">
                                         {{ row.original }}
                                     </TableCell>
                                 </TableRow>
@@ -415,7 +406,8 @@ const goToHolidayHd = () => {
 
                         <!-- No Data -->
                         <TableRow v-else>
-                            <TableCell :colspan="columns.length" class="h-24 text-center text-gray-500"> No results found. </TableCell>
+                            <TableCell :colspan="columns.length" class="h-24 text-center text-gray-500"> No results
+                                found. </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
@@ -431,22 +423,13 @@ const goToHolidayHd = () => {
 
                         <!-- Right -->
                         <div class="flex justify-end gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                class="rounded-xl"
-                                :disabled="!table.getCanPreviousPage()"
-                                @click="table.previousPage()"
-                            >
+                            <Button variant="outline" size="sm" class="rounded-xl"
+                                :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">
                                 Previous
                             </Button>
 
-                            <Button
-                                size="sm"
-                                class="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
-                                :disabled="!table.getCanNextPage()"
-                                @click="table.nextPage()"
-                            >
+                            <Button size="sm" class="rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+                                :disabled="!table.getCanNextPage()" @click="table.nextPage()">
                                 Next
                             </Button>
                         </div>
@@ -461,7 +444,8 @@ const goToHolidayHd = () => {
             <DialogContent class="max-w-206.25">
                 <DialogHeader>
                     <DialogTitle>{{ isEditMode ? 'Edit Holiday Details' : 'Create Holiday Details' }}</DialogTitle>
-                    <DialogDescription> Make changes to your profile here. Click save when you're done. </DialogDescription>
+                    <DialogDescription> Make changes to your profile here. Click save when you're done.
+                    </DialogDescription>
                 </DialogHeader>
                 <div class="grid grid-cols-2 gap-5">
                     <div class="grid gap-y-3">
@@ -477,7 +461,8 @@ const goToHolidayHd = () => {
                 <div class="mt-4 grid grid-cols-2 gap-5">
                     <div class="grid gap-y-5">
                         <Label for="holidate">Holi Date</Label>
-                        <VueDatePicker v-model="dtdate" :format="'yyyy-MM-dd'" :enable-time-picker="false" placeholder="Holi Date" auto-apply />
+                        <VueDatePicker v-model="dtdate" :format="'yyyy-MM-dd'" :enable-time-picker="false"
+                            placeholder="Holi Date" auto-apply />
                         <span v-if="errors?.holidate" class="text-sm text-red-600">{{ errors.holidate }}</span>
                     </div>
                     <div class="grid gap-y-5">

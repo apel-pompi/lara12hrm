@@ -43,6 +43,7 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
         ->as('follow-up-masters.')
         ->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/userlist/{userId}/{student_id}', 'userlist')->name('userlist');
             Route::get('/active', 'active')->name('active');
             Route::post('/', 'store')->name('store');
             Route::get('/{followUpMaster}', 'show')->name('show');
@@ -69,7 +70,7 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
             Route::get('/student/{studentId}', 'student')->name('student');
-            //Route::get('/admindashboard', 'admindashboard')->name('admindashboard');
+            Route::get('/showModalActivity/{activity}', 'showModalActivity')->name('showModalActivity');
             Route::get('/{activity}', 'show')->name('show');
             Route::get('/{activity}/timeline', 'timeline')->name('timeline');
             Route::delete('/{followUpActivity}', 'destroy')->name('destroy');

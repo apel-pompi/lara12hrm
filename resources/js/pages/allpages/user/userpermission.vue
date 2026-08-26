@@ -223,137 +223,112 @@ const goToPage = (url: string | null) => {
 </script>
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
+
         <Head title="User Permission" />
         <UserLayout>
-            <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+            <div
+                class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-screen flex-1 border bg-gray-50 px-4 py-6 md:min-h-min">
+
                 <!-- Header / Toolbar -->
                 <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                     <!-- Create -->
-                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="showDailogCreate"
-                        ><Plus></Plus> Create
+                    <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm"
+                        @click="showDailogCreate">
+                        <Plus></Plus> Create
                     </Button>
+
                     <Combobox v-model="selectedName">
                         <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Name"
-                                @input="queryName = $event.target.value"
-                                :display-value="(c) => c?.name ?? ''"
-                            />
+                            <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm" placeholder="Select Name"
+                                @input="queryName = $event.target.value" :display-value="(c) => c?.name ?? ''" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div v-if="filteredName.length === 0 && queryName !== ''" class="text-gray-500 select-none">Nothing found.</div>
-
-                                <ComboboxOption
-                                    v-for="one in filteredName"
-                                    :key="one.id"
-                                    :value="one"
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                                <div v-if="filteredName.length === 0 && queryName !== ''"
+                                    class="text-gray-500 select-none px-3 py-2">Nothing found.</div>
+                                <ComboboxOption v-for="one in filteredName" :key="one.id" :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ one.name }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
+                                    v-slot="{ selected }">
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">{{
+                                        one.name }}</span>
+                                    <span v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                         <CheckIcon class="h-5 w-5" />
                                     </span>
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
                     </Combobox>
+
                     <Combobox v-model="selectedUserName">
                         <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select User Name"
-                                @input="queryUserName = $event.target.value"
-                                :display-value="(c) => c?.username ?? ''"
-                            />
+                            <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm"
+                                placeholder="Select User Name" @input="queryUserName = $event.target.value"
+                                :display-value="(c) => c?.username ?? ''" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div v-if="filteredUserName.length === 0 && queryUserName !== ''" class="text-gray-500 select-none">
-                                    Nothing found.
-                                </div>
-
-                                <ComboboxOption
-                                    v-for="one in filteredUserName"
-                                    :key="one.id"
-                                    :value="one"
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                                <div v-if="filteredUserName.length === 0 && queryUserName !== ''"
+                                    class="text-gray-500 select-none px-3 py-2">Nothing found.</div>
+                                <ComboboxOption v-for="one in filteredUserName" :key="one.id" :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ one.username }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
+                                    v-slot="{ selected }">
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">{{
+                                        one.username }}</span>
+                                    <span v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                         <CheckIcon class="h-5 w-5" />
                                     </span>
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
                     </Combobox>
+
                     <Combobox v-model="selectedEmail">
                         <div class="relative w-full md:w-48">
-                            <ComboboxInput
-                                class="w-full rounded-md border px-3 py-2 text-sm"
-                                placeholder="Select Email"
-                                @input="queryEmail = $event.target.value"
-                                :display-value="(c) => c?.email ?? ''"
-                            />
+                            <ComboboxInput class="w-full rounded-md border px-3 py-2 text-sm" placeholder="Select Email"
+                                @input="queryEmail = $event.target.value" :display-value="(c) => c?.email ?? ''" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
 
                             <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg"
-                            >
-                                <div v-if="filteredEmail.length === 0 && queryEmail !== ''" class="text-gray-500 select-none">Nothing found.</div>
-
-                                <ComboboxOption
-                                    v-for="one in filteredEmail"
-                                    :key="one.id"
-                                    :value="one"
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                                <div v-if="filteredEmail.length === 0 && queryEmail !== ''"
+                                    class="text-gray-500 select-none px-3 py-2">Nothing found.</div>
+                                <ComboboxOption v-for="one in filteredEmail" :key="one.id" :value="one"
                                     class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pl-10 select-none"
-                                    v-slot="{ selected }"
-                                >
-                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
-                                        {{ one.email }}
-                                    </span>
-                                    <span
-                                        v-if="selected"
-                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600"
-                                    >
+                                    v-slot="{ selected }">
+                                    <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">{{
+                                        one.email }}</span>
+                                    <span v-if="selected"
+                                        class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                         <CheckIcon class="h-5 w-5" />
                                     </span>
                                 </ComboboxOption>
                             </ComboboxOptions>
                         </div>
                     </Combobox>
-                    <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                    <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+
+                    <Button variant="outline" size="sm" @click="search">
+                        <Search></Search> Search
+                    </Button>
+                    <Button variant="outline" size="sm" @click="refresh">
+                        <RefreshCcw></RefreshCcw> Refresh
+                    </Button>
                 </div>
 
                 <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                     <!-- Title -->
                     <div class="border-b px-6 py-4">
-                        <h2 class="text-lg font-semibold text-gray-800">Permission Managment</h2>
-                        <p class="text-sm text-gray-500">Manage all permission from here.</p>
+                        <h2 class="text-lg font-semibold text-gray-800">Permission Management</h2>
+                        <p class="text-sm text-gray-500">Manage all permissions from here.</p>
                     </div>
                     <Table>
                         <TableHeader>
@@ -372,45 +347,45 @@ const goToPage = (url: string | null) => {
                                 <TableCell>{{ trn.username }}</TableCell>
                                 <TableCell>{{ trn.email }}</TableCell>
                                 <TableCell>
-                                    <div v-for="(role, index) in trn.roles" :key="index">
-                                        <Badge variant="default" size="sm" class="flex flex-wrap gap-2">{{ role.name }}</Badge>
+                                    <div v-for="(role, index) in trn.roles" :key="index" class="inline-block mr-1">
+                                        <Badge variant="default" size="sm">{{ role.name }}</Badge>
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <span v-if="trn.banned_at"><Badge size="sm" class="flex flex-wrap gap-2 bg-red-500">Banned</Badge></span>
-                                    <span v-else><Badge variant="outline" size="sm" class="flex flex-wrap gap-2">Active</Badge></span>
+                                    <span v-if="trn.banned_at">
+                                        <Badge size="sm" class="bg-red-500">Banned</Badge>
+                                    </span>
+                                    <span v-else>
+                                        <Badge variant="outline" size="sm">Active</Badge>
+                                    </span>
                                 </TableCell>
-
                                 <TableCell class="flex justify-center gap-2 text-right">
                                     <div class="group relative">
-                                        <Button @click="onEdit(trn.id)" class="cursor-pointer" variant="outline" size="sm">
+                                        <Button @click="onEdit(trn.id)" class="cursor-pointer" variant="outline"
+                                            size="sm">
                                             <SquarePen class="h-4 w-4 text-indigo-600" />
                                         </Button>
                                         <span
-                                            class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
-                                        >
-                                            Edit User
-                                        </span>
+                                            class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100">Edit
+                                            User</span>
                                     </div>
                                     <div class="group relative" v-if="trn.banned_at">
-                                        <Button @click="onReturn(trn.id)" class="cursor-pointer bg-red-500" size="sm">
-                                            <Undo2 class="text-white" />
+                                        <Button @click="onReturn(trn.id)"
+                                            class="cursor-pointer bg-red-500 hover:bg-red-600" size="sm">
+                                            <Undo2 class="h-4 w-4 text-white" />
                                         </Button>
                                         <span
-                                            class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
-                                        >
-                                            Active User
-                                        </span>
+                                            class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100">Activate
+                                            User</span>
                                     </div>
                                     <div class="group relative" v-else>
-                                        <Button @click="onDelete(trn.id)" class="cursor-pointer" variant="outline" size="sm">
+                                        <Button @click="onDelete(trn.id)" class="cursor-pointer" variant="outline"
+                                            size="sm">
                                             <Trash class="h-4 w-4 text-red-500" />
                                         </Button>
                                         <span
-                                            class="absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
-                                        >
-                                            Banned User
-                                        </span>
+                                            class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100">Ban
+                                            User</span>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -421,36 +396,34 @@ const goToPage = (url: string | null) => {
                 <div class="flex flex-col items-center justify-between space-y-3 py-4 md:flex-row md:space-y-0">
                     <div class="text-muted-foreground flex flex-1 items-center space-x-2 text-sm">
                         <label for="per-page" class="text-gray-600">Show:</label>
-                        <select v-model="perPage" @change="changePerPage" class="rounded border px-2 py-1 text-sm">
-                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}</option>
+                        <select v-model="perPage" @change="changePerPage" id="per-page"
+                            class="rounded border px-2 py-1 text-sm">
+                            <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">{{ size }}
+                            </option>
                         </select>
                         <span>Showing {{ users.from }} to {{ users.to }} of {{ users.total }} results</span>
                     </div>
-                    <div class="space-x-2">
-                        <Button
-                            v-for="(link, index) in data.links"
-                            :key="index"
-                            :disabled="!link.url"
-                            variant="outline"
+                    <div class="flex space-x-2">
+                        <Button v-for="(link, index) in data.links" :key="index" :disabled="!link.url" variant="outline"
                             size="sm"
-                            :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
-                            @click="goToPage(link.url)"
-                        >
+                            :class="[link.active ? 'bg-gray-100 font-bold' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
+                            @click="goToPage(link.url)">
                             <span v-html="link.label"></span>
                         </Button>
                     </div>
                 </div>
             </div>
+
             <!-- Enhanced User Dialog Component -->
             <Dialog v-model:open="showDialog">
-                <DialogContent class="max-w-237.5 overflow-hidden rounded-2xl p-0 shadow-xl">
+                <DialogContent class="max-w-4xl overflow-hidden rounded-2xl p-0 shadow-xl">
                     <!-- Header with gradient background -->
                     <DialogHeader class="border-b px-6 pt-6 pb-4">
                         <DialogTitle class="text-2xl font-semibold">
                             {{ isEditMode ? 'Edit User' : 'Create New User' }}
                         </DialogTitle>
                         <DialogDescription class="mt-1 flex items-center text-gray-500">
-                            {{ isEditMode ? 'Update user information' : 'Fill in the details to create a new user account' }}
+                            {{ isEditMode ? 'Update user information' : 'Fill in the details to create a new user' }}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -464,12 +437,8 @@ const goToPage = (url: string | null) => {
                                 <div class="space-y-4">
                                     <div class="space-y-2">
                                         <Label for="name" class="text-sm font-medium text-gray-700">Full Name</Label>
-                                        <Input
-                                            id="name"
-                                            placeholder="John Doe"
-                                            v-model="form.name"
-                                            class="focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                        />
+                                        <Input id="name" placeholder="John Doe" v-model="form.name"
+                                            class="focus:border-blue-500 focus:ring-2 focus:ring-blue-500" />
                                         <p v-if="errors?.name" class="mt-1 flex items-center text-sm text-red-500">
                                             <AlertCircle class="mr-1 h-4 w-4" /> {{ errors.name }}
                                         </p>
@@ -477,28 +446,21 @@ const goToPage = (url: string | null) => {
 
                                     <div class="space-y-2">
                                         <Label for="username" class="text-sm font-medium text-gray-700">Username</Label>
-                                        <Input
-                                            id="username"
-                                            placeholder="johndoe"
-                                            v-model="form.username"
-                                            class="focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                        />
+                                        <Input id="username" placeholder="johndoe" v-model="form.username"
+                                            class="focus:border-blue-500 focus:ring-2 focus:ring-blue-500" />
                                         <p v-if="errors?.username" class="mt-1 flex items-center text-sm text-red-500">
                                             <AlertCircle class="mr-1 h-4 w-4" /> {{ errors.username }}
                                         </p>
                                     </div>
 
                                     <div class="space-y-2">
-                                        <Label for="email" class="text-sm font-medium text-gray-700">Email Address</Label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            placeholder="john@example.com"
+                                        <Label for="email" class="text-sm font-medium text-gray-700">Email
+                                            Address</Label>
+                                        <Input id="email" type="email" placeholder="john@example.com"
                                             v-model="form.email"
-                                            class="focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                        />
+                                            class="focus:border-blue-500 focus:ring-2 focus:ring-blue-500" />
                                         <p v-if="errors?.email" class="mt-1 flex items-center text-sm text-red-500">
-                                            <CircleAlertIcon class="mr-1 h-4 w-4" /> {{ errors.email }}
+                                            <AlertCircle class="mr-1 h-4 w-4" /> {{ errors.email }}
                                         </p>
                                     </div>
                                 </div>
@@ -514,53 +476,42 @@ const goToPage = (url: string | null) => {
                                             {{ isEditMode ? 'New Password' : 'Password' }}
                                         </Label>
                                         <div class="relative">
-                                            <Input
-                                                id="password"
-                                                :type="showPassword ? 'text' : 'password'"
-                                                placeholder="••••••••"
-                                                v-model="form.password"
-                                                class="pr-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                            />
-                                            <button
-                                                type="button"
+                                            <Input id="password" :type="showPassword ? 'text' : 'password'"
+                                                placeholder="••••••••" v-model="form.password"
+                                                class="pr-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" />
+                                            <button type="button"
                                                 class="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                @click="showPassword = !showPassword"
-                                            >
-                                                <IconEye v-if="!showPassword" class="h-5 w-5" />
-                                                <IconEyeOff v-else class="h-5 w-5" />
+                                                @click="showPassword = !showPassword">
+                                                <EyeOff v-if="!showPassword" class="h-5 w-5" />
+                                                <Eye v-else class="h-5 w-5" />
                                             </button>
                                         </div>
                                         <p v-if="errors?.password" class="mt-1 flex items-center text-sm text-red-500">
-                                            <CircleAlertIcon class="mr-1 h-4 w-4" /> {{ errors.password }}
+                                            <AlertCircle class="mr-1 h-4 w-4" /> {{ errors.password }}
                                         </p>
                                     </div>
 
                                     <div class="space-y-2">
-                                        <Label for="confirm_password" class="text-sm font-medium text-gray-700"> Confirm Password </Label>
-                                        <Input
-                                            id="password_confirmation"
-                                            :type="showPassword ? 'text' : 'password'"
-                                            placeholder="••••••••"
-                                            v-model="form.password_confirmation"
-                                            class="focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                        />
-                                        <p v-if="errors?.password_confirmation" class="mt-1 flex items-center text-sm text-red-500">
-                                            <CircleAlertIcon class="mr-1 h-4 w-4" /> {{ errors.password_confirmation }}
+                                        <Label for="password_confirmation"
+                                            class="text-sm font-medium text-gray-700">Confirm Password</Label>
+                                        <Input id="password_confirmation" :type="showPassword ? 'text' : 'password'"
+                                            placeholder="••••••••" v-model="form.password_confirmation"
+                                            class="focus:border-blue-500 focus:ring-2 focus:ring-blue-500" />
+                                        <p v-if="errors?.password_confirmation"
+                                            class="mt-1 flex items-center text-sm text-red-500">
+                                            <AlertCircle class="mr-1 h-4 w-4" /> {{ errors.password_confirmation }}
                                         </p>
                                     </div>
 
                                     <div class="space-y-2">
-                                        <Label for="role" class="text-sm font-medium text-gray-700">User Role</Label>
-                                        <select
-                                            id="roles"
-                                            v-model="form.permissions"
-                                            multiple
-                                            class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                        >
-                                            <option v-for="role in props.roles" :key="role.id" :value="Number(role.id)">{{ role.name }}</option>
+                                        <Label for="roles" class="text-sm font-medium text-gray-700">User Role</Label>
+                                        <select id="roles" v-model="form.roles" multiple
+                                            class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+                                            <option v-for="role in props.roles" :key="role.id" :value="Number(role.id)">
+                                                {{ role.name }}</option>
                                         </select>
-                                        <p v-if="errors?.permission" class="mt-1 flex items-center text-sm text-red-500">
-                                            <IconAlertCircle class="mr-1 h-4 w-4" /> {{ errors.permission }}
+                                        <p v-if="errors?.roles" class="mt-1 flex items-center text-sm text-red-500">
+                                            <AlertCircle class="mr-1 h-4 w-4" /> {{ errors.roles }}
                                         </p>
                                     </div>
                                 </div>
@@ -570,14 +521,11 @@ const goToPage = (url: string | null) => {
                         <!-- Footer with Actions -->
                         <DialogFooter class="mt-8 border-t pt-6">
                             <DialogClose as-child>
-                                <Button type="button" variant="outline" class="px-6"> Cancel </Button>
+                                <Button type="button" variant="outline" class="px-6">Cancel</Button>
                             </DialogClose>
-                            <Button
-                                type="submit"
-                                class="bg-indigo-600 px-6 transition-colors hover:bg-indigo-700"
-                                :disabled="form.processing"
-                                @click="submit"
-                            >
+                            <Button type="submit"
+                                class="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700"
+                                :disabled="form.processing" @click="submit">
                                 <template v-if="form.processing">
                                     <Loader2 class="mr-2 h-4 w-4 animate-spin" />
                                     Processing...

@@ -197,13 +197,14 @@ class StudentController extends Controller
 
         return Inertia::render('allpages/Agency/Student/studentlead', array_merge($counts, [
             'student' => $student->get(array_merge($request->query(), ['per_page' => $perPage])),
-            'filters' => $request->only(['id', 'student_id', 'fname', 'lname', 'phone', 'assain_user', 'status', 'created_at']),
+            'filters' => $request->only(['id', 'student_id', 'fname', 'lname', 'phone', 'assain_user', 'status', 'created_at', 'advanceStudentName', 'advancePhone', 'name', 'user']),
             'showInactiveTabs' => $this->showInactiveTabs(),
         ]));
     }
 
     public function SearchLead(Request $request)
     {
+
         $type  = $request->get('type', 'name');
         $query = $request->get('q', '');
 
@@ -817,13 +818,7 @@ class StudentController extends Controller
         return back()->with('message', 'Student updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Student $student)
-    {
-        //
-    }
+
 
     // ─────────────────────────────────────────────
     // PRIVATE HELPER: all status + inactive counts
@@ -1179,5 +1174,34 @@ class StudentController extends Controller
         }
 
         return response()->json($logs->paginate(50));
+    }
+
+    public function AdvanceSearch(Request $request)
+    {
+        $students = Student::query()
+            ->select('id', 'fname', 'lname', 'phone', 'assain_user')
+            ->selectRaw('DATE(created_at) as date')
+            ->where('status', 1)
+            ->with(['assainuser:id,name']);
+
+        $students->when($request->filled('advanceStudentName'), function ($query) use ($request) {
+            $name = $request->input('advanceStudentName');
+            $query->where(function ($sub) use ($name) {
+                $sub->where('fname', 'like', "%{$name}%")
+                    ->orWhere('lname', 'like', "%{$name}%");
+            });
+        });
+
+        $students->when($request->filled('advancePhone'), function ($query) use ($request) {
+            $phone = $request->input('advancePhone');
+            $query->whereRaw(
+                "RIGHT(REGEXP_REPLACE(phone,'[^0-9]',''),11) LIKE ?",
+                ["%{$phone}%"]
+            );
+        });
+
+        return response()->json(
+            $students->orderBy('id', 'desc')->limit(500)->get()
+        );
     }
 }

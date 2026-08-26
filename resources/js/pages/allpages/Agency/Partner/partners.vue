@@ -142,40 +142,36 @@ const goToPage = (url: string | null) => {
 </script>
 
 <template>
-    <Head title="Business & Partners" />
+
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+
+        <Head title="Business & Partners" />
+        <div class="app-page">
             <div
-                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
-            >
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
                 <Combobox v-model="selectedName">
                     <div class="relative w-full md:w-48">
                         <ComboboxInput
                             class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                            placeholder="Select partner name"
-                            @input="queryName = $event.target.value"
-                            :display-value="(c) => c?.name ?? ''"
-                        />
+                            placeholder="Select partner name" @input="queryName = $event.target.value"
+                            :display-value="(c) => c?.name ?? ''" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
-                        <ComboboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
-                            <div v-if="filteredName.length === 0 && queryName !== ''" class="px-4 py-2 text-gray-500 select-none">Nothing found.</div>
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                            <div v-if="filteredName.length === 0 && queryName !== ''"
+                                class="px-4 py-2 text-gray-500 select-none">Nothing found.</div>
 
-                            <ComboboxOption
-                                v-for="one in filteredName"
-                                :key="one.id"
-                                :value="one"
+                            <ComboboxOption v-for="one in filteredName" :key="one.id" :value="one"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ one.name }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -186,30 +182,27 @@ const goToPage = (url: string | null) => {
                     <div class="relative w-full md:w-48">
                         <ComboboxInput
                             class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                            placeholder="Select workflow"
-                            @input="queryWorkflow = $event.target.value"
-                            :display-value="(c) => c?.name ?? ''"
-                        />
+                            placeholder="Select workflow" @input="queryWorkflow = $event.target.value"
+                            :display-value="(c) => c?.name ?? ''" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
-                        <ComboboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
-                            <div v-if="filteredWorkflow.length === 0 && queryWorkflow !== ''" class="px-4 py-2 text-gray-500 select-none">
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                            <div v-if="filteredWorkflow.length === 0 && queryWorkflow !== ''"
+                                class="px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="one in filteredWorkflow"
-                                :key="one.id"
-                                :value="one"
+                            <ComboboxOption v-for="one in filteredWorkflow" :key="one.id" :value="one"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ one.name }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -220,30 +213,27 @@ const goToPage = (url: string | null) => {
                     <div class="relative w-full md:w-48">
                         <ComboboxInput
                             class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                            placeholder="Select partner type"
-                            @input="queryPartnerType = $event.target.value"
-                            :display-value="(c) => c?.partnertypename ?? ''"
-                        />
+                            placeholder="Select partner type" @input="queryPartnerType = $event.target.value"
+                            :display-value="(c) => c?.partnertypename ?? ''" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
-                        <ComboboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
-                            <div v-if="filteredPartnerType.length === 0 && queryPartnerType !== ''" class="px-4 py-2 text-gray-500 select-none">
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                            <div v-if="filteredPartnerType.length === 0 && queryPartnerType !== ''"
+                                class="px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="one in filteredPartnerType"
-                                :key="one.id"
-                                :value="one"
+                            <ComboboxOption v-for="one in filteredPartnerType" :key="one.id" :value="one"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ one.partnertypename }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -254,38 +244,39 @@ const goToPage = (url: string | null) => {
                     <div class="relative w-full md:w-48">
                         <ComboboxInput
                             class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                            placeholder="Select country"
-                            @input="queryCountry = $event.target.value"
-                            :display-value="(c) => c?.name ?? ''"
-                        />
+                            placeholder="Select country" @input="queryCountry = $event.target.value"
+                            :display-value="(c) => c?.name ?? ''" />
                         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                         </ComboboxButton>
 
-                        <ComboboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
-                            <div v-if="filteredCountry.length === 0 && queryCountry !== ''" class="px-4 py-2 text-gray-500 select-none">
+                        <ComboboxOptions
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white py-1 text-sm shadow-lg">
+                            <div v-if="filteredCountry.length === 0 && queryCountry !== ''"
+                                class="px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="one in filteredCountry"
-                                :key="one.id"
-                                :value="one"
+                            <ComboboxOption v-for="one in filteredCountry" :key="one.id" :value="one"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ one.name }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
                         </ComboboxOptions>
                     </div>
                 </Combobox>
-                <Button variant="outline" size="sm" @click="search"><Search></Search> Search </Button>
-                <Button variant="outline" size="sm" @click="refresh"><RefreshCcw></RefreshCcw> Refresh </Button>
+                <Button variant="outline" size="sm" @click="search">
+                    <Search></Search> Search
+                </Button>
+                <Button variant="outline" size="sm" @click="refresh">
+                    <RefreshCcw></RefreshCcw> Refresh
+                </Button>
             </div>
 
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -309,21 +300,17 @@ const goToPage = (url: string | null) => {
                     <TableBody>
                         <TableRow v-for="(partner, index) in data.data" :key="index">
                             <TableCell>
-                                <Link :href="route('PartnerActivities.application', partner.id)" method="get" class="flex items-center space-x-2">
+                                <Link :href="route('PartnerActivities.application', partner.id)" method="get"
+                                    class="flex items-center space-x-2">
                                     <template v-if="partner.photo">
-                                        <img
-                                            :src="`/storage/partner/${partner.photo}`"
-                                            alt="Profile"
-                                            class="h-10 w-10 rounded-full object-cover shadow-md"
-                                        />
+                                        <img :src="`/storage/partner/${partner.photo}`" alt="Profile"
+                                            class="h-10 w-10 rounded-full object-cover shadow-md" />
                                     </template>
                                     <template v-else>
-                                        <span
-                                            :class="[
-                                                'flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold text-white shadow-md',
-                                                getAvatarColor(partner.name),
-                                            ]"
-                                        >
+                                        <span :class="[
+                                            'flex h-10 w-10 items-center justify-center rounded-full text-lg font-semibold text-white shadow-md',
+                                            getAvatarColor(partner.name),
+                                        ]">
                                             {{ (partner.name?.charAt(0) ?? '').toUpperCase() }}
                                         </span>
                                     </template>
@@ -331,7 +318,8 @@ const goToPage = (url: string | null) => {
                                 </Link>
                             </TableCell>
                             <TableCell>
-                                <Badge class="m-0.5 p-1" variant="outline" v-for="(wf, idx) in partner.workflow_names" :key="idx">
+                                <Badge class="m-0.5 p-1" variant="outline" v-for="(wf, idx) in partner.workflow_names"
+                                    :key="idx">
                                     {{ wf }}
                                 </Badge>
                             </TableCell>
@@ -340,7 +328,8 @@ const goToPage = (url: string | null) => {
                             <TableCell>{{ partner.state.name }}</TableCell>
                             <TableCell>{{ partner.city?.name }}</TableCell>
                             <TableCell>
-                                <Switch :model-value="Boolean(partner.active)" @update:model-value="(checked) => toggleStatus(partner, checked)">
+                                <Switch :model-value="Boolean(partner.active)"
+                                    @update:model-value="(checked) => toggleStatus(partner, checked)">
                                 </Switch>
                             </TableCell>
                         </TableRow>
@@ -357,15 +346,10 @@ const goToPage = (url: string | null) => {
                     <span>Showing {{ pertners.from }} to {{ pertners.to }} of {{ pertners.total }} results</span>
                 </div>
                 <div class="space-x-2">
-                    <Button
-                        v-for="(link, index) in data.links"
-                        :key="index"
-                        :disabled="!link.url"
-                        variant="outline"
+                    <Button v-for="(link, index) in data.links" :key="index" :disabled="!link.url" variant="outline"
                         size="sm"
                         :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
-                        @click="goToPage(link.url)"
-                    >
+                        @click="goToPage(link.url)">
                         <span v-html="link.label"></span>
                     </Button>
                 </div>

@@ -128,6 +128,7 @@ class FollowUpActivityController extends Controller
      */
     public function show(FollowUpActivity $activity)
     {
+
         $activity->load([
             'student',
             'master',
@@ -145,6 +146,23 @@ class FollowUpActivityController extends Controller
         );
     }
 
+    public function showModalActivity(FollowUpActivity $activity)
+    {
+        $activity->load([
+            'student',
+            'master',
+            'status',
+            'creator',
+            'assignedTo',
+            'reminders',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $activity,
+        ]);
+    }
+
     /**
      * Remove the specified resource from storage.
      */
@@ -158,105 +176,4 @@ class FollowUpActivityController extends Controller
             'message' => 'Activity deleted successfully.'
         ]);
     }
-
-    // public function admindashboard(): JsonResponse
-    // {
-
-    //     $result = $this->activityService->dashboardSummary();
-    //     return response()->json($result);
-    // }
-    // public function admindashboard()
-    // {
-
-    //     $today = Carbon::today();
-
-    //     $counselorPerformance = FollowUpActivity::query()
-    //         ->select([
-    //             'assigned_to',
-    //             DB::raw('COUNT(*) as total'),
-
-    //             DB::raw("
-    //             SUM(
-    //                 CASE
-    //                     WHEN follow_up_status_id = 1
-    //                     THEN 1
-    //                     ELSE 0
-    //                 END
-    //             ) as pending
-    //         "),
-
-    //             DB::raw("
-    //             SUM(
-    //                 CASE
-    //                     WHEN follow_up_status_id = 3
-    //                     THEN 1
-    //                     ELSE 0
-    //                 END
-    //             ) as completed
-    //         "),
-
-    //             DB::raw("
-    //             SUM(
-    //                 CASE
-    //                     WHEN follow_up_date < '{$today->toDateString()}'
-    //                     AND follow_up_status_id != 3
-    //                     THEN 1
-    //                     ELSE 0
-    //                 END
-    //             ) as overdue
-    //         "),
-
-    //             DB::raw("
-    //             SUM(
-    //                 CASE
-    //                     WHEN priority = 'Urgent'
-    //                     THEN 1
-    //                     ELSE 0
-    //                 END
-    //             ) as urgent
-    //         "),
-    //         ])
-    //         ->whereNotNull('assigned_to')
-    //         ->groupBy('assigned_to')
-    //         ->orderByDesc('total')
-    //         ->get();
-
-    //     // Counselor names
-    //     $userIds = $counselorPerformance
-    //         ->pluck('assigned_to')
-    //         ->filter()
-    //         ->unique();
-
-    //     $users = User::pluck('name', 'id');
-
-    //     $counselorPerformance = $counselorPerformance
-    //         ->map(function ($item) use ($users) {
-
-    //             return [
-    //                 'user_id' => (int) $item->assigned_to,
-
-    //                 'user_name' => $users[$item->assigned_to]
-    //                     ?? 'Unknown Counselor',
-
-    //                 'total' => (int) $item->total,
-
-    //                 'pending' => (int) $item->pending,
-
-    //                 'completed' => (int) $item->completed,
-
-    //                 'overdue' => (int) $item->overdue,
-
-    //                 'urgent' => (int) $item->urgent,
-    //             ];
-    //         })
-    //         ->values();
-
-    //     return response()->json([
-    //         'success' => true,
-
-    //         'data' => [
-    //             'counselorPerformance' => $counselorPerformance,
-    //         ],
-    //     ]);
-    // }
 }

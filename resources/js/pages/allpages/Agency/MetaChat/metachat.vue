@@ -197,9 +197,6 @@ const startListening = (conversationId: number) => {
 
                 <!-- Inbox Section -->
                 <section class="flex h-full min-w-0 flex-1 overflow-hidden">
-                    <!-- Conversation List Panel -->
-                    <!-- Mobile: full width when mobileView='list', hidden when 'chat' -->
-                    <!-- md+: always visible at fixed width, flex-1 on mobile if in list view -->
                     <div class="flex h-full flex-col overflow-hidden border-r bg-white transition-all duration-200"
                         :class="{
                             'w-full': mobileView === 'list',
@@ -214,9 +211,6 @@ const startListening = (conversationId: number) => {
                             class="min-h-0 flex-1 overflow-hidden" />
                     </div>
 
-                    <!-- Chat Panel -->
-                    <!-- Mobile: full width when mobileView='chat', hidden when 'list' -->
-                    <!-- md+: always flex-1 -->
                     <div class="flex h-full min-w-0 flex-col overflow-hidden bg-slate-50 transition-all duration-200"
                         :class="{
                             'flex w-full': mobileView === 'chat',
@@ -224,7 +218,6 @@ const startListening = (conversationId: number) => {
                             'md:flex md:flex-1': true,
                         }">
                         <template v-if="currentConversation">
-                            <!-- Mobile back button in chat header area -->
                             <div class="flex shrink-0 items-center gap-2 border-b bg-white px-4 py-2 md:hidden">
                                 <button @click="backToList"
                                     class="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
@@ -235,7 +228,7 @@ const startListening = (conversationId: number) => {
                                     Back
                                 </button>
                                 <span class="text-sm font-semibold text-slate-700">{{ currentConversation.social_name
-                                    }}</span>
+                                }}</span>
                             </div>
 
                             <ChatHeader :conversation="currentConversation" :channels="channels"

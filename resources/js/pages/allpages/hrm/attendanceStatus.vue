@@ -52,9 +52,11 @@ const onReport = async () => {
 </script>
 
 <template>
-    <Head title="Pay Slip Generate" />
+
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 border px-4 md:min-h-min">
+
+        <Head title="Pay Slip Generate" />
+        <div class="app-page">
             <div class="mx-auto mt-8 max-w-md space-y-6 rounded-lg border bg-white p-6 dark:bg-gray-800">
                 <h2 class="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">Pay Slip Generate</h2>
                 <!-- Input -->
@@ -64,28 +66,19 @@ const onReport = async () => {
                         <div class="relative">
                             <ComboboxInput
                                 class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select Branch"
-                                @input="queryBranch = $event.target.value"
-                                :display-value="(c) => (c ? c.branchname : '')"
-                            />
+                                placeholder="Select Branch" @input="queryBranch = $event.target.value"
+                                :display-value="(c) => (c ? c.branchname : '')" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
                             <ComboboxOptions
-                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                            >
-                                <div
-                                    v-if="filteredBranch.length === 0 && queryBranch !== ''"
-                                    class="cursor-default px-4 py-2 text-gray-500 select-none"
-                                >
+                                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                                <div v-if="filteredBranch.length === 0 && queryBranch !== ''"
+                                    class="cursor-default px-4 py-2 text-gray-500 select-none">
                                     Nothing found.
                                 </div>
-                                <ComboboxOption
-                                    v-for="branch in filteredBranch"
-                                    :key="branch.id"
-                                    :value="branch"
-                                    class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white"
-                                >
+                                <ComboboxOption v-for="branch in filteredBranch" :key="branch.id" :value="branch"
+                                    class="cursor-pointer px-3 py-2 hover:bg-indigo-600 hover:text-white">
                                     {{ branch.branchname }}
                                 </ComboboxOption>
                             </ComboboxOptions>
@@ -126,17 +119,13 @@ const onReport = async () => {
                 <!-- Submit -->
                 <div class="flex justify-center">
                     <div class="group relative">
-                        <Button
-                            @click="onReport"
+                        <Button @click="onReport"
                             class="cursor-pointer border-blue-300 text-blue-600 transition hover:bg-blue-50 hover:text-blue-700"
-                            variant="outline"
-                            size="lg"
-                        >
+                            variant="outline" size="lg">
                             <Save class="text-purple-500" />
                         </Button>
                         <span
-                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
-                        >
+                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100">
                             Submit
                         </span>
                     </div>

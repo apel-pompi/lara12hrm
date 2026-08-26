@@ -20,8 +20,10 @@ class FollowUpNotificationController extends Controller
      */
     public function index(int $userId): JsonResponse
     {
+        $perPage = request()->integer('per_page', 15);
+
         $notifications = $this->notificationService
-            ->paginate($userId, request()->integer('per_page', 5));
+            ->paginate($userId, $perPage);
 
         return response()->json([
             'success' => true,
@@ -68,7 +70,6 @@ class FollowUpNotificationController extends Controller
         FollowUpNotification $notification,
         int $userId
     ): JsonResponse {
-
         $notification = $this->notificationService->markAsRead(
             $notification,
             $userId

@@ -12,7 +12,8 @@ import {
     UserPlusIcon,
 } from '@heroicons/vue/24/outline';
 import { toast } from 'vue-sonner';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import CreateModal from '@/pages/allpages/Agency/MetaChat/FollowUpComponents/CreateModal.vue';
 import FollowUpTimeline from '@/pages/allpages/Agency/MetaChat/FollowUpComponents/FollowUpTimeline.vue';
@@ -43,6 +44,12 @@ watch(() => props.users, (newVal) => {
     if (newVal?.length) usersList.value = newVal;
 }, { immediate: true });
 
+const page = usePage();
+
+const userId = computed<number | null>(
+    () => (page.props as any).auth?.user?.id ?? null
+);
+
 const fetchOptionsIfNeeded = async () => {
     try {
         if (!mastersList.value.length) {
@@ -54,7 +61,7 @@ const fetchOptionsIfNeeded = async () => {
             statusesList.value = res.data || [];
         }
         if (!usersList.value.length) {
-            const res = await axios.get('/users/list');
+            const res = await axios.get(`/follow-up-masters/userlist/${userId.value}/${props.conversation?.student_id}`);
             usersList.value = res.data || [];
         }
     } catch (e) {
@@ -106,6 +113,8 @@ const openTimeline = () => {
 
     showTimelineModal.value = true;
 };
+
+
 </script>
 
 <template>

@@ -22,7 +22,7 @@ const page = usePage();
 const userWiseForms = (page.props as any).userWiseForms || [];
 const forms = (page.props as any).forms || [];
 const users = (page.props as any).users || [];
-console.log('userWiseForms:', userWiseForms);
+
 const showDialog = ref(false);
 const isEditMode = ref(false);
 const editingId = ref<number | null>(null);

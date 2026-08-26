@@ -246,24 +246,18 @@ const getMonthName = (m) => {
 </script>
 
 <template>
+
     <Head title="Holiday" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+        <div class="app-page">
             <!-- Responsive Header + Search Section -->
 
             <!-- Filters -->
             <div
-                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
-            >
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
-                    <Button
-                        variant="default"
-                        size="sm"
-                        @click="showDailogCreate"
-                        class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
-                    >
+                    <Button variant="default" size="sm" @click="showDailogCreate"
+                        class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
                         <Plus class="h-4 w-4" />
                         Create
                     </Button>
@@ -307,13 +301,15 @@ const getMonthName = (m) => {
                         </SelectContent>
                     </Select>
                     <!-- Search -->
-                    <Button variant="outline" size="sm" @click="search" class="rounded-xl border-indigo-300 hover:bg-indigo-50">
+                    <Button variant="outline" size="sm" @click="search"
+                        class="rounded-xl border-indigo-300 hover:bg-indigo-50">
                         <Search class="mr-2 h-4 w-4" />
                         Search
                     </Button>
 
                     <!-- Refresh -->
-                    <Button variant="outline" size="sm" @click="refresh" class="rounded-xl border-gray-300 hover:bg-gray-100">
+                    <Button variant="outline" size="sm" @click="refresh"
+                        class="rounded-xl border-gray-300 hover:bg-gray-100">
                         <RefreshCcw class="mr-2 h-4 w-4" />
                         Refresh
                     </Button>
@@ -341,7 +337,8 @@ const getMonthName = (m) => {
                     </TableHeader>
 
                     <TableBody>
-                        <TableRow v-for="(holidayhd, index) in data.data" :key="holidayhd.id ?? index" class="border-t transition hover:bg-gray-50">
+                        <TableRow v-for="(holidayhd, index) in data.data" :key="holidayhd.id ?? index"
+                            class="border-t transition hover:bg-gray-50">
                             <!-- Branch -->
                             <TableCell class="px-4 py-3 font-medium whitespace-nowrap text-gray-800">
                                 {{ holidayhd.branch?.branchname }}
@@ -359,10 +356,8 @@ const getMonthName = (m) => {
 
                             <!-- Holiday Days -->
                             <TableCell class="px-4 py-3">
-                                <a
-                                    :href="`/holidaydt/${holidayhd.id}/create/`"
-                                    class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 hover:bg-blue-200"
-                                >
+                                <a :href="`/holidaydt/${holidayhd.id}/create/`"
+                                    class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 hover:bg-blue-200">
                                     {{ holidayhd.holidays }} Days
                                 </a>
                             </TableCell>
@@ -374,29 +369,25 @@ const getMonthName = (m) => {
 
                             <!-- Status -->
                             <TableCell class="px-4 py-3 text-center">
-                                <Switch
-                                    :model-value="Boolean(holidayhd.active)"
-                                    @update:model-value="(checked) => toggleStatus(holidayhd, checked)"
-                                />
+                                <Switch :model-value="Boolean(holidayhd.active)"
+                                    @update:model-value="(checked) => toggleStatus(holidayhd, checked)" />
                             </TableCell>
 
                             <!-- Action -->
                             <TableCell class="px-4 py-3">
                                 <div class="flex justify-center gap-2">
-                                    <Button size="icon" variant="ghost" class="h-8 w-8 text-blue-600 hover:bg-blue-100" @click="onShow(holidayhd.id)">
+                                    <Button size="icon" variant="ghost" class="h-8 w-8 text-blue-600 hover:bg-blue-100"
+                                        @click="onShow(holidayhd.id)">
                                         <Eye class="h-4 w-4" />
                                     </Button>
 
-                                    <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        class="h-8 w-8 text-amber-600 hover:bg-amber-100"
-                                        @click="onEdit(holidayhd.id)"
-                                    >
+                                    <Button size="icon" variant="ghost"
+                                        class="h-8 w-8 text-amber-600 hover:bg-amber-100" @click="onEdit(holidayhd.id)">
                                         <SquarePen class="h-4 w-4" />
                                     </Button>
 
-                                    <Button size="icon" variant="ghost" class="h-8 w-8 text-red-600 hover:bg-red-100" @click="onDelete(holidayhd.id)">
+                                    <Button size="icon" variant="ghost" class="h-8 w-8 text-red-600 hover:bg-red-100"
+                                        @click="onDelete(holidayhd.id)">
                                         <Trash class="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -406,40 +397,32 @@ const getMonthName = (m) => {
                 </Table>
 
                 <!-- Footer Pagination -->
-                <div class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
+                <div
+                    class="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
                     <!-- Left -->
                     <div class="flex flex-col gap-2 text-sm text-gray-600 sm:flex-row sm:items-center">
                         <div class="flex items-center gap-2">
                             <label>Show</label>
 
-                            <select
-                                v-model="perPage"
-                                @change="changePerPage"
-                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500"
-                            >
+                            <select v-model="perPage" @change="changePerPage"
+                                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500">
                                 <option v-for="size in [5, 10, 25, 50, 100, 200]" :key="size" :value="size">
                                     {{ size }}
                                 </option>
                             </select>
                         </div>
 
-                        <span> Showing {{ holidayHd.from }} to {{ holidayHd.to }} of {{ holidayHd.total }} results </span>
+                        <span> Showing {{ holidayHd.from }} to {{ holidayHd.to }} of {{ holidayHd.total }} results
+                        </span>
                     </div>
 
                     <!-- Right -->
                     <div class="flex flex-wrap justify-center gap-2 md:justify-end">
-                        <Button
-                            v-for="(link, index) in data.links"
-                            :key="index"
-                            :disabled="!link.url"
-                            size="sm"
-                            variant="outline"
-                            @click="goToPage(link.url)"
-                            :class="[
+                        <Button v-for="(link, index) in data.links" :key="index" :disabled="!link.url" size="sm"
+                            variant="outline" @click="goToPage(link.url)" :class="[
                                 link.active ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-gray-700',
                                 !link.url ? 'cursor-not-allowed opacity-50' : '',
-                            ]"
-                        >
+                            ]">
                             <span v-html="link.label"></span>
                         </Button>
                     </div>
@@ -451,7 +434,8 @@ const getMonthName = (m) => {
             <DialogContent class="max-w-206.25">
                 <DialogHeader>
                     <DialogTitle>{{ isEditMode ? 'Edit Holiday' : 'Create Holiday' }}</DialogTitle>
-                    <DialogDescription> Make changes to your profile here. Click save when you're done. </DialogDescription>
+                    <DialogDescription> Make changes to your profile here. Click save when you're done.
+                    </DialogDescription>
                 </DialogHeader>
                 <div class="grid grid-cols-2 gap-5">
                     <div class="grid gap-y-3">
@@ -508,13 +492,16 @@ const getMonthName = (m) => {
                     <div class="grid gap-y-3">
                         <div class="grid gap-2">
                             <Label for="holidays">Holi Days</Label>
-                            <Input class="max-w-sm" placeholder="Enter Holi Days" id="holidays" v-model="form.holidays" autofocus />
+                            <Input class="max-w-sm" placeholder="Enter Holi Days" id="holidays" v-model="form.holidays"
+                                autofocus />
                             <span v-if="errors?.holidays" class="text-sm text-red-600">{{ errors.holidays }}</span>
                         </div>
                         <div class="grid gap-2">
                             <Label for="holiworking">Working Days</Label>
-                            <Input class="max-w-sm" placeholder="Enter Working Days" id="holidays" v-model="form.holiworking" autofocus />
-                            <span v-if="errors?.holiworking" class="text-sm text-red-600">{{ errors.holiworking }}</span>
+                            <Input class="max-w-sm" placeholder="Enter Working Days" id="holidays"
+                                v-model="form.holiworking" autofocus />
+                            <span v-if="errors?.holiworking" class="text-sm text-red-600">{{ errors.holiworking
+                            }}</span>
                         </div>
                         <input type="hidden" value="0" v-model="form.active" class="form-radio text-primary-600" />
                         <div class="grid gap-2">
@@ -538,7 +525,8 @@ const getMonthName = (m) => {
             <DialogContent class="max-w-4xl rounded-2xl p-6 shadow-xl">
                 <DialogHeader>
                     <DialogTitle class="text-2xl font-semibold">Show Holiday</DialogTitle>
-                    <DialogDescription class="text-muted-foreground text-sm"> View the details of this Holiday. </DialogDescription>
+                    <DialogDescription class="text-muted-foreground text-sm"> View the details of this Holiday.
+                    </DialogDescription>
                 </DialogHeader>
                 <div class="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
                     <!-- Left Column -->
@@ -555,7 +543,8 @@ const getMonthName = (m) => {
                         </FormGroup>
                         <!-- Holi Month -->
                         <FormGroup label="Holi Month" htmlFor="monthname">
-                            <Input id="monthname" :modelValue="isEditMode ? form.monthname : month[form.monthname]" :disabled="!isEditMode" />
+                            <Input id="monthname" :modelValue="isEditMode ? form.monthname : month[form.monthname]"
+                                :disabled="!isEditMode" />
                         </FormGroup>
                     </div>
                     <!-- Left Column -->
@@ -569,10 +558,8 @@ const getMonthName = (m) => {
                         <FormGroup label="Status" htmlFor="active">
                             <div class="flex items-center space-x-6">
                                 <label class="inline-flex items-center space-x-2">
-                                    <span
-                                        class="inline-block rounded-full px-3 py-1 text-sm font-medium"
-                                        :class="form.active == '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                    >
+                                    <span class="inline-block rounded-full px-3 py-1 text-sm font-medium"
+                                        :class="form.active == '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
                                         {{ form.active == '1' ? 'Active' : 'Inactive' }}
                                     </span>
                                 </label>

@@ -370,16 +370,17 @@ const goToPage = (url: string | null) => {
 </script>
 
 <template>
-    <Head title="Leave Paln" />
+
+
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border dark:bg-gray-9002 relative flex-1 border bg-gray-50 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.18),_transparent_30%),linear-gradient(135deg,_rgba(248,250,252,0.96),_rgba(238,242,255,0.95)_45%,_rgba(250,245,255,0.94))] p-4 py-6 dark:border-gray-800/80 dark:bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(49,46,129,0.82))]"
-        >
+
+        <Head title="Leave Paln" />
+        <div class="app-page">
             <div
-                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900"
-            >
-                <Button variant="outline" size="sm" @click="showDailogCreate" class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
-                    ><Plus></Plus> Create
+                class="mb-6 flex flex-col items-center justify-center gap-3 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap sm:items-center dark:border-gray-700 dark:bg-gray-900">
+                <Button variant="outline" size="sm" @click="showDailogCreate"
+                    class="w-40 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+                    <Plus></Plus> Create
                 </Button>
                 <Combobox v-model="selectedLeaveName">
                     <div class="relative">
@@ -387,10 +388,8 @@ const goToPage = (url: string | null) => {
                         <div class="relative w-full">
                             <ComboboxInput
                                 class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select name..."
-                                :display-value="(n) => n?.leavename"
-                                @input="queryLeaveName = $event.target.value"
-                            />
+                                placeholder="Select name..." :display-value="(n) => n?.leavename"
+                                @input="queryLeaveName = $event.target.value" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
@@ -398,26 +397,20 @@ const goToPage = (url: string | null) => {
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div
-                                v-if="filteredLeaveName.length === 0 && queryLeaveName !== ''"
-                                class="cursor-default px-4 py-2 text-gray-500 select-none"
-                            >
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredLeaveName.length === 0 && queryLeaveName !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredLeaveName"
-                                :key="n.id"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredLeaveName" :key="n.id" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ n.leavename }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -430,10 +423,8 @@ const goToPage = (url: string | null) => {
                         <div class="relative w-full">
                             <ComboboxInput
                                 class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select name..."
-                                :display-value="(n) => n?.empname"
-                                @input="queryEmployee = $event.target.value"
-                            />
+                                placeholder="Select name..." :display-value="(n) => n?.empname"
+                                @input="queryEmployee = $event.target.value" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
@@ -441,26 +432,20 @@ const goToPage = (url: string | null) => {
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div
-                                v-if="filteredEmployee.length === 0 && queryEmployee !== ''"
-                                class="cursor-default px-4 py-2 text-gray-500 select-none"
-                            >
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredEmployee.length === 0 && queryEmployee !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredEmployee"
-                                :key="n.id"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredEmployee" :key="n.id" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ n.empname }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -473,10 +458,8 @@ const goToPage = (url: string | null) => {
                         <div class="relative w-full">
                             <ComboboxInput
                                 class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select fromdate..."
-                                :display-value="(n) => n?.fromdate"
-                                @input="queryFormDate = $event.target.value"
-                            />
+                                placeholder="Select fromdate..." :display-value="(n) => n?.fromdate"
+                                @input="queryFormDate = $event.target.value" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
@@ -484,26 +467,20 @@ const goToPage = (url: string | null) => {
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div
-                                v-if="filteredFormDate.length === 0 && queryFormDate !== ''"
-                                class="cursor-default px-4 py-2 text-gray-500 select-none"
-                            >
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredFormDate.length === 0 && queryFormDate !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredFormDate"
-                                :key="n.id"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredFormDate" :key="n.id" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ n.fromdate }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -516,10 +493,8 @@ const goToPage = (url: string | null) => {
                         <div class="relative w-full">
                             <ComboboxInput
                                 class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select todate..."
-                                :display-value="(n) => n?.todate"
-                                @input="queryToDate = $event.target.value"
-                            />
+                                placeholder="Select todate..." :display-value="(n) => n?.todate"
+                                @input="queryToDate = $event.target.value" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
@@ -527,23 +502,20 @@ const goToPage = (url: string | null) => {
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div v-if="filteredToDate.length === 0 && queryToDate !== ''" class="cursor-default px-4 py-2 text-gray-500 select-none">
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredToDate.length === 0 && queryToDate !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredToDate"
-                                :key="n.id"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredToDate" :key="n.id" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ n.todate }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
@@ -556,10 +528,8 @@ const goToPage = (url: string | null) => {
                         <div class="relative w-full">
                             <ComboboxInput
                                 class="w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                placeholder="Select substitute..."
-                                :display-value="(n) => n?.empname"
-                                @input="querySubstitute = $event.target.value"
-                            />
+                                placeholder="Select substitute..." :display-value="(n) => n?.empname"
+                                @input="querySubstitute = $event.target.value" />
                             <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <ChevronUpDownIcon class="h-5 w-5 text-gray-400" />
                             </ComboboxButton>
@@ -567,37 +537,33 @@ const goToPage = (url: string | null) => {
 
                         <!-- Options -->
                         <ComboboxOptions
-                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900"
-                        >
-                            <div
-                                v-if="filteredSubstitute.length === 0 && querySubstitute !== ''"
-                                class="cursor-default px-4 py-2 text-gray-500 select-none"
-                            >
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-gray-700 dark:bg-gray-900">
+                            <div v-if="filteredSubstitute.length === 0 && querySubstitute !== ''"
+                                class="cursor-default px-4 py-2 text-gray-500 select-none">
                                 Nothing found.
                             </div>
 
-                            <ComboboxOption
-                                v-for="n in filteredSubstitute"
-                                :key="n.id"
-                                :value="n"
+                            <ComboboxOption v-for="n in filteredSubstitute" :key="n.id" :value="n"
                                 class="ui-active:bg-indigo-600 ui-active:text-white ui-selected:font-medium relative cursor-pointer py-2 pr-4 pl-10 select-none"
-                                v-slot="{ selected }"
-                            >
+                                v-slot="{ selected }">
                                 <span :class="['block truncate', selected ? 'font-medium' : 'font-normal']">
                                     {{ n.empname }}
                                 </span>
-                                <span v-if="selected" class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                <span v-if="selected"
+                                    class="ui-active:text-white absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
                                     <CheckIcon class="h-5 w-5" />
                                 </span>
                             </ComboboxOption>
                         </ComboboxOptions>
                     </div>
                 </Combobox>
-                <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="search"
-                    ><Search></Search> Search
+                <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm"
+                    @click="search">
+                    <Search></Search> Search
                 </Button>
-                <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm" @click="refresh"
-                    ><RefreshCcw></RefreshCcw> Refresh
+                <Button class="dark:bg-black dark:text-white dark:hover:bg-gray-600" variant="outline" size="sm"
+                    @click="refresh">
+                    <RefreshCcw></RefreshCcw> Refresh
                 </Button>
             </div>
 
@@ -636,47 +602,49 @@ const goToPage = (url: string | null) => {
                             <TableCell class="text-center">
                                 <div v-if="leave.status == 0" class="flex items-center justify-center gap-2">
                                     <div class="group relative">
-                                        <Button @click="onEdit(leave.id)" variant="outline" size="icon" class="cursor-pointer">
+                                        <Button @click="onEdit(leave.id)" variant="outline" size="icon"
+                                            class="cursor-pointer">
                                             <SquarePen class="h-4 w-4 text-blue-500" />
                                         </Button>
                                         <span
-                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
-                                        >
+                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100">
                                             Edit
                                         </span>
                                     </div>
                                     <div class="group relative">
-                                        <Button @click="onDelete(leave.id)" variant="outline" size="icon" class="cursor-pointer">
+                                        <Button @click="onDelete(leave.id)" variant="outline" size="icon"
+                                            class="cursor-pointer">
                                             <X class="h-4 w-4 text-red-500" />
                                         </Button>
                                         <span
-                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
-                                        >
+                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100">
                                             Cancel
                                         </span>
                                     </div>
 
                                     <div class="group relative">
-                                        <Button @click="onConfirm(leave.id)" variant="outline" size="icon" class="cursor-pointer">
+                                        <Button @click="onConfirm(leave.id)" variant="outline" size="icon"
+                                            class="cursor-pointer">
                                             <ShieldCheck class="h-4 w-4 text-green-500" />
                                         </Button>
                                         <span
-                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
-                                        >
+                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100">
                                             Send
                                         </span>
                                     </div>
                                 </div>
-                                <div v-else-if="leave.status == 1" class="flex items-center justify-center gap-2">Leave Cancel</div>
-                                <div v-else-if="leave.status == 2" class="flex items-center justify-center gap-2">Approval Pending</div>
+                                <div v-else-if="leave.status == 1" class="flex items-center justify-center gap-2">Leave
+                                    Cancel</div>
+                                <div v-else-if="leave.status == 2" class="flex items-center justify-center gap-2">
+                                    Approval Pending</div>
                                 <div v-else-if="leave.status == 3" class="flex items-center justify-center gap-2">
                                     <div class="group relative">
-                                        <Button @click="exportPdf(leave.id)" variant="outline" size="icon" class="cursor-pointer">
+                                        <Button @click="exportPdf(leave.id)" variant="outline" size="icon"
+                                            class="cursor-pointer">
                                             <FileText class="h-4 w-4 text-red-500" />
                                         </Button>
                                         <span
-                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
-                                        >
+                                            class="absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 transition group-hover:opacity-100">
                                             Report
                                         </span>
                                     </div>
@@ -697,15 +665,10 @@ const goToPage = (url: string | null) => {
                     <span>Showing {{ leaves.from }} to {{ leaves.to }} of {{ leaves.total }} results</span>
                 </div>
                 <div class="space-x-2">
-                    <Button
-                        v-for="(link, index) in data.links"
-                        :key="index"
-                        :disabled="!link.url"
-                        variant="outline"
+                    <Button v-for="(link, index) in data.links" :key="index" :disabled="!link.url" variant="outline"
                         size="sm"
                         :class="[link.active ? 'hover:outline' : '', !link.url ? 'cursor-not-allowed opacity-50' : '']"
-                        @click="goToPage(link.url)"
-                    >
+                        @click="goToPage(link.url)">
                         <span v-html="link.label"></span>
                     </Button>
                 </div>
@@ -716,7 +679,8 @@ const goToPage = (url: string | null) => {
             <DialogContent class="max-w-206.25">
                 <DialogHeader>
                     <DialogTitle>{{ isEditMode ? 'Edit Leave Request' : 'Create Leave Request' }}</DialogTitle>
-                    <DialogDescription> Make changes to your leave request here. Click save when you're done. </DialogDescription>
+                    <DialogDescription> Make changes to your leave request here. Click save when you're done.
+                    </DialogDescription>
                 </DialogHeader>
                 <div class="grid grid-cols-2 gap-5">
                     <div class="grid gap-y-3">
@@ -728,7 +692,8 @@ const goToPage = (url: string | null) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="employees in props.employee" :key="employees.id" :value="employees.id">
+                                        <SelectItem v-for="employees in props.employee" :key="employees.id"
+                                            :value="employees.id">
                                             {{ employees.empname }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -744,13 +709,15 @@ const goToPage = (url: string | null) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="leaveplans in props.leaveplan" :key="leaveplans.id" :value="leaveplans.id">
+                                        <SelectItem v-for="leaveplans in props.leaveplan" :key="leaveplans.id"
+                                            :value="leaveplans.id">
                                             {{ leaveplans.leavename }}
                                         </SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
-                            <span v-if="errors?.leaveplan_id" class="text-sm text-red-600">{{ errors.leaveplan_id }}</span>
+                            <span v-if="errors?.leaveplan_id" class="text-sm text-red-600">{{ errors.leaveplan_id
+                            }}</span>
                         </div>
 
                         <div v-if="balanceLeave.balance !== null" class="mt-4 rounded bg-gray-100 p-3">
@@ -761,44 +728,26 @@ const goToPage = (url: string | null) => {
 
                         <div class="grid gap-2">
                             <Label for="fromdate">From Date<span class="text-red-500">*</span></Label>
-                            <VueDatePicker
-                                v-model="fromdate"
-                                :disabled="balanceLeave?.balance === 0"
-                                :max-date="maxDate"
-                                :format="'yyyy-MM-dd'"
-                                :enable-time-picker="false"
-                                placeholder="From date"
-                                auto-apply
-                                model-type="format"
-                            />
+                            <VueDatePicker v-model="fromdate" :disabled="balanceLeave?.balance === 0"
+                                :max-date="maxDate" :format="'yyyy-MM-dd'" :enable-time-picker="false"
+                                placeholder="From date" auto-apply model-type="format" />
                             <span v-if="errors?.fromdate" class="text-sm text-red-600">{{ errors.fromdate }}</span>
                         </div>
                         <div class="grid gap-2">
                             <Label for="todate">To Date<span class="text-red-500">*</span></Label>
-                            <VueDatePicker
-                                v-model="todate"
-                                :disabled="balanceLeave?.balance === 0"
-                                :format="'yyyy-MM-dd'"
-                                :enable-time-picker="false"
-                                placeholder="To date"
-                                auto-apply
-                                model-type="format"
-                            />
+                            <VueDatePicker v-model="todate" :disabled="balanceLeave?.balance === 0"
+                                :format="'yyyy-MM-dd'" :enable-time-picker="false" placeholder="To date" auto-apply
+                                model-type="format" />
                             <span v-if="errors?.todate" class="text-sm text-red-600">{{ errors.todate }}</span>
                         </div>
                     </div>
                     <div class="grid gap-y-3">
                         <div class="grid gap-2">
                             <Label for="days">Total Days<span class="text-red-500">*</span></Label>
-                            <Input
-                                class="max-w-sm"
-                                placeholder="Total Days"
-                                id="empid"
-                                v-model="form.requestdays"
-                                autofocus
-                                :disabled="balanceLeave?.balance === 0"
-                            />
-                            <span v-if="errors?.requestdays" class="text-sm text-red-600">{{ errors.requestdays }}</span>
+                            <Input class="max-w-sm" placeholder="Total Days" id="empid" v-model="form.requestdays"
+                                autofocus :disabled="balanceLeave?.balance === 0" />
+                            <span v-if="errors?.requestdays" class="text-sm text-red-600">{{ errors.requestdays
+                            }}</span>
                         </div>
                         <div class="grid gap-2">
                             <Label for="substitute">Substitute<span class="text-red-500">*</span></Label>
@@ -808,7 +757,8 @@ const goToPage = (url: string | null) => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem v-for="employees in props.substitute" :key="employees.id" :value="employees.id">
+                                        <SelectItem v-for="employees in props.substitute" :key="employees.id"
+                                            :value="employees.id">
                                             {{ employees.empname }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -817,19 +767,17 @@ const goToPage = (url: string | null) => {
                             <span v-if="errors?.substitute" class="text-sm text-red-600">{{ errors.substitute }}</span>
                         </div>
                         <div class="grid gap-2">
-                            <Label for="contact_address">Contact address during leave period<span class="text-red-500">*</span></Label>
-                            <Textarea
-                                class="max-w-sm"
-                                placeholder="Write address"
-                                id="contact_address"
-                                v-model="form.contact_address"
-                                autofocus
-                            ></Textarea>
-                            <span v-if="errors?.contact_address" class="text-sm text-red-600">{{ errors.contact_address }}</span>
+                            <Label for="contact_address">Contact address during leave period<span
+                                    class="text-red-500">*</span></Label>
+                            <Textarea class="max-w-sm" placeholder="Write address" id="contact_address"
+                                v-model="form.contact_address" autofocus></Textarea>
+                            <span v-if="errors?.contact_address" class="text-sm text-red-600">{{ errors.contact_address
+                            }}</span>
                         </div>
                         <div class="grid gap-2">
                             <Label for="reason">Reason<span class="text-red-500">*</span></Label>
-                            <Textarea class="max-w-sm" placeholder="Write Reason" id="reason" v-model="form.reason" autofocus></Textarea>
+                            <Textarea class="max-w-sm" placeholder="Write Reason" id="reason" v-model="form.reason"
+                                autofocus></Textarea>
                             <span v-if="errors?.reason" class="text-sm text-red-600">{{ errors.reason }}</span>
                         </div>
                         <div class="grid gap-2">

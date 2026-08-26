@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <title>Sales Overview Report</title>
     <style>
         body {
@@ -314,128 +315,128 @@
         </div>
     </header>
 
-    
-        @php
-            // Employee Name
-            $employeeName = $employee['empname'] ?: '';
 
-            // Status array
-            $statusesArray = $statuses->toArray() ?? [];
+    @php
+    // Employee Name
+    $employeeName = $employee['empname'] ?: '';
 
-            // Total leads
-            $totalLeads = array_sum($statusesArray);
+    // Status array
+    $statusesArray = $statuses->toArray() ?? [];
 
-            // Status names
-            $statusNames = [
-                1 => 'Lead',
-                2 => 'Prospect',
-                3 => 'OnBoard',
-                4 => 'Achieved',
-                null => 'Pending',
-            ];
+    // Total leads
+    $totalLeads = array_sum($statusesArray);
 
-            // Status colors
-            $colors = [
-                1 => '#4299e1',
-                2 => '#48bb78',
-                3 => '#f56565',
-                4 => '#9f7aea',
-                null => '#ecc94b',
-            ];
-        @endphp
-        <!-- Summary Information -->
-        <div class="summary-info">
-            <div class="info-item">
-                <span class="info-label">Employee Name</span>
-                <span class="info-separator">:</span>
-                <span class="info-value">{{ $employeeName }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Report Period</span>
-                <span class="info-separator">:</span>
-                <span class="info-value">{{ $monthName ?? 'November' }}, {{ $year ?? '2025' }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Generated On</span>
-                <span class="info-separator">:</span>
-                <span class="info-value">{{ now()->format('F j, Y h:i A') }}</span>
-            </div>
+    // Status names
+    $statusNames = [
+    1 => 'Lead',
+    2 => 'Prospect',
+    3 => 'OnBoard',
+    4 => 'Achieved',
+    null => 'Pending',
+    ];
 
+    // Status colors
+    $colors = [
+    1 => '#4299e1',
+    2 => '#48bb78',
+    3 => '#f56565',
+    4 => '#9f7aea',
+    null => '#ecc94b',
+    ];
+    @endphp
+    <!-- Summary Information -->
+    <div class="summary-info">
+        <div class="info-item">
+            <span class="info-label">Employee Name</span>
+            <span class="info-separator">:</span>
+            <span class="info-value">{{ $employeeName }}</span>
         </div>
-        <!-- Lead Details Table - FIXED STRUCTURE -->
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%; text-align: center">#</th>
-                    <th style="width: 30%">Lead Status</th>
-                    <th style="width: 20%; text-align: center">Quantity</th>
-                    <th style="width: 20%; text-align: center">Percentage</th>
-                    <th style="width: 25%">Progress</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $i = 1; @endphp
-                @foreach ([1, 2, 3, 4, null] as $status)
-                    @php
-                        $count = $statusesArray[$status] ?? 0;
-                        $percentage = $totalLeads > 0 ? round(($count / $totalLeads) * 100, 1) : 0;
-                        $color = $colors[$status] ?? '#ecc94b';
-                    @endphp
-                    <tr>
-                        <td style="text-align: center">{{ $i++ }}</td>
-                        <td>
-                            <span class="status-badge status-{{ strtolower($statusNames[$status] ?? 'pending') }}">
-                                {{ $statusNames[$status] ?? 'Pending' }}
-                            </span>
-                        </td>
-                        <td style="text-align: center; font-weight: 600">{{ $count }}</td>
-                        <td style="text-align: center">{{ $percentage }}%</td>
-                        <td>
-                            <div class="progress-container">
-                                <div class="progress-bar"
-                                    style="width: {{ $percentage }}%; background: {{ $color }};"></div>
-                            </div>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%; text-align: center">#</th>
-                    <th style="width: 30%">Item Name</th>
-                    <th style="width: 20%; text-align: center">Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $i = 1; @endphp
-                <tr>
-                    <td>{{ $i++ }}</td>
-                    <td>Quotations</td>
-                    <td>{{ number_format($sumQuoat, 2) }}</td>
-                </tr>
-                <tr>
-                    <td>{{ $i++ }}</td>
-                    <td>Invoice</td>
-                    <td>{{ number_format($sumInvoice, 2) }}</td>
-                </tr>
-                <tr>
-                    <td>{{ $i++ }}</td>
-                    <td>Money Recived</td>
-                    
-                    <td>
-                        {{ number_format(
+        <div class="info-item">
+            <span class="info-label">Report Period</span>
+            <span class="info-separator">:</span>
+            <span class="info-value">{{ $monthName ?? 'November' }}, {{ $year ?? '2025' }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Generated On</span>
+            <span class="info-separator">:</span>
+            <span class="info-value">{{ now()->format('F j, Y h:i A') }}</span>
+        </div>
+
+    </div>
+    <!-- Lead Details Table - FIXED STRUCTURE -->
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 5%; text-align: center">#</th>
+                <th style="width: 30%">Lead Status</th>
+                <th style="width: 20%; text-align: center">Quantity</th>
+                <th style="width: 20%; text-align: center">Percentage</th>
+                <th style="width: 25%">Progress</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $i = 1; @endphp
+            @foreach ([1, 2, 3, 4, null] as $status)
+            @php
+            $count = $statusesArray[$status] ?? 0;
+            $percentage = $totalLeads > 0 ? round(($count / $totalLeads) * 100, 1) : 0;
+            $color = $colors[$status] ?? '#ecc94b';
+            @endphp
+            <tr>
+                <td style="text-align: center">{{ $i++ }}</td>
+                <td>
+                    <span class="status-badge status-{{ strtolower($statusNames[$status] ?? 'pending') }}">
+                        {{ $statusNames[$status] ?? 'Pending' }}
+                    </span>
+                </td>
+                <td style="text-align: center; font-weight: 600">{{ $count }}</td>
+                <td style="text-align: center">{{ $percentage }}%</td>
+                <td>
+                    <div class="progress-container">
+                        <div class="progress-bar"
+                            style="width: {{ $percentage }}%; background: {{ $color }};"></div>
+                    </div>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 5%; text-align: center">#</th>
+                <th style="width: 30%">Item Name</th>
+                <th style="width: 20%; text-align: center">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $i = 1; @endphp
+            <tr>
+                <td>{{ $i++ }}</td>
+                <td>Quotations</td>
+                <td>{{ number_format($sumQuoat, 2) }}</td>
+            </tr>
+            <tr>
+                <td>{{ $i++ }}</td>
+                <td>Invoice</td>
+                <td>{{ number_format($sumInvoice, 2) }}</td>
+            </tr>
+            <tr>
+                <td>{{ $i++ }}</td>
+                <td>Money Recived</td>
+
+                <td>
+                    {{ number_format(
                             $sumMR instanceof \Illuminate\Support\Collection ? $sumMR->sum('netamount') : $sumMR,
                             2,
                         ) }}
-                    </td>
-                    
-                </tr>
-            </tbody>
-        </table>
-       
-   
+                </td>
+
+            </tr>
+        </tbody>
+    </table>
+
+
 
     <!-- Footer -->
     <footer>

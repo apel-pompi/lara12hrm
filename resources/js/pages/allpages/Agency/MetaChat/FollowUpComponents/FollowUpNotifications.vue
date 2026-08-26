@@ -279,317 +279,257 @@ const markAllAsRead = async () => {
 
 
 <template>
-
-    <Head title="Notification Center" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="min-h-screen bg-slate-50 px-4 py-6 dark:bg-slate-950 sm:px-6 lg:px-8">
 
-            <div class="mx-auto max-w-5xl">
+        <Head title="Notification Center" />
+        <div class="app-page">
+            <!-- Header Bar -->
+            <div
+                class="mb-6 flex flex-col items-center justify-between gap-4 rounded-md border border-gray-300 bg-white p-4 shadow-sm sm:flex-row sm:flex-wrap dark:border-gray-700 dark:bg-gray-900">
 
-
-                <!-- ================================================= -->
-                <!-- Header -->
-                <!-- ================================================= -->
-
-                <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-                    <div>
-
-                        <div class="flex items-center gap-3">
-
-                            <div
-                                class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                                <BellIcon class="h-6 w-6" />
-                            </div>
-
-
-                            <div>
-
-                                <h1 class="text-xl font-bold text-slate-900 dark:text-white">
-                                    Notification Center
-                                </h1>
-
-                                <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-                                    Manage your follow-up notifications
-                                </p>
-
-                            </div>
-
-                        </div>
-
+                <!-- Left: Title & Icon (No Create Button) -->
+                <div class="flex items-center gap-3">
+                    <div
+                        class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                        <BellIcon class="h-5 w-5" />
                     </div>
 
+                    <div>
+                        <h1 class="text-base font-bold text-gray-900 dark:text-white">
+                            Notification Center
+                        </h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            Manage your follow-up notifications
+                        </p>
+                    </div>
+                </div>
 
-                    <!-- Mark All -->
+                <!-- Center: Summary Stats -->
+                <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                    <div
+                        class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800">
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Total:</span>
+                        <span class="text-xs font-bold text-gray-900 dark:text-white">{{ props.notifications.total
+                            }}</span>
+                    </div>
 
+                    <div
+                        class="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 dark:border-blue-900/40 dark:bg-blue-950/40">
+                        <span class="text-xs font-medium text-blue-600 dark:text-blue-400">Unread:</span>
+                        <span class="text-xs font-bold text-blue-700 dark:text-blue-300">{{ unreadCount }}</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 rounded-lg border px-3 py-1.5" :class="unreadCount === 0
+                        ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/40 dark:bg-emerald-950/40'
+                        : 'border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/40'">
+                        <span class="text-xs font-semibold"
+                            :class="unreadCount === 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'">
+                            {{ unreadCount === 0 ? '✓ All caught up' : `${unreadCount} unread` }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Right: Mark All Read Button -->
+                <div class="flex items-center">
                     <button v-if="unreadCount > 0" type="button" :disabled="markingAll" @click="markAllAsRead"
-                        class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
-
+                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
                         <CheckCircleIcon class="h-4 w-4" />
+                        <span>{{ markingAll ? 'Updating...' : 'Mark all read' }}</span>
+                    </button>
+                    <span v-else class="text-xs font-medium text-gray-400 dark:text-gray-500">
+                        No unread notifications
+                    </span>
+                </div>
 
-                        {{
-                            markingAll
-                                ? 'Marking...'
-                                : 'Mark all as read'
-                        }}
+            </div>
 
+
+            <!-- ================================================= -->
+            <!-- Filter -->
+            <!-- ================================================= -->
+
+            <div class="mb-4 flex items-center justify-between">
+
+                <div
+                    class="inline-flex rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+
+                    <button type="button" @click="filter = 'all'"
+                        class="rounded-md px-3 py-1.5 text-xs font-semibold transition" :class="filter === 'all'
+                            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                            : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                            ">
+                        All
+                    </button>
+
+
+                    <button type="button" @click="filter = 'unread'"
+                        class="rounded-md px-3 py-1.5 text-xs font-semibold transition" :class="filter === 'unread'
+                            ? 'bg-blue-600 text-white'
+                            : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                            ">
+                        Unread
                     </button>
 
                 </div>
 
 
+                <span class="text-xs text-slate-400">
+                    {{ props.notifications.total }} notifications
+                </span>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- Notification Card -->
+            <!-- ================================================= -->
+
+            <div
+                class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+
+
                 <!-- ================================================= -->
-                <!-- Summary -->
+                <!-- Empty -->
                 <!-- ================================================= -->
 
-                <div class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-
-                    <!-- Total -->
+                <div v-if="!filteredNotifications.length" class="px-6 py-16 text-center">
 
                     <div
-                        class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-
-                        <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                            Total
-                        </p>
-
-                        <p class="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
-                            {{ props.notifications.total }}
-                        </p>
-
+                        class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                        <BellIcon class="h-7 w-7 text-slate-400" />
                     </div>
 
 
-                    <!-- Unread -->
-
-                    <div
-                        class="rounded-xl border border-blue-100 bg-blue-50/70 p-4 shadow-sm dark:border-blue-900/30 dark:bg-blue-950/20">
-
-                        <p class="text-[11px] font-semibold uppercase tracking-wider text-blue-500">
-                            Unread
-                        </p>
-
-                        <p class="mt-1 text-2xl font-bold text-blue-700 dark:text-blue-400">
-                            {{ unreadCount }}
-                        </p>
-
-                    </div>
+                    <h3 class="mt-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        {{
+                            filter === 'unread'
+                                ? 'No unread notifications'
+                                : 'No notifications'
+                        }}
+                    </h3>
 
 
-                    <!-- Status -->
-
-                    <div
-                        class="col-span-2 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 shadow-sm dark:border-emerald-900/30 dark:bg-emerald-950/20 sm:col-span-1">
-
-                        <p
-                            class="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                            Status
-                        </p>
-
-                        <p v-if="unreadCount === 0"
-                            class="mt-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                            You're all caught up
-                        </p>
-
-                        <p v-else class="mt-1 text-sm font-semibold text-blue-700 dark:text-blue-400">
-                            {{ unreadCount }} unread notification{{
-                                unreadCount > 1 ? 's' : ''
-                            }}
-                        </p>
-
-                    </div>
+                    <p class="mt-1 text-xs text-slate-400">
+                        {{
+                            filter === 'unread'
+                                ? "You're all caught up."
+                                : 'You do not have any notifications yet.'
+                        }}
+                    </p>
 
                 </div>
 
 
                 <!-- ================================================= -->
-                <!-- Filter -->
+                <!-- Notification List -->
                 <!-- ================================================= -->
 
-                <div class="mb-4 flex items-center justify-between">
+                <div v-else>
 
-                    <div
-                        class="inline-flex rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
-
-                        <button type="button" @click="filter = 'all'"
-                            class="rounded-md px-3 py-1.5 text-xs font-semibold transition" :class="filter === 'all'
-                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                                : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-                                ">
-                            All
-                        </button>
+                    <div v-for="notification in filteredNotifications" :key="notification.id"
+                        @click="openNotification(notification)"
+                        class="group flex cursor-pointer gap-4 border-b border-slate-100 px-5 py-4 transition last:border-b-0 dark:border-slate-800"
+                        :class="!notification.read_at
+                            ? 'bg-blue-50/40 hover:bg-blue-50 dark:bg-blue-950/10 dark:hover:bg-blue-950/20'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                            ">
 
 
-                        <button type="button" @click="filter = 'unread'"
-                            class="rounded-md px-3 py-1.5 text-xs font-semibold transition" :class="filter === 'unread'
-                                ? 'bg-blue-600 text-white'
-                                : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-                                ">
-                            Unread
-                        </button>
+                        <!-- Icon -->
 
-                    </div>
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" :class="notificationIconClass(
+                            notification.type
+                        )
+                            ">
 
+                            <component :is="notificationIcon(
+                                notification.type
+                            )
+                                " class="h-5 w-5" />
 
-                    <span class="text-xs text-slate-400">
-                        {{ props.notifications.total }} notifications
-                    </span>
-
-                </div>
-
-
-                <!-- ================================================= -->
-                <!-- Notification Card -->
-                <!-- ================================================= -->
-
-                <div
-                    class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-
-
-                    <!-- ================================================= -->
-                    <!-- Empty -->
-                    <!-- ================================================= -->
-
-                    <div v-if="!filteredNotifications.length" class="px-6 py-16 text-center">
-
-                        <div
-                            class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                            <BellIcon class="h-7 w-7 text-slate-400" />
                         </div>
 
 
-                        <h3 class="mt-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            {{
-                                filter === 'unread'
-                                    ? 'No unread notifications'
-                                    : 'No notifications'
-                            }}
-                        </h3>
+                        <!-- Content -->
+
+                        <div class="min-w-0 flex-1">
+
+                            <div class="flex items-start justify-between gap-3">
+
+                                <div class="min-w-0">
+
+                                    <div class="flex items-center gap-2">
+
+                                        <h3 class="truncate text-sm" :class="!notification.read_at
+                                            ? 'font-bold text-slate-900 dark:text-white'
+                                            : 'font-semibold text-slate-700 dark:text-slate-300'
+                                            ">
+                                            {{ notification.title }}
+                                        </h3>
 
 
-                        <p class="mt-1 text-xs text-slate-400">
-                            {{
-                                filter === 'unread'
-                                    ? "You're all caught up."
-                                    : 'You do not have any notifications yet.'
-                            }}
-                        </p>
-
-                    </div>
-
-
-                    <!-- ================================================= -->
-                    <!-- Notification List -->
-                    <!-- ================================================= -->
-
-                    <div v-else>
-
-                        <div v-for="notification in filteredNotifications" :key="notification.id"
-                            @click="openNotification(notification)"
-                            class="group flex cursor-pointer gap-4 border-b border-slate-100 px-5 py-4 transition last:border-b-0 dark:border-slate-800"
-                            :class="!notification.read_at
-                                ? 'bg-blue-50/40 hover:bg-blue-50 dark:bg-blue-950/10 dark:hover:bg-blue-950/20'
-                                : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                                ">
-
-
-                            <!-- Icon -->
-
-                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" :class="notificationIconClass(
-                                notification.type
-                            )
-                                ">
-
-                                <component :is="notificationIcon(
-                                    notification.type
-                                )
-                                    " class="h-5 w-5" />
-
-                            </div>
-
-
-                            <!-- Content -->
-
-                            <div class="min-w-0 flex-1">
-
-                                <div class="flex items-start justify-between gap-3">
-
-                                    <div class="min-w-0">
-
-                                        <div class="flex items-center gap-2">
-
-                                            <h3 class="truncate text-sm" :class="!notification.read_at
-                                                ? 'font-bold text-slate-900 dark:text-white'
-                                                : 'font-semibold text-slate-700 dark:text-slate-300'
-                                                ">
-                                                {{ notification.title }}
-                                            </h3>
-
-
-                                            <span v-if="!notification.read_at"
-                                                class="h-2 w-2 shrink-0 rounded-full bg-blue-600" />
-
-                                        </div>
-
-
-                                        <p class="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-400">
-                                            {{ notification.message }}
-                                        </p>
+                                        <span v-if="!notification.read_at"
+                                            class="h-2 w-2 shrink-0 rounded-full bg-blue-600" />
 
                                     </div>
 
 
-                                    <!-- Arrow -->
-
-                                    <ChevronRightIcon
-                                        class="mt-1 h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500" />
+                                    <p class="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-400">
+                                        {{ notification.message }}
+                                    </p>
 
                                 </div>
 
 
-                                <!-- Meta -->
+                                <!-- Arrow -->
 
-                                <div class="mt-2 flex flex-wrap items-center gap-2">
+                                <ChevronRightIcon
+                                    class="mt-1 h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500" />
 
-                                    <span class="text-[11px] text-slate-400">
-                                        {{
-                                            notificationTime(
-                                                notification.created_at
-                                            )
-                                        }}
-                                    </span>
+                            </div>
 
 
-                                    <!-- Priority -->
+                            <!-- Meta -->
 
-                                    <span v-if="
-                                        notification.data?.priority
-                                    " class="rounded-full px-2 py-0.5 text-[10px] font-semibold" :class="priorityClass(
+                            <div class="mt-2 flex flex-wrap items-center gap-2">
+
+                                <span class="text-[11px] text-slate-400">
+                                    {{
+                                        notificationTime(
+                                            notification.created_at
+                                        )
+                                    }}
+                                </span>
+
+
+                                <!-- Priority -->
+
+                                <span v-if="
+                                    notification.data?.priority
+                                " class="rounded-full px-2 py-0.5 text-[10px] font-semibold" :class="priorityClass(
+                                    notification.data.priority
+                                )
+                                    ">
+                                    {{
                                         notification.data.priority
-                                    )
-                                        ">
-                                        {{
-                                            notification.data.priority
-                                        }}
-                                    </span>
+                                    }}
+                                </span>
 
 
-                                    <!-- Read -->
+                                <!-- Read -->
 
-                                    <span v-if="notification.read_at"
-                                        class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                                        <CheckIcon class="h-3 w-3" />
-                                        Read
-                                    </span>
+                                <span v-if="notification.read_at"
+                                    class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                    <CheckIcon class="h-3 w-3" />
+                                    Read
+                                </span>
 
 
-                                    <!-- Unread -->
+                                <!-- Unread -->
 
-                                    <span v-else class="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
-                                        Unread
-                                    </span>
-
-                                </div>
+                                <span v-else class="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                                    Unread
+                                </span>
 
                             </div>
 
@@ -599,51 +539,48 @@ const markAllAsRead = async () => {
 
                 </div>
 
-
-                <!-- ================================================= -->
-                <!-- Laravel / Inertia Pagination -->
-                <!-- ================================================= -->
-
-                <div v-if="props.notifications.last_page > 1"
-                    class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-                    <!-- Page Info -->
-
-                    <p class="text-xs text-slate-400">
-                        Showing
-                        {{ props.notifications.from ?? 0 }}
-                        to
-                        {{ props.notifications.to ?? 0 }}
-                        of
-                        {{ props.notifications.total }}
-                        notifications
-                    </p>
-
-
-                    <!-- Pagination -->
-
-                    <div class="flex flex-wrap items-center gap-1">
-
-                        <Link v-for="(link, index) in props.notifications.links" :key="`${index}-${link.label}`"
-                            :href="link.url ?? '#'" preserve-scroll preserve-state
-                            class="rounded-lg px-3 py-2 text-xs font-semibold transition" :class="{
-                                'bg-blue-600 text-white':
-                                    link.active,
-
-                                'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800':
-                                    !link.active && link.url,
-
-                                'cursor-not-allowed opacity-40':
-                                    !link.url,
-                            }" v-html="link.label" />
-
-                    </div>
-
-                </div>
-
-
             </div>
 
+
+            <!-- ================================================= -->
+            <!-- Laravel / Inertia Pagination -->
+            <!-- ================================================= -->
+
+            <div v-if="props.notifications.last_page > 1"
+                class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+                <!-- Page Info -->
+
+                <p class="text-xs text-slate-400">
+                    Showing
+                    {{ props.notifications.from ?? 0 }}
+                    to
+                    {{ props.notifications.to ?? 0 }}
+                    of
+                    {{ props.notifications.total }}
+                    notifications
+                </p>
+
+
+                <!-- Pagination -->
+
+                <div class="flex flex-wrap items-center gap-1">
+
+                    <Link v-for="(link, index) in props.notifications.links" :key="`${index}-${link.label}`"
+                        :href="link.url ?? '#'" preserve-scroll preserve-state
+                        class="rounded-lg px-3 py-2 text-xs font-semibold transition" :class="{
+                            'bg-blue-600 text-white':
+                                link.active,
+
+                            'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800':
+                                !link.active && link.url,
+
+                            'cursor-not-allowed opacity-40':
+                                !link.url,
+                        }" v-html="link.label" />
+
+                </div>
+            </div>
         </div>
     </AppLayout>
 </template>

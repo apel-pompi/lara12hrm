@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Student\StudentInvoiceHD;
 use App\Models\Student\StudentQuotationHD;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
@@ -48,7 +49,7 @@ class StudentReportController extends Controller
                     ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
                     ->values()
                     ->toArray(),
-                'UsersWithRoles' => User::with('roles')->get(),
+                'UsersWithRoles' => User::with('roles')->whereNull('banned_at')->get(),
                 'isAdmin' => true,
             ]);
         } else {
@@ -258,6 +259,273 @@ class StudentReportController extends Controller
             ]);;
 
         return $pdf->stream("MonthlyEmpLeadReport.pdf");
+    }
+
+    public function fileopening()
+    {
+        $user = Auth::user();
+        /** @var \Spatie\Permission\Traits\HasRoles $user */
+        $roles = $user->getRoleNames();
+        try {
+
+            $this->authorize('leadReports.monthly-lead-info');
+        } catch (AuthorizationException $e) {
+
+            return back()->with([
+                'error' => true,
+                'message' => 'You are not authorized to access this page.'
+            ]);
+        }
+        if ($roles->contains('superadmin')  or $roles->contains('Admin') or $roles->contains('Manager')) {
+
+            return Inertia::render('allpages/reports/FileOpeningReport', [
+                'months' => collect($this->createMonth())
+                    ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
+                    ->values()
+                    ->toArray(),
+                'years' => collect($this->createYear())
+                    ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
+                    ->values()
+                    ->toArray(),
+                'UsersWithRoles' => User::with('roles')->whereNull('banned_at')->get(),
+                'isAdmin' => true,
+            ]);
+        } else {
+            return Inertia::render('allpages/reports/FileOpeningReport', [
+                'months' => collect($this->createMonth())
+                    ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
+                    ->values()
+                    ->toArray(),
+                'years' => collect($this->createYear())
+                    ->map(fn($name, $id) => ['id' => $id, 'name' => $name])
+                    ->values()
+                    ->toArray(),
+                'isAdmin' => false,
+            ]);
+        }
+    }
+
+
+    public function fileopeningReport($formdate, $todate, $isAdmin, $employee = null)
+    {
+
+        $fromDate = Carbon::parse($formdate)->startOfDay();
+        $toDate   = Carbon::parse($todate)->endOfDay();
+
+        $isAdmin = filter_var($isAdmin, FILTER_VALIDATE_BOOLEAN);
+        $employeeId = null;
+
+        if ($isAdmin) {
+
+            if (!empty($employee)) {
+                $employeeId = $employee;
+            }
+        } else {
+
+            $employeeId = Auth::id();
+        }
+
+        $query = Student::query()
+
+            ->leftJoin(
+                'student_invoice_hd as b',
+                'students.id',
+                '=',
+                'b.student_id'
+            )
+
+            ->leftJoin(
+                'student_money_receipt_d_t_s as c',
+                'b.id',
+                '=',
+                'c.mrnumber_id'
+            )
+
+            ->join(
+                'fees as d',
+                'c.fees_id',
+                '=',
+                'd.id'
+            )
+
+            /*
+        |--------------------------------------------------------------------------
+        | Employee Information
+        |--------------------------------------------------------------------------
+        */
+
+            ->leftJoin(
+                'personal_infos as pi',
+                'students.assain_user',
+                '=',
+                'pi.user_id'
+            )
+
+            ->whereBetween(
+                'b.insdate',
+                [$fromDate, $toDate]
+            )
+
+            ->where('b.status', 'Confirmed')
+
+            ->where('d.name', 'File Opening Fee')
+
+            /*
+        |--------------------------------------------------------------------------
+        | Invoice / Receipt Conditions
+        |--------------------------------------------------------------------------
+        */
+
+            ->where('b.insnumber', 'like', 'MR--%')
+
+            ->where('b.refe_code', 'not like', 'SR--%');
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Employee Filter
+    |--------------------------------------------------------------------------
+    |
+    | Admin without employee => No employee condition
+    | Admin with employee    => Selected employee
+    | Non-admin              => Logged-in employee
+    |
+    */
+
+        if ($employeeId !== null) {
+
+            $query->where(
+                'students.assain_user',
+                $employeeId
+            );
+        }
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Select
+    |--------------------------------------------------------------------------
+    */
+
+        $sql = $query
+
+            ->select([
+                'students.id as student_db_id',
+                'students.student_id',
+                'students.fname',
+                'students.lname',
+
+                'pi.empname as employee',
+
+                'b.insnumber',
+                'b.insdate',
+
+                'c.amount',
+
+                'd.name as fees_name',
+            ])
+
+            ->orderBy('b.insdate', 'ASC')
+            ->orderBy('students.student_id', 'ASC')
+
+            ->get();
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Prepare Report Data
+    |--------------------------------------------------------------------------
+    */
+
+        $dataArray = $sql->map(function ($row) {
+
+            return [
+                'employee'   => $row->employee ?? 'Unknown',
+                'student_id' => $row->student_id,
+                'studentname' => trim(
+                    ($row->fname ?? '') . ' ' . ($row->lname ?? '')
+                ),
+                'fees_name'  => $row->fees_name,
+                'insnumber'  => $row->insnumber,
+                'insdate'    => $row->insdate,
+                'amount'     => (float) ($row->amount ?? 0),
+            ];
+        })->values();
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Report Summary
+    |--------------------------------------------------------------------------
+    */
+
+        $totalRecords = $dataArray->count();
+
+        $totalCollection = $dataArray->sum('amount');
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Employee Information
+    |--------------------------------------------------------------------------
+    |
+    | Only show employee information when a specific employee
+    | is selected / non-admin user.
+    |
+    */
+
+        $personalinfo = null;
+
+        if ($employeeId !== null) {
+
+            $personalinfo = PersonalInfo::with('designation')
+                ->where('user_id', $employeeId)
+                ->first();
+        }
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Company
+    |--------------------------------------------------------------------------
+    */
+
+        $company = CompanyInfo::first();
+
+
+        /*
+    |--------------------------------------------------------------------------
+    | Generate PDF
+    |--------------------------------------------------------------------------
+    */
+
+        $pdf = PDF::loadView('exports.FileOpeningReport', [
+
+            'formdate' => $formdate,
+
+            'todate' => $todate,
+
+            'dataArray' => $dataArray,
+
+            'personalinfo' => $personalinfo,
+
+            'totalRecords' => $totalRecords,
+
+            'totalCollection' => $totalCollection,
+
+            'company' => $company,
+            'showEmployeeColumn' => $isAdmin && empty($employee),
+
+        ])
+            ->setPaper('a4', 'portrait')
+            ->setOption([
+                'margin-top'    => 5,
+                'margin-right'  => 5,
+                'margin-bottom' => 5,
+                'margin-left'   => 5,
+            ]);
+
+        return $pdf->stream('FileOpeningReport.pdf');
     }
 
     public function studentTransaction()

@@ -364,19 +364,10 @@ class FollowUpNotificationService
         int $userId,
         int $perPage = 10
     ) {
-        $user = Auth::user();
-        /** @var \Spatie\Permission\Traits\HasRoles $user */
-        $roles = $user->getRoleNames();
-        if ($roles->contains('superadmin') or $roles->contains('Admin') or $roles->contains('Manager')) {
-            return FollowUpNotification::query()
-                ->latest('created_at')
-                ->paginate($perPage);
-        } else {
-            return FollowUpNotification::query()
-                ->where('user_id', $userId)
-                ->latest('created_at')
-                ->paginate($perPage);
-        }
+        return FollowUpNotification::query()
+            ->where('user_id', $userId)
+            ->latest('created_at')
+            ->paginate($perPage);
     }
 
     /*

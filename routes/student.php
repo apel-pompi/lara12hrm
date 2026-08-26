@@ -77,6 +77,7 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
                 Route::get('/SearchOnBoard', 'SearchOnBoard')->name('student.SearchOnBoard');
                 Route::get('/SearchArchive', 'SearchArchive')->name('student.SearchArchive');
                 Route::get('/SearchInactive', 'SearchInactive')->name('student.SearchInactive');
+                Route::get('/AdvanceSearch', 'AdvanceSearch')->name('student.AdvanceSearch');
 
                 // Inactive Lead routes
                 Route::get('/inactive/1month', 'inactiveLeads1Month')->name('student.inactive1month');
@@ -260,6 +261,8 @@ Route::middleware(['verified', 'auth', 'isBanned', 'UserActivity'])->group(funct
         ->group(
             function () {
                 Route::get('/', 'index')->name('leadreports.index');
+                Route::get('/fileopening', 'fileopening')->name('leadreports.fileopening');
+                Route::get('/fileopening/{formdate}/{todate}/{isAdmin}/{employee?}', 'fileopeningReport')->name('leadreports.fileopeningReport');
 
                 Route::get('/transaction', 'studentTransaction')->name('leadreports.studentTransaction');
                 Route::get('/transaction/{student}', 'studentTransactionReport')->name('leadreports.studentTransactionReport');

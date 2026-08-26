@@ -27,8 +27,7 @@ const auth = computed(() => page.props.auth);
 
 <template>
     <header
-        class="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-slate-800 dark:bg-slate-950/95 dark:supports-[backdrop-filter]:bg-slate-950/60"
-    >
+        class="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-slate-800 dark:bg-slate-950/95 dark:supports-[backdrop-filter]:bg-slate-950/60">
         <div class="flex h-20 items-start justify-between px-4 py-3 sm:px-6 lg:px-8">
             <!-- Left Section: Logo & Company Name -->
             <div class="flex min-w-0 items-center gap-3">
@@ -53,26 +52,28 @@ const auth = computed(() => page.props.auth);
                 <Link :href="route('dashboard')" class="flex items-start gap-3 transition-opacity hover:opacity-80">
                     <!-- Logo Badge -->
                     <div
-                        class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 text-sm font-bold text-white shadow-md dark:from-blue-700 dark:to-blue-800"
-                    >
+                        class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 text-sm font-bold text-white shadow-md dark:from-blue-700 dark:to-blue-800">
                         <AppLogoIcon class="h-6 w-6 fill-current" />
                     </div>
                     <!-- Company Name (larger, aligned top) -->
                     <div class="-mt-0.5 hidden flex-col gap-0.5 sm:flex">
-                        <p class="text-lg leading-tight font-extrabold text-slate-900 dark:text-white">Gangchill Group</p>
-                        <p class="text-xs leading-tight text-slate-500 dark:text-slate-400">Student Management System For Foreign Study</p>
+                        <p class="text-lg leading-tight font-extrabold text-slate-900 dark:text-white">Gangchill Group
+                        </p>
+                        <p class="text-xs leading-tight text-slate-500 dark:text-slate-400">
+                            Student Management System For Foreign Study
+                        </p>
                     </div>
                 </Link>
             </div>
 
             <!-- Right Section: Actions & User Menu -->
             <div class="flex items-center gap-3 sm:gap-4">
-                <!-- Notification Icons (hidden on mobile) -->
                 <div class="hidden items-center gap-2 sm:flex">
                     <TooltipProvider :delay-duration="200">
                         <Tooltip>
                             <TooltipTrigger :as-child="true">
-                                <Button variant="ghost" size="icon" class="relative h-9 w-9 hover:bg-slate-100 dark:hover:bg-slate-900">
+                                <Button variant="ghost" size="icon"
+                                    class="relative h-9 w-9 hover:bg-slate-100 dark:hover:bg-slate-900">
                                     <Mail class="h-5 w-5 text-slate-600 dark:text-slate-400" />
                                     <span class="absolute top-1 right-1 h-2 w-2 rounded-full bg-orange-500"></span>
                                 </Button>
@@ -86,7 +87,8 @@ const auth = computed(() => page.props.auth);
                     <TooltipProvider :delay-duration="200">
                         <Tooltip>
                             <TooltipTrigger :as-child="true">
-                                <Button variant="ghost" size="icon" class="relative h-9 w-9 hover:bg-slate-100 dark:hover:bg-slate-900">
+                                <Button variant="ghost" size="icon"
+                                    class="relative h-9 w-9 hover:bg-slate-100 dark:hover:bg-slate-900">
                                     <Bell class="h-5 w-5 text-slate-600 dark:text-slate-400" />
                                     <span class="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
                                 </Button>
@@ -104,14 +106,12 @@ const auth = computed(() => page.props.auth);
                 <!-- User Profile Dropdown -->
                 <DropdownMenu>
                     <DropdownMenuTrigger :as-child="true">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            class="relative h-10 w-auto rounded-lg px-2 transition-colors hover:bg-slate-100 sm:px-3 dark:hover:bg-slate-900"
-                        >
+                        <Button variant="ghost" size="icon"
+                            class="relative h-10 w-auto rounded-lg px-2 transition-colors hover:bg-slate-100 sm:px-3 dark:hover:bg-slate-900">
                             <div class="flex items-center gap-2">
                                 <Avatar class="h-8 w-8 border border-slate-200 dark:border-slate-700">
-                                    <AvatarImage v-if="auth.user?.avatar" :src="auth.user.avatar" :alt="auth.user.name" />
+                                    <AvatarImage v-if="auth.user?.avatar" :src="auth.user.avatar"
+                                        :alt="auth.user.name" />
                                     <AvatarFallback class="bg-blue-600 text-sm font-semibold text-white">
                                         {{ getInitials(auth.user?.name) }}
                                     </AvatarFallback>
@@ -133,7 +133,8 @@ const auth = computed(() => page.props.auth);
         </div>
 
         <!-- Breadcrumb Section -->
-        <div v-if="props.breadcrumbs.length > 1" class="border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
+        <div v-if="props.breadcrumbs.length > 1"
+            class="border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
             <div class="flex h-12 items-center px-4 text-slate-600 sm:px-6 lg:px-8 dark:text-slate-400">
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </div>

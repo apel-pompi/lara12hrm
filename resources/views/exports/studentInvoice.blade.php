@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark'=> ($appearance ?? 'system') == 'dark'])>
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <title>Student Quotation</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
@@ -221,33 +222,33 @@
             </thead>
             <tbody>
                 @foreach ($invoiceDt ?? [] as $key => $item)
-                    <tr>
-                        <td>{{ $key + 1 }}</td>
-                        <td>{{ $item['feename'] }}</td>
-                        <td>{{ number_format($item['totalamount'] ?? 0, 2) }}</td>
-                        <td>
-                            @if ($item['pay_type'] == 'Revenue')
-                                Non Refundable
-                            @else
-                                {{ $item['pay_type'] ?? 'N/A' }}
-                            @endif
-                        </td>
-                        <td>
-                            @if ($item['feename'] == 'File Opening Fee')
-                                At the beginning of process
-                            @elseif($item['feename'] == 'Application Fee')
-                                During process direct payment to University
-                            @elseif($item['feename'] == 'Visa Process Fee')
-                                After offer letter of services needed
-                            @elseif($item['feename'] == 'VISA Fee')
-                                After offer letter direct payment to VFS/Embassy
-                            @elseif($item['feename'] == 'Service Fee')
-                                After Visa
-                            @elseif($item['feename'] == 'Tuition Fee')
-                                Tuition fees are refundable if the visa application is refused**
-                            @endif
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{ $key + 1 }}</td>
+                    <td>{{ $item['feename'] }}</td>
+                    <td>{{ number_format($item['totalamount'] ?? 0, 2) }}</td>
+                    <td>
+                        @if ($item['pay_type'] == 'Revenue')
+                        Non Refundable
+                        @else
+                        {{ $item['pay_type'] ?? 'N/A' }}
+                        @endif
+                    </td>
+                    <td>
+                        @if ($item['feename'] == 'File Opening Fee')
+                        At the beginning of process
+                        @elseif($item['feename'] == 'Application Fee')
+                        During process direct payment to University
+                        @elseif($item['feename'] == 'Visa Process Fee')
+                        After offer letter of services needed
+                        @elseif($item['feename'] == 'VISA Fee')
+                        After offer letter direct payment to VFS/Embassy
+                        @elseif($item['feename'] == 'Service Fee')
+                        After Visa
+                        @elseif($item['feename'] == 'Tuition Fee')
+                        Tuition fees are refundable if the visa application is refused**
+                        @endif
+                    </td>
+                </tr>
                 @endforeach
             </tbody>
         </table>
@@ -258,7 +259,7 @@
             <p class="grand-total">Total: {{ number_format($invoiceHD->netamount ?? 0, 2) }}</p>
             <h3>in word: {{ $numberTransformer->toWords($invoiceHD->netamount ?? 0) }} only</h3>
             @if (!empty($invoiceHD->shortnote))
-                <h3>Notes: {{ $invoiceHD->shortnote }}</h3>
+            <h3>Notes: {{ $invoiceHD->shortnote }}</h3>
             @endif
         </div>
 
